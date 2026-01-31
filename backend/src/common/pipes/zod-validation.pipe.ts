@@ -8,7 +8,7 @@ import { ZodSchema } from 'zod';
 /**
  * Validation pipe using Zod only. Use per-parameter:
  *   @Body(new ZodValidationPipe(mySchema)) body: z.infer<typeof mySchema>
- * No class-validator; Zod ONLY.
+ * Zod object() strips unknown keys by default (security). No class-validator.
  */
 export class ZodValidationPipe implements PipeTransform {
   constructor(private readonly schema: ZodSchema) {}

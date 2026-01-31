@@ -1,8 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma v7+ enterprise schema: UUID ids, createdAt/updatedAt on every table,
+// fixed Role table, normalized relations, indexes and constraints.
 
 generator client {
   provider = "prisma-client"
@@ -11,4 +8,66 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Role {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String         @unique
+  passwordHash  String
+  isActive      Boolean        @default(true)
+  roleId        String         @db.Uuid
+  role          Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  departmentId  String?       @db.Uuid
+  department    Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  refreshTokens RefreshToken[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([roleId])
+  @@index([departmentId])
+  @@index([createdAt])
+}
+
+model Department {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model AcademicYear {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  startDate DateTime
+  endDate   DateTime?
+  isActive  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([startDate])
+  @@index([isActive])
+}
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tokenId   String   @unique
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
 }

@@ -1,12 +1,18 @@
 import { Module, RequestMethod } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { LoggerModule } from 'nestjs-pino';
-import { HealthModule } from './modules';
+import { AuthModule, HealthModule } from './modules';
+import { DepartmentsModule } from './modules/departments';
+import { AcademicYearsModule } from './modules/academic-years';
+import { UsersModule } from './modules/users';
 import { validateEnv } from './config';
 import { PrismaModule } from './core/prisma/prisma.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { RequestIdInterceptor } from './common/interceptors/request-id.interceptor';
 
 @Module({
   imports: [
@@ -25,25 +31,50 @@ import { PrismaModule } from './core/prisma/prisma.module';
       }),
       inject: [ConfigService],
     }),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
-      },
-      forRoutes: [{ path: '*path', method: RequestMethod.ALL }], // path-to-regexp v8: named wildcard
+    LoggerModule.forRootAsync({
+      useFactory: (config: ConfigService) => ({
+        pinoHttp: {
+          level:
+            config.get<string>('NODE_ENV') !== 'production' ? 'debug' : 'info',
+        },
+        forRoutes: [
+          { path: '*path', method: RequestMethod.ALL },
+        ],
+      }),
+      inject: [ConfigService],
     }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
+      global: true,
       useFactory: (config: ConfigService) =>
         ({
           secret: config.get<string>('JWT_SECRET') ?? 'change-me-in-production',
           signOptions: {
-            expiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '7d',
+            expiresIn: config.get<string>('JWT_ACCESS_EXPIRES') ?? '15m',
           },
         }) as JwtModuleOptions,
       inject: [ConfigService],
     }),
     PrismaModule,
+    AuthModule,
     HealthModule,
+    DepartmentsModule,
+    AcademicYearsModule,
+    UsersModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestIdInterceptor,
+    },
   ],
 })
 export class AppModule {}
