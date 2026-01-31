@@ -1,1 +1,1 @@
-export { runSeed } from './run-seed';
+export { runSeed } from './seed';

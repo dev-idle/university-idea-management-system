@@ -7,6 +7,6 @@ export {
   DEFAULT_PORT,
   configureApp,
   type ConfigureAppOptions,
-} from './application.config';
+} from './app.config';
 export { envSchema, type Env } from './env.schema';
 export { validateEnv } from './configuration';
