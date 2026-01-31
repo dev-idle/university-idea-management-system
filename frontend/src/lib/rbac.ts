@@ -1,0 +1,40 @@
+/**
+ * Frontend RBAC: UX only. Backend is the sole authority; never trust frontend for authz.
+ * Use to hide/show UI; all enforcement is on the backend.
+ */
+
+/** Mirror backend ROLES; used only for UI visibility. */
+export const ROLES = ["ADMIN", "QA_MANAGER", "QA_COORDINATOR", "STAFF"] as const;
+
+export type Role = (typeof ROLES)[number];
+
+export function isRole(value: string): value is Role {
+  return ROLES.includes(value as Role);
+}
+
+/** Mirror backend PERMISSIONS; UX only. */
+export const PERMISSIONS = [
+  "SYSTEM_CONFIG",
+  "USERS",
+  "DEPARTMENTS",
+  "ACADEMIC_YEARS",
+] as const;
+
+export type Permission = (typeof PERMISSIONS)[number];
+
+/** Role → Permission (mirror backend ROLE_PERMISSION_TABLE). UX only. */
+export const ROLE_PERMISSION_TABLE: Readonly<Record<Role, readonly Permission[]>> = {
+  ADMIN: ["SYSTEM_CONFIG", "USERS", "DEPARTMENTS", "ACADEMIC_YEARS"],
+  QA_MANAGER: [],
+  QA_COORDINATOR: [],
+  STAFF: [],
+};
+
+export function hasPermission(roles: string[] | undefined, permission: Permission): boolean {
+  if (!roles?.length) return false;
+  return roles.some((role) => isRole(role) && ROLE_PERMISSION_TABLE[role].includes(permission));
+}
+
+export function hasRole(roles: string[] | undefined, role: Role): boolean {
+  return roles?.includes(role) ?? false;
+}
