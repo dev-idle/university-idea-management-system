@@ -20,6 +20,10 @@ export const ROUTES = {
   ADMIN_DASHBOARD: "/admin/dashboard",
   /** University QA Manager → /qa-manager/dashboard. */
   QA_MANAGER_DASHBOARD: "/qa-manager/dashboard",
+  /** QA Manager categories management. */
+  QA_MANAGER_CATEGORIES: "/qa-manager/categories",
+  /** QA Manager idea submission cycles. */
+  QA_MANAGER_SUBMISSION_CYCLES: "/qa-manager/submission-cycles",
   /** QA Coordinator → /qa-coordinator/dashboard. */
   QA_COORDINATOR_DASHBOARD: "/qa-coordinator/dashboard",
   /** Staff → /staff (only entry for STAFF). */
@@ -59,7 +63,7 @@ export function getEntryRouteForRoles(roles: string[] | undefined): string {
 /** Path prefixes/routes allowed per role (UX-only; backend enforces). Each user has one role. */
 const ROLE_ALLOWED_PATHS: Record<Role, string[]> = {
   ADMIN: ["/admin", "/profile"],
-  QA_MANAGER: ["/qa-manager", "/profile"],
+  QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/submission-cycles", "/profile"],
   QA_COORDINATOR: ["/qa-coordinator", "/profile"],
   STAFF: ["/staff", "/ideas", "/profile"],
 };

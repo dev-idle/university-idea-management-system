@@ -5,13 +5,14 @@ import { fetchWithAuth } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 import type {
   AcademicYear,
+  AcademicYearsListWithContext,
   CreateAcademicYearBody,
   UpdateAcademicYearBody,
 } from "@/lib/schemas/academic-years.schema";
-import { academicYearsListResponseSchema } from "@/lib/schemas/academic-years.schema";
+import { academicYearsListWithContextSchema } from "@/lib/schemas/academic-years.schema";
 
-function parseAcademicYearsList(data: unknown): AcademicYear[] {
-  const parsed = academicYearsListResponseSchema.safeParse(data);
+function parseAcademicYearsList(data: unknown): AcademicYearsListWithContext {
+  const parsed = academicYearsListWithContextSchema.safeParse(data);
   if (!parsed.success) throw new Error("Invalid academic years response");
   return parsed.data;
 }

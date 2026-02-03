@@ -8,6 +8,7 @@ import type {
 } from "@/lib/schemas/academic-years.schema";
 import { updateAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
 import { getErrorMessage } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -151,21 +152,32 @@ export function UpdateAcademicYearForm({
             </p>
           )}
         </div>
-        <div className="flex items-center gap-3 sm:col-span-2">
-          <input
-            type="checkbox"
-            id="edit-isActive"
-            {...register("isActive")}
-            className="size-4 rounded border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            aria-describedby="edit-isActive-desc"
-          />
-          <Label
-            id="edit-isActive-desc"
-            htmlFor="edit-isActive"
-            className="cursor-pointer text-sm text-muted-foreground"
-          >
-            Active (exactly one year can be active)
-          </Label>
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="edit-isActive"
+              {...register("isActive")}
+              disabled={academicYear.hasActiveSubmissionCycle && academicYear.isActive}
+              className="size-4 rounded border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-describedby={academicYear.hasActiveSubmissionCycle && academicYear.isActive ? "edit-isActive-blocked" : "edit-isActive-desc"}
+            />
+            <Label
+              id="edit-isActive-desc"
+              htmlFor="edit-isActive"
+              className={cn(
+                "text-sm text-muted-foreground",
+                academicYear.hasActiveSubmissionCycle && academicYear.isActive && "cursor-not-allowed"
+              )}
+            >
+              Active (exactly one year can be active)
+            </Label>
+          </div>
+          {academicYear.hasActiveSubmissionCycle && academicYear.isActive && (
+            <p id="edit-isActive-blocked" className="text-sm text-muted-foreground">
+              Cannot deactivate while a submission cycle for this year is active. Deactivate or close the cycle in Submission Cycles (QA Manager) first.
+            </p>
+          )}
         </div>
       </div>
       {(errors.root ?? error) && (

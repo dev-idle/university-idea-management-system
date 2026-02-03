@@ -8,6 +8,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { AuthModule, HealthModule } from './modules';
 import { DepartmentsModule } from './modules/departments';
 import { AcademicYearsModule } from './modules/academic-years';
+import { CategoriesModule } from './modules/categories';
+import { SubmissionCyclesModule } from './modules/submission-cycles';
 import { MeModule } from './modules/me';
 import { UsersModule } from './modules/users';
 import { validateEnv } from './config';
@@ -62,6 +64,8 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
     MeModule,
     DepartmentsModule,
     AcademicYearsModule,
+    CategoriesModule,
+    SubmissionCyclesModule,
     UsersModule,
   ],
   providers: [

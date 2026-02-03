@@ -9,6 +9,16 @@ import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { USERS_TABLE_COLUMN_COUNT } from "./users/constants";
 import {
+  TABLE_HEAD_CELL_CLASS,
+  TABLE_HEAD_CELL_ACTIONS_CLASS,
+  TABLE_ACTIONS_MIN_W_2,
+  TABLE_ACTIONS_CELL_CLASS,
+  TABLE_EMPTY_CELL_CLASS,
+  DIALOG_CONTENT_CLASS_SM,
+  DIALOG_HEADER_CLASS,
+  DIALOG_TITLE_CLASS,
+} from "./constants";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -76,23 +86,23 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
         <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30">
-              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+              <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                 Email
               </th>
-              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+              <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                 Full name
               </th>
-              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+              <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                 Role
               </th>
-              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+              <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                 Department
               </th>
-              <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+              <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                 Status
               </th>
               <Can permission="USERS">
-                <th scope="col" className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6">
+                <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
                   Actions
                 </th>
               </Can>
@@ -101,10 +111,7 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td
-                  colSpan={USERS_TABLE_COLUMN_COUNT}
-                  className="px-4 py-14 text-center text-sm text-muted-foreground sm:px-6"
-                >
+                <td colSpan={USERS_TABLE_COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
                   No users found.
                 </td>
               </tr>
@@ -148,12 +155,12 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
                           : "border-border bg-muted/50 text-muted-foreground"
                       )}
                     >
-                      {user.isActive ? "Active" : "Inactive"}
+                      {user.isActive ? "ACTIVE" : "INACTIVE"}
                     </span>
                   </td>
                   <Can permission="USERS">
-                    <td className="px-4 py-3 sm:px-6">
-                      <div className="flex items-center gap-1">
+                    <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
+                      <div className="inline-flex items-center justify-end gap-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -245,9 +252,9 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
       </AlertDialog>
 
       <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
-        <DialogContent className="rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit user</DialogTitle>
+        <DialogContent className={DIALOG_CONTENT_CLASS_SM}>
+          <DialogHeader className={DIALOG_HEADER_CLASS}>
+            <DialogTitle className={DIALOG_TITLE_CLASS}>Edit user</DialogTitle>
           </DialogHeader>
           {editUser && (
             <EditUserForm

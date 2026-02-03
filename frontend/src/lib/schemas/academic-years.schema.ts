@@ -38,10 +38,19 @@ export const academicYearSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date().nullable(),
   isActive: z.boolean(),
+  hasActiveSubmissionCycle: z.boolean().optional(),
 });
 
 export type AcademicYear = z.infer<typeof academicYearSchema>;
 
+/** List response (array only, legacy). */
 export const academicYearsListResponseSchema = z.array(academicYearSchema);
 
+/** List response with global flag (when any submission cycle is ACTIVE, all academic year actions are disabled). */
+export const academicYearsListWithContextSchema = z.object({
+  list: z.array(academicYearSchema),
+  hasActiveSubmissionCycleInSystem: z.boolean(),
+});
+
 export type AcademicYearsListResponse = z.infer<typeof academicYearsListResponseSchema>;
+export type AcademicYearsListWithContext = z.infer<typeof academicYearsListWithContextSchema>;

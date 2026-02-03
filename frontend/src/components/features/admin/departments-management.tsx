@@ -35,7 +35,21 @@ import {
 } from "@/hooks/use-departments";
 import type { Department } from "@/lib/schemas/departments.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { MANAGEMENT_CARD_HEADER_CLASS } from "./constants";
+import {
+  MANAGEMENT_CARD_HEADER_CLASS,
+  MANAGEMENT_CARD_CLASS,
+  DIALOG_CONTENT_CLASS,
+  DIALOG_HEADER_CLASS,
+  DIALOG_TITLE_CLASS,
+  DIALOG_DESCRIPTION_CLASS,
+  TABLE_HEAD_CELL_CLASS,
+  TABLE_HEAD_CELL_ACTIONS_CLASS,
+  TABLE_ACTIONS_MIN_W_2,
+  TABLE_ACTIONS_CELL_CLASS,
+  PAGINATION_FOOTER_CLASS,
+  TABLE_LOADING_CELL_CLASS,
+  TABLE_EMPTY_CELL_CLASS,
+} from "./constants";
 import { CreateDepartmentForm } from "./create-department-form";
 import { UpdateDepartmentForm } from "./update-department-form";
 import {
@@ -104,12 +118,12 @@ export function DepartmentsManagement() {
     <div className="space-y-6">
       <Can permission="DEPARTMENTS">
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg">
-            <DialogHeader className="space-y-1.5 text-left border-b border-border/80 pb-4">
-              <DialogTitle className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+          <DialogContent className={DIALOG_CONTENT_CLASS}>
+            <DialogHeader className={DIALOG_HEADER_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_CLASS}>
                 Add department
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
                 Create a new department for institutional organisation.
               </DialogDescription>
             </DialogHeader>
@@ -130,12 +144,12 @@ export function DepartmentsManagement() {
           open={!!editingDepartment}
           onOpenChange={(open) => !open && setEditingDepartment(null)}
         >
-          <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg">
-            <DialogHeader className="space-y-1.5 text-left border-b border-border/80 pb-4">
-              <DialogTitle className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+          <DialogContent className={DIALOG_CONTENT_CLASS}>
+            <DialogHeader className={DIALOG_HEADER_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_CLASS}>
                 Edit department
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
                 Update the department name.
               </DialogDescription>
             </DialogHeader>
@@ -185,7 +199,7 @@ export function DepartmentsManagement() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className="overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm">
+      <Card className={MANAGEMENT_CARD_CLASS}>
         <Can permission="DEPARTMENTS">
           <div className={MANAGEMENT_CARD_HEADER_CLASS}>
             <p className="text-sm text-muted-foreground">
@@ -206,7 +220,7 @@ export function DepartmentsManagement() {
         </Can>
         <CardContent className="gap-0 p-0">
           {status === "pending" && !departments ? (
-            <div className="flex items-center justify-center px-6 py-20 text-sm text-muted-foreground">
+            <div className={TABLE_LOADING_CELL_CLASS}>
               Loading departments…
             </div>
           ) : (
@@ -216,17 +230,11 @@ export function DepartmentsManagement() {
                   <table className="w-full border-collapse text-left text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/30">
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                        >
+                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Name
                         </th>
                         <Can permission="DEPARTMENTS">
-                          <th
-                            scope="col"
-                            className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                          >
+                          <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
                             Actions
                           </th>
                         </Can>
@@ -235,10 +243,7 @@ export function DepartmentsManagement() {
                     <tbody>
                       {!departments || departments.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={COLUMN_COUNT}
-                            className="px-4 py-14 text-center text-sm text-muted-foreground sm:px-6"
-                          >
+                          <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
                             No departments yet.
                           </td>
                         </tr>
@@ -252,8 +257,8 @@ export function DepartmentsManagement() {
                               {d.name}
                             </td>
                             <Can permission="DEPARTMENTS">
-                              <td className="px-4 py-3 sm:px-6">
-                                <div className="flex items-center gap-1">
+                              <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
+                                <div className="inline-flex items-center justify-end gap-2">
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -267,7 +272,7 @@ export function DepartmentsManagement() {
                                         <Pencil className="size-4" aria-hidden />
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent side="top">Edit name</TooltipContent>
+                                    <TooltipContent side="top">Edit</TooltipContent>
                                   </Tooltip>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
@@ -315,7 +320,7 @@ export function DepartmentsManagement() {
                 </div>
               </TooltipProvider>
               {total > 0 && totalPages > 0 && (
-                <div className="flex flex-col gap-3 border-t border-border/80 bg-muted/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
+                <div className={PAGINATION_FOOTER_CLASS}>
                   <Pagination aria-label="Departments pagination">
                     <PaginationContent>
                       <PaginationItem>

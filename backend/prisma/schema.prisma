@@ -52,16 +52,69 @@ model Department {
 }
 
 model AcademicYear {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  startDate DateTime
-  endDate   DateTime?
-  isActive  Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  startDate            DateTime
+  endDate              DateTime?
+  isActive             Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  ideaSubmissionCycles IdeaSubmissionCycle[]
 
   @@index([startDate])
   @@index([isActive])
+}
+
+model Category {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String          @unique
+  ideas           Idea[]
+  cycleCategories CycleCategory[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([name])
+}
+
+model Idea {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title      String    @db.VarChar(500)
+  categoryId String?   @db.Uuid
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([categoryId])
+}
+
+model IdeaSubmissionCycle {
+  id                     String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  academicYearId         String          @db.Uuid
+  academicYear           AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  name                   String?         @db.VarChar(255)
+  ideaSubmissionClosesAt DateTime
+  interactionClosesAt    DateTime
+  status                 String          @db.VarChar(20)
+  cycleCategories        CycleCategory[]
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  @@index([academicYearId])
+  @@index([status])
+}
+
+model CycleCategory {
+  id         String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cycleId    String              @db.Uuid
+  categoryId String              @db.Uuid
+  cycle      IdeaSubmissionCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  category   Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@unique([cycleId, categoryId])
+  @@index([cycleId])
+  @@index([categoryId])
 }
 
 model RefreshToken {

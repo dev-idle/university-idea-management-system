@@ -24,6 +24,16 @@ export const queryKeys = {
     list: () => [...queryKeys.academicYears.all, "list"] as const,
     detail: (id: string) => [...queryKeys.academicYears.all, "detail", id] as const,
   },
+  categories: {
+    all: ["api", "categories"] as const,
+    list: () => [...queryKeys.categories.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.categories.all, "detail", id] as const,
+  },
+  submissionCycles: {
+    all: ["api", "submission-cycles"] as const,
+    list: () => [...queryKeys.submissionCycles.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.submissionCycles.all, "detail", id] as const,
+  },
   profile: {
     all: ["api", "me"] as const,
     me: () => [...queryKeys.profile.all, "me"] as const,

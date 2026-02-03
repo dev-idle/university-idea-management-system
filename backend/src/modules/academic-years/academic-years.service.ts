@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import type { CreateAcademicYearBody } from './dto/create-academic-year.dto';
 import type { UpdateAcademicYearBody } from './dto/update-academic-year.dto';
@@ -61,6 +65,20 @@ export class AcademicYearsService {
 
     try {
       if (body.isActive === true) {
+        // Before deactivating other years, ensure none has an active submission cycle
+        const otherYearsWithActiveCycle =
+          await this.prisma.ideaSubmissionCycle.findFirst({
+            where: {
+              status: 'ACTIVE',
+              academicYearId: { not: id },
+            },
+            select: { academicYearId: true },
+          });
+        if (otherYearsWithActiveCycle) {
+          throw new BadRequestException(
+            'Cannot change active year: another academic year has an active submission cycle. Deactivate or close that cycle in Submission Cycles (QA Manager) first.',
+          );
+        }
         const [, updated] = await this.prisma.$transaction([
           this.prisma.academicYear.updateMany({
             where: { id: { not: id } },
@@ -78,6 +96,19 @@ export class AcademicYearsService {
           }),
         ]);
         return updated;
+      }
+
+      if (body.isActive === false) {
+        const activeCycleForYear =
+          await this.prisma.ideaSubmissionCycle.findFirst({
+            where: { academicYearId: id, status: 'ACTIVE' },
+            select: { id: true },
+          });
+        if (activeCycleForYear) {
+          throw new BadRequestException(
+            'Cannot deactivate this academic year while it has an active submission cycle. Deactivate or close the cycle in Submission Cycles (QA Manager) first.',
+          );
+        }
       }
 
       const academicYear = await this.prisma.academicYear.update({
@@ -99,25 +130,43 @@ export class AcademicYearsService {
     }
   }
 
-  async findAll(): Promise<
-    Array<{
+  async findAll(): Promise<{
+    list: Array<{
       id: string;
       name: string;
       startDate: Date;
       endDate: Date | null;
       isActive: boolean;
-    }>
-  > {
-    const list = await this.prisma.academicYear.findMany({
-      select: {
-        id: true,
-        name: true,
-        startDate: true,
-        endDate: true,
-        isActive: true,
-      },
-      orderBy: { startDate: 'desc' },
-    });
-    return list;
+      hasActiveSubmissionCycle: boolean;
+    }>;
+    hasActiveSubmissionCycleInSystem: boolean;
+  }> {
+    const [list, activeCycleYears] = await Promise.all([
+      this.prisma.academicYear.findMany({
+        select: {
+          id: true,
+          name: true,
+          startDate: true,
+          endDate: true,
+          isActive: true,
+        },
+        orderBy: { startDate: 'desc' },
+      }),
+      this.prisma.ideaSubmissionCycle.findMany({
+        where: { status: 'ACTIVE' },
+        select: { academicYearId: true },
+      }),
+    ]);
+    const yearIdsWithActiveCycle = new Set(
+      activeCycleYears.map((c) => c.academicYearId),
+    );
+    const listWithFlags = list.map((year) => ({
+      ...year,
+      hasActiveSubmissionCycle: yearIdsWithActiveCycle.has(year.id),
+    }));
+    return {
+      list: listWithFlags,
+      hasActiveSubmissionCycleInSystem: activeCycleYears.length > 0,
+    };
   }
 }

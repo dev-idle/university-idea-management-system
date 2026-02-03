@@ -35,7 +35,22 @@ import {
 import type { AcademicYear } from "@/lib/schemas/academic-years.schema";
 import { CreateAcademicYearForm } from "./create-academic-year-form";
 import { UpdateAcademicYearForm } from "./update-academic-year-form";
-import { MANAGEMENT_CARD_HEADER_CLASS } from "./constants";
+import {
+  MANAGEMENT_CARD_HEADER_CLASS,
+  MANAGEMENT_CARD_CLASS,
+  DIALOG_CONTENT_CLASS,
+  DIALOG_HEADER_CLASS,
+  DIALOG_TITLE_CLASS,
+  DIALOG_DESCRIPTION_CLASS,
+  TABLE_HEAD_CELL_CLASS,
+  TABLE_HEAD_CELL_ACTIONS_CLASS,
+  TABLE_ACTIONS_MIN_W_2,
+  TABLE_ACTIONS_CELL_CLASS,
+  PAGINATION_FOOTER_CLASS,
+  TABLE_LOADING_CELL_CLASS,
+  TABLE_EMPTY_CELL_CLASS,
+  ACTION_BUTTON_DISABLED_BLUR_CLASS,
+} from "./constants";
 import { cn } from "@/lib/utils";
 import { CalendarDays, Pencil, CircleCheck } from "lucide-react";
 
@@ -56,9 +71,15 @@ export function AcademicYearsManagement() {
   const [showCreate, setShowCreate] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
 
-  const { data: years, status, error, isFetching } = useAcademicYearsQuery();
+  const { data: listData, status, error, isFetching } = useAcademicYearsQuery();
+  const years = useMemo(
+    () => listData?.list ?? [],
+    [listData?.list]
+  );
+  const hasActiveSubmissionCycleInSystem =
+    listData?.hasActiveSubmissionCycleInSystem ?? false;
 
-  const total = years?.length ?? 0;
+  const total = years.length;
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
   const pageNumbers = useMemo(() => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -97,12 +118,12 @@ export function AcademicYearsManagement() {
     <div className="space-y-6">
       <Can permission="ACADEMIC_YEARS">
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg">
-            <DialogHeader className="space-y-1.5 text-left border-b border-border/80 pb-4">
-              <DialogTitle className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+          <DialogContent className={DIALOG_CONTENT_CLASS}>
+            <DialogHeader className={DIALOG_HEADER_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_CLASS}>
                 Add academic year
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
                 Define a new academic year with name and date range. Exactly one year can be active at a time.
               </DialogDescription>
             </DialogHeader>
@@ -120,12 +141,12 @@ export function AcademicYearsManagement() {
 
       <Can permission="ACADEMIC_YEARS">
         <Dialog open={!!editingYear} onOpenChange={(open) => !open && setEditingYear(null)}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg">
-            <DialogHeader className="space-y-1.5 text-left border-b border-border/80 pb-4">
-              <DialogTitle className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+          <DialogContent className={DIALOG_CONTENT_CLASS}>
+            <DialogHeader className={DIALOG_HEADER_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_CLASS}>
                 Edit academic year
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
                 Update name, dates, or active status. Exactly one year can be active at a time.
               </DialogDescription>
             </DialogHeader>
@@ -144,7 +165,7 @@ export function AcademicYearsManagement() {
         </Dialog>
       </Can>
 
-      <Card className="overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm">
+      <Card className={MANAGEMENT_CARD_CLASS}>
         <Can permission="ACADEMIC_YEARS">
           <div className={MANAGEMENT_CARD_HEADER_CLASS}>
             <p className="text-sm text-muted-foreground">
@@ -165,7 +186,7 @@ export function AcademicYearsManagement() {
         </Can>
         <CardContent className="gap-0 p-0">
           {status === "pending" && !years ? (
-            <div className="flex items-center justify-center px-6 py-20 text-sm text-muted-foreground">
+            <div className={TABLE_LOADING_CELL_CLASS}>
               Loading academic years…
             </div>
           ) : (
@@ -175,35 +196,20 @@ export function AcademicYearsManagement() {
                   <table className="w-full border-collapse text-left text-sm">
                     <thead>
                       <tr className="border-b border-border bg-muted/30">
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                        >
+                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Name
                         </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                        >
+                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Start
                         </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                        >
+                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           End
                         </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                        >
+                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Status
                         </th>
                         <Can permission="ACADEMIC_YEARS">
-                          <th
-                            scope="col"
-                            className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:px-6"
-                          >
+                          <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
                             Actions
                           </th>
                         </Can>
@@ -212,10 +218,7 @@ export function AcademicYearsManagement() {
                     <tbody>
                       {!years || years.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={COLUMN_COUNT}
-                            className="px-4 py-14 text-center text-sm text-muted-foreground sm:px-6"
-                          >
+                          <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
                             No academic years yet.
                           </td>
                         </tr>
@@ -243,12 +246,13 @@ export function AcademicYearsManagement() {
                                     : "border-border bg-muted/50 text-muted-foreground"
                                 )}
                               >
-                                {y.isActive ? "Active" : "Inactive"}
+                                {y.isActive ? "ACTIVE" : "INACTIVE"}
                               </span>
                             </td>
                             <Can permission="ACADEMIC_YEARS">
-                              <td className="px-4 py-3 sm:px-6">
-                                <div className="flex items-center gap-1">
+                              <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
+                                <div className="inline-flex items-center justify-end gap-2">
+                                  {/* Edit: always available regardless of active submission cycle */}
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
@@ -256,31 +260,53 @@ export function AcademicYearsManagement() {
                                         variant="ghost"
                                         size="icon"
                                         className="size-8 shrink-0 text-primary hover:bg-primary/10 hover:text-primary"
+                                        disabled={updateMutation.isPending}
                                         onClick={() => setEditingYear(y)}
                                         aria-label="Edit academic year"
                                       >
                                         <Pencil className="size-4" aria-hidden />
                                       </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent side="top">Edit name, dates & status</TooltipContent>
+                                    <TooltipContent side="top">Edit</TooltipContent>
                                   </Tooltip>
-                                  {!y.isActive && (
+                                  {/* Activate: grayed out when any submission cycle is active; or when this year is active and has an active cycle */}
+                                  {!y.isActive ? (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className="size-8 shrink-0 text-success hover:bg-success/10 hover:text-success"
-                                          disabled={updateMutation.isPending}
-                                          onClick={() => setActive(y)}
-                                          aria-label="Activate academic year"
-                                        >
-                                          <CircleCheck className="size-4" aria-hidden />
-                                        </Button>
+                                        <span className="inline-flex shrink-0">
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className={cn(
+                                              "size-8 shrink-0",
+                                              hasActiveSubmissionCycleInSystem
+                                                ? ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                                : "text-success hover:bg-success/10 hover:text-success"
+                                            )}
+                                            disabled={
+                                              hasActiveSubmissionCycleInSystem ||
+                                              updateMutation.isPending
+                                            }
+                                            onClick={() =>
+                                              !hasActiveSubmissionCycleInSystem &&
+                                              setActive(y)
+                                            }
+                                            aria-label="Activate academic year"
+                                          >
+                                            <CircleCheck className="size-4" aria-hidden />
+                                          </Button>
+                                        </span>
                                       </TooltipTrigger>
-                                      <TooltipContent side="top">Activate</TooltipContent>
+                                      <TooltipContent side="top">
+                                        {hasActiveSubmissionCycleInSystem
+                                          ? "A submission cycle is active. Deactivate or close it in Submission Cycles (QA Manager) to change active year."
+                                          : "Activate"}
+                                      </TooltipContent>
                                     </Tooltip>
+                                  ) : (
+                                    /* Keep Activate hidden for any row with Status ACTIVE (only inactive rows show the Activate action) */
+                                    <span className="size-8 shrink-0" aria-hidden />
                                   )}
                                 </div>
                               </td>
@@ -293,7 +319,7 @@ export function AcademicYearsManagement() {
                 </div>
               </TooltipProvider>
               {total > 0 && totalPages > 0 && (
-                <div className="flex flex-col gap-3 border-t border-border/80 bg-muted/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
+                <div className={PAGINATION_FOOTER_CLASS}>
                   <Pagination aria-label="Academic years pagination">
                     <PaginationContent>
                       <PaginationItem>

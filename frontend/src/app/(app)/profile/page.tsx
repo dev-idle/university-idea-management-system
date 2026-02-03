@@ -67,13 +67,8 @@ function ProfilePageSkeleton() {
 
 export default function ProfilePage() {
   return (
-    <div className="space-y-6">
-      <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-        Manage your account details and security. Update your information or change your password below.
-      </p>
-      <Suspense fallback={<ProfilePageSkeleton />}>
-        <ProfileContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<ProfilePageSkeleton />}>
+      <ProfileContent />
+    </Suspense>
   );
 }

@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAvatarInitial } from "@/lib/utils";
 
 const GENDER_NONE = "__none__";
 const GENDER_OPTIONS = [
@@ -51,15 +52,6 @@ const GENDER_OPTIONS = [
   { value: "Prefer not to say", label: "Prefer not to say" },
 ] as const;
 
-function getInitials(fullName: string | null, email: string): string {
-  const name = fullName?.trim();
-  if (name && name.length > 0) {
-    return name[0].toUpperCase();
-  }
-  const local = email.split("@")[0];
-  if (local && local.length > 0) return local[0].toUpperCase();
-  return email.length > 0 ? email[0].toUpperCase() : "?";
-}
 
 /** Profile loading skeleton: uses muted background per design system. */
 function ProfileSkeleton() {
@@ -281,7 +273,7 @@ export function ProfileContent() {
   const roleLabel =
     ROLE_LABELS[profile.role as keyof typeof ROLE_LABELS] ?? profile.role;
   const displayName = profile.fullName?.trim() || profile.email;
-  const initials = getInitials(profile.fullName, profile.email);
+  const initials = getAvatarInitial(profile.fullName, profile.email);
   const apiError = updateProfileMutation.error as Error | undefined;
 
   return (
@@ -320,15 +312,15 @@ export function ProfileContent() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
         <Card className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm">
-          <CardHeader className="border-border/80 border-b px-6 py-5">
+          <CardHeader className="border-border/80 border-b px-6 pt-5 pb-2">
             <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-center">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground [&>svg]:shrink-0">
                 <UserCircle className="size-4" strokeWidth={1.25} aria-hidden />
               </div>
-              <CardTitle className="font-serif text-base font-semibold tracking-tight text-foreground">
+              <CardTitle className="font-serif text-lg font-semibold tracking-tight text-foreground">
                 Personal information
               </CardTitle>
-              <p className="col-start-1 col-span-2 row-start-2 text-muted-foreground text-sm leading-relaxed">
+              <p className="col-start-1 col-span-2 row-start-2 text-xs leading-relaxed text-muted-foreground/80">
                 Update your name, contact details, and other information.
               </p>
             </div>

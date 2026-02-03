@@ -9,7 +9,9 @@ import {
   Users,
   Building2,
   CalendarDays,
+  CalendarRange,
   ClipboardList,
+  Tags,
   Lightbulb,
   ChevronDown,
   LogOut,
@@ -19,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfileQuery } from "@/hooks/use-profile";
 import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole } from "@/config/constants";
 
 /** Page title for main header (pathname → label). */
@@ -28,6 +31,8 @@ const PATH_TO_TITLE: Record<string, string> = {
   [ROUTES.ADMIN_DEPARTMENTS]: "Departments Management",
   [ROUTES.ADMIN_ACADEMIC_YEARS]: "Academic Years Management",
   [ROUTES.QA_MANAGER_DASHBOARD]: "QA Manager",
+  [ROUTES.QA_MANAGER_CATEGORIES]: "Categories Management",
+  [ROUTES.QA_MANAGER_SUBMISSION_CYCLES]: "Submission Cycles Management",
   [ROUTES.QA_COORDINATOR_DASHBOARD]: "QA Coordinator",
   [ROUTES.STAFF]: "Staff",
   [ROUTES.IDEAS]: "Ideas",
@@ -52,12 +57,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-function getInitial(email: string): string {
-  const local = email.split("@")[0];
-  if (local?.length > 0) return local[0].toUpperCase();
-  return email.length > 0 ? email[0].toUpperCase() : "?";
-}
+import { getAvatarInitial } from "@/lib/utils";
 
 function PageTitle({
   pathname,
@@ -209,6 +209,26 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
         collapsed={collapsed}
       />
     );
+    items.push(
+      <NavLink
+        key={ROUTES.QA_MANAGER_CATEGORIES}
+        href={ROUTES.QA_MANAGER_CATEGORIES}
+        label="Categories"
+        icon={Tags}
+        isActive={pathname === ROUTES.QA_MANAGER_CATEGORIES}
+        collapsed={collapsed}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.QA_MANAGER_SUBMISSION_CYCLES}
+        href={ROUTES.QA_MANAGER_SUBMISSION_CYCLES}
+        label="Submission Cycles"
+        icon={CalendarRange}
+        isActive={pathname === ROUTES.QA_MANAGER_SUBMISSION_CYCLES}
+        collapsed={collapsed}
+      />
+    );
   }
   if (hasRole(user.roles, "QA_COORDINATOR")) {
     items.push(
@@ -260,7 +280,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { user, isAuthenticated, logout } = useAuth();
+  const { data: profile } = useProfileQuery();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const displayName = profile?.fullName?.trim() || user?.email || "";
+  const avatarInitial = getAvatarInitial(profile?.fullName ?? null, user?.email ?? "");
 
   useEffect(() => {
     const stored = localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY);
@@ -364,14 +388,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                   >
                     <Avatar className="size-7 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/40">
                       <AvatarFallback className="bg-muted/70 text-muted-foreground text-xs font-medium">
-                        {getInitial(user.email)}
+                        {avatarInitial}
                       </AvatarFallback>
                     </Avatar>
                     <span
                       className="max-w-[120px] truncate text-left text-sm sm:max-w-[180px]"
-                      title={user.email}
+                      title={displayName}
                     >
-                      {user.email}
+                      {displayName}
                     </span>
                     <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
                   </Button>
@@ -381,11 +405,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <div className="flex items-center gap-3">
                       <Avatar className="size-9 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/50">
                         <AvatarFallback className="bg-muted/70 text-muted-foreground text-sm font-medium">
-                          {getInitial(user.email)}
+                          {avatarInitial}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                        <span className="truncate text-sm font-semibold tracking-tight text-foreground">{user.email}</span>
+                        <span className="truncate text-sm font-semibold tracking-tight text-foreground">{displayName}</span>
                         <span className="text-xs text-muted-foreground">
                           <PrimaryRoleLabel roles={user.roles} />
                         </span>

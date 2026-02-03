@@ -17,7 +17,16 @@ import {
 } from "@/components/ui/pagination";
 import { useUsersListQuery, useCreateUserMutation } from "@/hooks/use-users";
 import { USERS_PAGE_SIZE } from "./users/constants";
-import { MANAGEMENT_CARD_HEADER_CLASS } from "./constants";
+import {
+  MANAGEMENT_CARD_HEADER_CLASS,
+  MANAGEMENT_CARD_CLASS,
+  DIALOG_CONTENT_CLASS,
+  DIALOG_HEADER_CLASS,
+  DIALOG_TITLE_CLASS,
+  DIALOG_DESCRIPTION_CLASS,
+  PAGINATION_FOOTER_CLASS,
+  TABLE_LOADING_CELL_CLASS,
+} from "./constants";
 import { UsersTable } from "./users-table";
 import { CreateUserForm } from "./create-user-form";
 import {
@@ -81,12 +90,12 @@ export function AdminUsersManagement() {
     <div className="space-y-6">
       <Can permission="USERS">
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg">
-            <DialogHeader className="space-y-1.5 text-left border-b border-border/80 pb-4">
-              <DialogTitle className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+          <DialogContent className={DIALOG_CONTENT_CLASS}>
+            <DialogHeader className={DIALOG_HEADER_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_CLASS}>
                 Add user
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
                 Create an institutional account. All fields except full name are required.
               </DialogDescription>
             </DialogHeader>
@@ -102,7 +111,7 @@ export function AdminUsersManagement() {
         </Dialog>
       </Can>
 
-      <Card className="overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm">
+      <Card className={MANAGEMENT_CARD_CLASS}>
         <Can permission="USERS">
           <div className={MANAGEMENT_CARD_HEADER_CLASS}>
             <p className="text-sm text-muted-foreground">
@@ -152,7 +161,7 @@ export function AdminUsersManagement() {
         </Can>
         <CardContent className="gap-0 p-0">
           {status === "pending" && !data ? (
-            <div className="flex items-center justify-center px-6 py-20 text-sm text-muted-foreground">
+            <div className={TABLE_LOADING_CELL_CLASS}>
               Loading accounts…
             </div>
           ) : (
@@ -162,7 +171,7 @@ export function AdminUsersManagement() {
                 isRefetching={isFetching}
               />
               {totalPages > 0 && (
-                <div className="flex flex-col gap-3 border-t border-border/80 bg-muted/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
+                <div className={PAGINATION_FOOTER_CLASS}>
                   <Pagination aria-label="User list pagination">
                     <PaginationContent>
                       <PaginationItem>

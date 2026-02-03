@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { CreateDepartmentBody } from "@/lib/schemas/departments.schema";
 import { createDepartmentBodySchema } from "@/lib/schemas/departments.schema";
 import { getErrorMessage } from "@/lib/errors";
+import { FORM_LABEL_CLASS } from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -48,16 +49,13 @@ export function CreateDepartmentForm({
     }
   }
 
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
-
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className={
         variant === "dialog"
-          ? "space-y-6"
-          : "space-y-6 rounded-xl border border-border/90 bg-card px-6 py-6 shadow-sm"
+          ? "flex flex-col gap-6"
+          : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card px-6 py-6 shadow-sm"
       }
     >
       {variant === "default" && (
@@ -71,7 +69,7 @@ export function CreateDepartmentForm({
         </div>
       )}
       <div className="space-y-2">
-        <Label htmlFor="name" className={labelClass}>
+        <Label htmlFor="name" className={FORM_LABEL_CLASS}>
           Name
         </Label>
         <Input

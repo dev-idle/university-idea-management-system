@@ -42,7 +42,7 @@ export function hasRole(roles: string[] | undefined, role: Role): boolean {
 /** Human-readable role labels for header/sidebar (UX only). */
 export const ROLE_LABELS: Readonly<Record<Role, string>> = {
   ADMIN: "Admin",
-  QA_MANAGER: "University QA Manager",
+  QA_MANAGER: "QA Manager",
   QA_COORDINATOR: "QA Coordinator",
   STAFF: "Staff",
 };

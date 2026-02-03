@@ -73,8 +73,9 @@ function AdminModuleLink({
 function AdminSummary() {
   const { data: usersData } = useUsersListQuery({ page: 1, limit: 1 });
   const { data: departments } = useDepartmentsQuery();
-  const { data: academicYears } = useAcademicYearsQuery();
-  const activeYear = academicYears?.find((y) => y.isActive);
+  const { data: academicYearsData } = useAcademicYearsQuery();
+  const academicYears = academicYearsData?.list ?? [];
+  const activeYear = academicYears.find((y) => y.isActive);
 
   const totalUsers = usersData?.total ?? null;
   const departmentCount = departments?.length ?? null;

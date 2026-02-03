@@ -73,15 +73,15 @@ export function ChangePasswordForm() {
 
   return (
     <Card className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm">
-      <CardHeader className="border-border/80 border-b px-6 py-5">
+      <CardHeader className="border-border/80 border-b px-6 pt-5 pb-2">
         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-center">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground [&>svg]:shrink-0">
             <KeyRound className="size-4" strokeWidth={1.25} aria-hidden />
           </div>
-          <CardTitle className="font-serif text-base font-semibold tracking-tight text-foreground">
+          <CardTitle className="font-serif text-lg font-semibold tracking-tight text-foreground">
             Change password
           </CardTitle>
-          <p className="col-start-1 col-span-2 row-start-2 text-muted-foreground text-sm leading-relaxed">
+          <p className="col-start-1 col-span-2 row-start-2 text-xs leading-relaxed text-muted-foreground/80">
             Signs you out on other devices.
           </p>
         </div>
