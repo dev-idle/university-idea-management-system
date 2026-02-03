@@ -53,16 +53,16 @@ export async function loginAction(
     });
     const body = await res.json();
     if (!res.ok) {
-      return { ok: false, error: (body as { message?: string }).message ?? "Login failed" };
+      return { ok: false, error: "Invalid credentials" };
     }
     const data = loginResponseSchema.safeParse(body);
     if (!data.success) {
-      return { ok: false, error: "Invalid response from server" };
+      return { ok: false, error: "Invalid credentials" };
     }
     await setCookieFromBackendResponse(res);
     return { ok: true, data: data.data };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : "Network error" };
+  } catch {
+    return { ok: false, error: "Invalid credentials" };
   }
 }
 

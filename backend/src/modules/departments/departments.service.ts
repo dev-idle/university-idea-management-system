@@ -2,6 +2,7 @@ import {
   Injectable,
   ConflictException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import type { CreateDepartmentBody } from './dto/create-department.dto';
@@ -55,11 +56,38 @@ export class DepartmentsService {
     }
   }
 
-  async findAll(): Promise<Array<{ id: string; name: string }>> {
+  async findAll(): Promise<
+    Array<{ id: string; name: string; _count: { users: number } }>
+  > {
     const list = await this.prisma.department.findMany({
-      select: { id: true, name: true },
+      select: {
+        id: true,
+        name: true,
+        _count: { select: { users: true } },
+      },
       orderBy: { name: 'asc' },
     });
     return list;
+  }
+
+  async remove(id: string): Promise<void> {
+    const userCount = await this.prisma.user.count({
+      where: { departmentId: id },
+    });
+    if (userCount > 0) {
+      throw new BadRequestException(
+        'Cannot delete department that has users assigned. Reassign or remove users first.',
+      );
+    }
+    try {
+      await this.prisma.department.delete({
+        where: { id },
+      });
+    } catch (e) {
+      if (isPrismaNotFound(e)) {
+        throw new NotFoundException('Department not found');
+      }
+      throw e;
+    }
   }
 }

@@ -68,3 +68,19 @@ export function useUpdateDepartmentMutation() {
     },
   });
 }
+
+/** Delete department. Fails if any users are assigned. Backend enforces DEPARTMENTS permission. */
+export function useDeleteDepartmentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await fetchWithAuth<void>(`departments/${id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
+    },
+  });
+}

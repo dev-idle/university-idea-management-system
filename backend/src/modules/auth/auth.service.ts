@@ -61,6 +61,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const roleNames = user.role ? [user.role.name] : [];
+    if (roleNames.length === 0) {
+      throw new UnauthorizedException('User has no role assigned');
+    }
     const jti = randomUUID();
     const refreshExpiresAt = new Date(Date.now() + this.cookieMaxAgeMs);
     await this.prisma.refreshToken.create({
@@ -101,7 +104,7 @@ export class AuthService {
     };
   }
 
-  /** Refresh: validate refresh token from cookie, issue new access (and optionally rotate refresh). */
+  /** Refresh: validate refresh token from cookie, issue new access and rotate refresh. */
   async refresh(refreshToken: string): Promise<{
     accessToken: string;
     user: AuthUser;
@@ -113,7 +116,14 @@ export class AuthService {
       where: { tokenId: payload.jti },
       include: { user: { include: { role: { select: { name: true } } } } },
     });
-    if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
+    if (!tokenRecord) {
+      await this.prisma.refreshToken.deleteMany({
+        where: { userId: payload.sub },
+      });
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+    if (tokenRecord.expiresAt < new Date()) {
+      await this.prisma.refreshToken.delete({ where: { tokenId: payload.jti } }).catch(() => {});
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
     const user = tokenRecord.user;
@@ -121,6 +131,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
     const roleNames = user.role ? [user.role.name] : [];
+    if (roleNames.length === 0) {
+      throw new UnauthorizedException('User has no role assigned');
+    }
     const accessPayload: AccessTokenPayload = {
       sub: user.id,
       email: user.email,

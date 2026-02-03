@@ -21,12 +21,17 @@ model Role {
 model User {
   id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email         String         @unique
+  fullName      String?        @db.VarChar(255)
+  phone         String?        @unique @db.VarChar(30)
+  address       String?        @db.Text
+  gender        String?        @db.VarChar(50)
+  dateOfBirth   DateTime?      @db.Date
   passwordHash  String
   isActive      Boolean        @default(true)
   roleId        String         @db.Uuid
   role          Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  departmentId  String?       @db.Uuid
-  department    Department?   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  departmentId  String?        @db.Uuid
+  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

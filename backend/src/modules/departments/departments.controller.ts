@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -48,5 +49,13 @@ export class DepartmentsController {
   @Get()
   async findAll() {
     return this.departmentsService.findAll();
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @Param(new ZodValidationPipe(departmentIdParamSchema)) params: { id: string },
+  ) {
+    await this.departmentsService.remove(params.id);
   }
 }

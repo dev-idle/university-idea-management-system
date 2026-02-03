@@ -6,10 +6,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
 import { PrismaService } from '../prisma/prisma.service';
 import { hashPassword } from '../../common/crypto/password.util';
-import type { PrismaClient } from '../../generated/prisma/client';
+import type { PrismaClient } from '@generated/prisma';
 
 const FIXED_ROLES = ['ADMIN', 'QA_MANAGER', 'QA_COORDINATOR', 'STAFF'] as const;
-const DEFAULT_ADMIN_EMAIL = 'admin@example.com';
+const DEFAULT_ADMIN_EMAIL = 'admin@gre.ac.uk';
 const DEFAULT_ADMIN_PASSWORD = 'ChangeMeInProduction';
 const DEFAULT_DEPARTMENT_NAME = 'IT Services / System Administration Department';
 
@@ -95,7 +95,7 @@ export async function runSeed(): Promise<void> {
     console.log('Seed: default department:', DEFAULT_DEPARTMENT_NAME);
     await seedAdminUser(prisma, roleIds, departmentId);
     const email =
-      process.env.ADMIN_SEED_EMAIL?.trim() || 'admin@example.com';
+      process.env.ADMIN_SEED_EMAIL?.trim() || DEFAULT_ADMIN_EMAIL;
     console.log('Seed: admin user upserted:', email);
   } finally {
     await ctx.close();

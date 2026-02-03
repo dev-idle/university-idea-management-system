@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Crimson_Pro, Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
+import { SessionRestore } from "@/components/auth/session-restore";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,13 +14,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const crimsonPro = Crimson_Pro({
+  weight: ["500", "600"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-crimson-pro",
+});
+
 export const metadata: Metadata = {
-  title: { default: "University Idea Management", template: "%s | UIMS" },
-  description: "University Idea Management System — submit, review, and manage ideas.",
+  title: { default: "Greenwich University — Idea Management", template: "%s | Greenwich University" },
+  description: "Greenwich University — Internal Idea Collection System. Submit, review, and manage ideas.",
 };
 
+/** Theme colors aligned with design-system primary (navy / deep blue). */
 export const viewport: Viewport = {
-  themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#0a0a0a" }],
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#1e2a4a" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1729" },
+  ],
 };
 
 export default function RootLayout({
@@ -29,8 +41,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>{children}</Providers>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${crimsonPro.variable}`}>
+        <Providers>
+        <SessionRestore>{children}</SessionRestore>
+      </Providers>
       </body>
     </html>
   );

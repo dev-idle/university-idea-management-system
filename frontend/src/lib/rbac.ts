@@ -38,3 +38,15 @@ export function hasPermission(roles: string[] | undefined, permission: Permissio
 export function hasRole(roles: string[] | undefined, role: Role): boolean {
   return roles?.includes(role) ?? false;
 }
+
+/** Human-readable role labels for header/sidebar (UX only). */
+export const ROLE_LABELS: Readonly<Record<Role, string>> = {
+  ADMIN: "Admin",
+  QA_MANAGER: "University QA Manager",
+  QA_COORDINATOR: "QA Coordinator",
+  STAFF: "Staff",
+};
+
+export function getRoleLabel(role: Role): string {
+  return ROLE_LABELS[role];
+}

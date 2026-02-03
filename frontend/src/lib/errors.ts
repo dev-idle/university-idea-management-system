@@ -1,0 +1,66 @@
+/**
+ * Normalized error handling: extract user-facing messages from API/Error.
+ * Use everywhere we display errors (error boundaries, forms, toasts).
+ */
+
+const API_PREFIX = "API ";
+
+/**
+ * Tries to parse NestJS-style error body: { message: string } or { message: string[] }.
+ * Returns the first message or the string as-is if not an array.
+ */
+function parseApiMessage(jsonStr: string): string | null {
+  try {
+    const data = JSON.parse(jsonStr) as unknown;
+    if (data != null && typeof data === "object" && "message" in data) {
+      const msg = (data as { message: string | string[] }).message;
+      if (typeof msg === "string" && msg.trim()) return msg.trim();
+      if (Array.isArray(msg) && msg.length > 0 && typeof msg[0] === "string")
+        return msg[0].trim();
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return null;
+}
+
+/**
+ * Returns a user-facing error message from any thrown value.
+ * - For "API status: body" errors, parses JSON body and uses message field.
+ * - For Error instances, uses message (after stripping API prefix if present).
+ * - Otherwise uses fallback.
+ */
+export function getErrorMessage(
+  error: unknown,
+  fallback = "Something went wrong. Please try again."
+): string {
+  if (error == null) return fallback;
+
+  let raw = "";
+  if (error instanceof Error) {
+    raw = error.message;
+  } else if (typeof error === "string") {
+    raw = error;
+  } else {
+    return fallback;
+  }
+
+  const trimmed = raw.trim();
+  if (!trimmed) return fallback;
+
+  // API client throws "API 400: {...}" or "API 401: Unauthorized"
+  if (trimmed.startsWith(API_PREFIX)) {
+    const afterPrefix = trimmed.slice(API_PREFIX.length);
+    const colonIndex = afterPrefix.indexOf(":");
+    const body = colonIndex >= 0 ? afterPrefix.slice(colonIndex + 1).trim() : afterPrefix;
+    const parsed = parseApiMessage(body);
+    if (parsed) return parsed;
+    // If body looks like JSON but we didn't get message, avoid showing raw JSON
+    if (body.startsWith("{")) return fallback;
+    if (body.length > 0 && body.length < 200) return body;
+  }
+
+  // Don't expose long stack traces or internal messages
+  if (trimmed.length > 300) return fallback;
+  return trimmed;
+}

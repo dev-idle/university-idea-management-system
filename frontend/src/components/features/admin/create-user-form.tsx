@@ -1,15 +1,29 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { UserPlus } from "lucide-react";
 import type { CreateUserBody } from "@/lib/schemas/users.schema";
 import { createUserBodySchema } from "@/lib/schemas/users.schema";
-import { ROLES } from "@/lib/rbac";
+import { getErrorMessage } from "@/lib/errors";
+import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CreateUserFormProps {
   onSuccess: () => void;
@@ -17,6 +31,8 @@ interface CreateUserFormProps {
   isPending: boolean;
   mutateAsync: (body: CreateUserBody) => Promise<unknown>;
   error: Error | null;
+  /** When "dialog", renders form only (no Card); use inside a Dialog. */
+  variant?: "default" | "dialog";
 }
 
 export function CreateUserForm({
@@ -25,133 +41,273 @@ export function CreateUserForm({
   isPending,
   mutateAsync,
   error,
+  variant = "default",
 }: CreateUserFormProps) {
   const { data: departments, isError: departmentsError } = useDepartmentsQuery();
 
   const {
     register,
+    control,
     handleSubmit,
     setError,
+    watch,
     formState: { errors },
   } = useForm<CreateUserBody>({
     resolver: zodResolver(createUserBodySchema),
     defaultValues: {
       email: "",
+      fullName: "",
       password: "",
       role: "STAFF",
-      departmentId: undefined,
+      departmentId: "",
     },
   });
 
   async function onSubmit(data: CreateUserBody) {
     const payload: CreateUserBody = {
       ...data,
-      departmentId: data.departmentId === "" ? undefined : data.departmentId ?? undefined,
+      fullName: data.fullName?.trim() || undefined,
+      departmentId: data.departmentId,
     };
     try {
       await mutateAsync(payload);
       onSuccess();
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to create user";
-      setError("root", { message });
+      setError("root", {
+        message: getErrorMessage(e, "Failed to create user. Please try again."),
+      });
     }
   }
 
-  return (
+  const hasError = !!errors.root || !!error;
+
+  const labelClass =
+    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const triggerClass =
+    "!h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate";
+
+  const formContent = (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-lg border border-border bg-card p-6 space-y-4"
+      className="space-y-6"
+      aria-describedby={hasError ? "create-user-form-error" : undefined}
     >
-      <h2 className="text-lg font-semibold text-foreground">Add user</h2>
+      {variant === "default" && (
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Create an institutional account. All fields except full name are required.
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="fullName" className={labelClass}>
+            Full name{" "}
+            <span className="font-normal normal-case text-muted-foreground/80">
+              (optional)
+            </span>
+          </Label>
+          <Input
+            id="fullName"
+            type="text"
+            autoComplete="name"
+            placeholder="Jane Smith"
+            className="h-10 w-full text-sm rounded-lg"
+            aria-invalid={!!errors.fullName}
+            aria-describedby={errors.fullName ? "fullName-error" : undefined}
+            {...register("fullName")}
+          />
+          {errors.fullName && (
+            <p id="fullName-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.fullName.message}
+            </p>
+          )}
+        </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="email" className={labelClass}>
+            Email
+          </Label>
           <Input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="user@university.edu"
+            placeholder="user@gre.ac.uk"
+            className="h-10 w-full text-sm rounded-lg"
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? "email-error" : undefined}
             {...register("email")}
           />
           {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
+            <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.email.message}
+            </p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="password" className={labelClass}>
+            Password
+          </Label>
           <Input
             id="password"
             type="password"
             autoComplete="new-password"
             placeholder="••••••••"
+            className="h-10 w-full text-sm rounded-lg"
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "password-error" : undefined}
             {...register("password")}
           />
           {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
+            <p id="password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="role">Role</Label>
-          <select
-            id="role"
-            {...register("role")}
-            className={cn(
-              "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="role" className={labelClass}>
+            Role
+          </Label>
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                name={field.name}
+              >
+                <SelectTrigger
+                  id="role"
+                  className={triggerClass}
+                  aria-invalid={!!errors.role}
+                  aria-describedby={errors.role ? "role-error" : undefined}
+                >
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {ROLE_LABELS[r as Role]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-          >
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
+          />
           {errors.role && (
-            <p className="text-sm text-destructive">{errors.role.message}</p>
+            <p id="role-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.role.message}
+            </p>
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="departmentId">Department (optional)</Label>
-          <select
-            id="departmentId"
-            {...register("departmentId")}
-            className={cn(
-              "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            )}
-          >
-            <option value="">— None —</option>
-            {departments?.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-          {departmentsError && (
-            <p className="text-sm text-muted-foreground">
-              Departments unavailable (permission or error). You can leave this empty.
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="departmentId" className={labelClass}>
+            Department
+          </Label>
+          <Controller
+            name="departmentId"
+            control={control}
+            render={({ field }) => {
+              const selectedDepartment = departments?.find((d) => d.id === field.value);
+              return (
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                  name={field.name}
+                >
+                  <SelectTrigger
+                    id="departmentId"
+                    className={triggerClass}
+                    aria-invalid={!!errors.departmentId}
+                    aria-describedby={errors.departmentId ? "departmentId-error" : undefined}
+                    title={selectedDepartment?.name}
+                  >
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                <SelectContent>
+                  {departments?.map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      <span className="block truncate" title={d.name}>
+                        {d.name}
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              );
+            }}
+          />
+          {errors.departmentId && (
+            <p id="departmentId-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.departmentId.message}
+            </p>
+          )}
+          {departmentsError && !errors.departmentId && (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Departments unavailable. Please try again later.
+            </p>
+          )}
+          {watch("role") === "QA_COORDINATOR" && !errors.departmentId && (
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Each department can have only one QA Coordinator.
             </p>
           )}
         </div>
       </div>
 
-      {errors.root && (
-        <p className="text-sm text-destructive">{errors.root.message}</p>
-      )}
-      {error && (
-        <p className="text-sm text-destructive">{error.message}</p>
+      {(errors.root ?? error) && (
+        <p
+          id="create-user-form-error"
+          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          role="alert"
+          aria-live="polite"
+        >
+          {errors.root?.message ?? error?.message}
+        </p>
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={isPending}>
+      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="h-10 rounded-lg px-5 text-sm font-medium"
+        >
           {isPending ? "Creating…" : "Create user"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isPending}
+          className="h-10 rounded-lg px-5 text-sm font-medium"
+        >
           Cancel
         </Button>
       </div>
     </form>
+  );
+
+  if (variant === "dialog") {
+    return formContent;
+  }
+
+  return (
+    <Card className="overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm">
+      <CardHeader className="border-b border-border/80 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground">
+            <UserPlus className="size-4" strokeWidth={1.25} aria-hidden />
+          </div>
+          <CardTitle className="font-serif text-base font-semibold tracking-tight text-foreground">
+            Add user
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="px-6 pb-6 pt-5">
+        {formContent}
+      </CardContent>
+    </Card>
   );
 }

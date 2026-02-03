@@ -47,6 +47,17 @@ src/
 $ npm install
 ```
 
+### Database migrations (Neon / connection pooler)
+
+If you use **Neon** (or any connection pooler) and see **P1002** (advisory lock timeout) when running `npx prisma migrate deploy`, run migrations with a **direct** (non-pooled) connection:
+
+1. In Neon Console → **Connect** → choose **Direct connection** and copy the URL.
+2. Set `DIRECT_URL` in `.env` to that URL (or pass it only when running migrate).
+3. Run migrate: `npx prisma migrate deploy`  
+   Prisma config uses `DIRECT_URL` when set, otherwise `DATABASE_URL`. The app always uses `DATABASE_URL` (pooled) at runtime.
+
+Alternatively, derive the direct URL from your pooled URL by removing `-pooler` from the host (e.g. `ep-xxx-pooler.region.aws.neon.tech` → `ep-xxx.region.aws.neon.tech`).
+
 ## Compile and run the project
 
 ```bash
@@ -59,6 +70,13 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+## Security & compliance
+
+- **Token reuse detection**: On `/auth/refresh`, if the refresh token is not found (already rotated), the backend revokes the entire refresh-token family for that user and returns 401. This mitigates token theft: reuse of an old refresh token forces logout on all devices.
+- **User active status**: Both `/auth/login` and `/auth/refresh` check `user.isActive`. Deactivated users cannot log in or refresh; they must be reactivated by an admin.
+- **Access token lifespan**: Access tokens are short-lived (default 15 minutes, `JWT_ACCESS_EXPIRES`). Role/department changes made by an admin take effect after the user’s access token expires, minimizing JWT lag.
+- **Pagination**: List endpoints use offset pagination (`skip`/`take`). For tables expected to exceed ~100k records, consider cursor-based pagination (e.g. by `id` or `createdAt`) for O(1) performance when jumping to later pages.
 
 ## Run tests
 

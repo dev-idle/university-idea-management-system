@@ -7,6 +7,7 @@ import type {
   UpdateAcademicYearBody,
 } from "@/lib/schemas/academic-years.schema";
 import { updateAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
+import { getErrorMessage } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,8 @@ interface UpdateAcademicYearFormProps {
     body: UpdateAcademicYearBody;
   }) => Promise<unknown>;
   error: Error | null;
+  /** When "dialog", no card wrapper or title; use inside a Dialog. */
+  variant?: "default" | "dialog";
 }
 
 export function UpdateAcademicYearForm({
@@ -35,6 +38,7 @@ export function UpdateAcademicYearForm({
   isPending,
   mutateAsync,
   error,
+  variant = "default",
 }: UpdateAcademicYearFormProps) {
   const {
     register,
@@ -64,76 +68,130 @@ export function UpdateAcademicYearForm({
       });
       onSuccess();
     } catch (e) {
-      const message =
-        e instanceof Error ? e.message : "Failed to update academic year";
-      setError("root", { message });
+      setError("root", {
+        message: getErrorMessage(e, "Failed to update academic year. Please try again."),
+      });
     }
   }
+
+  const labelClass =
+    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 rounded border border-border bg-muted/30 p-4"
+      className={variant === "dialog" ? "flex flex-col gap-6" : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"}
     >
-      <h3 className="text-sm font-semibold text-foreground">Edit academic year</h3>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <Label htmlFor="edit-name">Name</Label>
+      {variant === "default" && (
+        <div>
+          <h3 className="font-serif text-base font-semibold tracking-tight text-foreground">
+            Edit academic year
+          </h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+            Update name, dates, or active status. Exactly one year can be active at a time.
+          </p>
+        </div>
+      )}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="edit-name" className={labelClass}>
+            Name
+          </Label>
           <Input
             id="edit-name"
             type="text"
             placeholder="e.g. 2024–2025"
+            className="h-10 w-full text-sm rounded-lg"
+            aria-invalid={!!errors.name}
+            aria-describedby={errors.name ? "edit-name-error" : undefined}
             {...register("name")}
           />
           {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
+            <p id="edit-name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.name.message}
+            </p>
           )}
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="edit-startDate">Start date</Label>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="edit-startDate" className={labelClass}>
+            Start date
+          </Label>
           <Input
             id="edit-startDate"
             type="date"
+            className="h-10 w-full text-sm rounded-lg"
+            aria-invalid={!!errors.startDate}
+            aria-describedby={errors.startDate ? "edit-startDate-error" : undefined}
             {...register("startDate")}
           />
           {errors.startDate && (
-            <p className="text-sm text-destructive">{errors.startDate.message}</p>
+            <p id="edit-startDate-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.startDate.message}
+            </p>
           )}
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="edit-endDate">End date (optional)</Label>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor="edit-endDate" className={labelClass}>
+            End date{" "}
+            <span className="font-normal normal-case text-muted-foreground/80">
+              (optional)
+            </span>
+          </Label>
           <Input
             id="edit-endDate"
             type="date"
+            className="h-10 w-full text-sm rounded-lg"
+            aria-invalid={!!errors.endDate}
+            aria-describedby={errors.endDate ? "edit-endDate-error" : undefined}
             {...register("endDate")}
           />
           {errors.endDate && (
-            <p className="text-sm text-destructive">{errors.endDate.message}</p>
+            <p id="edit-endDate-error" className="mt-1.5 text-sm text-destructive" role="alert">
+              {errors.endDate.message}
+            </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 sm:col-span-2">
           <input
             type="checkbox"
             id="edit-isActive"
             {...register("isActive")}
-            className="h-4 w-4 rounded border-input"
+            className="size-4 rounded border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            aria-describedby="edit-isActive-desc"
           />
-          <Label htmlFor="edit-isActive" className="cursor-pointer">
+          <Label
+            id="edit-isActive-desc"
+            htmlFor="edit-isActive"
+            className="cursor-pointer text-sm text-muted-foreground"
+          >
             Active (exactly one year can be active)
           </Label>
         </div>
       </div>
-      {errors.root && (
-        <p className="text-sm text-destructive">{errors.root.message}</p>
+      {(errors.root ?? error) && (
+        <p
+          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          role="alert"
+          aria-live="polite"
+        >
+          {errors.root?.message ?? error?.message}
+        </p>
       )}
-      {error && (
-        <p className="text-sm text-destructive">{error.message}</p>
-      )}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={isPending}>
+      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="h-10 rounded-lg px-5 text-sm font-medium"
+        >
           {isPending ? "Saving…" : "Save"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isPending}
+          className="h-10 rounded-lg px-5 text-sm font-medium"
+        >
           Cancel
         </Button>
       </div>

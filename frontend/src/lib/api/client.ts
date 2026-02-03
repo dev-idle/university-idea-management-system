@@ -58,9 +58,16 @@ export async function apiClient<T>(path: string, config: RequestConfig = {}): Pr
 }
 
 /**
+ * Promise singleton: only one refresh in flight; other 401s wait and retry with new token.
+ * Prevents multiple concurrent 401s from each calling /auth/refresh and causing token reuse
+ * (second request would send the old refresh token after the first rotated it → backend revokes family).
+ */
+let refreshPromise: Promise<{ accessToken: string; user: { id: string; email: string; roles: string[] } } | null> | null =
+  null;
+
+/**
  * Client-only: fetch with in-memory access token and silent refresh on 401.
- * Use in TanStack Query queryFn / mutationFn. Attaches Bearer token; on 401
- * calls refresh, updates store, retries once.
+ * On 401: one refresh runs; others wait for it then retry once. If refresh fails: clear auth, throw.
  */
 export async function fetchWithAuth<T>(path: string, init?: RequestInit): Promise<T> {
   if (typeof window === "undefined") {
@@ -92,21 +99,35 @@ export async function fetchWithAuth<T>(path: string, init?: RequestInit): Promis
   let res = await doFetch();
 
   if (res.status === 401) {
-    const result = await refreshAction();
-    if (result.ok) {
-      store.setAuth(result.data.accessToken, result.data.user);
-      token = result.data.accessToken;
+    if (!refreshPromise) {
+      refreshPromise = (async () => {
+        const result = await refreshAction();
+        if (result.ok) {
+          store.setAuth(result.data.accessToken, result.data.user);
+          return { accessToken: result.data.accessToken, user: result.data.user };
+        }
+        store.clearAuth();
+        return null;
+      })().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    const refreshResult = await refreshPromise;
+    if (refreshResult) {
+      token = refreshResult.accessToken;
       res = await doFetch();
     } else {
-      store.clearAuth();
-      const text = await res.text();
-      throw new Error(`Unauthorized: ${text || "Refresh failed"}`);
+      throw new Error("Unauthorized: Refresh failed");
     }
   }
 
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
   }
 
   const contentType = res.headers.get("Content-Type");

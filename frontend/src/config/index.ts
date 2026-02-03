@@ -1,2 +1,2 @@
 export { env, isProd } from "./env";
-export { AUTH, ROUTES } from "./constants";
+export { AUTH, ROUTES, getEntryRouteForRoles } from "./constants";

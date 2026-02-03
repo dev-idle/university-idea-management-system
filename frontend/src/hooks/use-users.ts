@@ -24,16 +24,22 @@ function parseUsersList(data: unknown): UsersListResponse {
   return parsed.data;
 }
 
-/** List users (paginated). Backend enforces USERS permission. */
-export function useUsersListQuery(params?: { page: number; limit: number }) {
+/** List users (paginated, optional search by email or name). Backend enforces USERS permission. */
+export function useUsersListQuery(params?: {
+  page: number;
+  limit: number;
+  search?: string;
+}) {
   const page = params?.page ?? DEFAULT_PAGE;
   const limit = params?.limit ?? DEFAULT_LIMIT;
+  const search = params?.search?.trim();
 
   return useQuery({
-    queryKey: queryKeys.users.list({ page, limit }),
+    queryKey: queryKeys.users.list({ page, limit, search }),
     queryFn: async () => {
+      const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
       const res = await fetchWithAuth<UsersListResponse>(
-        `users?page=${page}&limit=${limit}`
+        `users?page=${page}&limit=${limit}${searchParam}`
       );
       return parseUsersList(res);
     },
@@ -59,8 +65,8 @@ export function useCreateUserMutation() {
   });
 }
 
-/** Update user isActive. Optimistic update; backend enforces USERS permission. */
-export function useUpdateUserIsActiveMutation() {
+/** Update user (isActive, fullName, password). Optimistic update for isActive only. */
+export function useUpdateUserMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -75,6 +81,7 @@ export function useUpdateUserIsActiveMutation() {
       return res as UserListItem;
     },
     onMutate: async ({ id, body }) => {
+      if (body.isActive === undefined) return undefined;
       await queryClient.cancelQueries({ queryKey: queryKeys.users.all });
       const previous = queryClient.getQueriesData<UsersListResponse>({
         queryKey: queryKeys.users.all,
@@ -86,7 +93,7 @@ export function useUpdateUserIsActiveMutation() {
           return {
             ...old,
             data: old.data.map((u) =>
-              u.id === id ? { ...u, isActive: body.isActive } : u
+              u.id === id ? { ...u, isActive: body.isActive as boolean } : u
             ),
           };
         }
@@ -104,4 +111,9 @@ export function useUpdateUserIsActiveMutation() {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
     },
   });
+}
+
+/** @deprecated Use useUpdateUserMutation. Kept for compatibility. */
+export function useUpdateUserIsActiveMutation() {
+  return useUpdateUserMutation();
 }

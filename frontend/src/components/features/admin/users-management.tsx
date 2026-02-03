@@ -1,28 +1,75 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { useMemo, useState, useEffect } from "react";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 import { useUsersListQuery, useCreateUserMutation } from "@/hooks/use-users";
+import { USERS_PAGE_SIZE } from "./users/constants";
+import { MANAGEMENT_CARD_HEADER_CLASS } from "./constants";
 import { UsersTable } from "./users-table";
 import { CreateUserForm } from "./create-user-form";
-
-const PAGE_SIZE = 10;
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { UserPlus, Search } from "lucide-react";
 
 export function AdminUsersManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState(
+    "search",
+    parseAsString.withDefault("")
+  );
+  const [searchInput, setSearchInput] = useState(search);
   const [showCreate, setShowCreate] = useState(false);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   const { data, status, error, isFetching } = useUsersListQuery({
     page,
-    limit: PAGE_SIZE,
+    limit: USERS_PAGE_SIZE,
+    search: search || undefined,
   });
 
   const totalPages = useMemo(
     () => (data ? Math.ceil(data.total / data.limit) : 0),
-    [data]
+    [data?.total, data?.limit]
   );
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const around = 2;
+    const start = Math.max(1, page - around);
+    const end = Math.min(totalPages, page + around);
+    const pages: (number | "ellipsis-left" | "ellipsis-right")[] = [];
+    if (start > 1) {
+      pages.push(1);
+      if (start > 2) pages.push("ellipsis-left");
+    }
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < totalPages) {
+      if (end < totalPages - 1) pages.push("ellipsis-right");
+      pages.push(totalPages);
+    }
+    return pages;
+  }, [totalPages, page]);
 
   const createMutation = useCreateUserMutation();
 
@@ -33,71 +80,141 @@ export function AdminUsersManagement() {
   return (
     <div className="space-y-6">
       <Can permission="USERS">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {data
-              ? `Showing ${(page - 1) * data.limit + 1}–${Math.min(page * data.limit, data.total)} of ${data.total}`
-              : "Loading…"}
-          </span>
-          <Button onClick={() => setShowCreate((v) => !v)} variant="default">
-            {showCreate ? "Cancel" : "Add user"}
-          </Button>
-        </div>
+        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+          <DialogContent className="max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg">
+            <DialogHeader className="space-y-1.5 text-left border-b border-border/80 pb-4">
+              <DialogTitle className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+                Add user
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground text-sm leading-relaxed">
+                Create an institutional account. All fields except full name are required.
+              </DialogDescription>
+            </DialogHeader>
+            <CreateUserForm
+              onSuccess={() => setShowCreate(false)}
+              onCancel={() => setShowCreate(false)}
+              isPending={createMutation.isPending}
+              mutateAsync={createMutation.mutateAsync}
+              error={createMutation.error}
+              variant="dialog"
+            />
+          </DialogContent>
+        </Dialog>
       </Can>
 
-      {showCreate && (
+      <Card className="overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm">
         <Can permission="USERS">
-          <CreateUserForm
-            onSuccess={() => {
-              setShowCreate(false);
-            }}
-            onCancel={() => setShowCreate(false)}
-            isPending={createMutation.isPending}
-            mutateAsync={createMutation.mutateAsync}
-            error={createMutation.error}
-          />
-        </Can>
-      )}
-
-      <div className="rounded-lg border border-border bg-card">
-        {status === "pending" && !data ? (
-          <div className="flex items-center justify-center p-12 text-muted-foreground">
-            Loading users…
-          </div>
-        ) : (
-          <>
-            <UsersTable
-              users={data?.data ?? []}
-              isRefetching={isFetching}
-            />
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-border px-4 py-3">
-                <p className="text-sm text-muted-foreground">
-                  Page {page} of {totalPages}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage(page - 1)}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage(page + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
+          <div className={MANAGEMENT_CARD_HEADER_CLASS}>
+            <p className="text-sm text-muted-foreground">
+              {data
+                ? `Showing ${(page - 1) * USERS_PAGE_SIZE + 1}–${Math.min(page * USERS_PAGE_SIZE, data.total)} of ${data.total}`
+                : "Loading…"}
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative min-w-0 sm:max-w-[260px]">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden
+                />
+                <Input
+                  type="search"
+                  placeholder="Search by email or name…"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setSearch(searchInput);
+                      setPage(1);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (searchInput !== search) {
+                      setSearch(searchInput);
+                      setPage(1);
+                    }
+                  }}
+                  className="h-9 rounded-lg bg-background pl-9"
+                  aria-label="Search users by email or name"
+                />
               </div>
-            )}
-          </>
-        )}
-      </div>
+              <Button
+                onClick={() => setShowCreate((v) => !v)}
+                variant={showCreate ? "secondary" : "default"}
+                size="sm"
+                className="shrink-0 gap-2"
+              >
+                <UserPlus className="size-4 shrink-0" aria-hidden />
+                {showCreate ? "Cancel" : "Add user"}
+              </Button>
+            </div>
+          </div>
+        </Can>
+        <CardContent className="gap-0 p-0">
+          {status === "pending" && !data ? (
+            <div className="flex items-center justify-center px-6 py-20 text-sm text-muted-foreground">
+              Loading accounts…
+            </div>
+          ) : (
+            <>
+              <UsersTable
+                users={data?.data ?? []}
+                isRefetching={isFetching}
+              />
+              {totalPages > 0 && (
+                <div className="flex flex-col gap-3 border-t border-border/80 bg-muted/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-6">
+                  <Pagination aria-label="User list pagination">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (page > 1) setPage(page - 1);
+                          }}
+                          aria-disabled={page <= 1}
+                          className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      {pageNumbers.map((p) =>
+                        p === "ellipsis-left" || p === "ellipsis-right" ? (
+                          <PaginationItem key={p}>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        ) : (
+                          <PaginationItem key={p}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setPage(p);
+                              }}
+                              isActive={p === page}
+                            >
+                              {p}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      )}
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (page < totalPages) setPage(page + 1);
+                          }}
+                          aria-disabled={page >= totalPages}
+                          className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

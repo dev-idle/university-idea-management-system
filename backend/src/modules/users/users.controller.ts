@@ -34,9 +34,10 @@ export class UsersController {
     @Body(new ZodValidationPipe(createUserBodySchema))
     body: {
       email: string;
+      fullName?: string | null;
       password: string;
       role: string;
-      departmentId?: string | null;
+      departmentId: string;
     },
   ) {
     return this.usersService.create(body);
@@ -44,18 +45,22 @@ export class UsersController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  async updateIsActive(
+  async update(
     @Param(new ZodValidationPipe(userIdParamSchema)) params: { id: string },
     @Body(new ZodValidationPipe(updateUserBodySchema))
-    body: { isActive: boolean },
+    body: {
+      isActive?: boolean;
+      fullName?: string | null;
+      newPassword?: string;
+    },
   ) {
-    return this.usersService.updateIsActive(params.id, body);
+    return this.usersService.update(params.id, body);
   }
 
   @Get()
   async findAll(
     @Query(new ZodValidationPipe(listUsersQuerySchema))
-    query: { page: number; limit: number },
+    query: { page: number; limit: number; search?: string },
   ) {
     return this.usersService.findAll(query);
   }
