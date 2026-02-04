@@ -10,9 +10,10 @@ import { fetchWithAuth } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 import {
   profileSchema,
-  updateProfileBodySchema,
+  updateProfileFormSchema,
   type Profile,
   type UpdateProfileBody,
+  type UpdateProfileFormValues,
 } from "@/lib/schemas/profile.schema";
 import { ROLE_LABELS } from "@/lib/rbac";
 import { ChangePasswordForm } from "./change-password-form";
@@ -41,6 +42,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  CARD_CLASS,
+  SECTION_LABEL_CLASS,
+  SECTION_CARD_HEADER_CLASS,
+  SECTION_CARD_TITLE_CLASS,
+  SECTION_CARD_DESCRIPTION_CLASS,
+} from "@/config/design";
 import { getAvatarInitial } from "@/lib/utils";
 
 const GENDER_NONE = "__none__";
@@ -56,8 +64,8 @@ const GENDER_OPTIONS = [
 /** Profile loading skeleton: uses muted background per design system. */
 function ProfileSkeleton() {
   return (
-    <div className="space-y-10">
-      <section className="rounded-xl border border-border/90 bg-card px-6 py-7 shadow-sm" aria-hidden>
+    <div className="space-y-8">
+      <section className={`${CARD_CLASS} px-6 py-7`} aria-hidden>
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
           <Skeleton className="size-24 shrink-0 rounded-full bg-muted/80" />
           <div className="min-w-0 flex-1 space-y-3">
@@ -68,8 +76,8 @@ function ProfileSkeleton() {
         </div>
       </section>
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        <Card className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm">
-          <CardHeader className="border-border/80 border-b px-6 py-5">
+        <Card className={`overflow-hidden ${CARD_CLASS}`}>
+          <CardHeader className={SECTION_CARD_HEADER_CLASS}>
             <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-center">
               <Skeleton className="size-9 shrink-0 rounded-lg bg-muted/60" />
               <Skeleton className="h-4 w-44 bg-muted/60" />
@@ -185,10 +193,9 @@ function EditableDisplayName({
         type="button"
         variant="ghost"
         size="sm"
-        className="h-8 shrink-0 gap-1.5 rounded-md px-2.5 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+        className="h-8 shrink-0 gap-1.5 rounded-lg px-2.5 text-muted-foreground hover:bg-primary/10 hover:text-primary"
         onClick={() => setEditing(true)}
         aria-label="Edit full name"
-        className="rounded-lg"
       >
         <Pencil className="size-3.5" aria-hidden />
         <span className="text-xs font-medium uppercase tracking-wider">
@@ -204,7 +211,7 @@ export function ProfileContent() {
   const { data: profile, isLoading, error } = useProfileQuery();
 
   const updateProfileMutation = useMutation({
-    mutationFn: async (body: UpdateProfileBody) => {
+    mutationFn: async (body: Partial<UpdateProfileBody>) => {
       const data = await fetchWithAuth<unknown>("me", {
         method: "PATCH",
         body: JSON.stringify(body),
@@ -216,8 +223,8 @@ export function ProfileContent() {
     },
   });
 
-  const form = useForm<UpdateProfileBody>({
-    resolver: zodResolver(updateProfileBodySchema),
+  const form = useForm<UpdateProfileFormValues>({
+    resolver: zodResolver(updateProfileFormSchema),
     defaultValues: {
       fullName: "",
       phone: "",
@@ -246,14 +253,17 @@ export function ProfileContent() {
     });
   }
 
-  async function onSubmitEditProfile(data: UpdateProfileBody & { gender?: string }) {
-    await updateProfileMutation.mutateAsync({
-      fullName: data.fullName?.trim() ?? "",
-      phone: data.phone?.trim() ?? "",
-      address: data.address?.trim() ?? "",
-      gender: data.gender && data.gender !== GENDER_NONE ? data.gender : "",
-      dateOfBirth: data.dateOfBirth?.trim() ?? "",
-    });
+  async function onSubmitEditProfile(data: UpdateProfileFormValues) {
+    const body: Partial<UpdateProfileBody> = {
+      ...(data.fullName !== undefined && { fullName: data.fullName.trim() || undefined }),
+      ...(data.phone !== undefined && { phone: data.phone.trim() || undefined }),
+      ...(data.address !== undefined && { address: data.address.trim() || undefined }),
+      ...(data.gender !== undefined &&
+        data.gender !== GENDER_NONE && { gender: data.gender }),
+      ...(data.dateOfBirth !== undefined &&
+        data.dateOfBirth.trim() !== "" && { dateOfBirth: data.dateOfBirth.trim() }),
+    };
+    await updateProfileMutation.mutateAsync(body);
   }
 
   if (isLoading) return <ProfileSkeleton />;
@@ -277,9 +287,9 @@ export function ProfileContent() {
   const apiError = updateProfileMutation.error as Error | undefined;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <section
-        className="rounded-xl border border-border/90 bg-card px-6 py-7 shadow-sm"
+        className={`${CARD_CLASS} px-6 py-7`}
         aria-label="Profile identity"
       >
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
@@ -311,16 +321,16 @@ export function ProfileContent() {
       </section>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        <Card className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm">
-          <CardHeader className="border-border/80 border-b px-6 pt-5 pb-2">
+        <Card className={`overflow-hidden ${CARD_CLASS}`}>
+          <CardHeader className={SECTION_CARD_HEADER_CLASS}>
             <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-center">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground [&>svg]:shrink-0">
                 <UserCircle className="size-4" strokeWidth={1.25} aria-hidden />
               </div>
-              <CardTitle className="font-serif text-lg font-semibold tracking-tight text-foreground">
+              <CardTitle className={SECTION_CARD_TITLE_CLASS}>
                 Personal information
               </CardTitle>
-              <p className="col-start-1 col-span-2 row-start-2 text-xs leading-relaxed text-muted-foreground/80">
+              <p className={`col-start-1 col-span-2 row-start-2 ${SECTION_CARD_DESCRIPTION_CLASS}`}>
                 Update your name, contact details, and other information.
               </p>
             </div>
@@ -335,7 +345,7 @@ export function ProfileContent() {
               >
                 {apiError && (
                   <p
-                    className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-destructive text-sm"
+                    className="rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-destructive text-sm leading-relaxed"
                     role="alert"
                     aria-live="polite"
                   >
@@ -348,7 +358,7 @@ export function ProfileContent() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                        <FormLabel className={SECTION_LABEL_CLASS}>
                           Full name
                         </FormLabel>
                         <FormControl>
@@ -368,7 +378,7 @@ export function ProfileContent() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                        <FormLabel className={SECTION_LABEL_CLASS}>
                           Phone
                           <span className="ml-1 font-normal normal-case text-muted-foreground/80">(optional)</span>
                         </FormLabel>
@@ -389,7 +399,7 @@ export function ProfileContent() {
                     name="address"
                     render={({ field }) => (
                       <FormItem className="sm:col-span-2">
-                        <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                        <FormLabel className={SECTION_LABEL_CLASS}>
                           Address
                           <span className="ml-1 font-normal normal-case text-muted-foreground/80">(optional)</span>
                         </FormLabel>
@@ -410,7 +420,7 @@ export function ProfileContent() {
                     name="gender"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                        <FormLabel className={SECTION_LABEL_CLASS}>
                           Gender
                           <span className="ml-1 font-normal normal-case text-muted-foreground/80">(optional)</span>
                         </FormLabel>
@@ -440,7 +450,7 @@ export function ProfileContent() {
                     name="dateOfBirth"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                        <FormLabel className={SECTION_LABEL_CLASS}>
                           Date of birth
                           <span className="ml-1 font-normal normal-case text-muted-foreground/80">(optional)</span>
                         </FormLabel>
@@ -456,7 +466,7 @@ export function ProfileContent() {
                     )}
                   />
                 </div>
-                <div className="border-border/80 border-t pt-6">
+                <div className="border-t border-border pt-6">
                   <Button
                     type="submit"
                     disabled={updateProfileMutation.isPending}

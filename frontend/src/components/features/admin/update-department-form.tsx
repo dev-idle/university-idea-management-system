@@ -8,6 +8,7 @@ import type {
 } from "@/lib/schemas/departments.schema";
 import { updateDepartmentBodySchema } from "@/lib/schemas/departments.schema";
 import { getErrorMessage } from "@/lib/errors";
+import { FORM_ERROR_BLOCK_CLASS } from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,7 +92,7 @@ export function UpdateDepartmentForm({
       </div>
       {(errors.root ?? error) && (
         <p
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >

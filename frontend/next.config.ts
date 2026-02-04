@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  /** Redirect legacy /staff to /ideas (Staff Ideas Hub). */
+  async redirects() {
+    return [{ source: "/staff", destination: "/ideas", permanent: false }];
+  },
   /** Pin project root so Next.js ignores lockfiles outside this directory (e.g. user home). */
   outputFileTracingRoot: path.join(__dirname),
   /** Turbopack: use this directory as workspace root (avoids multiple-lockfile warning). */

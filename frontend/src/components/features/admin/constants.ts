@@ -1,33 +1,61 @@
 /**
  * Shared UI constants for management UIs (Admin + QA Manager).
- * Use these for consistent layout, dialogs, tables, and forms.
+ * Aligned with app design system (config/design) for consistency with Staff pages.
+ * List tables: use MANAGEMENT_PAGE_SIZE and formatManagementShowingRange for standardization.
  */
+import {
+  CARD_CLASS,
+  SECTION_LABEL_CLASS,
+  SECTION_CARD_DESCRIPTION_CLASS,
+  FORM_SUBMIT_BUTTON_CLASS,
+  DESTRUCTIVE_INLINE_ACCENT_CLASS,
+  FOCUS_RING_CLASS,
+} from "@/config/design";
+
+/** Re-export outline button class from design for management forms. */
+export { FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
+
+/** Page size for all Role Manager list tables (Admin + QA Manager). Not used by Staff. */
+export const MANAGEMENT_PAGE_SIZE = 6;
+
+/** Show pagination footer only when total items exceed this (e.g. 7+ → "Previous 1 Next" and "Showing 1–10 of 11"). */
+export const MANAGEMENT_PAGINATION_MIN_TOTAL = 7;
+
+/** "Showing X–Y of Z" text for table header. Use when total is known (not loading). */
+export function formatManagementShowingRange(
+  page: number,
+  pageSize: number,
+  total: number
+): string {
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return `Showing ${start}–${end} of ${total}`;
+}
 
 /** Header bar for management card: "Showing X–Y of Z" left, actions right. */
 export const MANAGEMENT_CARD_HEADER_CLASS =
   "flex flex-wrap items-center justify-between gap-3 min-h-12 border-b border-border/80 bg-muted/10 px-4 py-3.5 sm:px-6";
 
-/** Management card wrapper (table card). */
-export const MANAGEMENT_CARD_CLASS =
-  "overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm";
+/** Management card wrapper (table card). Uses shared CARD_CLASS. */
+export const MANAGEMENT_CARD_CLASS = `overflow-hidden ${CARD_CLASS} py-0`;
 
 /** Dialog content (standard width). */
 export const DIALOG_CONTENT_CLASS =
-  "max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-lg";
+  `max-h-[90vh] overflow-y-auto ${CARD_CLASS} sm:max-w-lg`;
 
 /** Dialog content (wider, e.g. submission cycle form). */
 export const DIALOG_CONTENT_CLASS_LG =
-  "max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-2xl";
+  `max-h-[90vh] overflow-y-auto ${CARD_CLASS} sm:max-w-2xl`;
 
 /** Dialog content (narrower, e.g. edit user). */
 export const DIALOG_CONTENT_CLASS_SM =
-  "max-h-[90vh] overflow-y-auto rounded-xl border border-border/90 bg-card shadow-sm sm:max-w-md";
+  `max-h-[90vh] overflow-y-auto ${CARD_CLASS} sm:max-w-md`;
 
 /** Dialog header wrapper. */
 export const DIALOG_HEADER_CLASS =
   "space-y-1.5 text-left border-b border-border/80 pb-4";
 
-/** Dialog title. */
+/** Dialog title (aligned with PAGE_TITLE typography). */
 export const DIALOG_TITLE_CLASS =
   "font-serif text-2xl font-semibold tracking-tight text-foreground";
 
@@ -64,13 +92,11 @@ export const TABLE_LOADING_CELL_CLASS =
 export const TABLE_EMPTY_CELL_CLASS =
   "px-4 py-14 text-center text-sm text-muted-foreground sm:px-6";
 
-/** Form label (muted, small caps). */
-export const FORM_LABEL_CLASS =
-  "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+/** Form label (aligned with SECTION_LABEL_CLASS). */
+export const FORM_LABEL_CLASS = SECTION_LABEL_CLASS;
 
 /** Form default wrapper (card style when not in dialog). */
-export const FORM_CARD_CLASS =
-  "flex flex-col gap-6 rounded-xl border border-border/90 bg-card px-6 py-6 shadow-sm";
+export const FORM_CARD_CLASS = `flex flex-col gap-6 ${CARD_CLASS} px-6 py-6`;
 
 /** Form dialog variant (no card, just gap). */
 export const FORM_DIALOG_CLASS = "flex flex-col gap-6";
@@ -79,9 +105,8 @@ export const FORM_DIALOG_CLASS = "flex flex-col gap-6";
 export const FORM_HEADING_CLASS =
   "font-serif text-base font-semibold tracking-tight text-foreground";
 
-/** Form section description. */
-export const FORM_DESCRIPTION_CLASS =
-  "mt-1 text-sm leading-relaxed text-muted-foreground";
+/** Form section description (aligned with SECTION_CARD_DESCRIPTION_CLASS). */
+export const FORM_DESCRIPTION_CLASS = `mt-2 ${SECTION_CARD_DESCRIPTION_CLASS}`;
 
 /** Form field spacing wrapper. */
 export const FORM_FIELD_SPACE = "space-y-2";
@@ -90,8 +115,14 @@ export const FORM_FIELD_SPACE = "space-y-2";
 export const FORM_ACTIONS_CLASS =
   "flex flex-wrap gap-3 border-t border-border/80 pt-6";
 
-/** Primary submit button (height + rounding). */
-export const FORM_BUTTON_CLASS = "h-10 rounded-lg px-5 text-sm font-medium";
+/** Primary submit button (aligned with design FORM_SUBMIT_BUTTON_CLASS). */
+export const FORM_BUTTON_CLASS = FORM_SUBMIT_BUTTON_CLASS;
+
+/** Inline destructive/error block (form validation). */
+export const FORM_ERROR_BLOCK_CLASS = DESTRUCTIVE_INLINE_ACCENT_CLASS;
+
+/** Focus ring for links and cards (management). */
+export const MANAGEMENT_FOCUS_RING_CLASS = FOCUS_RING_CLASS;
 
 /** Action button in a disabled/locked state (blurred UI): muted, reduced opacity, non-interactive. */
 export const ACTION_BUTTON_DISABLED_BLUR_CLASS =

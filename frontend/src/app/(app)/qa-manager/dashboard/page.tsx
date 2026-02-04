@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
+import { QaManagerDashboardContent } from "@/components/features/qa-manager/qa-manager-dashboard-content";
+import { PageHeader } from "@/components/layout/page-header";
+import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
-  title: "QA Manager",
-  description: "University QA Manager dashboard.",
+  title: "Dashboard",
+  description: "QA Manager dashboard. Manage categories and submission cycles.",
 };
 
 export default function QaManagerDashboardPage() {
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">QA Manager</h1>
-      <p className="text-sm text-muted-foreground">
-        University QA Manager dashboard. Backend enforces all authorization.
-      </p>
+    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
+      <PageHeader
+        title="QA Manager"
+        description="Manage categories and submission cycles for proposal collection. Access control is enforced server-side."
+        descriptionWide
+      />
+      <QaManagerDashboardContent />
     </div>
   );
 }

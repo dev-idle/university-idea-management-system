@@ -20,6 +20,10 @@ export const envSchema = z
     THROTTLE_TTL: z.coerce.number().int().positive().default(60),
     THROTTLE_LIMIT: z.coerce.number().int().positive().default(100),
     CORS_ORIGINS: z.string().optional(),
+    /** Cloudinary: required for idea supporting-document uploads. */
+    CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
+    CLOUDINARY_API_KEY: z.string().min(1).optional(),
+    CLOUDINARY_API_SECRET: z.string().min(1).optional(),
   })
   .refine(
     (data) =>

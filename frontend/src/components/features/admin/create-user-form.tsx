@@ -6,6 +6,7 @@ import { UserPlus } from "lucide-react";
 import type { CreateUserBody } from "@/lib/schemas/users.schema";
 import { createUserBodySchema } from "@/lib/schemas/users.schema";
 import { getErrorMessage } from "@/lib/errors";
+import { FORM_ERROR_BLOCK_CLASS } from "./constants";
 import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
 import { Button } from "@/components/ui/button";
@@ -260,7 +261,7 @@ export function CreateUserForm({
       {(errors.root ?? error) && (
         <p
           id="create-user-form-error"
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >

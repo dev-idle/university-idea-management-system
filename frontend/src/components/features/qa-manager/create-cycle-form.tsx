@@ -2,8 +2,11 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { CreateCycleBody } from "@/lib/schemas/submission-cycles.schema";
-import { createCycleBodySchema } from "@/lib/schemas/submission-cycles.schema";
+import type {
+  CreateCycleBody,
+  CreateCycleFormValues,
+} from "@/lib/schemas/submission-cycles.schema";
+import { createCycleFormSchema } from "@/lib/schemas/submission-cycles.schema";
 import { getErrorMessage } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FORM_LABEL_CLASS } from "@/components/features/admin/constants";
+import { FORM_LABEL_CLASS, FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
 import { useSubmissionCycleAcademicYearsQuery } from "@/hooks/use-submission-cycles";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 
@@ -59,14 +62,14 @@ export function CreateCycleForm({
     setValue,
     watch,
     formState: { errors },
-  } = useForm<CreateCycleBody>({
-    resolver: zodResolver(createCycleBodySchema),
+  } = useForm<CreateCycleFormValues>({
+    resolver: zodResolver(createCycleFormSchema),
     defaultValues: {
       name: "",
       academicYearId: "",
       categoryIds: [],
-      ideaSubmissionClosesAt: undefined as unknown as Date,
-      interactionClosesAt: undefined as unknown as Date,
+      ideaSubmissionClosesAt: "",
+      interactionClosesAt: "",
     },
   });
 
@@ -77,27 +80,27 @@ export function CreateCycleForm({
     if (!ideaSubmissionClosesAt) return;
     const d = new Date(ideaSubmissionClosesAt);
     d.setDate(d.getDate() + 14);
-    setValue("interactionClosesAt", d, { shouldValidate: true });
+    setValue("interactionClosesAt", toDatetimeLocal(d), { shouldValidate: true });
   }
 
-  async function onSubmit(data: CreateCycleBody) {
+  async function onSubmit(data: CreateCycleFormValues) {
     try {
-      const interactionClosesAt =
-        data.interactionClosesAt ??
-        (data.ideaSubmissionClosesAt
-          ? (() => {
-              const d = new Date(data.ideaSubmissionClosesAt);
-              d.setDate(d.getDate() + 14);
-              return d;
-            })()
-          : undefined);
-      await mutateAsync({
+      const ideaSubmissionClosesAt = new Date(data.ideaSubmissionClosesAt);
+      const interactionClosesAt = data.interactionClosesAt
+        ? new Date(data.interactionClosesAt)
+        : (() => {
+            const d = new Date(ideaSubmissionClosesAt);
+            d.setDate(d.getDate() + 14);
+            return d;
+          })();
+      const body: CreateCycleBody = {
         academicYearId: data.academicYearId,
-        name: data.name,
+        name: data.name.trim(),
         categoryIds: data.categoryIds,
-        ideaSubmissionClosesAt: data.ideaSubmissionClosesAt,
+        ideaSubmissionClosesAt,
         interactionClosesAt,
-      });
+      };
+      await mutateAsync(body);
       onSuccess();
     } catch (e) {
       setError("root", {
@@ -235,10 +238,9 @@ export function CreateCycleForm({
             id="interactionClosesAt"
             type="datetime-local"
             className="h-10 w-full text-sm rounded-lg"
-            value={interactionClosesAt ? toDatetimeLocal(interactionClosesAt) : ""}
+            value={interactionClosesAt ?? ""}
             onChange={(e) => {
-              const v = e.target.value;
-              setValue("interactionClosesAt", v ? new Date(v) : undefined as unknown as Date, {
+              setValue("interactionClosesAt", e.target.value ?? "", {
                 shouldValidate: true,
               });
             }}
@@ -260,7 +262,7 @@ export function CreateCycleForm({
 
       {(errors.root ?? error) && (
         <p
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >

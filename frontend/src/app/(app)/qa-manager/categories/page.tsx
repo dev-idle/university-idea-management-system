@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { CategoriesManagement } from "@/components/features/qa-manager/categories-management";
 import { CategoriesManagementSkeleton } from "@/components/features/qa-manager/categories-management-skeleton";
+import { PageHeader } from "@/components/layout/page-header";
+import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Categories",
@@ -11,13 +13,12 @@ export const metadata: Metadata = {
 
 export default function QaManagerCategoriesPage() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          Manage categories for idea classification. Duplicate names are not allowed. Delete is only available when no ideas use the category; backend enforces all rules.
-        </p>
-        <hr className="border-border/80" aria-hidden />
-      </div>
+    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
+      <PageHeader
+        title="Categories"
+        description="Manage categories for proposal classification. Duplicate names are not permitted. Deletion is available only when no proposals use the category; all rules are enforced server-side."
+        descriptionWide
+      />
       <Suspense fallback={<CategoriesManagementSkeleton />}>
         <CategoriesManagement />
       </Suspense>

@@ -13,15 +13,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -46,10 +37,13 @@ import {
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_2,
   TABLE_ACTIONS_CELL_CLASS,
-  PAGINATION_FOOTER_CLASS,
   TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  MANAGEMENT_PAGE_SIZE,
+  MANAGEMENT_PAGINATION_MIN_TOTAL,
+  formatManagementShowingRange,
 } from "./constants";
+import { ManagementTablePagination } from "./management-table-pagination";
 import { CreateDepartmentForm } from "./create-department-form";
 import { UpdateDepartmentForm } from "./update-department-form";
 import {
@@ -65,7 +59,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Building2, Pencil, Trash2 } from "lucide-react";
 
-const PAGE_SIZE = 10;
 const COLUMN_COUNT = 2;
 
 export function DepartmentsManagement() {
@@ -77,26 +70,16 @@ export function DepartmentsManagement() {
   const { data: departments, status, error, isFetching } = useDepartmentsQuery();
 
   const total = departments?.length ?? 0;
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
-  const pageNumbers = useMemo(() => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    const around = 2;
-    const start = Math.max(1, page - around);
-    const end = Math.min(totalPages, page + around);
-    const pages: (number | "ellipsis-left" | "ellipsis-right")[] = [];
-    if (start > 1) {
-      pages.push(1);
-      if (start > 2) pages.push("ellipsis-left");
-    }
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < totalPages) {
-      if (end < totalPages - 1) pages.push("ellipsis-right");
-      pages.push(totalPages);
-    }
-    return pages;
-  }, [totalPages, page]);
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(total / MANAGEMENT_PAGE_SIZE)),
+    [total]
+  );
   const paginatedList = useMemo(
-    () => departments?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? [],
+    () =>
+      departments?.slice(
+        (page - 1) * MANAGEMENT_PAGE_SIZE,
+        page * MANAGEMENT_PAGE_SIZE
+      ) ?? [],
     [departments, page]
   );
   const createMutation = useCreateDepartmentMutation();
@@ -204,7 +187,7 @@ export function DepartmentsManagement() {
           <div className={MANAGEMENT_CARD_HEADER_CLASS}>
             <p className="text-sm text-muted-foreground">
               {departments
-                ? `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total}`
+                ? formatManagementShowingRange(page, MANAGEMENT_PAGE_SIZE, total)
                 : "Loading…"}
             </p>
             <Button
@@ -319,55 +302,13 @@ export function DepartmentsManagement() {
                   </table>
                 </div>
               </TooltipProvider>
-              {total > 0 && totalPages > 0 && (
-                <div className={PAGINATION_FOOTER_CLASS}>
-                  <Pagination aria-label="Departments pagination">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page > 1) setPage(page - 1);
-                          }}
-                          aria-disabled={page <= 1}
-                          className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                      {pageNumbers.map((p) =>
-                        p === "ellipsis-left" || p === "ellipsis-right" ? (
-                          <PaginationItem key={p}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={p}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setPage(p);
-                              }}
-                              isActive={p === page}
-                            >
-                              {p}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page < totalPages) setPage(page + 1);
-                          }}
-                          aria-disabled={page >= totalPages}
-                          className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+              {total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
+                <ManagementTablePagination
+                  page={page}
+                  totalPages={totalPages}
+                  setPage={setPage}
+                  ariaLabel="Departments pagination"
+                />
               )}
             </>
           )}

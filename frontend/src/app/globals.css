@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Dark theme class: must match config/theme.ts THEME_CLASS.DARK (next-themes applies it to <html>). */
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -87,6 +88,7 @@
   --sidebar-ring: oklch(0.32 0.1 264);
 }
 
+/* Applied to <html> by next-themes when dark; keep in sync with config/theme.ts */
 .dark {
   /* ==============================================
      THEME: DEEP SPACE (Dark Mode)
@@ -239,7 +241,25 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
   body {
     @apply bg-background font-sans text-foreground antialiased;
   }
+}
+
+/* Hide scrollbar while keeping element scrollable (sidebar, main content) */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

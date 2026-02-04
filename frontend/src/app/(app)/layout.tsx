@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
+import { Toaster } from "@/components/ui/sonner";
 
 /**
  * One global layout for the entire application (post-login).
@@ -8,5 +9,10 @@ import { AppShell } from "@/components/layout/app-shell";
 export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <>
+      <AppShell>{children}</AppShell>
+      <Toaster richColors position="top-center" />
+    </>
+  );
 }

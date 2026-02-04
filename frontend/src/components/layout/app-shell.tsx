@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Tags,
   Lightbulb,
+  Bell,
   ChevronDown,
   LogOut,
   PanelLeft,
@@ -22,19 +23,29 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfileQuery } from "@/hooks/use-profile";
+import { useIdeasContextQuery } from "@/hooks/use-ideas";
 import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole } from "@/config/constants";
 
-/** Page title for main header (pathname → label). */
+/** True when user has only STAFF (no management roles). Staff get minimal top bar, no sidebar. */
+function isStaffOnly(roles: string[] | undefined): boolean {
+  if (!roles?.length) return false;
+  const upper = roles.map((r) => String(r).trim().toUpperCase());
+  const hasStaff = upper.includes("STAFF");
+  const hasManagement =
+    upper.includes("ADMIN") || upper.includes("QA_MANAGER") || upper.includes("QA_COORDINATOR");
+  return hasStaff && !hasManagement;
+}
+
+/** Page title for main header (pathname → label). Used only for management layout. */
 const PATH_TO_TITLE: Record<string, string> = {
   [ROUTES.ADMIN_DASHBOARD]: "Dashboard",
   [ROUTES.ADMIN_USERS]: "Users Management",
   [ROUTES.ADMIN_DEPARTMENTS]: "Departments Management",
   [ROUTES.ADMIN_ACADEMIC_YEARS]: "Academic Years Management",
-  [ROUTES.QA_MANAGER_DASHBOARD]: "QA Manager",
+  [ROUTES.QA_MANAGER_DASHBOARD]: "Dashboard",
   [ROUTES.QA_MANAGER_CATEGORIES]: "Categories Management",
   [ROUTES.QA_MANAGER_SUBMISSION_CYCLES]: "Submission Cycles Management",
   [ROUTES.QA_COORDINATOR_DASHBOARD]: "QA Coordinator",
-  [ROUTES.STAFF]: "Staff",
   [ROUTES.IDEAS]: "Ideas",
   [ROUTES.PROFILE]: "Profile",
 };
@@ -90,6 +101,17 @@ function PrimaryRoleLabel({ roles }: { roles: string[] | undefined }) {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "sidebar-collapsed";
 
+/** Section label above a group of nav items (expanded only). */
+function SidebarSectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-2 mt-5 first:mt-0 px-1">
+      <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/90">
+        {children}
+      </span>
+    </div>
+  );
+}
+
 function NavLink({
   href,
   label,
@@ -106,20 +128,24 @@ function NavLink({
   const linkContent = (
     <Link
       href={href}
-      className={`flex items-center rounded-l-none rounded-r-md text-sm font-medium transition-[color,background-color,border-color,padding] duration-300 ease-in-out ${
+      className={`flex items-center text-sm font-medium transition-[color,background,border-color] duration-200 ease-out ${
         collapsed
-          ? "size-10 w-full justify-center"
-          : "h-10 w-full justify-start gap-2.5 px-3 py-2"
+          ? "size-9 w-full justify-center rounded-lg"
+          : "h-10 w-full justify-start gap-3 rounded-r-lg border-l-2 py-2 pr-3 pl-[calc(0.75rem+2px)]"
       } ${
-        isActive
-          ? "border-l-2 border-l-primary bg-muted text-foreground"
-          : "border-l-2 border-l-transparent text-muted-foreground hover:bg-primary/10 hover:text-primary"
+        collapsed
+          ? isActive
+            ? "bg-primary/15 text-primary"
+            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          : isActive
+            ? "border-primary bg-primary/8 text-foreground"
+            : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground"
       }`}
       aria-current={isActive ? "page" : undefined}
       aria-label={collapsed ? label : undefined}
     >
-      <Icon className="size-4 shrink-0 opacity-70" aria-hidden />
-      {!collapsed && <span>{label}</span>}
+      <Icon className="size-4 shrink-0" aria-hidden />
+      {!collapsed && <span className="truncate">{label}</span>}
     </Link>
   );
 
@@ -127,7 +153,7 @@ function NavLink({
     return (
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8}>
+        <TooltipContent side="right" sideOffset={8} className="text-xs">
           {label}
         </TooltipContent>
       </Tooltip>
@@ -147,11 +173,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
   if (hasRole(user.roles, "ADMIN")) {
     if (!collapsed) {
       items.push(
-        <div key="mgmt-label" className="px-3 pt-2 pb-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Management
-          </span>
-        </div>
+        <SidebarSectionLabel key="mgmt-label">Management</SidebarSectionLabel>
       );
     }
     items.push(
@@ -199,12 +221,17 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
     );
   }
   if (hasRole(user.roles, "QA_MANAGER")) {
+    if (!collapsed) {
+      items.push(
+        <SidebarSectionLabel key="qa-label">Quality assurance</SidebarSectionLabel>
+      );
+    }
     items.push(
       <NavLink
         key={ROUTES.QA_MANAGER_DASHBOARD}
         href={ROUTES.QA_MANAGER_DASHBOARD}
-        label="QA Manager"
-        icon={ClipboardList}
+        label="Dashboard"
+        icon={LayoutDashboard}
         isActive={pathname === ROUTES.QA_MANAGER_DASHBOARD}
         collapsed={collapsed}
       />
@@ -231,6 +258,11 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
     );
   }
   if (hasRole(user.roles, "QA_COORDINATOR")) {
+    if (!collapsed) {
+      items.push(
+        <SidebarSectionLabel key="qa-coord-label">Quality assurance</SidebarSectionLabel>
+      );
+    }
     items.push(
       <NavLink
         key={ROUTES.QA_COORDINATOR_DASHBOARD}
@@ -243,16 +275,11 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
     );
   }
   if (hasRole(user.roles, "STAFF")) {
-    items.push(
-      <NavLink
-        key={ROUTES.STAFF}
-        href={ROUTES.STAFF}
-        label="Staff"
-        icon={ClipboardList}
-        isActive={pathname === ROUTES.STAFF}
-        collapsed={collapsed}
-      />
-    );
+    if (!collapsed) {
+      items.push(
+        <SidebarSectionLabel key="ideas-label">Ideas</SidebarSectionLabel>
+      );
+    }
     items.push(
       <NavLink
         key={ROUTES.IDEAS}
@@ -267,7 +294,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
 
   return (
     <nav
-      className={`flex flex-col gap-0.5 pb-4 ${collapsed ? "px-0" : "px-3"}`}
+      className={`flex flex-col gap-0.5 pb-6 ${collapsed ? "px-2" : "px-3"}`}
       aria-label="Main"
     >
       {items}
@@ -327,31 +354,46 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
+  const staffOnly = isStaffOnly(user.roles);
+
+  if (staffOnly) {
+    return (
+      <StaffLayout
+        user={user}
+        displayName={displayName}
+        avatarInitial={avatarInitial}
+        onLogout={handleLogout}
+      >
+        {children}
+      </StaffLayout>
+    );
+  }
+
   return (
     <div
       className="flex h-screen flex-col overflow-hidden bg-background md:flex-row"
       data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
     >
       <aside
-        className={`flex h-full shrink-0 flex-col overflow-hidden transition-[width,background-color] duration-300 ease-in-out ${
+        className={`flex h-full shrink-0 flex-col overflow-hidden border-r border-border/70 transition-[width] duration-300 ease-in-out ${
           sidebarCollapsed
-            ? "w-full bg-muted/40 md:min-w-0 md:w-[4rem] md:border-r md:border-border/80"
-            : "w-full bg-card md:w-64 md:border-r md:border-border/80 md:shadow-sm"
+            ? "w-full md:min-w-0 md:w-[4.25rem] bg-muted/25"
+            : "w-full md:w-64 bg-muted/20"
         }`}
       >
         <div
-          className={`flex shrink-0 flex-col items-stretch border-b border-border/50 py-6 md:py-7 transition-[padding] duration-300 ease-in-out ${
+          className={`flex shrink-0 flex-col items-stretch border-b border-border/40 py-5 md:py-6 transition-[padding] duration-300 ease-in-out ${
             sidebarCollapsed ? "px-0" : "px-4"
           }`}
         >
           <SiteBranding variant="sidebar" linkToEntry collapsed={sidebarCollapsed} />
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto pt-3 transition-opacity duration-300 ease-in-out">
+        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto py-4 transition-opacity duration-300 ease-in-out">
           <SidebarNav collapsed={sidebarCollapsed} />
         </div>
       </aside>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-300 ease-in-out">
-        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 border-b border-border bg-card px-4 md:px-6">
+        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border bg-card px-4 md:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -377,62 +419,100 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="h-4 w-px shrink-0 bg-border" aria-hidden />
             <PageTitle pathname={pathname} onGoBack={() => router.push(pathname)} />
           </div>
-          <div className="flex shrink-0 items-center">
+          <div className="flex shrink-0 items-center gap-2">
             {user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 gap-2 rounded-lg border border-transparent pl-2 pr-2.5 font-normal text-muted-foreground transition-colors hover:border-border/60 hover:bg-primary/10 hover:text-primary focus-visible:border-border/80 focus-visible:ring-1 focus-visible:ring-primary/20"
-                  >
-                    <Avatar className="size-7 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/40">
-                      <AvatarFallback className="bg-muted/70 text-muted-foreground text-xs font-medium">
-                        {avatarInitial}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span
-                      className="max-w-[120px] truncate text-left text-sm sm:max-w-[180px]"
-                      title={displayName}
+              <>
+                {hasRole(user.roles, "STAFF") && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={ROUTES.IDEAS}
+                        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          pathname === ROUTES.IDEAS
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                        }`}
+                        aria-label="Ideas Hub"
+                        aria-current={pathname === ROUTES.IDEAS ? "page" : undefined}
+                      >
+                        <Lightbulb className="size-4" aria-hidden />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={4}>
+                      Ideas Hub
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-9 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                      aria-label="Notifications"
                     >
-                      {displayName}
-                    </span>
-                    <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/70 shadow-xl" sideOffset={8}>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-9 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/50">
-                        <AvatarFallback className="bg-muted/70 text-muted-foreground text-sm font-medium">
+                      <Bell className="size-4" aria-hidden />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" sideOffset={4}>
+                    Notifications
+                  </TooltipContent>
+                </Tooltip>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 gap-2 rounded-lg border border-transparent pl-2 pr-2.5 font-normal text-muted-foreground transition-colors hover:border-border/60 hover:bg-primary/10 hover:text-primary focus-visible:border-border/80 focus-visible:ring-1 focus-visible:ring-primary/20"
+                    >
+                      <Avatar className="size-7 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/40">
+                        <AvatarFallback className="bg-muted/70 text-muted-foreground text-xs font-medium">
                           {avatarInitial}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                        <span className="truncate text-sm font-semibold tracking-tight text-foreground">{displayName}</span>
-                        <span className="text-xs text-muted-foreground">
-                          <PrimaryRoleLabel roles={user.roles} />
-                        </span>
+                      <span
+                        className="max-w-[120px] truncate text-left text-sm sm:max-w-[180px]"
+                        title={displayName}
+                      >
+                        {displayName}
+                      </span>
+                      <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/70 shadow-xl" sideOffset={8}>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-9 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/50">
+                          <AvatarFallback className="bg-muted/70 text-muted-foreground text-sm font-medium">
+                            {avatarInitial}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                          <span className="truncate text-sm font-semibold tracking-tight text-foreground">{displayName}</span>
+                          <span className="text-xs text-muted-foreground">
+                            <PrimaryRoleLabel roles={user.roles} />
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={ROUTES.PROFILE} className="flex items-center gap-2">
-                      <User className="size-4" aria-hidden />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem variant="destructive" onClick={handleLogout}>
-                    <LogOut className="size-4" aria-hidden />
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href={ROUTES.PROFILE} className="flex items-center gap-2">
+                        <User className="size-4" aria-hidden />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                      <LogOut className="size-4" aria-hidden />
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
             )}
           </div>
         </header>
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-6 md:px-6 md:py-8 lg:px-8">
+        <main className="scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-8 md:px-6 md:py-10 lg:px-10 lg:py-12">
           <div
             className={`mx-auto w-full transition-[max-width] duration-300 ease-in-out ${
               sidebarCollapsed ? "max-w-screen-2xl" : "max-w-7xl"
@@ -442,6 +522,135 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+/** Staff-only: minimal top bar (branding, active academic year, avatar). No sidebar. */
+function StaffLayout({
+  user,
+  displayName,
+  avatarInitial,
+  onLogout,
+  children,
+}: {
+  user: { roles?: string[] };
+  displayName: string;
+  avatarInitial: string;
+  onLogout: () => Promise<void>;
+  children: ReactNode;
+}) {
+  const pathname = usePathname();
+  const { data: context } = useIdeasContextQuery({ enabled: true });
+  const activeYearName = context?.activeAcademicYear?.name ?? null;
+  const isIdeasPage = pathname === ROUTES.IDEAS;
+
+  return (
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
+      <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border bg-card px-4 md:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          <SiteBranding variant="header" linkToEntry />
+          {activeYearName && (
+            <>
+              <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
+              <span className="text-sm text-muted-foreground truncate" title={activeYearName}>
+                {activeYearName}
+              </span>
+            </>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href={ROUTES.IDEAS}
+                className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                  isIdeasPage
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                }`}
+                aria-label="Ideas Hub"
+                aria-current={isIdeasPage ? "page" : undefined}
+              >
+                <Lightbulb className="size-4" aria-hidden />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4}>
+              Ideas Hub
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+                aria-label="Notifications"
+              >
+                <Bell className="size-4" aria-hidden />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4}>
+              Notifications
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-2 rounded-lg border border-transparent pl-2 pr-2.5 font-normal text-muted-foreground transition-colors hover:border-border/60 hover:bg-primary/10 hover:text-primary focus-visible:border-border/80 focus-visible:ring-1 focus-visible:ring-primary/20"
+              >
+                <Avatar className="size-7 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/40">
+                  <AvatarFallback className="bg-muted/70 text-muted-foreground text-xs font-medium">
+                    {avatarInitial}
+                  </AvatarFallback>
+                </Avatar>
+                <span
+                  className="max-w-[120px] truncate text-left text-sm sm:max-w-[180px]"
+                  title={displayName}
+                >
+                  {displayName}
+                </span>
+                <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/70 shadow-xl" sideOffset={8}>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex items-center gap-3">
+                  <Avatar className="size-9 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/50">
+                    <AvatarFallback className="bg-muted/70 text-muted-foreground text-sm font-medium">
+                      {avatarInitial}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                    <span className="truncate text-sm font-semibold tracking-tight text-foreground">{displayName}</span>
+                    <span className="text-xs text-muted-foreground">
+                      <PrimaryRoleLabel roles={user.roles} />
+                    </span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href={ROUTES.PROFILE} className="flex items-center gap-2">
+                  <User className="size-4" aria-hidden />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem variant="destructive" onClick={onLogout}>
+                <LogOut className="size-4" aria-hidden />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+      <main className="scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-8 md:px-6 md:py-10 lg:px-10 lg:py-12">
+        <div className="mx-auto w-full max-w-4xl">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

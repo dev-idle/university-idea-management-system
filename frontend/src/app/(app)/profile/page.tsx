@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProfileContent } from "@/components/features/profile/profile-content";
+import {
+  CARD_CLASS,
+  PAGE_WRAPPER_PROFILE_CLASS,
+  SECTION_CARD_HEADER_CLASS,
+} from "@/config/design";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata: Metadata = {
@@ -12,8 +17,8 @@ export const metadata: Metadata = {
 /** Profile loading skeleton: uses muted background per design system. */
 function ProfilePageSkeleton() {
   return (
-    <div className="space-y-10">
-      <section className="rounded-xl border border-border/90 bg-card px-6 py-7 shadow-sm" aria-hidden>
+    <div className="space-y-8">
+      <section className={`${CARD_CLASS} px-6 py-7`} aria-hidden>
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
           <Skeleton className="size-24 shrink-0 rounded-full bg-muted/80" />
           <div className="min-w-0 flex-1 space-y-3">
@@ -25,8 +30,8 @@ function ProfilePageSkeleton() {
       </section>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        <section className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm" aria-hidden>
-          <div className="border-border/80 border-b px-6 py-5">
+        <section className={`overflow-hidden ${CARD_CLASS}`} aria-hidden>
+          <div className={SECTION_CARD_HEADER_CLASS}>
             <div className="flex gap-3 items-center">
               <Skeleton className="size-9 rounded-lg bg-muted/60" />
               <Skeleton className="h-4 w-44 bg-muted/60" />
@@ -45,8 +50,8 @@ function ProfilePageSkeleton() {
             <Skeleton className="mt-6 h-10 w-28 rounded-lg bg-muted/50" />
           </div>
         </section>
-        <section className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm" aria-hidden>
-          <div className="border-border/80 border-b px-6 py-5">
+        <section className={`overflow-hidden ${CARD_CLASS}`} aria-hidden>
+          <div className={SECTION_CARD_HEADER_CLASS}>
             <div className="flex gap-3 items-center">
               <Skeleton className="size-9 rounded-lg bg-muted/60" />
               <Skeleton className="h-4 w-36 bg-muted/60" />
@@ -67,8 +72,10 @@ function ProfilePageSkeleton() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<ProfilePageSkeleton />}>
-      <ProfileContent />
-    </Suspense>
+    <div className={`space-y-8 ${PAGE_WRAPPER_PROFILE_CLASS}`}>
+      <Suspense fallback={<ProfilePageSkeleton />}>
+        <ProfileContent />
+      </Suspense>
+    </div>
   );
 }

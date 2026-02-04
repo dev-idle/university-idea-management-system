@@ -26,10 +26,10 @@ export const ROUTES = {
   QA_MANAGER_SUBMISSION_CYCLES: "/qa-manager/submission-cycles",
   /** QA Coordinator → /qa-coordinator/dashboard. */
   QA_COORDINATOR_DASHBOARD: "/qa-coordinator/dashboard",
-  /** Staff → /staff (only entry for STAFF). */
-  STAFF: "/staff",
-  /** Ideas: Staff only. Admin, QA Manager, QA Coordinator do not have access. */
+  /** Ideas: Staff Ideas Hub. Staff are routed here after login (no separate /staff page). */
   IDEAS: "/ideas",
+  /** Staff: Submit new idea (full-page creative mode). */
+  IDEAS_NEW: "/ideas/new",
   ADMIN_USERS: "/admin/users",
   ADMIN_DEPARTMENTS: "/admin/departments",
   ADMIN_ACADEMIC_YEARS: "/admin/academic-years",
@@ -44,7 +44,7 @@ const ROLE_TO_ENTRY: Record<Role, string> = {
   ADMIN: ROUTES.ADMIN_DASHBOARD,
   QA_MANAGER: ROUTES.QA_MANAGER_DASHBOARD,
   QA_COORDINATOR: ROUTES.QA_COORDINATOR_DASHBOARD,
-  STAFF: ROUTES.STAFF,
+  STAFF: ROUTES.IDEAS,
 };
 
 /**
@@ -65,7 +65,7 @@ const ROLE_ALLOWED_PATHS: Record<Role, string[]> = {
   ADMIN: ["/admin", "/profile"],
   QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/submission-cycles", "/profile"],
   QA_COORDINATOR: ["/qa-coordinator", "/profile"],
-  STAFF: ["/staff", "/ideas", "/profile"],
+  STAFF: ["/ideas", "/profile"],
 };
 
 /**

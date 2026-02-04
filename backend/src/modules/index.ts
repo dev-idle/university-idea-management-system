@@ -5,4 +5,6 @@ export { DepartmentsModule } from './departments';
 export { AcademicYearsModule } from './academic-years';
 export { CategoriesModule } from './categories';
 export { SubmissionCyclesModule } from './submission-cycles';
+export { IdeasModule } from './ideas';
 export { UsersModule } from './users';
+export { CloudinaryModule } from './cloudinary';

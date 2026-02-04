@@ -67,11 +67,11 @@ let refreshPromise: Promise<{ accessToken: string; user: { id: string; email: st
 
 /**
  * Client-only: fetch with in-memory access token and silent refresh on 401.
- * On 401: one refresh runs; others wait for it then retry once. If refresh fails: clear auth, throw.
+ * Returns the Response so the caller can consume the body (e.g. .blob() for file view/download).
  */
-export async function fetchWithAuth<T>(path: string, init?: RequestInit): Promise<T> {
+export async function fetchWithAuthResponse(path: string, init?: RequestInit): Promise<Response> {
   if (typeof window === "undefined") {
-    throw new Error("fetchWithAuth must be used in the browser");
+    throw new Error("fetchWithAuthResponse must be used in the browser");
   }
 
   const { useAuthStore } = await import("@/stores/auth.store");
@@ -86,7 +86,8 @@ export async function fetchWithAuth<T>(path: string, init?: RequestInit): Promis
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
-    if (!headers.has("Content-Type")) {
+    const body = init?.body;
+    if (!headers.has("Content-Type") && !(body instanceof FormData)) {
       headers.set("Content-Type", "application/json");
     }
     return fetch(url, {
@@ -126,10 +127,18 @@ export async function fetchWithAuth<T>(path: string, init?: RequestInit): Promis
     throw new Error(`API ${res.status}: ${text || res.statusText}`);
   }
 
+  return res;
+}
+
+/**
+ * Client-only: fetch with in-memory access token and silent refresh on 401.
+ * On 401: one refresh runs; others wait for it then retry once. If refresh fails: clear auth, throw.
+ */
+export async function fetchWithAuth<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetchWithAuthResponse(path, init);
   if (res.status === 204) {
     return undefined as T;
   }
-
   const contentType = res.headers.get("Content-Type");
   if (contentType?.includes("application/json")) {
     return res.json() as Promise<T>;

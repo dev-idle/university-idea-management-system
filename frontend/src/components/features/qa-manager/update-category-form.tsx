@@ -8,6 +8,7 @@ import type {
 } from "@/lib/schemas/categories.schema";
 import { updateCategoryBodySchema } from "@/lib/schemas/categories.schema";
 import { getErrorMessage } from "@/lib/errors";
+import { FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -91,7 +92,7 @@ export function UpdateCategoryForm({
       </div>
       {(errors.root ?? error) && (
         <p
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >

@@ -28,9 +28,22 @@ export class AcademicYearsService {
     endDate: Date | null;
     isActive: boolean;
   }> {
+    const trimmedName = body.name.trim();
+    const existing = await this.prisma.academicYear.findFirst({
+      where: {
+        name: { equals: trimmedName, mode: 'insensitive' },
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        'An academic year with this name already exists.',
+      );
+    }
+
     const academicYear = await this.prisma.academicYear.create({
       data: {
-        name: body.name,
+        name: trimmedName,
         startDate: body.startDate,
         endDate: body.endDate ?? null,
       },

@@ -38,4 +38,13 @@ export const queryKeys = {
     all: ["api", "me"] as const,
     me: () => [...queryKeys.profile.all, "me"] as const,
   },
+  ideas: {
+    all: ["api", "ideas"] as const,
+    list: (params?: { page: number; limit: number; sort?: string }) =>
+      [...queryKeys.ideas.all, "list", params ?? {}] as const,
+    detail: (id: string) => [...queryKeys.ideas.all, "detail", id] as const,
+    context: () => [...queryKeys.ideas.all, "context"] as const,
+    uploadParams: () => [...queryKeys.ideas.all, "upload-params"] as const,
+    comments: (ideaId: string) => [...queryKeys.ideas.all, "detail", ideaId, "comments"] as const,
+  },
 } as const;

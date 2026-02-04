@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { AdminDashboardContent } from "@/components/features/admin/dashboard";
+import { PageHeader } from "@/components/layout/page-header";
+import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Administration",
@@ -8,15 +10,12 @@ export const metadata: Metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-5">
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          Administration
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage users, departments, and academic years.
-        </p>
-      </header>
+    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
+      <PageHeader
+        title="Administration"
+        description="Manage users, departments, and academic years. Access control is enforced server-side."
+        descriptionWide
+      />
       <AdminDashboardContent />
     </div>
   );

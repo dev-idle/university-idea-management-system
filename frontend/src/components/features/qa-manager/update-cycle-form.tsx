@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FORM_LABEL_CLASS } from "@/components/features/admin/constants";
+import { FORM_LABEL_CLASS, FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 
 function toDatetimeLocal(d: Date | string): string {
@@ -215,7 +215,7 @@ export function UpdateCycleForm({
 
       {(errors.root ?? error) && (
         <p
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >

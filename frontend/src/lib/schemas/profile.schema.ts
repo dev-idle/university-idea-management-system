@@ -34,6 +34,19 @@ export const updateProfileBodySchema = z.object({
 
 export type UpdateProfileBody = z.infer<typeof updateProfileBodySchema>;
 
+/** Form schema: no transform so react-hook-form resolver types match. Normalize in submit. */
+export const updateProfileFormSchema = z.object({
+  fullName: z.string().max(255).optional(),
+  phone: z.string().max(30).optional(),
+  address: z.string().max(1000).optional(),
+  gender: z.string().max(50).optional(),
+  dateOfBirth: z
+    .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.literal("")])
+    .optional(),
+});
+
+export type UpdateProfileFormValues = z.infer<typeof updateProfileFormSchema>;
+
 /** PATCH /me/password body. */
 export const changePasswordBodySchema = z
   .object({

@@ -10,8 +10,10 @@ import { DepartmentsModule } from './modules/departments';
 import { AcademicYearsModule } from './modules/academic-years';
 import { CategoriesModule } from './modules/categories';
 import { SubmissionCyclesModule } from './modules/submission-cycles';
+import { IdeasModule } from './modules/ideas';
 import { MeModule } from './modules/me';
 import { UsersModule } from './modules/users';
+import { CloudinaryModule } from './modules/cloudinary';
 import { validateEnv } from './config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -66,7 +68,9 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
     AcademicYearsModule,
     CategoriesModule,
     SubmissionCyclesModule,
+    IdeasModule,
     UsersModule,
+    CloudinaryModule,
   ],
   providers: [
     {

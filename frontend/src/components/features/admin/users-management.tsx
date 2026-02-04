@@ -6,15 +6,6 @@ import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
 import { useUsersListQuery, useCreateUserMutation } from "@/hooks/use-users";
 import { USERS_PAGE_SIZE } from "./users/constants";
 import {
@@ -24,9 +15,11 @@ import {
   DIALOG_HEADER_CLASS,
   DIALOG_TITLE_CLASS,
   DIALOG_DESCRIPTION_CLASS,
-  PAGINATION_FOOTER_CLASS,
   TABLE_LOADING_CELL_CLASS,
+  MANAGEMENT_PAGINATION_MIN_TOTAL,
+  formatManagementShowingRange,
 } from "./constants";
+import { ManagementTablePagination } from "./management-table-pagination";
 import { UsersTable } from "./users-table";
 import { CreateUserForm } from "./create-user-form";
 import {
@@ -61,24 +54,6 @@ export function AdminUsersManagement() {
     () => (data ? Math.ceil(data.total / data.limit) : 0),
     [data?.total, data?.limit]
   );
-
-  const pageNumbers = useMemo(() => {
-    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    const around = 2;
-    const start = Math.max(1, page - around);
-    const end = Math.min(totalPages, page + around);
-    const pages: (number | "ellipsis-left" | "ellipsis-right")[] = [];
-    if (start > 1) {
-      pages.push(1);
-      if (start > 2) pages.push("ellipsis-left");
-    }
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < totalPages) {
-      if (end < totalPages - 1) pages.push("ellipsis-right");
-      pages.push(totalPages);
-    }
-    return pages;
-  }, [totalPages, page]);
 
   const createMutation = useCreateUserMutation();
 
@@ -116,7 +91,7 @@ export function AdminUsersManagement() {
           <div className={MANAGEMENT_CARD_HEADER_CLASS}>
             <p className="text-sm text-muted-foreground">
               {data
-                ? `Showing ${(page - 1) * USERS_PAGE_SIZE + 1}–${Math.min(page * USERS_PAGE_SIZE, data.total)} of ${data.total}`
+                ? formatManagementShowingRange(page, USERS_PAGE_SIZE, data.total)
                 : "Loading…"}
             </p>
             <div className="flex flex-wrap items-center gap-2">
@@ -170,55 +145,13 @@ export function AdminUsersManagement() {
                 users={data?.data ?? []}
                 isRefetching={isFetching}
               />
-              {totalPages > 0 && (
-                <div className={PAGINATION_FOOTER_CLASS}>
-                  <Pagination aria-label="User list pagination">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page > 1) setPage(page - 1);
-                          }}
-                          aria-disabled={page <= 1}
-                          className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                      {pageNumbers.map((p) =>
-                        p === "ellipsis-left" || p === "ellipsis-right" ? (
-                          <PaginationItem key={p}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={p}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setPage(p);
-                              }}
-                              isActive={p === page}
-                            >
-                              {p}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page < totalPages) setPage(page + 1);
-                          }}
-                          aria-disabled={page >= totalPages}
-                          className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+              {data && data.total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
+                <ManagementTablePagination
+                  page={page}
+                  totalPages={totalPages}
+                  setPage={setPage}
+                  ariaLabel="User list pagination"
+                />
               )}
             </>
           )}

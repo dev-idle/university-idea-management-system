@@ -28,6 +28,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  CARD_CLASS,
+  SECTION_LABEL_CLASS,
+  SECTION_CARD_HEADER_CLASS,
+  SECTION_CARD_TITLE_CLASS,
+  SECTION_CARD_DESCRIPTION_CLASS,
+} from "@/config/design";
 
 const GENERIC_ERROR = "Unable to update password. Please try again.";
 
@@ -72,16 +79,16 @@ export function ChangePasswordForm() {
   }
 
   return (
-    <Card className="overflow-hidden rounded-xl border border-border/90 bg-card shadow-sm">
-      <CardHeader className="border-border/80 border-b px-6 pt-5 pb-2">
+    <Card className={`overflow-hidden ${CARD_CLASS}`}>
+      <CardHeader className={SECTION_CARD_HEADER_CLASS}>
         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-center">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground [&>svg]:shrink-0">
             <KeyRound className="size-4" strokeWidth={1.25} aria-hidden />
           </div>
-          <CardTitle className="font-serif text-lg font-semibold tracking-tight text-foreground">
+          <CardTitle className={SECTION_CARD_TITLE_CLASS}>
             Change password
           </CardTitle>
-          <p className="col-start-1 col-span-2 row-start-2 text-xs leading-relaxed text-muted-foreground/80">
+          <p className={`col-start-1 col-span-2 row-start-2 ${SECTION_CARD_DESCRIPTION_CLASS}`}>
             Signs you out on other devices.
           </p>
         </div>
@@ -108,7 +115,7 @@ export function ChangePasswordForm() {
               name="currentPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                  <FormLabel className={SECTION_LABEL_CLASS}>
                     Current password
                   </FormLabel>
                   <FormControl>
@@ -148,7 +155,7 @@ export function ChangePasswordForm() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                  <FormLabel className={SECTION_LABEL_CLASS}>
                     New password
                   </FormLabel>
                   <FormControl>
@@ -191,7 +198,7 @@ export function ChangePasswordForm() {
               name="confirmNewPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]">
+                  <FormLabel className={SECTION_LABEL_CLASS}>
                     Confirm new password
                   </FormLabel>
                   <FormControl>
@@ -226,7 +233,7 @@ export function ChangePasswordForm() {
                 </FormItem>
               )}
             />
-            <div className="border-border/80 border-t pt-6">
+            <div className="border-t border-border pt-6">
               <Button
                 type="submit"
                 disabled={isSubmitting}

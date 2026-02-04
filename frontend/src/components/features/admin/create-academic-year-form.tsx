@@ -2,9 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { CreateAcademicYearBody } from "@/lib/schemas/academic-years.schema";
-import { createAcademicYearBodySchema } from "@/lib/schemas/academic-years.schema";
+import type {
+  CreateAcademicYearBody,
+  CreateAcademicYearFormValues,
+} from "@/lib/schemas/academic-years.schema";
+import { createAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
 import { getErrorMessage } from "@/lib/errors";
+import { FORM_ERROR_BLOCK_CLASS } from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,23 +36,34 @@ export function CreateAcademicYearForm({
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<CreateAcademicYearBody>({
-    resolver: zodResolver(createAcademicYearBodySchema),
+  } = useForm<CreateAcademicYearFormValues>({
+    resolver: zodResolver(createAcademicYearFormSchema),
     defaultValues: {
-      name: "",
-      startDate: undefined,
-      endDate: undefined,
+      name: "2026-2027",
+      startDate: "",
+      endDate: "",
     },
   });
 
-  async function onSubmit(data: CreateAcademicYearBody) {
+  async function onSubmit(data: CreateAcademicYearFormValues) {
     try {
-      await mutateAsync(data);
+      const body: CreateAcademicYearBody = {
+        name: data.name,
+        startDate: new Date(data.startDate),
+        ...(data.endDate && data.endDate !== "" ? { endDate: new Date(data.endDate) } : {}),
+      };
+      await mutateAsync(body);
       onSuccess();
     } catch (e) {
-      setError("root", {
-        message: getErrorMessage(e, "Failed to create academic year. Please try again."),
-      });
+      const message = getErrorMessage(e, "Failed to create academic year. Please try again.");
+      const isDuplicateName =
+        message.toLowerCase().includes("already exists") &&
+        (message.toLowerCase().includes("name") || message.toLowerCase().includes("year"));
+      if (isDuplicateName) {
+        setError("name", { type: "server", message });
+      } else {
+        setError("root", { type: "server", message });
+      }
     }
   }
 
@@ -82,12 +97,15 @@ export function CreateAcademicYearForm({
           <Input
             id="name"
             type="text"
-            placeholder="e.g. 2024–2025"
+            placeholder="e.g. 2026-2027"
             className="h-10 w-full text-sm rounded-lg"
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "name-error" : undefined}
             {...register("name")}
           />
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Use format YYYY-YYYY (e.g. 2026-2027). Names must be unique.
+          </p>
           {errors.name && (
             <p id="name-error" className="mt-1.5 text-sm text-destructive" role="alert">
               {errors.name.message}
@@ -134,13 +152,13 @@ export function CreateAcademicYearForm({
           )}
         </div>
       </div>
-      {(errors.root ?? error) && (
+      {(errors.root ?? error) && !errors.name && (
         <p
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >
-          {errors.root?.message ?? error?.message}
+          {getErrorMessage(errors.root ?? error, "Failed to create academic year. Please try again.")}
         </p>
       )}
       <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">

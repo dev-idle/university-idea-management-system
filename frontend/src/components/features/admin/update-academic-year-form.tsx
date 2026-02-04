@@ -5,10 +5,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   AcademicYear,
   UpdateAcademicYearBody,
+  UpdateAcademicYearFormValues,
 } from "@/lib/schemas/academic-years.schema";
 import { updateAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { cn } from "@/lib/utils";
+import { FORM_ERROR_BLOCK_CLASS } from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,26 +47,27 @@ export function UpdateAcademicYearForm({
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<UpdateAcademicYearBody>({
+  } = useForm<UpdateAcademicYearFormValues>({
     resolver: zodResolver(updateAcademicYearFormSchema),
     defaultValues: {
       name: academicYear.name,
       startDate: toInputDate(academicYear.startDate),
       endDate: academicYear.endDate ? toInputDate(academicYear.endDate) : "",
-      isActive: academicYear.isActive,
     },
   });
 
-  async function onSubmit(data: UpdateAcademicYearBody) {
+  async function onSubmit(data: UpdateAcademicYearFormValues) {
     try {
+      const body: UpdateAcademicYearBody = {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.startDate !== undefined &&
+          data.startDate !== "" && { startDate: new Date(data.startDate) }),
+        ...(data.endDate !== undefined &&
+          (data.endDate === "" ? { endDate: null } : { endDate: new Date(data.endDate) })),
+      };
       await mutateAsync({
         id: academicYear.id,
-        body: {
-          ...(data.name !== undefined && { name: data.name }),
-          ...(data.startDate !== undefined && { startDate: data.startDate }),
-          ...(data.endDate !== undefined && { endDate: data.endDate }),
-          ...(data.isActive !== undefined && { isActive: data.isActive }),
-        },
+        body,
       });
       onSuccess();
     } catch (e) {
@@ -89,7 +91,7 @@ export function UpdateAcademicYearForm({
             Edit academic year
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Update name, dates, or active status. Exactly one year can be active at a time.
+            Update name and dates. Use the table actions to set the active year.
           </p>
         </div>
       )}
@@ -152,37 +154,10 @@ export function UpdateAcademicYearForm({
             </p>
           )}
         </div>
-        <div className="flex flex-col gap-1.5 sm:col-span-2">
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="edit-isActive"
-              {...register("isActive")}
-              disabled={academicYear.hasActiveSubmissionCycle && academicYear.isActive}
-              className="size-4 rounded border-input focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-              aria-describedby={academicYear.hasActiveSubmissionCycle && academicYear.isActive ? "edit-isActive-blocked" : "edit-isActive-desc"}
-            />
-            <Label
-              id="edit-isActive-desc"
-              htmlFor="edit-isActive"
-              className={cn(
-                "text-sm text-muted-foreground",
-                academicYear.hasActiveSubmissionCycle && academicYear.isActive && "cursor-not-allowed"
-              )}
-            >
-              Active (exactly one year can be active)
-            </Label>
-          </div>
-          {academicYear.hasActiveSubmissionCycle && academicYear.isActive && (
-            <p id="edit-isActive-blocked" className="text-sm text-muted-foreground">
-              Cannot deactivate while a submission cycle for this year is active. Deactivate or close the cycle in Submission Cycles (QA Manager) first.
-            </p>
-          )}
-        </div>
       </div>
       {(errors.root ?? error) && (
         <p
-          className="rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >

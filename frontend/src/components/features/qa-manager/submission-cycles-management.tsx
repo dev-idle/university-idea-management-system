@@ -14,15 +14,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -49,11 +40,14 @@ import {
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_3,
   TABLE_ACTIONS_CELL_CLASS,
-  PAGINATION_FOOTER_CLASS,
   TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
+  MANAGEMENT_PAGE_SIZE,
+  MANAGEMENT_PAGINATION_MIN_TOTAL,
+  formatManagementShowingRange,
 } from "@/components/features/admin/constants";
+import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCycleForm } from "./create-cycle-form";
 import { UpdateCycleForm } from "./update-cycle-form";
 import {
@@ -81,7 +75,6 @@ function formatDateTime(d: Date | string): string {
   });
 }
 
-const PAGE_SIZE = 10;
 const COLUMNS_WITH_ACTIONS = 7;
 const COLUMNS_NAME_ONLY = 6;
 
@@ -108,7 +101,7 @@ export function SubmissionCyclesManagement() {
   const { data: cycles, status, error, isFetching } = useSubmissionCyclesQuery();
 
   const total = cycles?.length ?? 0;
-  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / PAGE_SIZE)), [total]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / MANAGEMENT_PAGE_SIZE)), [total]);
   const pageNumbers = useMemo(() => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
     const around = 2;
@@ -127,7 +120,7 @@ export function SubmissionCyclesManagement() {
     return pages;
   }, [totalPages, page]);
   const paginatedList = useMemo(
-    () => cycles?.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) ?? [],
+    () => cycles?.slice((page - 1) * MANAGEMENT_PAGE_SIZE, page * MANAGEMENT_PAGE_SIZE) ?? [],
     [cycles, page]
   );
 
@@ -282,7 +275,7 @@ export function SubmissionCyclesManagement() {
           <div className={MANAGEMENT_CARD_HEADER_CLASS}>
             <p className="text-sm text-muted-foreground">
               {cycles
-                ? `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, total)} of ${total}`
+                ? formatManagementShowingRange(page, MANAGEMENT_PAGE_SIZE, total)
                 : "Loading…"}
             </p>
             <Button
@@ -379,7 +372,27 @@ export function SubmissionCyclesManagement() {
                               {formatDateTime(c.interactionClosesAt)}
                             </td>
                             <td className="px-4 py-3 text-muted-foreground sm:px-6">
-                              {c.categories.length}
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex cursor-default items-center text-primary underline decoration-primary/30 decoration-dotted underline-offset-2">
+                                    {c.categories.length}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs">
+                                  <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                                    Categories
+                                  </p>
+                                  {c.categories.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">None assigned</p>
+                                  ) : (
+                                    <ul className="space-y-1 text-sm text-foreground">
+                                      {c.categories.map((cat) => (
+                                        <li key={cat.id}>{cat.name}</li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
                             </td>
                             {isQaManager && (
                               <td className={cn(TABLE_ACTIONS_MIN_W_3, TABLE_ACTIONS_CELL_CLASS)}>
@@ -517,55 +530,13 @@ export function SubmissionCyclesManagement() {
                   </table>
                 </div>
               </TooltipProvider>
-              {total > 0 && totalPages > 0 && (
-                <div className={PAGINATION_FOOTER_CLASS}>
-                  <Pagination aria-label="Submission cycles pagination">
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page > 1) setPage(page - 1);
-                          }}
-                          aria-disabled={page <= 1}
-                          className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                      {pageNumbers.map((p) =>
-                        p === "ellipsis-left" || p === "ellipsis-right" ? (
-                          <PaginationItem key={p}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        ) : (
-                          <PaginationItem key={p}>
-                            <PaginationLink
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setPage(p);
-                              }}
-                              isActive={p === page}
-                            >
-                              {p}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (page < totalPages) setPage(page + 1);
-                          }}
-                          aria-disabled={page >= totalPages}
-                          className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+              {total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
+                <ManagementTablePagination
+                  page={page}
+                  totalPages={totalPages}
+                  setPage={setPage}
+                  ariaLabel="Submission cycles pagination"
+                />
               )}
             </>
           )}

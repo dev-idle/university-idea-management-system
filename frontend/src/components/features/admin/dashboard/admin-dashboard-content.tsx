@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Building2, CalendarDays, ChevronRight, Users } from "lucide-react";
 import { Can } from "@/components/ui/can";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CARD_CLASS, SECTION_LABEL_CLASS, ICON_BOX_MUTED_CLASS, FOCUS_RING_CLASS } from "@/config/design";
 import { ROUTES } from "@/config/constants";
 import { useAcademicYearsQuery } from "@/hooks/use-academic-years";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
@@ -48,10 +49,10 @@ function AdminModuleLink({
   return (
     <Link
       href={href}
-      className="group flex flex-col rounded-xl border border-border bg-card p-5 transition-colors hover:border-border hover:bg-muted/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className={`group flex flex-col p-5 transition-colors hover:bg-muted/20 ${FOCUS_RING_CLASS} ${CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/80 text-muted-foreground">
+      <div className={ICON_BOX_MUTED_CLASS}>
         <Icon className="size-5" aria-hidden />
       </div>
       <CardHeader className="flex-1 gap-1 p-0 pt-4">
@@ -82,20 +83,20 @@ function AdminSummary() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      <div className="rounded-lg border border-border bg-card px-4 py-3">
-        <p className="text-xs font-medium text-muted-foreground">Total users</p>
+      <div className={`rounded-xl px-4 py-3 ${CARD_CLASS}`}>
+        <p className={`text-xs font-medium ${SECTION_LABEL_CLASS}`}>Total users</p>
         <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
           {totalUsers !== null ? totalUsers : "—"}
         </p>
       </div>
-      <div className="rounded-lg border border-border bg-card px-4 py-3">
-        <p className="text-xs font-medium text-muted-foreground">Departments</p>
+      <div className={`rounded-xl px-4 py-3 ${CARD_CLASS}`}>
+        <p className={`text-xs font-medium ${SECTION_LABEL_CLASS}`}>Departments</p>
         <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
           {departmentCount !== null ? departmentCount : "—"}
         </p>
       </div>
-      <div className="rounded-lg border border-border bg-card px-4 py-3">
-        <p className="text-xs font-medium text-muted-foreground">Active academic year</p>
+      <div className={`rounded-xl px-4 py-3 ${CARD_CLASS}`}>
+        <p className={`text-xs font-medium ${SECTION_LABEL_CLASS}`}>Active academic year</p>
         <p className="mt-0.5 text-lg font-semibold text-foreground">
           {activeYear?.name ?? "—"}
         </p>
@@ -106,7 +107,7 @@ function AdminSummary() {
 
 export function AdminDashboardContent() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <section aria-labelledby="admin-summary-heading">
         <h2 id="admin-summary-heading" className="sr-only">
           Summary
@@ -114,10 +115,7 @@ export function AdminDashboardContent() {
         <AdminSummary />
       </section>
       <section aria-labelledby="admin-modules-heading">
-        <h2
-          id="admin-modules-heading"
-          className="text-sm font-semibold text-foreground"
-        >
+        <h2 id="admin-modules-heading" className={SECTION_LABEL_CLASS}>
           Management
         </h2>
         <nav
