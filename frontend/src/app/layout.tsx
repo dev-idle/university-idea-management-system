@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Crimson_Pro, Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { SessionRestore } from "@/components/auth/session-restore";
@@ -43,8 +44,16 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} ${crimsonPro.variable}`}>
         <Providers>
-        <SessionRestore>{children}</SessionRestore>
-      </Providers>
+          <Suspense
+            fallback={
+              <div className="grid min-h-screen place-items-center bg-background">
+                <p className="text-sm text-muted-foreground">Loading…</p>
+              </div>
+            }
+          >
+            <SessionRestore>{children}</SessionRestore>
+          </Suspense>
+        </Providers>
       </body>
     </html>
   );

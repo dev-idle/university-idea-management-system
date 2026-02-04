@@ -321,11 +321,11 @@ export function IdeasHubContent() {
         </Alert>
       )}
 
-      {context?.activeCycleId && (
+      {canSubmit && (
         <div className={`flex flex-wrap items-center justify-between gap-6 sm:gap-8 ${CARD_CLASS} border-primary/5 bg-primary/[0.03] px-6 py-6 sm:px-8 sm:py-7`}>
           <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted-foreground">
             Proposals in this list belong to the current submission cycle for the active academic year.
-            {canSubmit && submissionClosesAt && (
+            {submissionClosesAt && (
               <span className="mt-2 block">
                 Submissions accepted until{" "}
                 {new Date(submissionClosesAt).toLocaleString(undefined, {
@@ -336,14 +336,12 @@ export function IdeasHubContent() {
               </span>
             )}
           </p>
-          {canSubmit && (
-            <Button asChild size="default" className="h-10 shrink-0 gap-2 rounded-lg px-5 font-medium bg-primary text-primary-foreground hover:bg-primary/90">
-              <Link href={ROUTES.IDEAS_NEW}>
-                <Plus className="size-4 shrink-0" aria-hidden />
-                New proposal
-              </Link>
-            </Button>
-          )}
+          <Button asChild size="default" className="h-10 shrink-0 gap-2 rounded-lg px-5 font-medium bg-primary text-primary-foreground hover:bg-primary/90">
+            <Link href={ROUTES.IDEAS_NEW}>
+              <Plus className="size-4 shrink-0" aria-hidden />
+              New proposal
+            </Link>
+          </Button>
         </div>
       )}
 

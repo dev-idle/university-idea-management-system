@@ -17,6 +17,7 @@ import {
   DIALOG_CONTENT_CLASS_SM,
   DIALOG_HEADER_CLASS,
   DIALOG_TITLE_CLASS,
+  DIALOG_DESCRIPTION_CLASS,
 } from "./constants";
 import {
   AlertDialog,
@@ -31,6 +32,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -255,6 +257,9 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
         <DialogContent className={DIALOG_CONTENT_CLASS_SM}>
           <DialogHeader className={DIALOG_HEADER_CLASS}>
             <DialogTitle className={DIALOG_TITLE_CLASS}>Edit user</DialogTitle>
+            <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
+              Update display name or reset password. Leave password blank to keep the current one.
+            </DialogDescription>
           </DialogHeader>
           {editUser && (
             <EditUserForm

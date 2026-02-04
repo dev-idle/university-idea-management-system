@@ -6,7 +6,14 @@ import type { UpdateUserBody } from "@/lib/schemas/users.schema";
 import { updateUserBodySchema } from "@/lib/schemas/users.schema";
 import type { UserListItem } from "@/lib/schemas/users.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS } from "./constants";
+import {
+  FORM_LABEL_CLASS,
+  FORM_DESCRIPTION_CLASS,
+  FORM_ERROR_BLOCK_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_ACTIONS_CLASS,
+} from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,8 +81,6 @@ export function EditUserForm({
   }
 
   const hasError = !!errors.root || !!error;
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
 
   return (
     <form
@@ -84,13 +89,13 @@ export function EditUserForm({
       aria-describedby={hasError ? "edit-user-form-error" : undefined}
     >
       {variant === "default" && (
-        <p className="text-sm leading-relaxed text-muted-foreground">
+        <p className={FORM_DESCRIPTION_CLASS}>
           Update display name or reset password. Leave password blank to keep the current one.
         </p>
       )}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="space-y-6">
         <div className="min-w-0 space-y-2">
-          <Label htmlFor="edit-fullName" className={labelClass}>
+          <Label htmlFor="edit-fullName" className={FORM_LABEL_CLASS}>
             Full name
           </Label>
           <Input
@@ -111,7 +116,7 @@ export function EditUserForm({
         </div>
 
         <div className="min-w-0 space-y-2">
-          <Label htmlFor="edit-newPassword" className={labelClass}>
+          <Label htmlFor="edit-newPassword" className={FORM_LABEL_CLASS}>
             New password{" "}
             <span className="font-normal normal-case text-muted-foreground/80">
               (optional)
@@ -142,15 +147,15 @@ export function EditUserForm({
           role="alert"
           aria-live="polite"
         >
-          {errors.root?.message ?? error?.message}
+          {getErrorMessage(errors.root ?? error, "Failed to update user. Please try again.")}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
+      <div className={FORM_ACTIONS_CLASS}>
         <Button
           type="submit"
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_BUTTON_CLASS}
         >
           {isPending ? "Saving…" : "Save changes"}
         </Button>
@@ -159,7 +164,7 @@ export function EditUserForm({
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
         </Button>
