@@ -4,16 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { isPrismaNotFound } from '../../common/utils/prisma-errors.util';
 import type { CreateCategoryBody } from './dto/create-category.dto';
 import type { UpdateCategoryBody } from './dto/update-category.dto';
-
-function isPrismaNotFound(e: unknown): boolean {
-  return (
-    e != null &&
-    typeof e === 'object' &&
-    (e as { code?: string }).code === 'P2025'
-  );
-}
 
 @Injectable()
 export class CategoriesService {

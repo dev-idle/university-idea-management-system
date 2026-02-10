@@ -46,5 +46,12 @@ export const queryKeys = {
     context: () => [...queryKeys.ideas.all, "context"] as const,
     uploadParams: () => [...queryKeys.ideas.all, "upload-params"] as const,
     comments: (ideaId: string) => [...queryKeys.ideas.all, "detail", ideaId, "comments"] as const,
+    latestComments: (limit: number) => [...queryKeys.ideas.all, "latest-comments", limit] as const,
+    my: {
+      all: ["api", "ideas", "my"] as const,
+      list: (params?: { page: number; limit: number }) =>
+        ["api", "ideas", "my", "list", params ?? {}] as const,
+      detail: (id: string) => ["api", "ideas", "my", "detail", id] as const,
+    },
   },
 } as const;

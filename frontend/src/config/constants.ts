@@ -30,6 +30,8 @@ export const ROUTES = {
   IDEAS: "/ideas",
   /** Staff: Submit new idea (full-page creative mode). */
   IDEAS_NEW: "/ideas/new",
+  /** Staff: My Ideas (manage own submissions). */
+  MY_IDEAS: "/ideas/my",
   ADMIN_USERS: "/admin/users",
   ADMIN_DEPARTMENTS: "/admin/departments",
   ADMIN_ACADEMIC_YEARS: "/admin/academic-years",

@@ -48,7 +48,13 @@ export class AuthService {
   }> {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { role: { select: { name: true } } },
+      select: {
+        id: true,
+        email: true,
+        passwordHash: true,
+        isActive: true,
+        role: { select: { name: true } },
+      },
     });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -114,7 +120,17 @@ export class AuthService {
     const payload = this.verifyRefreshToken(refreshToken);
     const tokenRecord = await this.prisma.refreshToken.findUnique({
       where: { tokenId: payload.jti },
-      include: { user: { include: { role: { select: { name: true } } } } },
+      select: {
+        expiresAt: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            isActive: true,
+            role: { select: { name: true } },
+          },
+        },
+      },
     });
     if (!tokenRecord) {
       await this.prisma.refreshToken.deleteMany({

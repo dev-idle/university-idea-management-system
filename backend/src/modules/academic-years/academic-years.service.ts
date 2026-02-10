@@ -4,16 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { isPrismaNotFound } from '../../common/utils/prisma-errors.util';
 import type { CreateAcademicYearBody } from './dto/create-academic-year.dto';
 import type { UpdateAcademicYearBody } from './dto/update-academic-year.dto';
-
-function isPrismaNotFound(e: unknown): boolean {
-  return (
-    e != null &&
-    typeof e === 'object' &&
-    (e as { code?: string }).code === 'P2025'
-  );
-}
 
 @Injectable()
 export class AcademicYearsService {

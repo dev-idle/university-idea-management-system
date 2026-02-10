@@ -5,16 +5,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { isPrismaNotFound } from '../../common/utils/prisma-errors.util';
 import type { CreateDepartmentBody } from './dto/create-department.dto';
 import type { UpdateDepartmentBody } from './dto/update-department.dto';
-
-function isPrismaNotFound(e: unknown): boolean {
-  return (
-    e != null &&
-    typeof e === 'object' &&
-    (e as { code?: string }).code === 'P2025'
-  );
-}
 
 @Injectable()
 export class DepartmentsService {

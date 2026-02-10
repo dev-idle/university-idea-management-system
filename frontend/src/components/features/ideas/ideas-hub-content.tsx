@@ -2,45 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   useIdeasQuery,
   useIdeasContextQuery,
   useVoteIdeaMutation,
+  useLatestCommentsQuery,
 } from "@/hooks/use-ideas";
-import type { Idea } from "@/lib/schemas/ideas.schema";
+import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
+import type { Idea, LatestComment } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Lightbulb,
-  Plus,
-  MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  MoreVertical,
-  Eye,
-  FileText,
-  ExternalLink,
-  ChevronDown,
-  CalendarDays,
-  Tag,
-  ArrowRight,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
   PaginationContent,
@@ -49,415 +22,538 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { getAvatarInitial } from "@/lib/utils";
-import { LOADING_TEXT_CLASS, SECTION_CARD_TITLE_CLASS, STAFF_PAGE_SPACING, CARD_CLASS, ALERT_WARNING_CLASS, ICON_BOX_PRIMARY_CLASS } from "@/config/design";
+import { getAvatarInitial, cn, timeAgo } from "@/lib/utils";
+import { ALERT_WARNING_CLASS } from "@/config/design";
 import {
-  IDEAS_CARD_ACCENT_BAR_CLASS,
-  IDEAS_SECTION_LABEL_CLASS,
-} from "./ui-constants";
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+  Eye,
+  Plus,
+  Lightbulb,
+  FileText,
+} from "lucide-react";
+
+/* ─── Constants ───────────────────────────────────────────────────────────── */
 
 const PAGE_SIZE = 5;
-const SORT_OPTIONS = [
-  { value: "latest", label: "Latest" },
-  { value: "mostPopular", label: "Most supported" },
-  { value: "mostViewed", label: "Most viewed" },
-] as const;
+const PREVIEW_LEN = 200;
 
-function formatDate(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+type ViewMode = "latest" | "mostPopular" | "mostViewed" | "latestComments";
+
+const VIEW_TABS: Array<{ value: ViewMode; label: string }> = [
+  { value: "latest", label: "Latest" },
+  { value: "mostPopular", label: "Most Popular" },
+  { value: "mostViewed", label: "Most Viewed" },
+  { value: "latestComments", label: "Latest Comments" },
+];
+
+const LATEST_COMMENTS_LIMIT = 10;
+const COMMENT_PREVIEW_LEN = 160;
+
+/* ─── Helpers ─────────────────────────────────────────────────────────────── */
+
+function fmtDate(d: Date | string): string {
+  return (typeof d === "string" ? new Date(d) : d).toLocaleDateString(
+    undefined,
+    { dateStyle: "medium" },
+  );
 }
 
-/** Single idea post card: blog-style, content-first. */
+/* ─── IdeaCard ────────────────────────────────────────────────────────────── */
+
 function IdeaCard({
   idea,
   isExpanded,
+  onToggleExpand,
   onVote,
-  onExpandInline,
-  onOpenFullPage,
   votePending,
 }: {
   idea: Idea;
   isExpanded: boolean;
-  onVote: (ideaId: string, value: "up" | "down") => void;
-  onExpandInline: (ideaId: string) => void;
-  onOpenFullPage: (ideaId: string) => void;
+  onToggleExpand: (id: string) => void;
+  onVote: (id: string, v: "up" | "down") => void;
   votePending: boolean;
 }) {
-  const voteCounts = idea.voteCounts ?? { up: 0, down: 0 };
+  const votes = idea.voteCounts ?? { up: 0, down: 0 };
   const myVote = idea.myVote ?? null;
-  const commentCount = idea.commentCount ?? 0;
-  const viewCount = idea.viewCount ?? 0;
-  const displayName = idea.author
+  const comments = idea.commentCount ?? 0;
+  const views = idea.viewCount ?? 0;
+  const author = idea.author
     ? idea.author.fullName?.trim() || idea.author.email
     : "Anonymous";
-  const avatarInitial = idea.author
+  const initial = idea.author
     ? getAvatarInitial(idea.author.fullName ?? null, idea.author.email)
     : "?";
 
-  const handleVote = (e: React.MouseEvent, value: "up" | "down") => {
+  const castVote = (e: React.MouseEvent, v: "up" | "down") => {
     e.preventDefault();
     e.stopPropagation();
-    onVote(idea.id, value);
+    onVote(idea.id, v);
   };
 
-  return (
-    <article className={`group overflow-hidden ${CARD_CLASS} transition-all duration-200 hover:shadow-md hover:border-primary/20`}>
-      <div className="flex min-h-0 flex-1">
-        <div className={IDEAS_CARD_ACCENT_BAR_CLASS} aria-hidden />
+  const long = (idea.description?.length ?? 0) > PREVIEW_LEN;
 
+  return (
+    <article className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+      {/* Subtle gradient wash on hover */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      {/* ── Byline ───────────────────────────────────────────────────── */}
+      <div className="relative flex items-center gap-3 px-6 pt-6 sm:px-7">
+        <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
+          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/[0.03] text-[11px] font-semibold text-primary/60">
+            {initial}
+          </AvatarFallback>
+        </Avatar>
         <div className="min-w-0 flex-1">
-          {/* Meta row: category + date + menu */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
-            <div className="flex items-center gap-2">
-              {idea.category?.name && (
-                <span className={`inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2.5 py-1 ${IDEAS_SECTION_LABEL_CLASS}`}>
-                  <Tag className="size-3 shrink-0 opacity-70" aria-hidden />
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            <span className="truncate text-[13px] font-medium text-foreground/90">
+              {author}
+            </span>
+            {idea.isAnonymous && (
+              <Badge
+                variant="outline"
+                className="rounded-full border-border/40 px-2 py-0 text-[10px] font-normal italic text-muted-foreground/60"
+              >
+                Anonymous
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
+            <time dateTime={new Date(idea.createdAt).toISOString()}>
+              {timeAgo(idea.createdAt)}
+            </time>
+            {idea.category?.name && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <span
+                    className="size-1 rounded-full bg-primary/40"
+                    aria-hidden
+                  />
                   {idea.category.name}
                 </span>
-              )}
-              <time
-                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground tabular-nums"
-                dateTime={new Date(idea.createdAt).toISOString()}
-              >
-                <CalendarDays className="size-3 shrink-0 opacity-70" aria-hidden />
-                {formatDate(idea.createdAt)}
-              </time>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 shrink-0 rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                  aria-label="Open menu"
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <MoreVertical className="size-4" aria-hidden />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px]">
-                <DropdownMenuItem onSelect={() => onExpandInline(idea.id)}>
-                  <ChevronDown className="size-4 shrink-0 mr-2" aria-hidden />
-                  View details
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => onOpenFullPage(idea.id)}>
-                  <ExternalLink className="size-4 shrink-0 mr-2" aria-hidden />
-                  Open full page
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Body: title + short preview (line-clamp-2); View details shows full text from same paragraph styling */}
-          <div className="px-5 py-5">
-            <Link
-              href={`${ROUTES.IDEAS}/${idea.id}`}
-              className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md -m-1 p-1"
-            >
-              <h2 className="font-serif text-xl font-semibold tracking-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                {idea.title}
-              </h2>
-            </Link>
-            {idea.description && (
-              <p
-                className={
-                  isExpanded
-                    ? "mt-3 text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap"
-                    : "mt-3 text-sm leading-relaxed text-muted-foreground line-clamp-2"
-                }
-              >
-                {idea.description}
-              </p>
+              </>
             )}
-            {isExpanded && idea.attachments.length > 0 && (
-              <div className={idea.description ? "mt-4 pt-4 border-t border-border" : "mt-3"}>
-                <p className={`mb-2 ${IDEAS_SECTION_LABEL_CLASS}`}>
-                  Attachments
-                </p>
-                <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
-                  {idea.attachments.map((att) => (
-                    <li
-                      key={att.id}
-                      className="flex items-center gap-2 rounded-md border border-border/50 bg-background/80 px-2.5 py-1.5 text-xs text-muted-foreground"
-                    >
-                      <FileText className="size-3.5 shrink-0" aria-hidden />
-                      <span className="truncate max-w-[200px]" title={att.fileName}>
-                        {att.fileName}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <Link
-              href={`${ROUTES.IDEAS}/${idea.id}`}
-              className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-hover:text-primary focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
-            >
-              Open full page
-              <ArrowRight className="size-3.5 shrink-0" aria-hidden />
-            </Link>
-          </div>
-
-          {/* Footer: contributor + engagement */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/50 bg-muted/5 px-5 py-3.5 rounded-b-xl">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Avatar className="size-8 shrink-0 rounded-full border border-border bg-muted/50 shadow-sm">
-                <AvatarFallback className="bg-muted text-muted-foreground text-xs font-semibold">
-                  {avatarInitial}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Submitted by
-                </p>
-                <p className="text-sm font-medium text-foreground truncate">
-                  {displayName}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <span
-                className="inline-flex items-center gap-1 rounded-md bg-background/80 px-2 py-1 text-[11px] text-muted-foreground border border-border/50"
-                aria-hidden
-              >
-                <Eye className="size-3" />
-                {viewCount}
-              </span>
-              <span
-                className="inline-flex items-center"
-                onClick={(e) => handleVote(e, "up")}
-                role="group"
-                aria-label="Support"
-              >
-                <Button
-                  type="button"
-                  variant={myVote === "up" ? "default" : "ghost"}
-                  size="sm"
-                  className="h-7 gap-1 rounded-md px-2 text-xs min-w-0"
-                  disabled={votePending}
-                  aria-label="Support"
-                >
-                  <ThumbsUp className="size-3.5" aria-hidden />
-                  {voteCounts.up}
-                </Button>
-              </span>
-              <span
-                className="inline-flex items-center"
-                onClick={(e) => handleVote(e, "down")}
-                role="group"
-                aria-label="Do not support"
-              >
-                <Button
-                  type="button"
-                  variant={myVote === "down" ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-7 gap-1 rounded-md px-2 text-xs min-w-0"
-                  disabled={votePending}
-                  aria-label="Do not support"
-                >
-                  <ThumbsDown className="size-3.5" aria-hidden />
-                  {voteCounts.down}
-                </Button>
-              </span>
-              <span
-                className="inline-flex items-center gap-1 rounded-md bg-background/80 px-2 py-1 text-[11px] text-muted-foreground border border-border/50"
-                aria-hidden
-              >
-                <MessageSquare className="size-3" />
-                {commentCount}
-              </span>
-            </div>
           </div>
         </div>
       </div>
 
+      {/* ── Content ───────────────────────────────────────────────────── */}
+      <div className="relative px-6 pb-5 pt-4 sm:px-7">
+        <Link
+          href={`${ROUTES.IDEAS}/${idea.id}`}
+          className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <h2 className="font-serif text-xl font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-[22px]">
+            {idea.title}
+          </h2>
+        </Link>
+
+        {idea.description && (
+          <div className="mt-3">
+            <p
+              className={cn(
+                "text-[14px] leading-[1.75] text-foreground/55",
+                isExpanded ? "whitespace-pre-wrap" : "line-clamp-3",
+              )}
+            >
+              {idea.description}
+            </p>
+            {!isExpanded && long && (
+              <button
+                type="button"
+                className="mt-1 text-[11px] font-medium text-primary/50 transition-colors hover:text-primary/80"
+                onClick={() => onToggleExpand(idea.id)}
+              >
+                Continue reading
+              </button>
+            )}
+          </div>
+        )}
+
+        {isExpanded && idea.attachments.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {idea.attachments.map((att) => (
+              <span
+                key={att.id}
+                className="inline-flex items-center gap-1 rounded-lg border border-border/25 bg-muted/20 px-2 py-1 text-[11px] text-muted-foreground/60"
+              >
+                <FileText
+                  className="size-3 shrink-0 opacity-50"
+                  aria-hidden
+                />
+                <span className="max-w-[160px] truncate">{att.fileName}</span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ── Engagement ────────────────────────────────────────────────── */}
+      <div className="relative flex items-center gap-1.5 border-t border-border/15 px-6 py-3 sm:px-7">
+        <button
+          type="button"
+          disabled={votePending}
+          onClick={(e) => castVote(e, "up")}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
+            myVote === "up"
+              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400"
+              : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+          )}
+          aria-label="Support"
+        >
+          <ThumbsUp className="size-3.5" aria-hidden />
+          <span className="tabular-nums">{votes.up}</span>
+        </button>
+
+        <button
+          type="button"
+          disabled={votePending}
+          onClick={(e) => castVote(e, "down")}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
+            myVote === "down"
+              ? "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+              : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+          )}
+          aria-label="Do not support"
+        >
+          <ThumbsDown className="size-3.5" aria-hidden />
+          <span className="tabular-nums">{votes.down}</span>
+        </button>
+
+        <div className="flex-1" />
+
+        <Link
+          href={`${ROUTES.IDEAS}/${idea.id}`}
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-muted-foreground/40 transition-colors hover:text-foreground/60"
+        >
+          <MessageSquare className="size-3.5" aria-hidden />
+          <span className="tabular-nums">{comments}</span>
+        </Link>
+
+        <span className="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground/30">
+          <Eye className="size-3.5" aria-hidden />
+          <span className="tabular-nums">{views}</span>
+        </span>
+      </div>
     </article>
   );
 }
 
-export function IdeasHubContent() {
-  const router = useRouter();
-  const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<"latest" | "mostPopular" | "mostViewed">("latest");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+/* ─── LatestCommentRow ─────────────────────────────────────────────────────── */
 
-  const { data: context, status: contextStatus, error: contextError } = useIdeasContextQuery();
-  const { data: listData, status: ideasStatus, error: ideasError } = useIdeasQuery(
-    { page, limit: PAGE_SIZE, sort },
-    { enabled: true }
-  );
-  const voteMutation = useVoteIdeaMutation();
-
-  if (contextStatus === "error") throw contextError;
-  if (ideasStatus === "error") throw ideasError;
-
-  const canSubmit = context?.canSubmit ?? false;
-  const submissionClosesAt = context?.submissionClosesAt;
-  const ideas = listData?.items ?? [];
-  const total = listData?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const handleOpenFullPage = (ideaId: string) => {
-    setExpandedId(null);
-    router.push(`${ROUTES.IDEAS}/${ideaId}`);
-  };
-
-  const handleExpandInline = (ideaId: string) => {
-    setExpandedId((prev) => (ideaId === "" ? null : prev === ideaId ? null : ideaId));
-  };
+function LatestCommentRow({ comment }: { comment: LatestComment }) {
+  const name = comment.author
+    ? comment.author.fullName?.trim() || comment.author.email
+    : "Anonymous";
+  const initial = comment.author
+    ? getAvatarInitial(comment.author.fullName ?? null, comment.author.email)
+    : "?";
+  const preview =
+    comment.content.length > COMMENT_PREVIEW_LEN
+      ? comment.content.slice(0, COMMENT_PREVIEW_LEN) + "…"
+      : comment.content;
 
   return (
-    <div className={STAFF_PAGE_SPACING}>
+    <article className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div className="relative px-6 py-5 sm:px-7">
+        {/* Author + time */}
+        <div className="flex items-center gap-3">
+          <Avatar className="size-8 shrink-0 rounded-full ring-1 ring-border/30">
+            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/[0.03] text-[10px] font-semibold text-primary/60">
+              {initial}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <span className="truncate text-[13px] font-medium text-foreground/90">
+              {name}
+            </span>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
+              <time dateTime={new Date(comment.createdAt).toISOString()}>
+                {timeAgo(comment.createdAt)}
+              </time>
+              <span aria-hidden>·</span>
+              <span className="text-muted-foreground/40">commented on</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Idea title */}
+        <Link
+          href={`${ROUTES.IDEAS}/${comment.idea.id}`}
+          className="mt-3 block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <h3 className="font-serif text-[16px] font-semibold leading-[1.35] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary">
+            {comment.idea.title}
+          </h3>
+        </Link>
+
+        {/* Comment preview */}
+        <p className="mt-2.5 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-foreground/55">
+          {preview}
+        </p>
+      </div>
+    </article>
+  );
+}
+
+/* ─── Hub ──────────────────────────────────────────────────────────────────── */
+
+export function IdeasHubContent() {
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<ViewMode>("latest");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const isCommentsView = sort === "latestComments";
+  const ideaSort = isCommentsView ? "latest" : sort;
+
+  const {
+    data: context,
+    status: ctxStatus,
+    error: ctxError,
+  } = useIdeasContextQuery();
+  const {
+    data: listData,
+    status: ideasStatus,
+    error: ideasError,
+  } = useIdeasQuery(
+    { page, limit: PAGE_SIZE, sort: ideaSort },
+    { enabled: !isCommentsView },
+  );
+  const {
+    data: latestComments = [],
+    status: commentsStatus,
+    error: commentsError,
+  } = useLatestCommentsQuery({
+    enabled: isCommentsView,
+    limit: LATEST_COMMENTS_LIMIT,
+  });
+  const voteMutation = useVoteIdeaMutation();
+  const { markViewedByAction } = useIdeaViewTracker(
+    isCommentsView ? null : expandedId,
+  );
+
+  if (ctxStatus === "error") throw ctxError;
+  if (!isCommentsView && ideasStatus === "error") throw ideasError;
+  if (isCommentsView && commentsStatus === "error") throw commentsError;
+
+  const canSubmit = context?.canSubmit ?? false;
+  const closesAt = context?.submissionClosesAt;
+  const ideas = listData?.items ?? [];
+  const total = listData?.total ?? 0;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  return (
+    <div className="space-y-7">
+      {/* ── Alert ────────────────────────────────────────────────────── */}
       {!canSubmit && (
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
-            Submission is currently closed. You may still view all proposals for the active academic year.
+            Submission is currently closed. You may still browse proposals.
           </AlertDescription>
         </Alert>
       )}
 
+      {/* ── Compose CTA ──────────────────────────────────────────────── */}
       {canSubmit && (
-        <div className={`flex flex-wrap items-center justify-between gap-6 sm:gap-8 ${CARD_CLASS} border-primary/5 bg-primary/[0.03] px-6 py-6 sm:px-8 sm:py-7`}>
-          <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted-foreground">
-            Proposals in this list belong to the current submission cycle for the active academic year.
-            {submissionClosesAt && (
-              <span className="mt-2 block">
-                Submissions accepted until{" "}
-                {new Date(submissionClosesAt).toLocaleString(undefined, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
-                .
-              </span>
-            )}
-          </p>
-          <Button asChild size="default" className="h-10 shrink-0 gap-2 rounded-lg px-5 font-medium bg-primary text-primary-foreground hover:bg-primary/90">
-            <Link href={ROUTES.IDEAS_NEW}>
-              <Plus className="size-4 shrink-0" aria-hidden />
-              New proposal
-            </Link>
-          </Button>
-        </div>
+        <Link href={ROUTES.IDEAS_NEW} className="group/cta block">
+          <div className="flex items-center gap-4 rounded-2xl border border-border/30 bg-card px-6 py-5 transition-all duration-300 hover:border-border/60 hover:shadow-md hover:shadow-black/[0.03] sm:px-7">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/[0.06] text-primary/60 transition-colors duration-300 group-hover/cta:bg-primary/[0.10] group-hover/cta:text-primary/80">
+              <Lightbulb className="size-[22px]" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-medium text-foreground">
+                Share a proposal
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground/50">
+                {closesAt && <>Open until {fmtDate(closesAt)} · </>}
+                New ideas welcome
+              </p>
+            </div>
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm transition-transform duration-300 group-hover/cta:scale-105">
+              <Plus className="size-4" aria-hidden />
+            </div>
+          </div>
+        </Link>
       )}
 
-      <section className="space-y-10" aria-labelledby="ideas-heading">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-8">
-          <div className="flex items-center gap-3">
-            <div className={ICON_BOX_PRIMARY_CLASS}>
-              <Lightbulb className="size-5" aria-hidden />
-            </div>
-            <h2 id="ideas-heading" className={SECTION_CARD_TITLE_CLASS}>
-              Proposals
-            </h2>
-          </div>
-          <Select
-            value={sort}
-            onValueChange={(v) => {
-              setSort(v as "latest" | "mostPopular" | "mostViewed");
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="h-10 w-[180px] rounded-lg border-border bg-background focus:ring-2 focus:ring-primary/20">
-              <SelectValue placeholder="Sort" />
-            </SelectTrigger>
-            <SelectContent className="rounded-lg">
-              {SORT_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value} className="rounded-md">
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* ── View tabs ────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1">
+          {VIEW_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => {
+                setSort(tab.value);
+                setPage(1);
+                setExpandedId(null);
+              }}
+              className={cn(
+                "rounded-full px-3 py-1 text-[12px] font-medium transition-all duration-200",
+                sort === tab.value
+                  ? "bg-foreground/90 text-background shadow-sm"
+                  : "text-muted-foreground/50 hover:text-foreground/70",
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
+        {!isCommentsView && total > 0 && (
+          <p className="tabular-nums text-[11px] text-muted-foreground/40">
+            {total} proposal{total !== 1 ? "s" : ""}
+          </p>
+        )}
+        {isCommentsView && latestComments.length > 0 && (
+          <p className="tabular-nums text-[11px] text-muted-foreground/40">
+            {latestComments.length} comment{latestComments.length !== 1 ? "s" : ""}
+          </p>
+        )}
+      </div>
 
-        {(contextStatus === "pending" || ideasStatus === "pending") && !listData ? (
-          <div className={`${CARD_CLASS} py-24 text-center`}>
-            <p className={LOADING_TEXT_CLASS} aria-live="polite">
-              Loading proposals…
+      {/* ── Latest Comments view ─────────────────────────────────────── */}
+      {isCommentsView ? (
+        commentsStatus === "pending" ? (
+          <div className="flex flex-col items-center py-28">
+            <div className="size-7 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
+            <p className="mt-5 text-[13px] text-muted-foreground/60">
+              Loading comments…
             </p>
           </div>
-        ) : !ideas.length ? (
-          <div className={`${CARD_CLASS} py-24 text-center`}>
-            <p className={LOADING_TEXT_CLASS}>
-              No proposals have been submitted yet for the active academic year.
+        ) : latestComments.length === 0 ? (
+          <div className="flex flex-col items-center py-28 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/30">
+              <MessageSquare
+                className="size-6 text-muted-foreground/30"
+                aria-hidden
+              />
+            </div>
+            <p className="mt-5 text-[14px] font-medium text-foreground/80">
+              No comments yet
+            </p>
+            <p className="mt-1 text-[12px] text-muted-foreground/50">
+              Be the first to start a discussion
             </p>
           </div>
         ) : (
-          <>
-            <ul className="grid gap-10 sm:grid-cols-1">
-              {ideas.map((idea) => (
-                <li key={idea.id}>
+          <div className="space-y-4">
+            {latestComments.map((c) => (
+              <LatestCommentRow key={c.id} comment={c} />
+            ))}
+          </div>
+        )
+      ) : (
+        /* ── Ideas feed ─────────────────────────────────────────────── */
+        <>
+          {(ctxStatus === "pending" || ideasStatus === "pending") &&
+          !listData ? (
+            <div className="flex flex-col items-center py-28">
+              <div className="size-7 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
+              <p className="mt-5 text-[13px] text-muted-foreground/60">
+                Loading proposals…
+              </p>
+            </div>
+          ) : !ideas.length ? (
+            <div className="flex flex-col items-center py-28 text-center">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/30">
+                <Lightbulb
+                  className="size-6 text-muted-foreground/30"
+                  aria-hidden
+                />
+              </div>
+              <p className="mt-5 text-[14px] font-medium text-foreground/80">
+                No proposals yet
+              </p>
+              <p className="mt-1 text-[12px] text-muted-foreground/50">
+                {canSubmit
+                  ? "Be the first to share an idea"
+                  : "Check back when a submission cycle opens"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-5">
+                {ideas.map((idea) => (
                   <IdeaCard
+                    key={idea.id}
                     idea={idea}
                     isExpanded={expandedId === idea.id}
-                    onVote={(ideaId, value) => voteMutation.mutate({ ideaId, value })}
-                    onExpandInline={handleExpandInline}
-                    onOpenFullPage={handleOpenFullPage}
+                    onToggleExpand={(id) =>
+                      setExpandedId((prev) => (prev === id ? null : id))
+                    }
+                    onVote={(id, v) => {
+                      markViewedByAction(id);
+                      voteMutation.mutate({ ideaId: id, value: v });
+                    }}
                     votePending={voteMutation.isPending}
                   />
-                </li>
-              ))}
-            </ul>
+                ))}
+              </div>
 
-            {totalPages > 1 && (
-              <Pagination className="mt-12 pt-8 border-t border-border">
-                <PaginationContent className="gap-1">
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (page > 1) setPage(page - 1);
-                      }}
-                      aria-disabled={page <= 1}
-                      className={
-                        page <= 1
-                          ? "pointer-events-none opacity-50"
-                          : "rounded-lg border-border focus-visible:ring-2 focus-visible:ring-primary/20"
-                      }
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <PaginationItem key={p}>
-                      <PaginationLink
+              {pages > 1 && (
+                <Pagination className="pt-6">
+                  <PaginationContent className="gap-1">
+                    <PaginationItem>
+                      <PaginationPrevious
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          setPage(p);
+                          if (page > 1) setPage(page - 1);
                         }}
-                        isActive={page === p}
-                        className="rounded-lg focus-visible:ring-2 focus-visible:ring-primary/20"
-                      >
-                        {p}
-                      </PaginationLink>
+                        aria-disabled={page <= 1}
+                        className={
+                          page <= 1
+                            ? "pointer-events-none opacity-40"
+                            : "rounded-lg"
+                        }
+                      />
                     </PaginationItem>
-                  ))}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (page < totalPages) setPage(page + 1);
-                      }}
-                      aria-disabled={page >= totalPages}
-                      className={
-                        page >= totalPages
-                          ? "pointer-events-none opacity-50"
-                          : "rounded-lg border-border focus-visible:ring-2 focus-visible:ring-primary/20"
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            )}
-          </>
-        )}
-      </section>
+                    {Array.from({ length: pages }, (_, i) => i + 1).map(
+                      (p) => (
+                        <PaginationItem key={p}>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setPage(p);
+                            }}
+                            isActive={page === p}
+                            className="rounded-lg"
+                          >
+                            {p}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ),
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (page < pages) setPage(page + 1);
+                        }}
+                        aria-disabled={page >= pages}
+                        className={
+                          page >= pages
+                            ? "pointer-events-none opacity-40"
+                            : "rounded-lg"
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              )}
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -36,6 +36,7 @@ model User {
   ideas         Idea[]
   ideaVotes     IdeaVote[]
   ideaComments  IdeaComment[]
+  ideaViews     IdeaView[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -94,6 +95,7 @@ model Idea {
   attachments     IdeaAttachment[]
   votes           IdeaVote[]
   comments        IdeaComment[]
+  views           IdeaView[]
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
@@ -173,6 +175,19 @@ model CycleCategory {
   @@unique([cycleId, categoryId])
   @@index([cycleId])
   @@index([categoryId])
+}
+
+model IdeaView {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ideaId    String   @db.Uuid
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([ideaId])
+  @@index([userId])
+  @@index([ideaId, userId, createdAt])
 }
 
 model RefreshToken {

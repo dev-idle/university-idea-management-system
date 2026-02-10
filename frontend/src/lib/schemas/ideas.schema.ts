@@ -118,3 +118,55 @@ export const createCommentBodySchema = z.object({
   isAnonymous: z.boolean().default(false),
 });
 export type CreateCommentBody = z.infer<typeof createCommentBodySchema>;
+
+/* ── Latest comments (cross‑idea) ─────────────────────────────────────────── */
+
+export const latestCommentSchema = z.object({
+  id: z.string().uuid(),
+  content: z.string(),
+  isAnonymous: z.boolean(),
+  createdAt: z.coerce.date(),
+  author: authorRefSchema.nullable(),
+  idea: z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+  }),
+});
+export type LatestComment = z.infer<typeof latestCommentSchema>;
+
+export const latestCommentsResponseSchema = z.array(latestCommentSchema);
+export type LatestCommentsResponse = z.infer<typeof latestCommentsResponseSchema>;
+
+/* ── Own‑idea management schemas ─────────────────────────────────────────── */
+
+/** Own idea extends normal idea with submission closure info and cycle categories. */
+export const ownIdeaSchema = ideaSchema.extend({
+  submissionClosesAt: z.coerce.date().nullable().optional(),
+  categories: z.array(categoryRefSchema).optional().default([]),
+});
+export type OwnIdea = z.infer<typeof ownIdeaSchema>;
+
+/** Own ideas list item (idea + submissionClosesAt). */
+export const ownIdeaListItemSchema = ideaSchema.extend({
+  submissionClosesAt: z.coerce.date().nullable().optional(),
+});
+export type OwnIdeaListItem = z.infer<typeof ownIdeaListItemSchema>;
+
+export const ownIdeasPaginatedResponseSchema = z.object({
+  items: z.array(ownIdeaListItemSchema),
+  total: z.number().int().min(0),
+});
+export type OwnIdeasPaginatedResponse = z.infer<typeof ownIdeasPaginatedResponseSchema>;
+
+/** Body for updating own idea text fields. */
+export const updateIdeaBodySchema = z.object({
+  title: z.string().min(1, "Title is required").max(500).transform((s) => s.trim()),
+  description: z
+    .string()
+    .min(1, "Content is required.")
+    .max(10000)
+    .transform((s) => s.trim()),
+  categoryId: z.string().uuid(),
+  isAnonymous: z.boolean(),
+});
+export type UpdateIdeaBody = z.infer<typeof updateIdeaBodySchema>;

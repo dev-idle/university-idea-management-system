@@ -5,7 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { CYCLE_STATUS, type CycleStatus } from './constants';
+import { isPrismaNotFound } from '../../common/utils/prisma-errors.util';
+import type { CycleStatus } from './constants';
 import { DEFAULT_INTERACTION_DAYS } from './dto/create-cycle.dto';
 import type { CreateCycleBody } from './dto/create-cycle.dto';
 import type { UpdateCycleBody } from './dto/update-cycle.dto';
@@ -13,14 +14,6 @@ import type { UpdateCycleBody } from './dto/update-cycle.dto';
 const STATUS_DRAFT = 'DRAFT';
 const STATUS_ACTIVE = 'ACTIVE';
 const STATUS_CLOSED = 'CLOSED';
-
-function isPrismaNotFound(e: unknown): boolean {
-  return (
-    e != null &&
-    typeof e === 'object' &&
-    (e as { code?: string }).code === 'P2025'
-  );
-}
 
 /** Comments and votes close at the same time; default 14 days after idea submission close. */
 function defaultInteractionClosesAt(ideaSubmissionClosesAt: Date): Date {

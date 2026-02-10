@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Tags,
   Lightbulb,
+  FolderPen,
   Bell,
   ChevronDown,
   LogOut,
@@ -47,6 +48,7 @@ const PATH_TO_TITLE: Record<string, string> = {
   [ROUTES.QA_MANAGER_SUBMISSION_CYCLES]: "Submission Cycles Management",
   [ROUTES.QA_COORDINATOR_DASHBOARD]: "QA Coordinator",
   [ROUTES.IDEAS]: "Ideas",
+  [ROUTES.MY_IDEAS]: "My Ideas",
   [ROUTES.PROFILE]: "Profile",
 };
 
@@ -287,6 +289,16 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
         label="Ideas"
         icon={Lightbulb}
         isActive={pathname === ROUTES.IDEAS}
+        collapsed={collapsed}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.MY_IDEAS}
+        href={ROUTES.MY_IDEAS}
+        label="My Ideas"
+        icon={FolderPen}
+        isActive={pathname.startsWith(ROUTES.MY_IDEAS)}
         collapsed={collapsed}
       />
     );
@@ -544,6 +556,7 @@ function StaffLayout({
   const { data: context } = useIdeasContextQuery({ enabled: true });
   const activeYearName = context?.activeAcademicYear?.name ?? null;
   const isIdeasPage = pathname === ROUTES.IDEAS;
+  const isMyIdeasPage = pathname.startsWith(ROUTES.MY_IDEAS);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -577,6 +590,25 @@ function StaffLayout({
             </TooltipTrigger>
             <TooltipContent side="bottom" sideOffset={4}>
               Ideas Hub
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href={ROUTES.MY_IDEAS}
+                className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                  isMyIdeasPage
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                }`}
+                aria-label="My Ideas"
+                aria-current={isMyIdeasPage ? "page" : undefined}
+              >
+                <FolderPen className="size-4" aria-hidden />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4}>
+              My Ideas
             </TooltipContent>
           </Tooltip>
           <Tooltip>

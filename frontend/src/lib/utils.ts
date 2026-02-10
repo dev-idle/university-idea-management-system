@@ -6,6 +6,25 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Human-readable relative time (e.g. "3m ago", "2d ago").
+ * Falls back to short date for older entries.
+ */
+export function timeAgo(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const day = Math.floor(h / 24);
+  if (day < 7) return `${day}d ago`;
+  const w = Math.floor(day / 7);
+  if (w < 5) return `${w}w ago`;
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+/**
  * Avatar initial: first character of full name if available, otherwise first letter of email.
  * Keeps Profile and navbar avatar in sync.
  */

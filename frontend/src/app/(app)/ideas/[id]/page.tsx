@@ -9,33 +9,21 @@ import {
   useVoteIdeaMutation,
   useCreateCommentMutation,
 } from "@/hooks/use-ideas";
+import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
 import { ROUTES } from "@/config/constants";
 import { fetchWithAuthResponse } from "@/lib/api/client";
-import { getAvatarInitial } from "@/lib/utils";
+import { getAvatarInitial, cn, timeAgo } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
-  STAFF_PAGE_SPACING,
   LOADING_WRAPPER_CLASS,
   LOADING_TEXT_CLASS,
-  PAGE_TITLE_CLASS,
-  SECTION_CARD_TITLE_CLASS,
-  SECTION_CARD_DESCRIPTION_CLASS,
-  CARD_CLASS,
   BACK_LINK_CLASS,
 } from "@/config/design";
-import {
-  IDEAS_CARD_ACCENT_CLASS,
-  IDEAS_CARD_ACCENT_BAR_CLASS,
-  IDEAS_SECTION_LABEL_CLASS,
-  IDEAS_BUTTON_CLASS,
-} from "@/components/features/ideas/ui-constants";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -43,11 +31,10 @@ import {
   ArrowLeft,
   Download,
   FileText,
-  Calendar,
-  User,
-  Eye,
   Paperclip,
 } from "lucide-react";
+
+/* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
 function formatDate(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -58,16 +45,7 @@ function formatDate(d: Date | string): string {
   });
 }
 
-function formatDateTime(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+/* ─── Attachment ──────────────────────────────────────────────────────────── */
 
 type Attachment = { id: string; fileName: string; secureUrl: string };
 
@@ -75,90 +53,82 @@ function AttachmentItem({ att }: { att: Attachment }) {
   const [loading, setLoading] = useState<"view" | "download" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const viewPath = `ideas/attachments/${att.id}/view`;
-  const downloadPath = `ideas/attachments/${att.id}/download`;
-
-  const openBlob = (blob: Blob, fileName: string, disposition: "view" | "download") => {
-    const objectUrl = URL.createObjectURL(blob);
-    if (disposition === "view") {
-      window.open(objectUrl, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  const openBlob = (
+    blob: Blob,
+    name: string,
+    mode: "view" | "download",
+  ) => {
+    const url = URL.createObjectURL(blob);
+    if (mode === "view") {
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } else {
       const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = fileName;
+      a.href = url;
+      a.download = name;
       a.click();
-      URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(url);
     }
   };
 
-  const handleView = async () => {
+  const handle = async (action: "view" | "download") => {
     setError(null);
-    setLoading("view");
+    setLoading(action);
     try {
-      const res = await fetchWithAuthResponse(viewPath);
-      const blob = await res.blob();
-      openBlob(blob, att.fileName, "view");
+      const res = await fetchWithAuthResponse(
+        `ideas/attachments/${att.id}/${action}`,
+      );
+      openBlob(await res.blob(), att.fileName, action);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "The file could not be opened.");
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const handleDownload = async () => {
-    setError(null);
-    setLoading("download");
-    try {
-      const res = await fetchWithAuthResponse(downloadPath);
-      const blob = await res.blob();
-      openBlob(blob, att.fileName, "download");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "The file could not be downloaded.");
+      setError(
+        e instanceof Error
+          ? e.message
+          : `Could not ${action === "view" ? "open" : "download"} the file.`,
+      );
     } finally {
       setLoading(null);
     }
   };
 
   return (
-    <li className="rounded-lg border border-border/80 bg-muted/20 px-4 py-3 transition-colors hover:border-border hover:bg-muted/30">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background">
-            <FileText className="size-4 text-muted-foreground" aria-hidden />
-          </div>
-          <span className="min-w-0 truncate text-sm text-foreground" title={att.fileName}>
-            {att.fileName}
-          </span>
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
-            onClick={handleView}
-            disabled={!!loading}
-            aria-label={`Open ${att.fileName}`}
-          >
-            {loading === "view" ? "Opening…" : "Open"}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-1.5 text-muted-foreground hover:text-foreground"
-            onClick={handleDownload}
-            disabled={!!loading}
-            aria-label={`Download ${att.fileName}`}
-          >
-            <Download className="size-4 shrink-0" aria-hidden />
-            {loading === "download" ? "Downloading…" : "Download"}
-          </Button>
-        </div>
+    <li className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/20">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <FileText
+          className="size-4 shrink-0 text-muted-foreground/40"
+          aria-hidden
+        />
+        <span
+          className="min-w-0 truncate text-[13px] text-foreground/80"
+          title={att.fileName}
+        >
+          {att.fileName}
+        </span>
+      </div>
+      <div className="flex shrink-0 items-center gap-0.5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-[11px] text-muted-foreground/50 hover:text-foreground/70"
+          onClick={() => handle("view")}
+          disabled={!!loading}
+        >
+          {loading === "view" ? "Opening…" : "Open"}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 gap-1 px-2 text-[11px] text-muted-foreground/50 hover:text-foreground/70"
+          onClick={() => handle("download")}
+          disabled={!!loading}
+        >
+          <Download className="size-3.5 shrink-0" aria-hidden />
+          {loading === "download" ? "…" : "Save"}
+        </Button>
       </div>
       {error && (
-        <p className="mt-2 text-xs text-destructive" role="alert">
+        <p className="mt-1.5 basis-full text-[11px] text-destructive" role="alert">
           {error}
         </p>
       )}
@@ -166,14 +136,18 @@ function AttachmentItem({ att }: { att: Attachment }) {
   );
 }
 
+/* ─── Page ────────────────────────────────────────────────────────────────── */
+
 export default function IdeaDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = typeof params.id === "string" ? params.id : null;
   const { data: idea, status, error } = useIdeaQuery(id);
-  const { data: comments = [], status: commentsStatus } = useIdeaCommentsQuery(id);
+  const { data: comments = [], status: commentsStatus } =
+    useIdeaCommentsQuery(id);
   const voteMutation = useVoteIdeaMutation();
   const createCommentMutation = useCreateCommentMutation();
+  const { markViewedByAction } = useIdeaViewTracker(id);
 
   const [commentContent, setCommentContent] = useState("");
   const [commentAnonymous, setCommentAnonymous] = useState(false);
@@ -183,7 +157,6 @@ export default function IdeaDetailPage() {
   }, [id, router]);
 
   if (!id) return null;
-
   if (status === "error") throw error;
   if (status === "pending" || !idea) {
     return (
@@ -197,26 +170,32 @@ export default function IdeaDetailPage() {
     );
   }
 
-  const voteCounts = idea.voteCounts ?? { up: 0, down: 0 };
+  const votes = idea.voteCounts ?? { up: 0, down: 0 };
   const myVote = idea.myVote ?? null;
-  const feedbackEndsAt = idea.interactionClosesAt
+  const totalVotes = votes.up + votes.down;
+  const endsAt = idea.interactionClosesAt
     ? new Date(idea.interactionClosesAt)
     : null;
-  const feedbackOpen = !!feedbackEndsAt && new Date() < feedbackEndsAt;
-  const viewCount = idea.viewCount ?? 0;
+  const open = !!endsAt && new Date() < endsAt;
+  const views = idea.viewCount ?? 0;
   const authorLabel = idea.author
     ? idea.author.fullName?.trim() || idea.author.email
     : "Anonymous";
+  const avatarInitial = idea.author
+    ? getAvatarInitial(idea.author.fullName ?? null, idea.author.email)
+    : "?";
 
-  const handleVote = (value: "up" | "down") => {
-    if (!feedbackOpen || voteMutation.isPending) return;
-    voteMutation.mutate({ ideaId: id, value });
+  const handleVote = (v: "up" | "down") => {
+    if (!open || voteMutation.isPending) return;
+    markViewedByAction(id);
+    voteMutation.mutate({ ideaId: id, value: v });
   };
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = commentContent.trim();
     if (!trimmed || createCommentMutation.isPending) return;
+    markViewedByAction(id);
     createCommentMutation.mutate(
       { ideaId: id, body: { content: trimmed, isAnonymous: commentAnonymous } },
       {
@@ -224,12 +203,13 @@ export default function IdeaDetailPage() {
           setCommentContent("");
           setCommentAnonymous(false);
         },
-      }
+      },
     );
   };
 
   return (
-    <div className={`${STAFF_PAGE_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
+    <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
+      {/* Back */}
       <nav aria-label="Breadcrumb">
         <Link
           href={ROUTES.IDEAS}
@@ -237,225 +217,267 @@ export default function IdeaDetailPage() {
           aria-label="Return to Ideas Hub"
         >
           <ArrowLeft className="size-4 shrink-0" aria-hidden />
-          Return to Ideas Hub
+          Ideas Hub
         </Link>
       </nav>
 
-      {/* Proposal card */}
+      {/* ── Article ──────────────────────────────────────────────────── */}
       <article
-        className={IDEAS_CARD_ACCENT_CLASS}
+        className="overflow-hidden rounded-2xl border border-border/30 bg-card"
         aria-labelledby="proposal-title"
       >
-        <div className="flex min-h-0 min-w-0">
-          <div className={IDEAS_CARD_ACCENT_BAR_CLASS} aria-hidden />
-          <div className="min-w-0 flex-1 p-6 sm:p-8">
-          {/* Title */}
-          <h1 id="proposal-title" className={PAGE_TITLE_CLASS}>
+        {/* Byline */}
+        <div className="flex items-center gap-3 px-6 py-5 sm:px-8">
+          <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
+            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/[0.03] text-[11px] font-semibold text-primary/60">
+              {avatarInitial}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-medium text-foreground/90">
+              {idea.isAnonymous ? "Anonymous" : authorLabel}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-1.5 text-[11px] text-muted-foreground/50">
+              <span>{timeAgo(idea.createdAt)}</span>
+              {idea.category?.name && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <span
+                      className="size-1 rounded-full bg-primary/40"
+                      aria-hidden
+                    />
+                    {idea.category.name}
+                  </span>
+                </>
+              )}
+              {views > 0 && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span>
+                    {views} view{views !== 1 ? "s" : ""}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+          {idea.isAnonymous && (
+            <Badge
+              variant="outline"
+              className="rounded-full border-border/30 px-2 py-0 text-[10px] font-normal italic text-muted-foreground/50"
+            >
+              Anonymous
+            </Badge>
+          )}
+        </div>
+
+        <div className="border-t border-border/10" />
+
+        {/* Body */}
+        <div className="px-6 py-10 sm:px-8 sm:py-12">
+          <h1
+            id="proposal-title"
+            className="font-serif text-[28px] font-bold leading-[1.2] tracking-tight text-foreground sm:text-[34px]"
+          >
             {idea.title}
           </h1>
 
-          {/* Meta: category, date, author, views */}
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            {idea.category?.name && (
-              <Badge variant="secondary" className="font-normal rounded-md">
-                {idea.category.name}
-              </Badge>
-            )}
-            {idea.isAnonymous && (
-              <Badge variant="outline" className="font-normal italic rounded-md">
-                Anonymous author
-              </Badge>
-            )}
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar className="size-4 shrink-0" aria-hidden />
-              Submitted {formatDate(idea.createdAt)}
-            </span>
-            {idea.author && (
-              <span className="inline-flex items-center gap-1.5">
-                <User className="size-4 shrink-0" aria-hidden />
-                {authorLabel}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5">
-              <Eye className="size-4 shrink-0" aria-hidden />
-              {viewCount} view{viewCount !== 1 ? "s" : ""}
-            </span>
-          </div>
-
-          {/* Description */}
           {idea.description && (
-            <>
-              <Separator className="my-6 bg-border/60" />
-              <section aria-labelledby="description-label">
-                <h2 id="description-label" className={IDEAS_SECTION_LABEL_CLASS}>
-                  Description
-                </h2>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                  {idea.description}
-                </p>
-              </section>
-            </>
+            <div className="mt-8 whitespace-pre-wrap text-[16px] leading-[1.9] text-foreground/70">
+              {idea.description}
+            </div>
           )}
 
-          {/* Attachments */}
           {idea.attachments.length > 0 && (
-            <>
-              <Separator className="my-6 bg-border/60" />
-              <section aria-labelledby="attachments-label">
-                <h2
-                  id="attachments-label"
-                  className={`flex items-center gap-2 ${IDEAS_SECTION_LABEL_CLASS}`}
-                >
-                  <Paperclip className="size-3.5 shrink-0" aria-hidden />
-                  Attachments ({idea.attachments.length})
-                </h2>
-                <ul className="mt-3 space-y-2">
-                  {idea.attachments.map((att) => (
-                    <AttachmentItem key={att.id} att={att} />
-                  ))}
-                </ul>
-              </section>
-            </>
+            <div className="mt-10 border-t border-border/15 pt-7">
+              <h2 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50">
+                <Paperclip className="size-3.5 shrink-0" aria-hidden />
+                Attachments ({idea.attachments.length})
+              </h2>
+              <ul className="mt-3 space-y-1.5">
+                {idea.attachments.map((att) => (
+                  <AttachmentItem key={att.id} att={att} />
+                ))}
+              </ul>
+            </div>
           )}
-          </div>
+        </div>
+
+        {/* Reactions */}
+        <div className="flex flex-wrap items-center gap-2 border-t border-border/15 px-6 py-3.5 sm:px-8">
+          <button
+            type="button"
+            disabled={!open || voteMutation.isPending}
+            onClick={() => handleVote("up")}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
+              myVote === "up"
+                ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400"
+                : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+              (!open || voteMutation.isPending) &&
+                "pointer-events-none opacity-40",
+            )}
+            aria-label="Support"
+          >
+            <ThumbsUp className="size-3.5" aria-hidden />
+            <span className="tabular-nums">{votes.up}</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={!open || voteMutation.isPending}
+            onClick={() => handleVote("down")}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
+              myVote === "down"
+                ? "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+                : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+              (!open || voteMutation.isPending) &&
+                "pointer-events-none opacity-40",
+            )}
+            aria-label="Do not support"
+          >
+            <ThumbsDown className="size-3.5" aria-hidden />
+            <span className="tabular-nums">{votes.down}</span>
+          </button>
+
+          <span className="text-[11px] tabular-nums text-muted-foreground/30">
+            {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+          </span>
+
+          <div className="flex-1" />
+
+          {endsAt && (
+            <p className="text-[11px] text-muted-foreground/40">
+              {open ? (
+                <>Open until {formatDate(endsAt)}</>
+              ) : (
+                <>Closed {formatDate(endsAt)}</>
+              )}
+            </p>
+          )}
         </div>
       </article>
 
-      {/* Vote */}
+      {/* ── Discussion ───────────────────────────────────────────────── */}
       <section
-        className={`${CARD_CLASS} p-6 sm:p-8`}
-        aria-labelledby="vote-heading"
-      >
-        <h2 id="vote-heading" className={SECTION_CARD_TITLE_CLASS}>
-          Vote
-        </h2>
-        <p className={`mt-2 ${SECTION_CARD_DESCRIPTION_CLASS}`}>
-          One vote per proposal is permitted. Voting and discussion close at the end of the feedback period
-          {feedbackEndsAt && (
-            <> ({formatDate(feedbackEndsAt)})</>
-          )}.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button
-            variant={myVote === "up" ? "default" : "outline"}
-            size="sm"
-            className={IDEAS_BUTTON_CLASS}
-            disabled={!feedbackOpen || voteMutation.isPending}
-            onClick={() => handleVote("up")}
-            aria-label="Vote in favor"
-          >
-            <ThumbsUp className="size-4 shrink-0" aria-hidden />
-            In favor {voteCounts.up > 0 ? `(${voteCounts.up})` : ""}
-          </Button>
-          <Button
-            variant={myVote === "down" ? "secondary" : "outline"}
-            size="sm"
-            className={IDEAS_BUTTON_CLASS}
-            disabled={!feedbackOpen || voteMutation.isPending}
-            onClick={() => handleVote("down")}
-            aria-label="Vote against"
-          >
-            <ThumbsDown className="size-4 shrink-0" aria-hidden />
-            Against {voteCounts.down > 0 ? `(${voteCounts.down})` : ""}
-          </Button>
-        </div>
-      </section>
-
-      {/* Discussion */}
-      <section
-        className={`${CARD_CLASS} p-6 sm:p-8`}
+        className="overflow-hidden rounded-2xl border border-border/30 bg-card"
         aria-labelledby="discussion-heading"
       >
-        <h2
-          id="discussion-heading"
-          className={`flex items-center gap-2 ${SECTION_CARD_TITLE_CLASS}`}
-        >
-          <MessageSquare className="size-5 shrink-0 text-muted-foreground" aria-hidden />
-          Discussion
-        </h2>
-        <p className={`mt-2 ${SECTION_CARD_DESCRIPTION_CLASS}`}>
-          Comments may be submitted for clarification or constructive feedback. Anonymous submission is permitted. Discussion closes at the end of the feedback period.
-        </p>
+        {/* Header */}
+        <div className="px-6 py-5 sm:px-8">
+          <h2
+            id="discussion-heading"
+            className="font-serif text-lg font-semibold tracking-tight text-foreground"
+          >
+            Discussion
+          </h2>
+          <p className="mt-0.5 text-[11px] text-muted-foreground/50">
+            {comments.length} comment{comments.length !== 1 ? "s" : ""}
+            {!open && endsAt && " · Closed"}
+          </p>
+        </div>
 
-        {feedbackOpen && (
-          <form onSubmit={handleSubmitComment} className="mt-6 space-y-4">
-            <div>
-              <Label htmlFor="comment-content" className="sr-only">
-                Your comment
-              </Label>
+        <div className="border-t border-border/10" />
+
+        <div className="px-6 py-6 sm:px-8">
+          {/* Comment form */}
+          {open && (
+            <form
+              onSubmit={handleComment}
+              className="mb-7 border-b border-border/10 pb-7"
+            >
               <Textarea
                 id="comment-content"
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
-                placeholder="Enter your comment for clarification or constructive feedback."
-                rows={3}
-                className="resize-none rounded-lg border-border"
+                placeholder="Write a comment…"
+                rows={2}
+                className="resize-none rounded-xl border-border/25 bg-transparent text-[14px] placeholder:text-muted-foreground/35 focus-visible:ring-1 focus-visible:ring-primary/20"
                 maxLength={2000}
               />
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                <Checkbox
-                  checked={commentAnonymous}
-                  onCheckedChange={(v) => setCommentAnonymous(v === true)}
-                  aria-label="Submit comment anonymously"
-                  className="rounded border-border"
-                />
-                <span>Submit comment anonymously</span>
-              </label>
-              <Button
-                type="submit"
-                size="sm"
-                className={IDEAS_BUTTON_CLASS}
-                disabled={!commentContent.trim() || createCommentMutation.isPending}
-              >
-                {createCommentMutation.isPending ? "Submitting…" : "Submit comment"}
-              </Button>
-            </div>
-          </form>
-        )}
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <label className="flex cursor-pointer items-center gap-2 text-[12px] text-muted-foreground/50">
+                  <Checkbox
+                    checked={commentAnonymous}
+                    onCheckedChange={(v) => setCommentAnonymous(v === true)}
+                    aria-label="Submit anonymously"
+                    className="rounded border-border/40"
+                  />
+                  Anonymous
+                </label>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-8 rounded-full px-4 text-[11px] font-medium"
+                  disabled={
+                    !commentContent.trim() ||
+                    createCommentMutation.isPending
+                  }
+                >
+                  {createCommentMutation.isPending ? "Posting…" : "Post"}
+                </Button>
+              </div>
+            </form>
+          )}
 
-        <div className="mt-6">
+          {/* Comments */}
           {commentsStatus === "pending" && (
-            <p className="text-sm text-muted-foreground">Loading discussion…</p>
+            <div className="flex flex-col items-center py-12">
+              <div className="size-6 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
+              <p className="mt-4 text-[12px] text-muted-foreground/50">
+                Loading comments…
+              </p>
+            </div>
           )}
           {commentsStatus === "success" && comments.length === 0 && (
-            <p className="text-sm text-muted-foreground">No comments have been submitted yet.</p>
+            <p className="py-12 text-center text-[13px] text-muted-foreground/40">
+              No comments yet.{" "}
+              {open && "Be the first to share your thoughts."}
+            </p>
           )}
           {comments.length > 0 && (
-            <ul className="space-y-4" role="list">
-              {comments.map((c) => (
-                <li
-                  key={c.id}
-                  className="flex gap-4 rounded-lg border border-border/80 bg-muted/20 px-4 py-3"
-                >
-                  <Avatar className="size-9 shrink-0 rounded-full border border-border/60 bg-muted">
-                    <AvatarFallback className="text-xs font-medium text-muted-foreground">
-                      {c.author
-                        ? getAvatarInitial(
-                            c.author.fullName ?? null,
-                            c.author.email
-                          )
-                        : "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      {c.author ? (
-                        <span className="font-medium text-foreground">
-                          {c.author.fullName?.trim() || c.author.email}
+            <ul className="space-y-0" role="list">
+              {comments.map((c, i) => {
+                const name = c.author
+                  ? c.author.fullName?.trim() || c.author.email
+                  : null;
+                const init = c.author
+                  ? getAvatarInitial(c.author.fullName ?? null, c.author.email)
+                  : "?";
+                return (
+                  <li
+                    key={c.id}
+                    className={cn(
+                      "flex gap-3 py-5",
+                      i > 0 && "border-t border-border/10",
+                    )}
+                  >
+                    <Avatar className="size-7 shrink-0 rounded-full ring-1 ring-border/20">
+                      <AvatarFallback className="bg-gradient-to-br from-muted/60 to-muted/20 text-[9px] font-semibold text-muted-foreground/60">
+                        {init}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                        <span className="text-[13px] font-medium text-foreground/85">
+                          {name ?? (
+                            <span className="italic text-muted-foreground/50">
+                              Anonymous
+                            </span>
+                          )}
                         </span>
-                      ) : (
-                        <span className="italic">Anonymous</span>
-                      )}
-                      <span>{formatDateTime(c.createdAt)}</span>
+                        <time className="text-[11px] text-muted-foreground/40">
+                          {timeAgo(c.createdAt)}
+                        </time>
+                      </div>
+                      <p className="mt-1 whitespace-pre-wrap text-[13.5px] leading-[1.75] text-foreground/65">
+                        {c.content}
+                      </p>
                     </div>
-                    <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                      {c.content}
-                    </p>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

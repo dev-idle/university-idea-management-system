@@ -11,12 +11,19 @@ import type {
   IdeaComment,
   IdeaCommentsResponse,
   CreateCommentBody,
+  LatestCommentsResponse,
+  OwnIdea,
+  OwnIdeasPaginatedResponse,
+  UpdateIdeaBody,
 } from "@/lib/schemas/ideas.schema";
 import {
   ideaSchema,
   ideasPaginatedResponseSchema,
   ideasContextSchema,
   ideaCommentsResponseSchema,
+  latestCommentsResponseSchema,
+  ownIdeaSchema,
+  ownIdeasPaginatedResponseSchema,
 } from "@/lib/schemas/ideas.schema";
 
 function parseIdeasContext(data: unknown): IdeasContext {
@@ -215,6 +222,172 @@ export function useCreateCommentMutation() {
     onSuccess: (_, { ideaId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.detail(ideaId) });
+    },
+  });
+}
+
+/* ── Latest comments (cross‑idea) ────────────────────────────────────────── */
+
+function parseLatestComments(data: unknown): LatestCommentsResponse {
+  const parsed = latestCommentsResponseSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid latest comments response");
+  return parsed.data;
+}
+
+/** Latest comments across all ideas in the active academic year. */
+export function useLatestCommentsQuery(options?: { enabled?: boolean; limit?: number }) {
+  const limit = options?.limit ?? 10;
+  return useQuery({
+    queryKey: queryKeys.ideas.latestComments(limit),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>(
+        `ideas/latest-comments?limit=${limit}`,
+      );
+      return parseLatestComments(data);
+    },
+    enabled: options?.enabled !== false,
+  });
+}
+
+/* ── View tracking ───────────────────────────────────────────────────────── */
+
+/**
+ * Fire-and-forget mutation to record a view. Idempotent on backend.
+ * No query invalidation – view counts update on next natural refetch.
+ */
+export function useRecordViewMutation() {
+  return useMutation({
+    mutationFn: async (ideaId: string) => {
+      await fetchWithAuth<void>(`ideas/${ideaId}/view`, { method: "POST" });
+    },
+    // Silent: no invalidation, no error surfacing
+    onError: () => {},
+  });
+}
+
+/* ── Own‑idea management hooks (STAFF only) ──────────────────────────────── */
+
+function parseOwnIdeasPaginated(data: unknown): OwnIdeasPaginatedResponse {
+  const parsed = ownIdeasPaginatedResponseSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid own ideas list response");
+  return parsed.data;
+}
+
+function parseOwnIdea(data: unknown): OwnIdea {
+  const parsed = ownIdeaSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid own idea response");
+  return parsed.data;
+}
+
+/** List the current user's own ideas with pagination. STAFF only. */
+export function useMyIdeasQuery(
+  params?: { page?: number; limit?: number },
+  options?: { enabled?: boolean },
+) {
+  const page = params?.page ?? 1;
+  const limit = params?.limit ?? 5;
+  return useQuery({
+    queryKey: queryKeys.ideas.my.list({ page, limit }),
+    queryFn: async () => {
+      const search = new URLSearchParams();
+      search.set("page", String(page));
+      search.set("limit", String(limit));
+      const data = await fetchWithAuth<unknown>(`ideas/my?${search.toString()}`);
+      return parseOwnIdeasPaginated(data);
+    },
+    enabled: options?.enabled !== false,
+  });
+}
+
+/** Get a single own idea (full detail for editing). STAFF only, ownership verified. */
+export function useMyIdeaQuery(id: string | null, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.ideas.my.detail(id ?? ""),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>(`ideas/my/${id}`);
+      return parseOwnIdea(data);
+    },
+    enabled: options?.enabled !== false && !!id,
+  });
+}
+
+/** Update own idea text fields. STAFF only. */
+export function useUpdateMyIdeaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: UpdateIdeaBody }) => {
+      const res = await fetchWithAuth<unknown>(`ideas/my/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      });
+      return parseOwnIdea(res);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
+      queryClient.setQueryData(queryKeys.ideas.my.detail(data.id), data);
+    },
+  });
+}
+
+/** Delete own idea. ALWAYS allowed. STAFF only. */
+export function useDeleteMyIdeaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await fetchWithAuth<void>(`ideas/my/${id}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
+    },
+  });
+}
+
+/** Add attachment to own idea. STAFF only. */
+export function useAddAttachmentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ideaId,
+      body,
+    }: {
+      ideaId: string;
+      body: IdeaAttachmentRef;
+    }) => {
+      const res = await fetchWithAuth<unknown>(`ideas/my/${ideaId}/attachments`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      return parseOwnIdea(res);
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.ideas.my.detail(data.id), data);
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.list() });
+    },
+  });
+}
+
+/** Remove attachment from own idea. STAFF only. */
+export function useRemoveAttachmentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ideaId,
+      attachmentId,
+    }: {
+      ideaId: string;
+      attachmentId: string;
+    }) => {
+      const res = await fetchWithAuth<unknown>(
+        `ideas/my/${ideaId}/attachments/${attachmentId}`,
+        { method: "DELETE" },
+      );
+      return parseOwnIdea(res);
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.ideas.my.detail(data.id), data);
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.list() });
     },
   });
 }

@@ -30,8 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS } from "@/config/design";
-import { IDEAS_CARD_CLASS, IDEAS_CARD_ACCENT_CLASS, IDEAS_CARD_ACCENT_BAR_CLASS } from "./ui-constants";
+import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS, CARD_CLASS } from "@/config/design";
 import { Paperclip, X, Loader2, FileText, PenLine, Sparkles, FileCheck } from "lucide-react";
 
 /** Form values: attachments required (array), termsAccepted boolean for initial false. */
@@ -603,17 +602,12 @@ export function SubmitIdeaForm({
 
   if (isFullPage) {
     return (
-      <div className={IDEAS_CARD_ACCENT_CLASS}>
-        <div className="flex min-h-0 min-w-0">
-          <div className={IDEAS_CARD_ACCENT_BAR_CLASS} aria-hidden />
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex min-w-0 flex-1 flex-col space-y-12 px-6 py-8 sm:px-8"
-          >
-            {formContent}
-          </form>
-        </div>
-      </div>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="overflow-hidden rounded-2xl border border-border/30 bg-card space-y-12 px-6 py-10 sm:px-8"
+      >
+        {formContent}
+      </form>
     );
   }
 
@@ -622,7 +616,7 @@ export function SubmitIdeaForm({
       onSubmit={handleSubmit(onSubmit)}
       className={cn(
         "flex flex-col",
-        variant === "card" && IDEAS_CARD_CLASS + " p-6",
+        variant === "card" && CARD_CLASS + " p-6",
         "gap-6",
       )}
     >

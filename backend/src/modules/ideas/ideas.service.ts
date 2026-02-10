@@ -11,6 +11,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import type { CreateIdeaBody } from './dto/create-idea.dto';
 import type { VoteIdeaBody } from './dto/vote-idea.dto';
 import type { CreateCommentBody } from './dto/create-comment.dto';
+import type { UpdateIdeaBody, AddAttachmentBody } from './dto/update-idea.dto';
 
 const STATUS_ACTIVE = 'ACTIVE';
 const CLOUDINARY_UPLOAD_FOLDER = 'idea-attachments';
@@ -112,7 +113,7 @@ export class IdeasService {
         sizeBytes: number | null;
       }>;
       votes?: Array< { value: string; userId: string } >;
-      _count?: { comments: number };
+      _count?: { comments?: number; views?: number };
     },
     userId?: string,
   ) {
@@ -147,6 +148,7 @@ export class IdeasService {
       voteCounts,
       myVote,
       commentCount: idea._count?.comments ?? 0,
+      viewCount: idea._count?.views ?? 0,
     };
   }
 
@@ -188,40 +190,93 @@ export class IdeasService {
         ).map((c) => c.id);
     if (cycleIds.length === 0) return { items: [], total: 0 };
 
-    const orderBy = { createdAt: 'desc' as const };
-
     const userId = params.userId;
-    const [items, total] = await Promise.all([
-      this.prisma.idea.findMany({
-        where: { cycleId: { in: cycleIds } },
+    const where = { cycleId: { in: cycleIds } };
+
+    const ideaSelect = {
+      id: true as const,
+      title: true as const,
+      description: true as const,
+      isAnonymous: true as const,
+      createdAt: true as const,
+      categoryId: true as const,
+      category: { select: { id: true, name: true } },
+      cycleId: true as const,
+      submittedById: true as const,
+      submittedBy: { select: { id: true, fullName: true, email: true } },
+      attachments: {
         select: {
           id: true,
-          title: true,
-          description: true,
-          isAnonymous: true,
-          createdAt: true,
-          categoryId: true,
-          category: { select: { id: true, name: true } },
-          cycleId: true,
-          submittedById: true,
-          submittedBy: { select: { id: true, fullName: true, email: true } },
-          attachments: {
-            select: {
-              id: true,
-              fileName: true,
-              secureUrl: true,
-              mimeType: true,
-              sizeBytes: true,
-            },
-          },
-          votes: { select: { value: true, userId: true } },
-          _count: { select: { comments: true } },
+          fileName: true,
+          secureUrl: true,
+          mimeType: true,
+          sizeBytes: true,
         },
+      },
+      votes: { select: { value: true, userId: true } },
+      _count: { select: { comments: true, views: true } },
+    };
+
+    /* ── Most Popular: sort by (upvotes − downvotes) ──────────────────── */
+    if (sort === 'mostPopular') {
+      const [allIdeas, total] = await Promise.all([
+        this.prisma.idea.findMany({
+          where,
+          select: {
+            id: true,
+            createdAt: true,
+            votes: { select: { value: true } },
+          },
+        }),
+        this.prisma.idea.count({ where }),
+      ]);
+
+      const scored = allIdeas.map((idea) => {
+        let net = 0;
+        for (const v of idea.votes) net += v.value === 'up' ? 1 : -1;
+        return { id: idea.id, createdAt: idea.createdAt, net };
+      });
+      scored.sort(
+        (a, b) =>
+          b.net - a.net || b.createdAt.getTime() - a.createdAt.getTime(),
+      );
+
+      const pageIds = scored
+        .slice((page - 1) * limit, page * limit)
+        .map((s) => s.id);
+      if (pageIds.length === 0) return { items: [], total };
+
+      const ideas = await this.prisma.idea.findMany({
+        where: { id: { in: pageIds } },
+        select: ideaSelect,
+      });
+
+      const idOrder = new Map(pageIds.map((id, i) => [id, i]));
+      ideas.sort(
+        (a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0),
+      );
+
+      return {
+        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        total,
+      };
+    }
+
+    /* ── Most Viewed / Latest: Prisma orderBy ─────────────────────────── */
+    const orderBy: any =
+      sort === 'mostViewed'
+        ? [{ views: { _count: 'desc' } }, { createdAt: 'desc' }]
+        : { createdAt: 'desc' };
+
+    const [items, total] = await Promise.all([
+      this.prisma.idea.findMany({
+        where,
+        select: ideaSelect,
         orderBy,
         skip: (page - 1) * limit,
         take: limit,
       }),
-      this.prisma.idea.count({ where: { cycleId: { in: cycleIds } } }),
+      this.prisma.idea.count({ where }),
     ]);
 
     return {
@@ -272,6 +327,7 @@ export class IdeasService {
           },
         },
         votes: { select: { value: true, userId: true } },
+        _count: { select: { comments: true, views: true } },
         cycle: { select: { interactionClosesAt: true } },
       },
     });
@@ -325,24 +381,24 @@ export class IdeasService {
   async setVote(ideaId: string, userId: string, body: VoteIdeaBody) {
     await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
 
-    const existing = await this.prisma.ideaVote.findUnique({
-      where: { ideaId_userId: { ideaId, userId } },
-      select: { value: true },
-    });
-
-    if (existing?.value === body.value) {
-      await this.prisma.ideaVote.delete({
+    await this.prisma.$transaction(async (tx) => {
+      const existing = await tx.ideaVote.findUnique({
         where: { ideaId_userId: { ideaId, userId } },
+        select: { value: true },
       });
-    } else {
-      await this.prisma.ideaVote.upsert({
-        where: {
-          ideaId_userId: { ideaId, userId },
-        },
-        create: { ideaId, userId, value: body.value },
-        update: { value: body.value },
-      });
-    }
+
+      if (existing?.value === body.value) {
+        await tx.ideaVote.delete({
+          where: { ideaId_userId: { ideaId, userId } },
+        });
+      } else {
+        await tx.ideaVote.upsert({
+          where: { ideaId_userId: { ideaId, userId } },
+          create: { ideaId, userId, value: body.value },
+          update: { value: body.value },
+        });
+      }
+    });
 
     return this.findOne(ideaId, userId);
   }
@@ -602,6 +658,53 @@ export class IdeasService {
   }
 
   /**
+   * Latest comments across all ideas in the active academic year.
+   * Returns comment text, author (hidden when anonymous), and the idea it belongs to.
+   */
+  async getLatestComments(params: { limit?: number }) {
+    const limit = Math.min(50, Math.max(1, params.limit ?? 10));
+
+    const activeYear = await this.prisma.academicYear.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    if (!activeYear) return [];
+
+    const cycleIds = (
+      await this.prisma.ideaSubmissionCycle.findMany({
+        where: { academicYearId: activeYear.id },
+        select: { id: true },
+      })
+    ).map((c) => c.id);
+    if (cycleIds.length === 0) return [];
+
+    const comments = await this.prisma.ideaComment.findMany({
+      where: { idea: { cycleId: { in: cycleIds } } },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        content: true,
+        isAnonymous: true,
+        createdAt: true,
+        user: { select: { id: true, fullName: true, email: true } },
+        idea: { select: { id: true, title: true } },
+      },
+    });
+
+    return comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      isAnonymous: c.isAnonymous,
+      createdAt: c.createdAt,
+      author: c.isAnonymous
+        ? null
+        : { id: c.user.id, fullName: c.user.fullName, email: c.user.email },
+      idea: { id: c.idea.id, title: c.idea.title },
+    }));
+  }
+
+  /**
    * Delete an idea and its Cloudinary attachments (2026 standard).
    * ADMIN only. Removes idea from DB (cascade deletes IdeaAttachment) and deletes
    * attachment files from Cloudinary when configured.
@@ -626,5 +729,320 @@ export class IdeasService {
       }
     }
     await this.prisma.idea.delete({ where: { id: ideaId } });
+  }
+
+  /**
+   * Record a view for an idea by the current user.
+   *
+   * 20-minute session window: if this user already has a view record within
+   * the last 20 minutes, no new record is created. After 20 minutes a new
+   * session view is allowed. This prevents spam from refreshes, tab reopens,
+   * and rapid interactions while still counting genuinely new visits.
+   *
+   * The frontend also enforces this window via localStorage, but the backend
+   * is the authoritative guard (zero-trust).
+   */
+  private static readonly VIEW_COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes
+
+  async recordView(ideaId: string, userId: string): Promise<void> {
+    // Verify idea exists
+    const idea = await this.prisma.idea.findUnique({
+      where: { id: ideaId },
+      select: { id: true },
+    });
+    if (!idea) throw new NotFoundException('Idea not found.');
+
+    // Check 20-minute cooldown
+    const cutoff = new Date(Date.now() - IdeasService.VIEW_COOLDOWN_MS);
+    const recentView = await this.prisma.ideaView.findFirst({
+      where: { ideaId, userId, createdAt: { gte: cutoff } },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true },
+    });
+
+    if (recentView) return; // Still within the session window — no-op
+
+    await this.prisma.ideaView.create({
+      data: { ideaId, userId },
+    });
+  }
+
+  /* ────────────────────────────────────────────────────────────────────────────
+   * Own‑idea management (STAFF only).
+   * Every method enforces ownership (submittedById === userId). Zero‑trust.
+   * ──────────────────────────────────────────────────────────────────────────── */
+
+  /**
+   * Ensure idea exists and belongs to the given user. Returns basic info + cycle
+   * closure date and attachments (for Cloudinary cleanup).
+   */
+  private async ensureOwnIdea(ideaId: string, userId: string) {
+    const idea = await this.prisma.idea.findFirst({
+      where: { id: ideaId, submittedById: userId },
+      select: {
+        id: true,
+        cycleId: true,
+        cycle: { select: { ideaSubmissionClosesAt: true } },
+        attachments: { select: { cloudinaryPublicId: true } },
+      },
+    });
+    if (!idea) throw new NotFoundException('Idea not found.');
+    return idea;
+  }
+
+  /**
+   * List the current user's own ideas with pagination (across all cycles / years).
+   * Sorted newest‑first. Returns submissionClosesAt per idea so the frontend
+   * can determine whether editing is still allowed.
+   */
+  async findOwnIdeas(userId: string, params: { page?: number; limit?: number }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(50, Math.max(1, params.limit ?? 5));
+    const where = { submittedById: userId };
+
+    const [items, total] = await Promise.all([
+      this.prisma.idea.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          isAnonymous: true,
+          createdAt: true,
+          categoryId: true,
+          category: { select: { id: true, name: true } },
+          cycleId: true,
+          submittedById: true,
+          submittedBy: { select: { id: true, fullName: true, email: true } },
+          attachments: {
+            select: {
+              id: true,
+              fileName: true,
+              secureUrl: true,
+              mimeType: true,
+              sizeBytes: true,
+            },
+          },
+          votes: { select: { value: true, userId: true } },
+          _count: { select: { comments: true, views: true } },
+          cycle: { select: { ideaSubmissionClosesAt: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.idea.count({ where }),
+    ]);
+
+    return {
+      items: items.map((idea) => ({
+        ...this.mapIdeaToResponse(idea, userId),
+        submissionClosesAt: idea.cycle?.ideaSubmissionClosesAt ?? null,
+      })),
+      total,
+    };
+  }
+
+  /**
+   * Get a single own idea with full details for viewing/editing.
+   * Includes cycle categories (for edit form dropdown) and closure dates.
+   */
+  async findOwnIdea(ideaId: string, userId: string) {
+    const idea = await this.prisma.idea.findFirst({
+      where: { id: ideaId, submittedById: userId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        isAnonymous: true,
+        createdAt: true,
+        categoryId: true,
+        category: { select: { id: true, name: true } },
+        cycleId: true,
+        submittedById: true,
+        submittedBy: { select: { id: true, fullName: true, email: true } },
+        attachments: {
+          select: {
+            id: true,
+            fileName: true,
+            secureUrl: true,
+            mimeType: true,
+            sizeBytes: true,
+          },
+        },
+        votes: { select: { value: true, userId: true } },
+        _count: { select: { comments: true, views: true } },
+        cycle: {
+          select: {
+            ideaSubmissionClosesAt: true,
+            interactionClosesAt: true,
+            cycleCategories: {
+              select: { category: { select: { id: true, name: true } } },
+            },
+          },
+        },
+      },
+    });
+    if (!idea) throw new NotFoundException('Idea not found.');
+
+    const mapped = this.mapIdeaToResponse(idea, userId);
+    return {
+      ...mapped,
+      submissionClosesAt: idea.cycle?.ideaSubmissionClosesAt ?? null,
+      interactionClosesAt: idea.cycle?.interactionClosesAt ?? null,
+      categories: idea.cycle?.cycleCategories.map((cc) => cc.category) ?? [],
+    };
+  }
+
+  /**
+   * Update own idea text fields. STAFF only, ownership verified.
+   * Blocked when the submission closure date has passed.
+   */
+  async updateOwnIdea(ideaId: string, userId: string, body: UpdateIdeaBody) {
+    const idea = await this.ensureOwnIdea(ideaId, userId);
+
+    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+      throw new BadRequestException(
+        'Editing is no longer available. The submission period has closed.',
+      );
+    }
+
+    // Category must belong to the cycle
+    if (idea.cycleId) {
+      const categoryInCycle = await this.prisma.cycleCategory.findFirst({
+        where: { cycleId: idea.cycleId, categoryId: body.categoryId },
+        select: { id: true },
+      });
+      if (!categoryInCycle) {
+        throw new BadRequestException(
+          'The selected category is not available for this submission cycle.',
+        );
+      }
+    }
+
+    // Title uniqueness within the cycle (excluding self)
+    const trimmedTitle = body.title.trim();
+    if (idea.cycleId) {
+      const duplicate = await this.prisma.idea.findFirst({
+        where: {
+          cycleId: idea.cycleId,
+          title: { equals: trimmedTitle, mode: 'insensitive' },
+          id: { not: ideaId },
+        },
+        select: { id: true },
+      });
+      if (duplicate) {
+        throw new BadRequestException(
+          'A proposal with this title already exists in this submission cycle.',
+        );
+      }
+    }
+
+    await this.prisma.idea.update({
+      where: { id: ideaId },
+      data: {
+        title: body.title,
+        description: body.description,
+        categoryId: body.categoryId,
+        isAnonymous: body.isAnonymous,
+      },
+    });
+
+    return this.findOwnIdea(ideaId, userId);
+  }
+
+  /**
+   * Delete own idea. STAFF only, ownership verified. ALWAYS allowed regardless of
+   * closure date, even if the idea has comments or votes.
+   * Cascade: comments, votes, attachments are deleted via Prisma; Cloudinary cleaned up.
+   */
+  async deleteOwnIdea(ideaId: string, userId: string): Promise<void> {
+    const idea = await this.ensureOwnIdea(ideaId, userId);
+
+    const publicIds = idea.attachments.map((a) => a.cloudinaryPublicId);
+    if (publicIds.length > 0 && this.cloudinary.isConfigured()) {
+      try {
+        await this.cloudinary.deleteResources(publicIds, 'raw');
+      } catch {
+        // best‑effort; orphans can be cleaned later
+      }
+    }
+
+    await this.prisma.idea.delete({ where: { id: ideaId } });
+  }
+
+  /**
+   * Add an attachment to own idea. STAFF only, ownership verified.
+   * Blocked after submission closure. Max 10 attachments per idea.
+   */
+  async addAttachmentToOwnIdea(
+    ideaId: string,
+    userId: string,
+    body: AddAttachmentBody,
+  ) {
+    const idea = await this.ensureOwnIdea(ideaId, userId);
+
+    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+      throw new BadRequestException(
+        'Document management is no longer available. The submission period has closed.',
+      );
+    }
+
+    const count = await this.prisma.ideaAttachment.count({ where: { ideaId } });
+    if (count >= 10) {
+      throw new BadRequestException('Maximum 10 attachments allowed per idea.');
+    }
+
+    await this.prisma.ideaAttachment.create({
+      data: {
+        ideaId,
+        cloudinaryPublicId: body.cloudinaryPublicId,
+        secureUrl: body.secureUrl,
+        fileName: body.fileName,
+        mimeType: body.mimeType ?? null,
+        sizeBytes: body.sizeBytes ?? null,
+      },
+    });
+
+    return this.findOwnIdea(ideaId, userId);
+  }
+
+  /**
+   * Remove an attachment from own idea. STAFF only, ownership verified.
+   * Blocked after submission closure. Cleans up Cloudinary resource.
+   */
+  async removeAttachmentFromOwnIdea(
+    ideaId: string,
+    userId: string,
+    attachmentId: string,
+  ) {
+    const idea = await this.ensureOwnIdea(ideaId, userId);
+
+    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+      throw new BadRequestException(
+        'Document management is no longer available. The submission period has closed.',
+      );
+    }
+
+    const attachment = await this.prisma.ideaAttachment.findFirst({
+      where: { id: attachmentId, ideaId },
+      select: { id: true, cloudinaryPublicId: true },
+    });
+    if (!attachment) throw new NotFoundException('Attachment not found.');
+
+    if (this.cloudinary.isConfigured()) {
+      try {
+        await this.cloudinary.deleteResources(
+          [attachment.cloudinaryPublicId],
+          'raw',
+        );
+      } catch {
+        // best‑effort
+      }
+    }
+
+    await this.prisma.ideaAttachment.delete({ where: { id: attachmentId } });
+
+    return this.findOwnIdea(ideaId, userId);
   }
 }
