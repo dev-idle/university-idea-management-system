@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 import { ROUTES } from "@/config/constants";
 import { useAuthStore } from "@/stores/auth.store";
 import { getEntryRouteForRoles } from "@/config/constants";
+import { BrandLogo } from "./brand-logo";
 
 const UNIVERSITY_NAME = "Greenwich University";
 const SYSTEM_NAME = "Internal Idea Collection System";
@@ -23,46 +23,44 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
   const user = useAuthStore((s) => s.user);
   const entryHref = user?.roles?.length ? getEntryRouteForRoles(user.roles) : ROUTES.LOGIN;
 
-  const isCompact = variant === "header" || collapsed;
-  const content = (
-    <>
-      <div
-        className={`flex shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-primary-foreground/25 transition-[width,height] duration-300 ease-in-out ${isCompact ? "size-8" : "size-10"}`}
-        aria-hidden
-      >
-        <GraduationCap
-          className={`transition-[width,height] duration-300 ease-in-out ${isCompact ? "size-5" : "size-6"}`}
-          strokeWidth={1.5}
-          stroke="currentColor"
-          fill="none"
-        />
-      </div>
-      {!collapsed && (
-        <div className="min-w-0 flex-1">
-          <span
-            className={`font-serif font-semibold tracking-tight text-primary ${variant === "header" ? "text-sm" : "text-lg leading-tight"}`}
-          >
-            {UNIVERSITY_NAME}
-          </span>
-          {variant === "sidebar" && (
-            <span className="mt-1 block text-xs font-normal leading-snug text-muted-foreground">
-              {SYSTEM_NAME}
-            </span>
-          )}
-        </div>
-      )}
-    </>
+  /* ── Header (navbar): full logo at a compact, readable height ──────────── */
+  if (variant === "header") {
+    const logo = <BrandLogo className="h-7" />;
+
+    if (linkToEntry) {
+      return (
+        <Link
+          href={entryHref}
+          className="flex items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {logo}
+        </Link>
+      );
+    }
+    return logo;
+  }
+
+  /* ── Sidebar: collapsed = compact icon, expanded = logo + subtitle ─────── */
+  const content = collapsed ? (
+    <BrandLogo className="size-9" align="left" />
+  ) : (
+    <div className="flex flex-col gap-1.5">
+      <BrandLogo className="h-9" align="left" />
+      <span className="text-[11px] font-normal leading-snug text-muted-foreground">
+        {SYSTEM_NAME}
+      </span>
+    </div>
   );
 
-  const wrapperClassName = isCompact
-    ? "flex items-center justify-center gap-2"
-    : "flex items-center gap-3";
+  const wrapperClassName = collapsed
+    ? "flex w-full items-center justify-center"
+    : "flex items-center";
 
   if (linkToEntry) {
     return (
       <Link
         href={entryHref}
-        className={`${wrapperClassName} rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring transition-[padding] duration-300 ease-in-out ${collapsed ? "w-full justify-center" : ""}`}
+        className={`${wrapperClassName} rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring transition-[padding] duration-300 ease-in-out`}
         aria-label={collapsed ? `${UNIVERSITY_NAME} — ${SYSTEM_NAME}. Go to home.` : undefined}
       >
         {content}

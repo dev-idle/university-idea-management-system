@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { GraduationCap } from "lucide-react";
 import { LoginForm } from "@/components/features/auth/login-form";
 import { LoginGate } from "@/components/features/auth/login-gate";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = {
@@ -27,16 +27,8 @@ export default function LoginPage() {
           <div className="absolute left-0 top-0 h-full w-1 bg-primary/80 dark:bg-primary/70" aria-hidden />
           <div className="pl-5 pr-6 py-8 sm:pl-7 sm:pr-10 sm:py-12">
             <header className="flex flex-col items-center text-center">
-              <div
-                className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-primary-foreground/25 sm:size-16"
-                aria-hidden
-              >
-                <GraduationCap className="size-7 sm:size-8" strokeWidth={1.5} stroke="currentColor" fill="none" />
-              </div>
-              <h1 className="mt-4 font-serif text-xl font-semibold tracking-tight text-primary sm:text-2xl">
-                Greenwich University
-              </h1>
-              <Separator className="mx-auto mt-3 w-10 bg-primary/30" />
+              <BrandLogo className="h-16 sm:h-20" />
+              <Separator className="mx-auto mt-4 w-10 bg-primary/30" />
               <p className="mt-3 text-sm font-medium tracking-wide text-muted-foreground">{SYSTEM_NAME}</p>
             </header>
             <div className="mt-10 sm:mt-12">

@@ -27,11 +27,11 @@ export const metadata: Metadata = {
   description: "Greenwich University — Internal Idea Collection System. Submit, review, and manage ideas.",
 };
 
-/** Theme colors aligned with design-system primary (navy / deep blue). */
+/** Theme colors aligned with design-system primary (Greenwich purple/indigo). */
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#1e2a4a" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f1729" },
+    { media: "(prefers-color-scheme: light)", color: "#28224B" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1535" },
   ],
 };
 
