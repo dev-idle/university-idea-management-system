@@ -78,6 +78,18 @@ export const LOADING_WRAPPER_CLASS =
 /** Loading / empty state text. */
 export const LOADING_TEXT_CLASS = "text-sm text-muted-foreground";
 
+/** Stat/summary card with primary top accent (dashboards). */
+export const CARD_STAT_CLASS =
+  `${CARD_CLASS} border-t-2 border-t-primary/25`;
+
+/** Staff page header accent line (primary gradient). */
+export const STAFF_HEADER_ACCENT_CLASS =
+  "h-px w-10 bg-gradient-to-r from-primary/80 to-transparent";
+
+/** Staff page description (slightly larger, muted). */
+export const STAFF_DESCRIPTION_CLASS =
+  "mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground/70";
+
 // ─── Page spacing (Staff + Role Manager) ───────────────────────────────────
 
 /** Role Manager page vertical rhythm (Admin, QA Manager, QA Coordinator). */

@@ -50,6 +50,15 @@ import {
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_BASE_CLASS,
+  TABLE_HEAD_ROW_CLASS,
+  TABLE_ROW_CLASS,
+  TABLE_CELL_NAME_CLASS,
+  TABLE_ACTIONS_WRAPPER_CLASS,
+  ACTION_BUTTON_EDIT_CLASS,
+  ACTION_BUTTON_DESTRUCTIVE_CLASS,
+  ACTION_BUTTON_DISABLED_BLUR_CLASS,
+  ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   formatManagementShowingRange,
@@ -172,7 +181,7 @@ export function CategoriesManagement() {
               {" — "}
               Delete is only available when the category is not used in submission cycles or by ideas; remove or reassign first if needed.
               {deleteMutation.isError && (
-                <span className="mt-2 block text-destructive">
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deleteMutation.error, "Delete failed.")}
                 </span>
               )}
@@ -219,9 +228,9 @@ export function CategoriesManagement() {
             <>
               <TooltipProvider delayDuration={300}>
                 <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
-                  <table className="w-full border-collapse text-left text-sm">
+                  <table className={TABLE_BASE_CLASS}>
                     <thead>
-                      <tr className="border-b border-border bg-muted/30">
+                      <tr className={TABLE_HEAD_ROW_CLASS}>
                         <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Name
                         </th>
@@ -244,23 +253,20 @@ export function CategoriesManagement() {
                         </tr>
                       ) : (
                         paginatedList.map((c) => (
-                          <tr
-                            key={c.id}
-                            className="border-b border-border/80 transition-colors last:border-0 hover:bg-muted/10"
-                          >
-                            <td className="px-4 py-3 font-medium text-foreground sm:px-6">
+                          <tr key={c.id} className={TABLE_ROW_CLASS}>
+                            <td className={TABLE_CELL_NAME_CLASS}>
                               {c.name}
                             </td>
                             {isQaManager && (
                               <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
-                                <div className="inline-flex items-center justify-end gap-2">
+                                <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                                        className={ACTION_BUTTON_EDIT_CLASS}
                                         onClick={() => setEditingCategory(c)}
                                         aria-label="Edit category"
                                       >
@@ -277,11 +283,9 @@ export function CategoriesManagement() {
                                           variant="ghost"
                                           size="icon"
                                           className={cn(
-                                            "size-8 shrink-0",
-                                            !categoryInUse(c) &&
-                                              "text-destructive hover:bg-destructive/10 hover:text-destructive",
-                                            categoryInUse(c) &&
-                                              "cursor-not-allowed text-muted-foreground opacity-60"
+                                            !categoryInUse(c)
+                                              ? ACTION_BUTTON_DESTRUCTIVE_CLASS
+                                              : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
                                           )}
                                           onClick={() => {
                                             if (categoryInUse(c)) return;

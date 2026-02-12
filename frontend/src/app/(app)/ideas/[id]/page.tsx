@@ -23,6 +23,7 @@ import {
   LOADING_WRAPPER_CLASS,
   LOADING_TEXT_CLASS,
   BACK_LINK_CLASS,
+  STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import {
   ThumbsUp,
@@ -281,6 +282,7 @@ export default function IdeaDetailPage() {
           >
             {idea.title}
           </h1>
+          <div className={`mt-6 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
 
           {idea.description && (
             <div className="mt-8 whitespace-pre-wrap text-[16px] leading-[1.9] text-foreground/70">

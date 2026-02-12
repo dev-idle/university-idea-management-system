@@ -107,7 +107,7 @@ const SIDEBAR_COLLAPSED_STORAGE_KEY = "sidebar-collapsed";
 function SidebarSectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="mb-2 mt-5 first:mt-0 px-1">
-      <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/90">
+      <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/60">
         {children}
       </span>
     </div>
@@ -137,10 +137,10 @@ function NavLink({
       } ${
         collapsed
           ? isActive
-            ? "bg-primary/15 text-primary"
+            ? "bg-primary/15 text-primary ring-1 ring-primary/20"
             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           : isActive
-            ? "border-primary bg-primary/8 text-foreground"
+            ? "border-primary bg-primary/10 text-primary font-semibold"
             : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground"
       }`}
       aria-current={isActive ? "page" : undefined}
@@ -387,7 +387,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
     >
       <aside
-        className={`flex h-full shrink-0 flex-col overflow-hidden border-r border-border/70 transition-[width] duration-300 ease-in-out ${
+        className={`flex h-full shrink-0 flex-col overflow-hidden border-r border-border/50 transition-[width] duration-300 ease-in-out ${
           sidebarCollapsed
             ? "w-full md:min-w-0 md:w-[4.25rem] bg-muted/25"
             : "w-full md:w-64 bg-muted/20"
@@ -405,7 +405,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-300 ease-in-out">
-        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border bg-card px-4 md:px-6">
+        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 md:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
@@ -560,7 +560,7 @@ function StaffLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border bg-card px-4 md:px-6">
+      <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 md:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <SiteBranding variant="header" linkToEntry />
           {activeYearName && (

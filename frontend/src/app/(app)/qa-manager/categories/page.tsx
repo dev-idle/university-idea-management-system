@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Tags } from "lucide-react";
 import { CategoriesManagement } from "@/components/features/qa-manager/categories-management";
 import { CategoriesManagementSkeleton } from "@/components/features/qa-manager/categories-management-skeleton";
 import { PageHeader } from "@/components/layout/page-header";
@@ -18,6 +19,7 @@ export default function QaManagerCategoriesPage() {
         title="Categories"
         description="Manage categories for proposal classification. Duplicate names are not permitted. Deletion is available only when no proposals use the category; all rules are enforced server-side."
         descriptionWide
+        icon={Tags}
       />
       <Suspense fallback={<CategoriesManagementSkeleton />}>
         <CategoriesManagement />

@@ -5,6 +5,9 @@ import {
   CARD_CLASS,
   PAGE_WRAPPER_PROFILE_CLASS,
   SECTION_CARD_HEADER_CLASS,
+  PAGE_TITLE_CLASS,
+  STAFF_DESCRIPTION_CLASS,
+  STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -73,6 +76,13 @@ function ProfilePageSkeleton() {
 export default function ProfilePage() {
   return (
     <div className={`space-y-8 ${PAGE_WRAPPER_PROFILE_CLASS}`}>
+      <header>
+        <h1 className={PAGE_TITLE_CLASS}>Profile</h1>
+        <p className={STAFF_DESCRIPTION_CLASS}>
+          Your account details and security settings
+        </p>
+        <div className={`mt-4 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
+      </header>
       <Suspense fallback={<ProfilePageSkeleton />}>
         <ProfileContent />
       </Suspense>

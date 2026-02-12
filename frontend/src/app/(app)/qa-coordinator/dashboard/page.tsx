@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClipboardList } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
 
@@ -14,6 +15,7 @@ export default function QaCoordinatorDashboardPage() {
         title="QA Coordinator"
         description="QA Coordinator dashboard. Access control is enforced server-side."
         descriptionWide
+        icon={ClipboardList}
       />
     </div>
   );

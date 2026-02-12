@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Building2 } from "lucide-react";
 import { DepartmentsManagement } from "@/components/features/admin/departments-management";
 import { DepartmentsManagementSkeleton } from "@/components/features/admin/departments-management-skeleton";
 import { PageHeader } from "@/components/layout/page-header";
@@ -17,6 +18,7 @@ export default function AdminDepartmentsPage() {
         title="Department management"
         description="Access control is enforced server-side. Departments may contain multiple users; deletion is permitted only when no users are assigned."
         descriptionWide
+        icon={Building2}
       />
       <Suspense fallback={<DepartmentsManagementSkeleton />}>
         <DepartmentsManagement />

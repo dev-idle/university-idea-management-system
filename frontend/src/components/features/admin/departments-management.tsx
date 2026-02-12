@@ -39,6 +39,15 @@ import {
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_BASE_CLASS,
+  TABLE_HEAD_ROW_CLASS,
+  TABLE_ROW_CLASS,
+  TABLE_CELL_NAME_CLASS,
+  TABLE_ACTIONS_WRAPPER_CLASS,
+  ACTION_BUTTON_EDIT_CLASS,
+  ACTION_BUTTON_DESTRUCTIVE_CLASS,
+  ACTION_BUTTON_DISABLED_BLUR_CLASS,
+  ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   formatManagementShowingRange,
@@ -163,7 +172,7 @@ export function DepartmentsManagement() {
               {" — "}
               All authorization is enforced by the backend. Delete is only available when no users are assigned; reassign or remove users first if needed.
               {deleteMutation.isError && (
-                <span className="mt-2 block text-destructive">
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deleteMutation.error, "Delete failed.")}
                 </span>
               )}
@@ -210,9 +219,9 @@ export function DepartmentsManagement() {
             <>
               <TooltipProvider delayDuration={300}>
                 <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
-                  <table className="w-full border-collapse text-left text-sm">
+                  <table className={TABLE_BASE_CLASS}>
                     <thead>
-                      <tr className="border-b border-border bg-muted/30">
+                      <tr className={TABLE_HEAD_ROW_CLASS}>
                         <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Name
                         </th>
@@ -232,23 +241,20 @@ export function DepartmentsManagement() {
                         </tr>
                       ) : (
                         paginatedList.map((d) => (
-                          <tr
-                            key={d.id}
-                            className="border-b border-border/80 transition-colors last:border-0 hover:bg-muted/10"
-                          >
-                            <td className="px-4 py-3 font-medium text-foreground sm:px-6">
+                          <tr key={d.id} className={TABLE_ROW_CLASS}>
+                            <td className={TABLE_CELL_NAME_CLASS}>
                               {d.name}
                             </td>
                             <Can permission="DEPARTMENTS">
                               <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
-                                <div className="inline-flex items-center justify-end gap-2">
+                                <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                                        className={ACTION_BUTTON_EDIT_CLASS}
                                         onClick={() => setEditingDepartment(d)}
                                         aria-label="Edit department"
                                       >
@@ -265,11 +271,9 @@ export function DepartmentsManagement() {
                                           variant="ghost"
                                           size="icon"
                                           className={cn(
-                                            "size-8 shrink-0",
-                                            (d._count?.users ?? 0) === 0 &&
-                                              "text-destructive hover:bg-destructive/10 hover:text-destructive",
-                                            (d._count?.users ?? 0) > 0 &&
-                                              "cursor-not-allowed text-muted-foreground opacity-60"
+                                            (d._count?.users ?? 0) === 0
+                                              ? ACTION_BUTTON_DESTRUCTIVE_CLASS
+                                              : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
                                           )}
                                           onClick={() => {
                                             if ((d._count?.users ?? 0) > 0) return;

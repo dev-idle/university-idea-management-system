@@ -25,12 +25,12 @@
   --popover-foreground: oklch(0.15 0.02 280);
 
   /* Primary: Greenwich Purple — Deep Indigo (Authority & Scholarship) */
-  --primary: oklch(0.30 0.12 280);
+  --primary: oklch(0.3 0.12 280);
   --primary-foreground: oklch(0.98 0 0);
 
   /* Secondary: Cool Lavender Slate — Harmonizes with Purple */
   --secondary: oklch(0.95 0.012 280);
-  --secondary-foreground: oklch(0.30 0.12 280);
+  --secondary-foreground: oklch(0.3 0.12 280);
 
   /* Muted: Used for backgrounds of disabled inputs or subtle borders */
   --muted: oklch(0.94 0.01 280);
@@ -58,10 +58,10 @@
 
   --border: oklch(0.9 0.01 280);
   --input: oklch(0.9 0.01 280);
-  --ring: oklch(0.30 0.12 280);
+  --ring: oklch(0.3 0.12 280);
 
   /* Chart colors - Distinct for Pie/Bar charts */
-  --chart-1: oklch(0.30 0.12 280); /* Purple (Primary) */
+  --chart-1: oklch(0.3 0.12 280); /* Purple (Primary) */
   --chart-2: oklch(0.55 0.15 150); /* Green (Success) */
   --chart-3: oklch(0.4 0.12 200); /* Teal (Accent) */
   --chart-4: oklch(0.65 0.18 45);
@@ -81,12 +81,12 @@
   /* Sidebar */
   --sidebar: oklch(0.99 0.002 280);
   --sidebar-foreground: oklch(0.25 0.05 280);
-  --sidebar-primary: oklch(0.30 0.12 280);
+  --sidebar-primary: oklch(0.3 0.12 280);
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.95 0.012 280);
-  --sidebar-accent-foreground: oklch(0.30 0.12 280);
+  --sidebar-accent-foreground: oklch(0.3 0.12 280);
   --sidebar-border: oklch(0.92 0.01 280);
-  --sidebar-ring: oklch(0.30 0.12 280);
+  --sidebar-ring: oklch(0.3 0.12 280);
 }
 
 /* Applied to <html> by next-themes when dark; keep in sync with config/theme.ts */
@@ -254,6 +254,20 @@
   body {
     @apply bg-background font-sans text-foreground antialiased;
   }
+}
+
+/*
+ * Brand logo recolor: SVG feColorMatrix replaces RGB with the primary color
+ * while preserving the original alpha channel (smooth anti-aliased edges).
+ *
+ * Light: oklch(0.30 0.12 280) → #262067  rgb(38, 32, 103)
+ * Dark:  oklch(0.65 0.18 280) → #7d7df9  rgb(125, 125, 249)
+ */
+.brand-logo {
+  filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c' color-interpolation-filters='sRGB'%3E%3CfeColorMatrix values='0 0 0 0 0.1490 0 0 0 0 0.1255 0 0 0 0 0.4039 0 0 0 1 0'/%3E%3C/filter%3E%3C/svg%3E#c");
+}
+.dark .brand-logo {
+  filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c' color-interpolation-filters='sRGB'%3E%3CfeColorMatrix values='0 0 0 0 0.4902 0 0 0 0 0.4902 0 0 0 0 0.9765 0 0 0 1 0'/%3E%3C/filter%3E%3C/svg%3E#c");
 }
 
 /* Hide scrollbar while keeping element scrollable (sidebar, main content) */

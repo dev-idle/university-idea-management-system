@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LayoutDashboard } from "lucide-react";
 import { QaManagerDashboardContent } from "@/components/features/qa-manager/qa-manager-dashboard-content";
 import { PageHeader } from "@/components/layout/page-header";
 import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
@@ -15,6 +16,7 @@ export default function QaManagerDashboardPage() {
         title="QA Manager"
         description="Manage categories and submission cycles for proposal collection. Access control is enforced server-side."
         descriptionWide
+        icon={LayoutDashboard}
       />
       <QaManagerDashboardContent />
     </div>

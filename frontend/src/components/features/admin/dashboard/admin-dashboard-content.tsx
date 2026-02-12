@@ -4,7 +4,14 @@ import Link from "next/link";
 import { Building2, CalendarDays, ChevronRight, Users } from "lucide-react";
 import { Can } from "@/components/ui/can";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CARD_CLASS, SECTION_LABEL_CLASS, ICON_BOX_MUTED_CLASS, FOCUS_RING_CLASS } from "@/config/design";
+import {
+  CARD_CLASS,
+  CARD_STAT_CLASS,
+  SECTION_LABEL_CLASS,
+  ICON_BOX_PRIMARY_CLASS,
+  FOCUS_RING_CLASS,
+  MANAGEMENT_PAGE_SPACING,
+} from "@/config/design";
 import { ROUTES } from "@/config/constants";
 import { useAcademicYearsQuery } from "@/hooks/use-academic-years";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
@@ -49,21 +56,21 @@ function AdminModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-colors hover:bg-muted/20 ${FOCUS_RING_CLASS} ${CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.03] hover:border-primary/30 hover:shadow-md hover:shadow-primary/[0.04] ${FOCUS_RING_CLASS} ${CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
-      <div className={ICON_BOX_MUTED_CLASS}>
+      <div className={ICON_BOX_PRIMARY_CLASS}>
         <Icon className="size-5" aria-hidden />
       </div>
       <CardHeader className="flex-1 gap-1 p-0 pt-4">
-        <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
+        <CardTitle className="text-sm font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
           {title}
         </CardTitle>
         <CardDescription className="text-xs font-normal text-muted-foreground">
           {description}
         </CardDescription>
       </CardHeader>
-      <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
+      <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary/70 transition-colors group-hover:text-primary">
         Manage
         <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
       </span>
@@ -83,21 +90,21 @@ function AdminSummary() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      <div className={`rounded-xl px-4 py-3 ${CARD_CLASS}`}>
-        <p className={`text-xs font-medium ${SECTION_LABEL_CLASS}`}>Total users</p>
-        <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
+      <div className={`px-5 py-4 ${CARD_STAT_CLASS}`}>
+        <p className={SECTION_LABEL_CLASS}>Total users</p>
+        <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-primary">
           {totalUsers !== null ? totalUsers : "—"}
         </p>
       </div>
-      <div className={`rounded-xl px-4 py-3 ${CARD_CLASS}`}>
-        <p className={`text-xs font-medium ${SECTION_LABEL_CLASS}`}>Departments</p>
-        <p className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
+      <div className={`px-5 py-4 ${CARD_STAT_CLASS}`}>
+        <p className={SECTION_LABEL_CLASS}>Departments</p>
+        <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-primary">
           {departmentCount !== null ? departmentCount : "—"}
         </p>
       </div>
-      <div className={`rounded-xl px-4 py-3 ${CARD_CLASS}`}>
-        <p className={`text-xs font-medium ${SECTION_LABEL_CLASS}`}>Active academic year</p>
-        <p className="mt-0.5 text-lg font-semibold text-foreground">
+      <div className={`px-5 py-4 ${CARD_STAT_CLASS}`}>
+        <p className={SECTION_LABEL_CLASS}>Active academic year</p>
+        <p className="mt-1 text-2xl font-bold tracking-tight text-primary">
           {activeYear?.name ?? "—"}
         </p>
       </div>
@@ -107,7 +114,7 @@ function AdminSummary() {
 
 export function AdminDashboardContent() {
   return (
-    <div className="space-y-6">
+    <div className={MANAGEMENT_PAGE_SPACING}>
       <section aria-labelledby="admin-summary-heading">
         <h2 id="admin-summary-heading" className="sr-only">
           Summary

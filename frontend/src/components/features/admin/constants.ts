@@ -127,3 +127,72 @@ export const MANAGEMENT_FOCUS_RING_CLASS = FOCUS_RING_CLASS;
 /** Action button in a disabled/locked state (blurred UI): muted, reduced opacity, non-interactive. */
 export const ACTION_BUTTON_DISABLED_BLUR_CLASS =
   "cursor-not-allowed text-muted-foreground opacity-60";
+
+// ─── Table body ──────────────────────────────────────────────────────────────
+
+/** Table base wrapper (full width, collapse borders, left-aligned). */
+export const TABLE_BASE_CLASS =
+  "w-full border-collapse text-left text-sm";
+
+/** Table header row (light muted background, bottom border). */
+export const TABLE_HEAD_ROW_CLASS =
+  "border-b border-border bg-muted/30";
+
+/** Table body row (hover state, bottom border). */
+export const TABLE_ROW_CLASS =
+  "border-b border-border/80 transition-colors last:border-0 hover:bg-muted/10";
+
+/** Table data cell. */
+export const TABLE_CELL_CLASS =
+  "px-4 py-3 text-sm text-foreground sm:px-6";
+
+/** Table data cell (name / primary column, bolder). */
+export const TABLE_CELL_NAME_CLASS =
+  "px-4 py-3 font-medium text-foreground sm:px-6";
+
+// ─── Action buttons ──────────────────────────────────────────────────────────
+
+/** Base action icon button (shared size, shrink, transition). */
+const ACTION_BTN_BASE = "inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors";
+
+/** Edit action (primary accent). */
+export const ACTION_BUTTON_EDIT_CLASS =
+  `${ACTION_BTN_BASE} text-primary/70 hover:bg-primary/10 hover:text-primary`;
+
+/** Destructive/delete action. */
+export const ACTION_BUTTON_DESTRUCTIVE_CLASS =
+  `${ACTION_BTN_BASE} text-destructive/70 hover:bg-destructive/10 hover:text-destructive`;
+
+/** Success/activate action. */
+export const ACTION_BUTTON_SUCCESS_CLASS =
+  `${ACTION_BTN_BASE} text-success hover:bg-success/10 hover:text-success`;
+
+/** Muted action (close, archive). */
+export const ACTION_BUTTON_MUTED_CLASS =
+  `${ACTION_BTN_BASE} text-muted-foreground hover:bg-muted hover:text-foreground`;
+
+/** Inline actions wrapper (right-aligned, gap). */
+export const TABLE_ACTIONS_WRAPPER_CLASS =
+  "inline-flex items-center justify-end gap-1";
+
+// ─── Status badges ───────────────────────────────────────────────────────────
+
+/** Base status badge: small pill shape. */
+const STATUS_BADGE_BASE =
+  "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium select-none";
+
+/** Active status badge (green). */
+export const STATUS_BADGE_ACTIVE_CLASS =
+  `${STATUS_BADGE_BASE} border-emerald-200/60 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-950/30 dark:text-emerald-300`;
+
+/** Inactive / draft status badge (muted). */
+export const STATUS_BADGE_INACTIVE_CLASS =
+  `${STATUS_BADGE_BASE} border-border bg-muted/50 text-muted-foreground`;
+
+/** Closed status badge (amber). */
+export const STATUS_BADGE_CLOSED_CLASS =
+  `${STATUS_BADGE_BASE} border-amber-200/60 bg-amber-50 text-amber-700 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-300`;
+
+/** AlertDialog error message. */
+export const ALERT_DIALOG_ERROR_CLASS =
+  "mt-2 block text-sm text-destructive";

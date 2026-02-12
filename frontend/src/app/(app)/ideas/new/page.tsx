@@ -12,6 +12,9 @@ import {
   PAGE_WRAPPER_NARROW_CLASS,
   BACK_LINK_CLASS,
   ALERT_WARNING_CLASS,
+  PAGE_TITLE_CLASS,
+  STAFF_DESCRIPTION_CLASS,
+  STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft } from "lucide-react";
@@ -78,17 +81,12 @@ export default function SubmitIdeaPage() {
           </Link>
         </nav>
         <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-            New proposal
-          </h1>
-          <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground/70">
+          <h1 className={PAGE_TITLE_CLASS}>New proposal</h1>
+          <p className={STAFF_DESCRIPTION_CLASS}>
             Share your idea with the community. Be clear, constructive, and
             evidence-based.
           </p>
-          <div
-            className="mt-4 h-px w-10 bg-gradient-to-r from-primary/80 to-transparent"
-            aria-hidden
-          />
+          <div className={`mt-4 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
         </div>
       </header>
 

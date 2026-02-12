@@ -97,7 +97,7 @@ function IdeaCard({
   return (
     <article className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
       {/* Subtle gradient wash on hover */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* ── Byline ───────────────────────────────────────────────────── */}
       <div className="relative flex items-center gap-3 px-6 pt-6 sm:px-7">
@@ -398,7 +398,7 @@ export function IdeasHubContent() {
               className={cn(
                 "rounded-full px-3 py-1 text-[12px] font-medium transition-all duration-200",
                 sort === tab.value
-                  ? "bg-foreground/90 text-background shadow-sm"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground/50 hover:text-foreground/70",
               )}
             >

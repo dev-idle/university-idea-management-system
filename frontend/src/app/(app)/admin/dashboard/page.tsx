@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LayoutDashboard } from "lucide-react";
 import { AdminDashboardContent } from "@/components/features/admin/dashboard";
 import { PageHeader } from "@/components/layout/page-header";
 import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
@@ -15,6 +16,7 @@ export default function AdminDashboardPage() {
         title="Administration"
         description="Manage users, departments, and academic years. Access control is enforced server-side."
         descriptionWide
+        icon={LayoutDashboard}
       />
       <AdminDashboardContent />
     </div>

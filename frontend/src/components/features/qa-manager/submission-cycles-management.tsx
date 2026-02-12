@@ -42,7 +42,21 @@ import {
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_BASE_CLASS,
+  TABLE_HEAD_ROW_CLASS,
+  TABLE_ROW_CLASS,
+  TABLE_CELL_CLASS,
+  TABLE_CELL_NAME_CLASS,
+  TABLE_ACTIONS_WRAPPER_CLASS,
+  ACTION_BUTTON_EDIT_CLASS,
+  ACTION_BUTTON_DESTRUCTIVE_CLASS,
+  ACTION_BUTTON_SUCCESS_CLASS,
+  ACTION_BUTTON_MUTED_CLASS,
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
+  STATUS_BADGE_ACTIVE_CLASS,
+  STATUS_BADGE_INACTIVE_CLASS,
+  STATUS_BADGE_CLOSED_CLASS,
+  ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   formatManagementShowingRange,
@@ -79,9 +93,9 @@ const COLUMNS_WITH_ACTIONS = 7;
 const COLUMNS_NAME_ONLY = 6;
 
 const STATUS_CLASS: Record<string, string> = {
-  DRAFT: "border-border bg-muted/50 text-muted-foreground",
-  ACTIVE: "border-success/20 bg-success/10 text-success",
-  CLOSED: "border-muted-foreground/30 bg-muted/30 text-muted-foreground",
+  DRAFT: STATUS_BADGE_INACTIVE_CLASS,
+  ACTIVE: STATUS_BADGE_ACTIVE_CLASS,
+  CLOSED: STATUS_BADGE_CLOSED_CLASS,
 };
 
 const STATUS_TOOLTIP: Record<string, string> = {
@@ -173,7 +187,7 @@ export function SubmissionCyclesManagement() {
               {" — "}
               The cycle will revert to DRAFT and can be edited or activated again. No data is deleted.
               {deactivateMutation.isError && (
-                <span className="mt-2 block text-destructive">
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deactivateMutation.error, "Deactivate failed.")}
                 </span>
               )}
@@ -204,7 +218,7 @@ export function SubmissionCyclesManagement() {
               {" — "}
               This will permanently remove the cycle. Only DRAFT or CLOSED cycles can be deleted. This action cannot be undone.
               {deleteMutation.isError && (
-                <span className="mt-2 block text-destructive">
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deleteMutation.error, "Delete failed.")}
                 </span>
               )}
@@ -298,9 +312,9 @@ export function SubmissionCyclesManagement() {
             <>
               <TooltipProvider delayDuration={300}>
                 <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
-                  <table className="w-full border-collapse text-left text-sm">
+                  <table className={TABLE_BASE_CLASS}>
                     <thead>
-                      <tr className="border-b border-border bg-muted/30">
+                      <tr className={TABLE_HEAD_ROW_CLASS}>
                         <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Academic year
                         </th>
@@ -338,22 +352,19 @@ export function SubmissionCyclesManagement() {
                         </tr>
                       ) : (
                         paginatedList.map((c) => (
-                          <tr
-                            key={c.id}
-                            className="border-b border-border/80 transition-colors last:border-0 hover:bg-muted/10"
-                          >
-                            <td className="px-4 py-3 font-medium text-foreground sm:px-6">
+                          <tr key={c.id} className={TABLE_ROW_CLASS}>
+                            <td className={TABLE_CELL_NAME_CLASS}>
                               {c.academicYear.name}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground sm:px-6">
+                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
                               {c.name ?? "—"}
                             </td>
-                            <td className="px-4 py-3 sm:px-6">
+                            <td className={TABLE_CELL_CLASS}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span
                                     className={cn(
-                                      "inline-flex cursor-default items-center rounded-md border px-2 py-0.5 text-xs font-medium",
+                                      "cursor-default",
                                       STATUS_CLASS[c.status] ?? STATUS_CLASS.DRAFT
                                     )}
                                   >
@@ -365,13 +376,13 @@ export function SubmissionCyclesManagement() {
                                 </TooltipContent>
                               </Tooltip>
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground sm:px-6">
+                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
                               {formatDateTime(c.ideaSubmissionClosesAt)}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground sm:px-6">
+                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
                               {formatDateTime(c.interactionClosesAt)}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground sm:px-6">
+                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex cursor-default items-center text-primary underline decoration-primary/30 decoration-dotted underline-offset-2">
@@ -396,7 +407,7 @@ export function SubmissionCyclesManagement() {
                             </td>
                             {isQaManager && (
                               <td className={cn(TABLE_ACTIONS_MIN_W_3, TABLE_ACTIONS_CELL_CLASS)}>
-                                <div className="inline-flex items-center justify-end gap-2">
+                                <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
                                   {/* Slot 1: Edit (DRAFT or ACTIVE) or spacer */}
                                   {c.status === "DRAFT" || c.status === "ACTIVE" ? (
                                     <Tooltip>
@@ -405,7 +416,7 @@ export function SubmissionCyclesManagement() {
                                           type="button"
                                           variant="ghost"
                                           size="icon"
-                                          className="size-8 shrink-0 text-primary hover:bg-primary/10 hover:text-primary"
+                                          className={ACTION_BUTTON_EDIT_CLASS}
                                           onClick={() => setEditingCycle(c)}
                                           aria-label="Edit cycle"
                                         >
@@ -427,8 +438,9 @@ export function SubmissionCyclesManagement() {
                                             variant="ghost"
                                             size="icon"
                                             className={cn(
-                                              "size-8 shrink-0 text-success hover:bg-success/10 hover:text-success",
-                                              !canActivate(c) && ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                              canActivate(c)
+                                                ? ACTION_BUTTON_SUCCESS_CLASS
+                                                : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
                                             )}
                                             disabled={activateMutation.isPending || !canActivate(c)}
                                             onClick={() => canActivate(c) && activateMutation.mutate(c.id)}
@@ -453,7 +465,7 @@ export function SubmissionCyclesManagement() {
                                           type="button"
                                           variant="ghost"
                                           size="icon"
-                                          className="size-8 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                          className={ACTION_BUTTON_DESTRUCTIVE_CLASS}
                                           disabled={deactivateMutation.isPending}
                                           onClick={() => {
                                             deactivateMutation.reset();
@@ -469,7 +481,7 @@ export function SubmissionCyclesManagement() {
                                   ) : (
                                     <span className="size-8 shrink-0" aria-hidden />
                                   )}
-                                  {/* Slot 3: Close (ACTIVE + after interaction close) or Delete (always shown; disabled when ACTIVE) */}
+                                  {/* Slot 3: Close (ACTIVE + after interaction close) or Delete */}
                                   {canClose(c) ? (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -477,7 +489,7 @@ export function SubmissionCyclesManagement() {
                                           type="button"
                                           variant="ghost"
                                           size="icon"
-                                          className="size-8 shrink-0 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                          className={ACTION_BUTTON_MUTED_CLASS}
                                           disabled={closeMutation.isPending}
                                           onClick={() => closeMutation.mutate(c.id)}
                                           aria-label="Close cycle"
@@ -496,10 +508,9 @@ export function SubmissionCyclesManagement() {
                                             variant="ghost"
                                             size="icon"
                                             className={cn(
-                                              "size-8 shrink-0",
-                                              c.status !== "ACTIVE" &&
-                                                "text-destructive hover:bg-destructive/10 hover:text-destructive",
-                                              c.status === "ACTIVE" && ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                              c.status !== "ACTIVE"
+                                                ? ACTION_BUTTON_DESTRUCTIVE_CLASS
+                                                : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
                                             )}
                                             disabled={deleteMutation.isPending || c.status === "ACTIVE"}
                                             onClick={() => {

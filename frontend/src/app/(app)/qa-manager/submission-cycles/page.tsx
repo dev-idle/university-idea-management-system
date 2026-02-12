@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CalendarRange } from "lucide-react";
 import { SubmissionCyclesManagement } from "@/components/features/qa-manager/submission-cycles-management";
 import { SubmissionCyclesManagementSkeleton } from "@/components/features/qa-manager/submission-cycles-management-skeleton";
 import { PageHeader } from "@/components/layout/page-header";
@@ -18,6 +19,7 @@ export default function QaManagerSubmissionCyclesPage() {
         title="Submission cycles"
         description="Create and manage proposal submission cycles. Each cycle is linked to an academic year and defines closure times for submissions, comments, and votes. Only one cycle can be ACTIVE at a time. Export (CSV/ZIP) is available only after a cycle is CLOSED."
         descriptionWide
+        icon={CalendarRange}
       />
       <Suspense fallback={<SubmissionCyclesManagementSkeleton />}>
         <SubmissionCyclesManagement />

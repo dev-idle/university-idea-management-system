@@ -31,6 +31,9 @@ import {
 import {
   PAGE_WRAPPER_NARROW_CLASS,
   BACK_LINK_CLASS,
+  PAGE_TITLE_CLASS,
+  STAFF_DESCRIPTION_CLASS,
+  STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import {
   ArrowLeft,
@@ -217,30 +220,25 @@ export default function MyIdeasPage() {
 
   return (
     <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
-      {/* Back */}
-      <nav aria-label="Breadcrumb">
-        <Link
-          href={ROUTES.IDEAS}
-          className={BACK_LINK_CLASS}
-          aria-label="Return to Ideas Hub"
-        >
-          <ArrowLeft className="size-4 shrink-0" aria-hidden />
-          Ideas Hub
-        </Link>
-      </nav>
-
       {/* Header */}
-      <header>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
-          My Ideas
-        </h1>
-        <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground/70">
-          View and manage proposals you have submitted.
-        </p>
-        <div
-          className="mt-4 h-px w-10 bg-gradient-to-r from-primary/80 to-transparent"
-          aria-hidden
-        />
+      <header className="space-y-4">
+        <nav aria-label="Breadcrumb">
+          <Link
+            href={ROUTES.IDEAS}
+            className={BACK_LINK_CLASS}
+            aria-label="Return to Ideas Hub"
+          >
+            <ArrowLeft className="size-4 shrink-0" aria-hidden />
+            Ideas Hub
+          </Link>
+        </nav>
+        <div>
+          <h1 className={PAGE_TITLE_CLASS}>My Ideas</h1>
+          <p className={STAFF_DESCRIPTION_CLASS}>
+            View and manage proposals you have submitted.
+          </p>
+          <div className={`mt-4 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
+        </div>
       </header>
 
       {/* Feed */}

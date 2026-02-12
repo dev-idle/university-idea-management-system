@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Users } from "lucide-react";
 import { AdminUsersManagement } from "@/components/features/admin/users-management";
 import { AdminUsersTableSkeleton } from "@/components/features/admin/users-table-skeleton";
 import { PageHeader } from "@/components/layout/page-header";
@@ -17,6 +18,7 @@ export default function AdminUsersPage() {
         title="User management"
         description="Manage institutional accounts, roles, and department assignments. Access control is enforced server-side."
         descriptionWide
+        icon={Users}
       />
       <Suspense fallback={<AdminUsersTableSkeleton />}>
         <AdminUsersManagement />

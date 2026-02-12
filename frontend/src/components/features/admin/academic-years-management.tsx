@@ -39,7 +39,17 @@ import {
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_BASE_CLASS,
+  TABLE_HEAD_ROW_CLASS,
+  TABLE_ROW_CLASS,
+  TABLE_CELL_CLASS,
+  TABLE_CELL_NAME_CLASS,
+  TABLE_ACTIONS_WRAPPER_CLASS,
+  ACTION_BUTTON_EDIT_CLASS,
+  ACTION_BUTTON_SUCCESS_CLASS,
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
+  STATUS_BADGE_ACTIVE_CLASS,
+  STATUS_BADGE_INACTIVE_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   formatManagementShowingRange,
@@ -176,9 +186,9 @@ export function AcademicYearsManagement() {
             <>
               <TooltipProvider delayDuration={300}>
                 <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
-                  <table className="w-full border-collapse text-left text-sm">
+                  <table className={TABLE_BASE_CLASS}>
                     <thead>
-                      <tr className="border-b border-border bg-muted/30">
+                      <tr className={TABLE_HEAD_ROW_CLASS}>
                         <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                           Name
                         </th>
@@ -207,42 +217,31 @@ export function AcademicYearsManagement() {
                         </tr>
                       ) : (
                         paginatedList.map((y) => (
-                          <tr
-                            key={y.id}
-                            className="border-b border-border/80 transition-colors last:border-0 hover:bg-muted/10"
-                          >
-                            <td className="px-4 py-3 font-medium text-foreground sm:px-6">
+                          <tr key={y.id} className={TABLE_ROW_CLASS}>
+                            <td className={TABLE_CELL_NAME_CLASS}>
                               {y.name}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground sm:px-6">
+                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
                               {formatDate(y.startDate)}
                             </td>
-                            <td className="px-4 py-3 text-muted-foreground sm:px-6">
+                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
                               {y.endDate ? formatDate(y.endDate) : "—"}
                             </td>
-                            <td className="px-4 py-3 sm:px-6">
-                              <span
-                                className={cn(
-                                  "inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium",
-                                  y.isActive
-                                    ? "border-success/20 bg-success/10 text-success"
-                                    : "border-border bg-muted/50 text-muted-foreground"
-                                )}
-                              >
-                                {y.isActive ? "ACTIVE" : "INACTIVE"}
+                            <td className={TABLE_CELL_CLASS}>
+                              <span className={y.isActive ? STATUS_BADGE_ACTIVE_CLASS : STATUS_BADGE_INACTIVE_CLASS}>
+                                {y.isActive ? "Active" : "Inactive"}
                               </span>
                             </td>
                             <Can permission="ACADEMIC_YEARS">
                               <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
-                                <div className="inline-flex items-center justify-end gap-2">
-                                  {/* Edit: always available regardless of active submission cycle */}
+                                <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <Button
                                         type="button"
                                         variant="ghost"
                                         size="icon"
-                                        className="size-8 shrink-0 text-primary hover:bg-primary/10 hover:text-primary"
+                                        className={ACTION_BUTTON_EDIT_CLASS}
                                         disabled={updateMutation.isPending}
                                         onClick={() => setEditingYear(y)}
                                         aria-label="Edit academic year"
@@ -252,7 +251,6 @@ export function AcademicYearsManagement() {
                                     </TooltipTrigger>
                                     <TooltipContent side="top">Edit</TooltipContent>
                                   </Tooltip>
-                                  {/* Activate: grayed out when any submission cycle is active; or when this year is active and has an active cycle */}
                                   {!y.isActive ? (
                                     <Tooltip>
                                       <TooltipTrigger asChild>
@@ -262,10 +260,9 @@ export function AcademicYearsManagement() {
                                             variant="ghost"
                                             size="icon"
                                             className={cn(
-                                              "size-8 shrink-0",
                                               hasActiveSubmissionCycleInSystem
-                                                ? ACTION_BUTTON_DISABLED_BLUR_CLASS
-                                                : "text-success hover:bg-success/10 hover:text-success"
+                                                ? ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                                : ACTION_BUTTON_SUCCESS_CLASS
                                             )}
                                             disabled={
                                               hasActiveSubmissionCycleInSystem ||
@@ -288,7 +285,6 @@ export function AcademicYearsManagement() {
                                       </TooltipContent>
                                     </Tooltip>
                                   ) : (
-                                    /* Keep Activate hidden for any row with Status ACTIVE (only inactive rows show the Activate action) */
                                     <span className="size-8 shrink-0" aria-hidden />
                                   )}
                                 </div>

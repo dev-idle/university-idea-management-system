@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { CalendarDays } from "lucide-react";
 import { AcademicYearsManagement } from "@/components/features/admin/academic-years-management";
 import { AcademicYearsManagementSkeleton } from "@/components/features/admin/academic-years-management-skeleton";
 import { PageHeader } from "@/components/layout/page-header";
@@ -18,6 +19,7 @@ export default function AdminAcademicYearsPage() {
         title="Academic years"
         description="Configure academic years for submission cycles. Exactly one year is active at any time; permissions are enforced server-side."
         descriptionWide
+        icon={CalendarDays}
       />
       <Suspense fallback={<AcademicYearsManagementSkeleton />}>
         <AcademicYearsManagement />
