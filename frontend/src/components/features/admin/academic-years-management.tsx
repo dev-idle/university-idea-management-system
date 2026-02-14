@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -27,36 +25,41 @@ import type { AcademicYear } from "@/lib/schemas/academic-years.schema";
 import { CreateAcademicYearForm } from "./create-academic-year-form";
 import { UpdateAcademicYearForm } from "./update-academic-year-form";
 import {
-  MANAGEMENT_CARD_HEADER_CLASS,
-  MANAGEMENT_CARD_CLASS,
-  DIALOG_CONTENT_CLASS,
-  DIALOG_HEADER_CLASS,
-  DIALOG_TITLE_CLASS,
-  DIALOG_DESCRIPTION_CLASS,
+  DIALOG_CONTENT_SCULPTED_CLASS,
+  DIALOG_HEADER_SCULPTED_CLASS,
+  DIALOG_OVERLAY_SCULPTED_CLASS,
+  DIALOG_TITLE_SCULPTED_CLASS,
+  MANAGEMENT_PAGE_SIZE,
+  MANAGEMENT_PAGINATION_MIN_TOTAL,
+  UNIFIED_CARD_CLASS,
+  UNIFIED_CARD_TOOLBAR_CLASS,
+  UNIFIED_SEARCH_INPUT_CLASS,
+  LOADING_STATE_WRAPPER_CLASS,
+  LOADING_STATE_CONTENT_CLASS,
+  LOADING_SPINNER_CLASS,
+  TABLE_BASE_CLASS,
+  TABLE_HEAD_ROW_CLASS,
   TABLE_HEAD_CELL_CLASS,
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_2,
-  TABLE_ACTIONS_CELL_CLASS,
-  TABLE_LOADING_CELL_CLASS,
-  TABLE_EMPTY_CELL_CLASS,
-  TABLE_BASE_CLASS,
-  TABLE_HEAD_ROW_CLASS,
   TABLE_ROW_CLASS,
-  TABLE_CELL_CLASS,
   TABLE_CELL_NAME_CLASS,
+  TABLE_CELL_CLASS,
+  TABLE_CELL_STATUS_CLASS,
+  TABLE_ACTIONS_CELL_CLASS,
   TABLE_ACTIONS_WRAPPER_CLASS,
+  TABLE_EMPTY_CELL_CLASS,
+  STATUS_BADGE_ACTIVE_CLASS,
+  STATUS_BADGE_INACTIVE_CLASS,
   ACTION_BUTTON_EDIT_CLASS,
   ACTION_BUTTON_SUCCESS_CLASS,
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
-  STATUS_BADGE_ACTIVE_CLASS,
-  STATUS_BADGE_INACTIVE_CLASS,
-  MANAGEMENT_PAGE_SIZE,
-  MANAGEMENT_PAGINATION_MIN_TOTAL,
-  formatManagementShowingRange,
+  TOOLBAR_ADD_BUTTON_BASE_CLASS,
+  TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Pencil, CircleCheck } from "lucide-react";
+import { CalendarDays, Pencil, CircleCheck, Plus, Search } from "lucide-react";
 
 function formatDate(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -73,12 +76,36 @@ export function AcademicYearsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [showCreate, setShowCreate] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler, { capture: true });
+    return () => window.removeEventListener("keydown", handler, { capture: true });
+  }, []);
 
   const { data: listData, status, error, isFetching } = useAcademicYearsQuery();
-  const years = useMemo(
+  const allYears = useMemo(
     () => listData?.list ?? [],
     [listData?.list]
   );
+  const years = useMemo(() => {
+    if (!searchQuery.trim()) return allYears;
+    const q = searchQuery.trim().toLowerCase();
+    return allYears.filter(
+      (y) =>
+        y.name.toLowerCase().includes(q) ||
+        formatDate(y.startDate).toLowerCase().includes(q) ||
+        (y.endDate ? formatDate(y.endDate).toLowerCase().includes(q) : false)
+    );
+  }, [allYears, searchQuery]);
   const hasActiveSubmissionCycleInSystem =
     listData?.hasActiveSubmissionCycleInSystem ?? false;
 
@@ -110,22 +137,27 @@ export function AcademicYearsManagement() {
   return (
     <div className="space-y-6">
       <Can permission="ACADEMIC_YEARS">
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogContent className={DIALOG_CONTENT_CLASS}>
-            <DialogHeader className={DIALOG_HEADER_CLASS}>
-              <DialogTitle className={DIALOG_TITLE_CLASS}>
-                Add academic year
+        <Dialog
+          open={showCreate}
+          onOpenChange={(open) => {
+            if (!open) createMutation.reset();
+            setShowCreate(open);
+          }}
+        >
+          <DialogContent
+            className={DIALOG_CONTENT_SCULPTED_CLASS}
+            overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          >
+            <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
+                Add Academic Year
               </DialogTitle>
-              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-                Define a new academic year with name and date range. Exactly one year can be active at a time.
-              </DialogDescription>
             </DialogHeader>
             <CreateAcademicYearForm
               onSuccess={() => setShowCreate(false)}
               onCancel={() => setShowCreate(false)}
               isPending={createMutation.isPending}
               mutateAsync={createMutation.mutateAsync}
-              error={createMutation.error ?? null}
               variant="dialog"
             />
           </DialogContent>
@@ -133,15 +165,21 @@ export function AcademicYearsManagement() {
       </Can>
 
       <Can permission="ACADEMIC_YEARS">
-        <Dialog open={!!editingYear} onOpenChange={(open) => !open && setEditingYear(null)}>
-          <DialogContent className={DIALOG_CONTENT_CLASS}>
-            <DialogHeader className={DIALOG_HEADER_CLASS}>
-              <DialogTitle className={DIALOG_TITLE_CLASS}>
-                Edit academic year
+        <Dialog
+          open={!!editingYear}
+          onOpenChange={(open) => {
+            if (!open) updateMutation.reset();
+            if (!open) setEditingYear(null);
+          }}
+        >
+          <DialogContent
+            className={DIALOG_CONTENT_SCULPTED_CLASS}
+            overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          >
+            <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
+                Edit Academic Year
               </DialogTitle>
-              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-                Update name, dates, or active status. Exactly one year can be active at a time.
-              </DialogDescription>
             </DialogHeader>
             {editingYear && (
               <UpdateAcademicYearForm
@@ -150,7 +188,6 @@ export function AcademicYearsManagement() {
                 onCancel={() => setEditingYear(null)}
                 isPending={updateMutation.isPending}
                 mutateAsync={updateMutation.mutateAsync}
-                error={updateMutation.error ?? null}
                 variant="dialog"
               />
             )}
@@ -158,157 +195,192 @@ export function AcademicYearsManagement() {
         </Dialog>
       </Can>
 
-      <Card className={MANAGEMENT_CARD_CLASS}>
-        <Can permission="ACADEMIC_YEARS">
-          <div className={MANAGEMENT_CARD_HEADER_CLASS}>
-            <p className="text-sm text-muted-foreground">
-              {years
-                ? formatManagementShowingRange(page, MANAGEMENT_PAGE_SIZE, total)
-                : "Loading…"}
-            </p>
+      <div className={UNIFIED_CARD_CLASS}>
+        <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
+          <div className="relative w-72">
+            <Search
+              className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+              aria-hidden
+            />
+            <input
+              ref={searchInputRef}
+              type="search"
+              role="searchbox"
+              aria-label="Search by year"
+              placeholder="Search by year..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
+              className={UNIFIED_SEARCH_INPUT_CLASS}
+            />
+            <kbd
+              className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+              aria-hidden
+            >
+              ⌘K
+            </kbd>
+          </div>
+          <Can permission="ACADEMIC_YEARS">
             <Button
               onClick={() => setShowCreate((v) => !v)}
               variant={showCreate ? "secondary" : "default"}
               size="sm"
-              className="shrink-0 gap-2"
+              className={cn(
+                TOOLBAR_ADD_BUTTON_BASE_CLASS,
+                !showCreate && TOOLBAR_ADD_BUTTON_PRIMARY_CLASS
+              )}
             >
-              <CalendarDays className="size-4 shrink-0" aria-hidden />
-              {showCreate ? "Cancel" : "Add academic year"}
+              {showCreate ? (
+                <CalendarDays className="size-4 shrink-0" aria-hidden />
+              ) : (
+                <Plus className="size-4 shrink-0" aria-hidden />
+              )}
+              {showCreate ? "Cancel" : "Add Academic Year"}
             </Button>
-          </div>
-        </Can>
-        <CardContent className="gap-0 p-0">
-          {status === "pending" && !years ? (
-            <div className={TABLE_LOADING_CELL_CLASS}>
-              Loading academic years…
+          </Can>
+        </div>
+
+        {status === "pending" && !years ? (
+          <div className={LOADING_STATE_WRAPPER_CLASS}>
+            <div className={LOADING_STATE_CONTENT_CLASS}>
+              <div className={LOADING_SPINNER_CLASS} aria-hidden />
+              <p className="font-sans text-sm font-medium text-muted-foreground">Loading academic years…</p>
             </div>
-          ) : (
-            <>
-              <TooltipProvider delayDuration={300}>
-                <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
-                  <table className={TABLE_BASE_CLASS}>
-                    <thead>
-                      <tr className={TABLE_HEAD_ROW_CLASS}>
-                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
-                          Name
+          </div>
+        ) : (
+          <>
+            <TooltipProvider delayDuration={300}>
+              <div className={cn("overflow-x-auto transition-opacity duration-200", isFetching && "opacity-60")}>
+                <table className={TABLE_BASE_CLASS}>
+                  <thead>
+                    <tr className={TABLE_HEAD_ROW_CLASS}>
+                      <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                        Name
+                      </th>
+                      <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                        Start
+                      </th>
+                      <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                        End
+                      </th>
+                      <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                        Status
+                      </th>
+                      <Can permission="ACADEMIC_YEARS">
+                        <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
+                          Actions
                         </th>
-                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
-                          Start
-                        </th>
-                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
-                          End
-                        </th>
-                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
-                          Status
-                        </th>
-                        <Can permission="ACADEMIC_YEARS">
-                          <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
-                            Actions
-                          </th>
-                        </Can>
+                      </Can>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {!years || years.length === 0 ? (
+                      <tr>
+                        <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
+                          <p className="font-sans text-sm font-medium text-foreground">
+                            {searchQuery.trim()
+                              ? "No matching academic years."
+                              : "No academic years yet."}
+                          </p>
+                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                            {searchQuery.trim() ? "Try a different search." : "Add one to get started."}
+                          </p>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {!years || years.length === 0 ? (
-                        <tr>
-                          <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
-                            No academic years yet.
+                    ) : (
+                      paginatedList.map((y) => (
+                        <tr key={y.id} className={TABLE_ROW_CLASS}>
+                          <td className={TABLE_CELL_NAME_CLASS}>
+                            {y.name}
                           </td>
-                        </tr>
-                      ) : (
-                        paginatedList.map((y) => (
-                          <tr key={y.id} className={TABLE_ROW_CLASS}>
-                            <td className={TABLE_CELL_NAME_CLASS}>
-                              {y.name}
-                            </td>
-                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
-                              {formatDate(y.startDate)}
-                            </td>
-                            <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
-                              {y.endDate ? formatDate(y.endDate) : "—"}
-                            </td>
-                            <td className={TABLE_CELL_CLASS}>
-                              <span className={y.isActive ? STATUS_BADGE_ACTIVE_CLASS : STATUS_BADGE_INACTIVE_CLASS}>
-                                {y.isActive ? "Active" : "Inactive"}
-                              </span>
-                            </td>
-                            <Can permission="ACADEMIC_YEARS">
-                              <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
-                                <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
+                          <td className={cn(TABLE_CELL_CLASS, "tabular-nums")}>
+                            {formatDate(y.startDate)}
+                          </td>
+                          <td className={cn(TABLE_CELL_CLASS, "tabular-nums")}>
+                            {y.endDate ? formatDate(y.endDate) : "—"}
+                          </td>
+                          <td className={TABLE_CELL_STATUS_CLASS}>
+                            <span className={y.isActive ? STATUS_BADGE_ACTIVE_CLASS : STATUS_BADGE_INACTIVE_CLASS}>
+                              {y.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <Can permission="ACADEMIC_YEARS">
+                            <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
+                              <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      className={ACTION_BUTTON_EDIT_CLASS}
+                                      disabled={updateMutation.isPending}
+                                      onClick={() => setEditingYear(y)}
+                                      aria-label="Edit academic year"
+                                    >
+                                      <Pencil className="size-4" aria-hidden />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Edit</TooltipContent>
+                                </Tooltip>
+                                {!y.isActive ? (
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className={ACTION_BUTTON_EDIT_CLASS}
-                                        disabled={updateMutation.isPending}
-                                        onClick={() => setEditingYear(y)}
-                                        aria-label="Edit academic year"
-                                      >
-                                        <Pencil className="size-4" aria-hidden />
-                                      </Button>
+                                      <span className="inline-flex shrink-0">
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon-sm"
+                                          className={cn(
+                                            hasActiveSubmissionCycleInSystem
+                                              ? ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                              : ACTION_BUTTON_SUCCESS_CLASS
+                                          )}
+                                          disabled={
+                                            hasActiveSubmissionCycleInSystem ||
+                                            updateMutation.isPending
+                                          }
+                                          onClick={() =>
+                                            !hasActiveSubmissionCycleInSystem && setActive(y)
+                                          }
+                                          aria-label="Activate academic year"
+                                        >
+                                          <CircleCheck className="size-4" aria-hidden />
+                                        </Button>
+                                      </span>
                                     </TooltipTrigger>
-                                    <TooltipContent side="top">Edit</TooltipContent>
+                                    <TooltipContent side="top">
+                                      {hasActiveSubmissionCycleInSystem
+                                        ? "A submission cycle is active. Deactivate or close it in Submission Cycles (QA Manager) to change active year."
+                                        : "Activate"}
+                                    </TooltipContent>
                                   </Tooltip>
-                                  {!y.isActive ? (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span className="inline-flex shrink-0">
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            className={cn(
-                                              hasActiveSubmissionCycleInSystem
-                                                ? ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
-                                                : ACTION_BUTTON_SUCCESS_CLASS
-                                            )}
-                                            disabled={
-                                              hasActiveSubmissionCycleInSystem ||
-                                              updateMutation.isPending
-                                            }
-                                            onClick={() =>
-                                              !hasActiveSubmissionCycleInSystem &&
-                                              setActive(y)
-                                            }
-                                            aria-label="Activate academic year"
-                                          >
-                                            <CircleCheck className="size-4" aria-hidden />
-                                          </Button>
-                                        </span>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="top">
-                                        {hasActiveSubmissionCycleInSystem
-                                          ? "A submission cycle is active. Deactivate or close it in Submission Cycles (QA Manager) to change active year."
-                                          : "Activate"}
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  ) : (
-                                    <span className="size-8 shrink-0" aria-hidden />
-                                  )}
-                                </div>
-                              </td>
-                            </Can>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </TooltipProvider>
-              {total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
-                <ManagementTablePagination
-                  page={page}
-                  totalPages={totalPages}
-                  setPage={setPage}
-                  ariaLabel="Academic years pagination"
-                />
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                                ) : (
+                                  <span className="size-8 shrink-0" aria-hidden />
+                                )}
+                              </div>
+                            </td>
+                          </Can>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TooltipProvider>
+            {total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
+              <ManagementTablePagination
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+                ariaLabel="Academic years pagination"
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

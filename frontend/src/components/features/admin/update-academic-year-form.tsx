@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   AcademicYear,
@@ -9,8 +9,23 @@ import type {
 } from "@/lib/schemas/academic-years.schema";
 import { updateAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS } from "./constants";
+import {
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_ACTIONS_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_ERROR_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  FORM_CARD_INPUT_CLASS,
+} from "./constants";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -28,7 +43,6 @@ interface UpdateAcademicYearFormProps {
     id: string;
     body: UpdateAcademicYearBody;
   }) => Promise<unknown>;
-  error: Error | null;
   /** When "dialog", no card wrapper or title; use inside a Dialog. */
   variant?: "default" | "dialog";
 }
@@ -39,11 +53,11 @@ export function UpdateAcademicYearForm({
   onCancel,
   isPending,
   mutateAsync,
-  error,
   variant = "default",
 }: UpdateAcademicYearFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     setError,
     formState: { errors },
@@ -72,22 +86,27 @@ export function UpdateAcademicYearForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Failed to update academic year. Please try again."),
+        message: getErrorMessage(e, "Unable to update academic year."),
       });
     }
   }
 
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const isDialog = variant === "dialog";
+  const labelClass = isDialog ? FORM_DIALOG_LABEL_CLASS : "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const inputBaseClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={variant === "dialog" ? "flex flex-col gap-6" : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"}
+      className={
+        isDialog
+          ? FORM_DIALOG_FORM_CLASS
+          : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"
+      }
     >
       {variant === "default" && (
         <div>
-          <h3 className="font-serif text-base font-semibold tracking-tight text-foreground">
+          <h3 className="font-sans text-base font-semibold tracking-tight text-foreground">
             Edit academic year
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -96,90 +115,108 @@ export function UpdateAcademicYearForm({
         </div>
       )}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="min-w-0 space-y-2">
+        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
           <Label htmlFor="edit-name" className={labelClass}>
             Name
           </Label>
           <Input
             id="edit-name"
             type="text"
-            placeholder="e.g. 2024–2025"
-            className="h-10 w-full text-sm rounded-lg"
+            placeholder="e.g. 2026-2027"
+            className={inputBaseClass}
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "edit-name-error" : undefined}
             {...register("name")}
           />
           {errors.name && (
-            <p id="edit-name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="edit-name-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.name.message}
             </p>
           )}
         </div>
-        <div className="min-w-0 space-y-2">
+        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
           <Label htmlFor="edit-startDate" className={labelClass}>
             Start date
           </Label>
-          <Input
-            id="edit-startDate"
-            type="date"
-            className="h-10 w-full text-sm rounded-lg"
-            aria-invalid={!!errors.startDate}
-            aria-describedby={errors.startDate ? "edit-startDate-error" : undefined}
-            {...register("startDate")}
+          <Controller
+            name="startDate"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                id="edit-startDate"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                placeholder="Select start date"
+                aria-invalid={!!errors.startDate}
+                aria-describedby={
+                  errors.startDate ? "edit-startDate-error" : undefined
+                }
+                className={inputBaseClass}
+              />
+            )}
           />
           {errors.startDate && (
-            <p id="edit-startDate-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="edit-startDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.startDate.message}
             </p>
           )}
         </div>
-        <div className="min-w-0 space-y-2">
+        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
           <Label htmlFor="edit-endDate" className={labelClass}>
             End date{" "}
             <span className="font-normal normal-case text-muted-foreground/80">
               (optional)
             </span>
           </Label>
-          <Input
-            id="edit-endDate"
-            type="date"
-            className="h-10 w-full text-sm rounded-lg"
-            aria-invalid={!!errors.endDate}
-            aria-describedby={errors.endDate ? "edit-endDate-error" : undefined}
-            {...register("endDate")}
+          <Controller
+            name="endDate"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                id="edit-endDate"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                placeholder="Select end date (optional)"
+                aria-invalid={!!errors.endDate}
+                aria-describedby={
+                  errors.endDate ? "edit-endDate-error" : undefined
+                }
+                className={inputBaseClass}
+              />
+            )}
           />
           {errors.endDate && (
-            <p id="edit-endDate-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="edit-endDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.endDate.message}
             </p>
           )}
         </div>
       </div>
-      {(errors.root ?? error) && (
-        <p
-          className={FORM_ERROR_BLOCK_CLASS}
-          role="alert"
-          aria-live="polite"
-        >
-          {errors.root?.message ?? error?.message}
+      {errors.root && (
+        <p className={isDialog ? FORM_DIALOG_ROOT_ERROR_CLASS : "text-xs text-destructive"} role="alert" aria-live="polite">
+          {getErrorMessage(errors.root, "Unable to update academic year.")}
         </p>
       )}
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
-        >
-          {isPending ? "Saving…" : "Save"}
-        </Button>
+      <div
+        className={
+          variant === "dialog" ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS
+        }
+      >
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Saving…" : "Save"}
         </Button>
       </div>
     </form>

@@ -21,6 +21,7 @@ import { ROUTES } from "@/config/constants";
 import { getErrorMessage } from "@/lib/errors";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
+import { FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,7 +102,7 @@ function AttachmentRow({
       window.open(url, "_blank", "noopener,noreferrer");
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e) {
-      setViewError(e instanceof Error ? e.message : "Failed to open file.");
+      setViewError(e instanceof Error ? e.message : "Unable to open file.");
     } finally {
       setViewLoading(false);
     }
@@ -144,7 +145,7 @@ function AttachmentRow({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-[11px] text-muted-foreground/50 hover:text-foreground/70"
+            className="h-8 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
             onClick={handleView}
             disabled={viewLoading}
           >
@@ -154,26 +155,26 @@ function AttachmentRow({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-7 gap-1 px-2 text-[11px] text-muted-foreground/50 hover:text-foreground/70"
+            className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
             onClick={handleDownload}
           >
-            <Download className="size-3.5 shrink-0" aria-hidden />
+            <Download className="size-4 shrink-0" aria-hidden />
             Save
           </Button>
           {!disabled && (
             <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="size-7 rounded-md text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
+              size="icon-sm"
+              className="rounded-lg text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
               aria-label={`Remove ${att.fileName}`}
               onClick={onRemove}
               disabled={removing}
             >
               {removing ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden />
+                <Loader2 className="size-4 animate-spin" aria-hidden />
               ) : (
-                <X className="size-3.5" aria-hidden />
+                <X className="size-4" aria-hidden />
               )}
             </Button>
           )}
@@ -358,7 +359,7 @@ export default function EditIdeaPage() {
 
       {/* Header */}
       <header>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">
           Edit Proposal
         </h1>
         <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground/70">
@@ -533,7 +534,7 @@ export default function EditIdeaPage() {
             <div className="mt-4">
               {uploadParamsStatus === "error" && (
                 <p
-                  className="text-sm text-amber-600 dark:text-amber-400"
+                  className="text-sm text-warning"
                   role="alert"
                 >
                   Document upload is currently unavailable.
@@ -557,7 +558,7 @@ export default function EditIdeaPage() {
                     type="button"
                     variant="outline"
                     size="default"
-                    className="h-10 gap-2 rounded-lg border-border font-medium"
+                    className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/10"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={
                       uploading || attachments.length >= MAX_ATTACHMENTS
@@ -615,7 +616,7 @@ export default function EditIdeaPage() {
               <Button
                 type="submit"
                 disabled={updateMutation.isPending || !isDirty}
-                className="h-10 rounded-lg px-6 font-medium focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
+                className={FORM_SUBMIT_BUTTON_CLASS}
               >
                 {updateMutation.isPending ? "Saving…" : "Save changes"}
               </Button>
@@ -625,7 +626,7 @@ export default function EditIdeaPage() {
               variant="outline"
               onClick={() => router.push(ROUTES.MY_IDEAS)}
               disabled={updateMutation.isPending}
-              className="h-10 rounded-lg border-border px-6 font-medium"
+              className={FORM_OUTLINE_BUTTON_CLASS}
             >
               {closed ? "Back" : "Cancel"}
             </Button>
@@ -633,7 +634,7 @@ export default function EditIdeaPage() {
           <Button
             type="button"
             variant="ghost"
-            className="h-10 gap-2 rounded-lg px-4 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="h-9 gap-2 rounded-lg px-4 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
             onClick={() => setShowDeleteDialog(true)}
             disabled={deleteMutation.isPending}
           >
@@ -652,7 +653,7 @@ export default function EditIdeaPage() {
       >
         <AlertDialogContent className="max-w-md rounded-2xl border-border/50">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-serif text-lg font-semibold tracking-tight">
+            <AlertDialogTitle className="font-sans text-lg font-semibold tracking-tight">
               Delete proposal
             </AlertDialogTitle>
             <AlertDialogDescription className="text-[13px] leading-relaxed text-muted-foreground">

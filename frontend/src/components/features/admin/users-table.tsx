@@ -19,16 +19,17 @@ import {
   TABLE_ROW_CLASS,
   TABLE_CELL_CLASS,
   TABLE_CELL_NAME_CLASS,
+  TABLE_CELL_STATUS_CLASS,
   TABLE_ACTIONS_WRAPPER_CLASS,
   ACTION_BUTTON_EDIT_CLASS,
   ACTION_BUTTON_DESTRUCTIVE_CLASS,
   ACTION_BUTTON_SUCCESS_CLASS,
   STATUS_BADGE_ACTIVE_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
-  DIALOG_CONTENT_CLASS_SM,
-  DIALOG_HEADER_CLASS,
-  DIALOG_TITLE_CLASS,
-  DIALOG_DESCRIPTION_CLASS,
+  DIALOG_CONTENT_SCULPTED_CLASS,
+  DIALOG_OVERLAY_SCULPTED_CLASS,
+  DIALOG_HEADER_SCULPTED_CLASS,
+  DIALOG_TITLE_SCULPTED_CLASS,
 } from "./constants";
 import {
   AlertDialog,
@@ -43,7 +44,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -66,9 +66,11 @@ function formatRoles(roles: string[] | undefined): string {
 interface UsersTableProps {
   users: UserListItem[];
   isRefetching?: boolean;
+  /** When true and empty, show "No users found" / "Try a different search."; otherwise "No users yet." / "Add one to get started." */
+  hasActiveSearch?: boolean;
 }
 
-export function UsersTable({ users, isRefetching }: UsersTableProps) {
+export function UsersTable({ users, isRefetching, hasActiveSearch = false }: UsersTableProps) {
   const updateMutation = useUpdateUserMutation();
   const [deactivateUser, setDeactivateUser] = useState<UserListItem | null>(null);
   const [editUser, setEditUser] = useState<UserListItem | null>(null);
@@ -95,7 +97,7 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className={cn("overflow-x-auto", isRefetching && "opacity-70")}>
+      <div className={cn("overflow-x-auto transition-opacity duration-200", isRefetching && "opacity-60")}>
         <table className={TABLE_BASE_CLASS}>
           <thead>
             <tr className={TABLE_HEAD_ROW_CLASS}>
@@ -125,7 +127,12 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
             {users.length === 0 ? (
               <tr>
                 <td colSpan={USERS_TABLE_COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
-                  No users found.
+                  <p className="font-sans text-sm font-medium text-foreground">
+                    {hasActiveSearch ? "No users found." : "No users yet."}
+                  </p>
+                  <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                    {hasActiveSearch ? "Try a different search." : "Add one to get started."}
+                  </p>
                 </td>
               </tr>
             ) : (
@@ -134,13 +141,13 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
                   <td className={TABLE_CELL_NAME_CLASS}>
                     {user.email}
                   </td>
-                  <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
+                  <td className={TABLE_CELL_CLASS}>
                     {user.fullName?.trim() || "—"}
                   </td>
-                  <td className={cn(TABLE_CELL_CLASS, "text-muted-foreground")}>
+                  <td className={TABLE_CELL_CLASS}>
                     {formatRoles(user.roles)}
                   </td>
-                  <td className={cn(TABLE_CELL_CLASS, "max-w-[12rem] text-muted-foreground")}>
+                  <td className={cn(TABLE_CELL_CLASS, "max-w-[12rem]")}>
                     {user.department?.name ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -156,7 +163,7 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
                       "—"
                     )}
                   </td>
-                  <td className={TABLE_CELL_CLASS}>
+                  <td className={TABLE_CELL_STATUS_CLASS}>
                     <span className={user.isActive ? STATUS_BADGE_ACTIVE_CLASS : STATUS_BADGE_INACTIVE_CLASS}>
                       {user.isActive ? "Active" : "Inactive"}
                     </span>
@@ -169,7 +176,7 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
                             <Button
                               type="button"
                               variant="ghost"
-                              size="icon"
+                              size="icon-sm"
                               className={ACTION_BUTTON_EDIT_CLASS}
                               disabled={updateMutation.isPending}
                               onClick={() => setEditUser(user)}
@@ -186,7 +193,7 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="icon"
+                                size="icon-sm"
                                 className={ACTION_BUTTON_DESTRUCTIVE_CLASS}
                                 disabled={togglingId === user.id}
                                 onClick={() => setDeactivateUser(user)}
@@ -203,7 +210,7 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="icon"
+                                size="icon-sm"
                                 className={ACTION_BUTTON_SUCCESS_CLASS}
                                 disabled={togglingId === user.id}
                                 onClick={() =>
@@ -254,13 +261,21 @@ export function UsersTable({ users, isRefetching }: UsersTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
-        <DialogContent className={DIALOG_CONTENT_CLASS_SM}>
-          <DialogHeader className={DIALOG_HEADER_CLASS}>
-            <DialogTitle className={DIALOG_TITLE_CLASS}>Edit user</DialogTitle>
-            <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-              Update display name or reset password. Leave password blank to keep the current one.
-            </DialogDescription>
+      <Dialog
+        open={!!editUser}
+        onOpenChange={(open) => {
+          if (!open) updateMutation.reset();
+          if (!open) setEditUser(null);
+        }}
+      >
+        <DialogContent
+          className={DIALOG_CONTENT_SCULPTED_CLASS}
+          overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+        >
+          <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+            <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
+              Edit user
+            </DialogTitle>
           </DialogHeader>
           {editUser && (
             <EditUserForm

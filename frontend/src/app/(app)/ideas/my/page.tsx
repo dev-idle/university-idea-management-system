@@ -75,7 +75,7 @@ function IdeaRow({
   const truncated = desc.length > PREVIEW_LEN;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+    <article className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div className="relative px-6 py-5 sm:px-7 sm:py-6">
@@ -87,14 +87,14 @@ function IdeaRow({
                 href={`${ROUTES.IDEAS}/${idea.id}`}
                 className="rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <h2 className="font-serif text-lg font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-xl">
+                <h2 className="font-sans text-lg font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-xl">
                   {idea.title}
                 </h2>
               </Link>
               {!editable && (
                 <Badge
                   variant="outline"
-                  className="gap-1 rounded-full border-amber-300/50 bg-amber-50/50 px-2 py-0 text-[10px] font-normal text-amber-700 dark:border-amber-700/50 dark:bg-amber-950/20 dark:text-amber-300"
+                  className="gap-1 rounded-full border-warning/30 bg-warning/10 px-2 py-0 text-[10px] font-normal text-warning"
                 >
                   <Lock className="size-2.5" aria-hidden />
                   Closed
@@ -351,7 +351,7 @@ export default function MyIdeasPage() {
       >
         <AlertDialogContent className="max-w-md rounded-2xl border-border/50">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-serif text-lg font-semibold tracking-tight">
+            <AlertDialogTitle className="font-sans text-lg font-semibold tracking-tight">
               Delete proposal
             </AlertDialogTitle>
             <AlertDialogDescription className="text-[13px] leading-relaxed text-muted-foreground">

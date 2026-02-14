@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { CalendarDays } from "lucide-react";
 import { AcademicYearsManagement } from "@/components/features/admin/academic-years-management";
 import { AcademicYearsManagementSkeleton } from "@/components/features/admin/academic-years-management-skeleton";
-import { PageHeader } from "@/components/layout/page-header";
-import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
+import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Academic years",
@@ -14,13 +12,7 @@ export const metadata: Metadata = {
 
 export default function AdminAcademicYearsPage() {
   return (
-    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
-      <PageHeader
-        title="Academic years"
-        description="Configure academic years for submission cycles. Exactly one year is active at any time; permissions are enforced server-side."
-        descriptionWide
-        icon={CalendarDays}
-      />
+    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
       <Suspense fallback={<AcademicYearsManagementSkeleton />}>
         <AcademicYearsManagement />
       </Suspense>

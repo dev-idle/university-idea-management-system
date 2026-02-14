@@ -6,7 +6,24 @@ import { UserPlus } from "lucide-react";
 import type { CreateUserBody } from "@/lib/schemas/users.schema";
 import { createUserBodySchema } from "@/lib/schemas/users.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS } from "./constants";
+import {
+  FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_SELECT_TRIGGER_CLASS,
+  FORM_CARD_INPUT_CLASS,
+  FORM_CARD_SELECT_TRIGGER_CLASS,
+  FORM_DIALOG_HINT_CLASS,
+  FORM_HINT_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  QA_COORDINATOR_CONFLICT_MESSAGE,
+  EMAIL_ALREADY_EXISTS_MESSAGE,
+} from "./constants";
 import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
 import { Button } from "@/components/ui/button";
@@ -74,24 +91,43 @@ export function CreateUserForm({
       await mutateAsync(payload);
       onSuccess();
     } catch (e) {
-      setError("root", {
-        message: getErrorMessage(e, "Failed to create user. Please try again."),
-      });
+      const message = getErrorMessage(e, "Unable to create user.");
+      const lower = message.toLowerCase().replace(/\s+/g, " ");
+      if (
+        (lower.includes("qa coordinator") && lower.includes("department")) ||
+        lower.includes("already has a qa coordinator")
+      ) {
+        setError("departmentId", {
+          type: "server",
+          message: QA_COORDINATOR_CONFLICT_MESSAGE,
+        });
+      } else if (lower.includes("email") && (lower.includes("already exists") || lower.includes("exists"))) {
+        setError("email", { type: "server", message: EMAIL_ALREADY_EXISTS_MESSAGE });
+      } else if (lower.includes("department") && lower.includes("not found")) {
+        setError("departmentId", { type: "server", message });
+      } else if (lower.includes("role") && lower.includes("not found")) {
+        setError("role", { type: "server", message });
+      } else {
+        setError("email", { type: "server", message });
+      }
     }
   }
 
-  const hasError = !!errors.root || !!error;
+  const isDialog = variant === "dialog";
 
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
-  const triggerClass =
-    "!h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate";
+  const labelClass = isDialog
+    ? FORM_DIALOG_LABEL_CLASS
+    : "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const inputClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
+  const triggerClass = isDialog ? FORM_DIALOG_SELECT_TRIGGER_CLASS : FORM_CARD_SELECT_TRIGGER_CLASS;
+  const fieldWrapperClass = isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-0 space-y-2";
+  const fieldErrorClass = FORM_FIELD_ERROR_CLASS;
+  const formActionsClass = isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS;
 
   const formContent = (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6"
-      aria-describedby={hasError ? "create-user-form-error" : undefined}
+      className={isDialog ? FORM_DIALOG_FORM_CLASS : "space-y-6"}
     >
       {variant === "default" && (
         <p className="text-sm leading-relaxed text-muted-foreground">
@@ -99,7 +135,7 @@ export function CreateUserForm({
         </p>
       )}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <div className="min-w-0 space-y-2">
+        <div className={fieldWrapperClass}>
           <Label htmlFor="fullName" className={labelClass}>
             Full name{" "}
             <span className="font-normal normal-case text-muted-foreground/80">
@@ -111,19 +147,19 @@ export function CreateUserForm({
             type="text"
             autoComplete="name"
             placeholder="Jane Smith"
-            className="h-10 w-full text-sm rounded-lg"
+            className={inputClass}
             aria-invalid={!!errors.fullName}
             aria-describedby={errors.fullName ? "fullName-error" : undefined}
             {...register("fullName")}
           />
           {errors.fullName && (
-            <p id="fullName-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="fullName-error" className={fieldErrorClass} role="alert">
               {errors.fullName.message}
             </p>
           )}
         </div>
 
-        <div className="min-w-0 space-y-2">
+        <div className={fieldWrapperClass}>
           <Label htmlFor="email" className={labelClass}>
             Email
           </Label>
@@ -132,19 +168,19 @@ export function CreateUserForm({
             type="email"
             autoComplete="email"
             placeholder="user@gre.ac.uk"
-            className="h-10 w-full text-sm rounded-lg"
+            className={inputClass}
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? "email-error" : undefined}
             {...register("email")}
           />
           {errors.email && (
-            <p id="email-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="email-error" className={fieldErrorClass} role="alert">
               {errors.email.message}
             </p>
           )}
         </div>
 
-        <div className="min-w-0 space-y-2">
+        <div className={fieldWrapperClass}>
           <Label htmlFor="password" className={labelClass}>
             Password
           </Label>
@@ -153,19 +189,19 @@ export function CreateUserForm({
             type="password"
             autoComplete="new-password"
             placeholder="••••••••"
-            className="h-10 w-full text-sm rounded-lg"
+            className={inputClass}
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? "password-error" : undefined}
             {...register("password")}
           />
           {errors.password && (
-            <p id="password-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="password-error" className={fieldErrorClass} role="alert">
               {errors.password.message}
             </p>
           )}
         </div>
 
-        <div className="min-w-0 space-y-2">
+        <div className={fieldWrapperClass}>
           <Label htmlFor="role" className={labelClass}>
             Role
           </Label>
@@ -197,13 +233,13 @@ export function CreateUserForm({
             )}
           />
           {errors.role && (
-            <p id="role-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="role-error" className={fieldErrorClass} role="alert">
               {errors.role.message}
             </p>
           )}
         </div>
 
-        <div className="min-w-0 space-y-2">
+        <div className={fieldWrapperClass}>
           <Label htmlFor="departmentId" className={labelClass}>
             Department
           </Label>
@@ -212,6 +248,13 @@ export function CreateUserForm({
             control={control}
             render={({ field }) => {
               const selectedDepartment = departments?.find((d) => d.id === field.value);
+              const roleIsQaCoordinator = watch("role") === "QA_COORDINATOR";
+              const hintId = "departmentId-qa-hint";
+              const describedBy = errors.departmentId
+                ? "departmentId-error"
+                : roleIsQaCoordinator
+                  ? hintId
+                  : undefined;
               return (
                 <Select
                   value={field.value || ""}
@@ -222,7 +265,7 @@ export function CreateUserForm({
                     id="departmentId"
                     className={triggerClass}
                     aria-invalid={!!errors.departmentId}
-                    aria-describedby={errors.departmentId ? "departmentId-error" : undefined}
+                    aria-describedby={describedBy}
                     title={selectedDepartment?.name}
                   >
                     <SelectValue placeholder="Select department" />
@@ -241,50 +284,34 @@ export function CreateUserForm({
             }}
           />
           {errors.departmentId && (
-            <p id="departmentId-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="departmentId-error" className={fieldErrorClass} role="alert">
               {errors.departmentId.message}
             </p>
           )}
           {departmentsError && !errors.departmentId && (
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Departments unavailable. Please try again later.
-            </p>
-          )}
-          {watch("role") === "QA_COORDINATOR" && !errors.departmentId && (
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Each department can have only one QA Coordinator.
+            <p className={isDialog ? FORM_DIALOG_HINT_CLASS : FORM_HINT_CLASS}>
+              Departments unavailable.
             </p>
           )}
         </div>
       </div>
 
-      {(errors.root ?? error) && (
-        <p
-          id="create-user-form-error"
-          className={FORM_ERROR_BLOCK_CLASS}
-          role="alert"
-          aria-live="polite"
-        >
-          {errors.root?.message ?? error?.message}
-        </p>
-      )}
-
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
-        >
-          {isPending ? "Creating…" : "Create user"}
-        </Button>
+      <div className={formActionsClass}>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Adding…" : "Add"}
         </Button>
       </div>
     </form>
@@ -295,14 +322,14 @@ export function CreateUserForm({
   }
 
   return (
-    <Card className="overflow-hidden rounded-xl border border-border/90 bg-card py-0 shadow-sm">
+    <Card className="overflow-hidden rounded-xl border border-border/80 bg-card py-0 shadow-sm">
       <CardHeader className="border-b border-border/80 px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground">
             <UserPlus className="size-4" strokeWidth={1.25} aria-hidden />
           </div>
-          <CardTitle className="font-serif text-base font-semibold tracking-tight text-foreground">
-            Add user
+          <CardTitle className="font-sans text-base font-semibold tracking-tight text-foreground">
+            Add User
           </CardTitle>
         </div>
       </CardHeader>

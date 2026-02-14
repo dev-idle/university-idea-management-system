@@ -20,11 +20,20 @@ const ACADEMIC_YEAR_NAME_REGEX = /^\d{4}-\d{4}$/;
 export const createAcademicYearFormSchema = z.object({
   name: z
     .string()
-    .min(1, "Name is required")
+    .trim()
+    .min(1, "Required.")
     .max(255)
-    .regex(ACADEMIC_YEAR_NAME_REGEX, "Use format YYYY-YYYY (e.g. 2026-2027)"),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().optional(),
+    .regex(ACADEMIC_YEAR_NAME_REGEX, "Use YYYY-YYYY format.")
+    .refine(
+      (val) => {
+        const m = val.match(/^(\d{4})-(\d{4})$/);
+        if (!m) return true;
+        return parseInt(m[2], 10) > parseInt(m[1], 10);
+      },
+      { message: "End year must follow start year." }
+    ),
+  startDate: z.string().min(1, "Required."),
+  endDate: z.string().min(1, "Required."),
 });
 
 export type CreateAcademicYearFormValues = z.infer<typeof createAcademicYearFormSchema>;

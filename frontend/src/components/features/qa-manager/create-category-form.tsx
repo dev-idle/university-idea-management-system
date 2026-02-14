@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { CreateCategoryBody } from "@/lib/schemas/categories.schema";
 import { createCategoryBodySchema } from "@/lib/schemas/categories.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
+import { FORM_ERROR_BLOCK_CLASS, FORM_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS, FORM_CARD_INPUT_CLASS, FORM_DIALOG_LABEL_CLASS } from "@/components/features/admin/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,13 +44,12 @@ export function CreateCategoryForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Failed to create category. Please try again."),
+        message: getErrorMessage(e, "Unable to create category."),
       });
     }
   }
 
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const labelClass = FORM_DIALOG_LABEL_CLASS;
 
   return (
     <form
@@ -63,7 +62,7 @@ export function CreateCategoryForm({
     >
       {variant === "default" && (
         <div>
-          <h2 className="font-serif text-base font-semibold tracking-tight text-foreground">
+          <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
             Add category
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -80,7 +79,7 @@ export function CreateCategoryForm({
           type="text"
           autoComplete="off"
           placeholder="e.g. Teaching & Learning"
-          className="h-10 w-full text-sm rounded-lg"
+          className={FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "name-error" : undefined}
           {...register("name")}
@@ -104,16 +103,16 @@ export function CreateCategoryForm({
         <Button
           type="submit"
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_BUTTON_CLASS}
         >
-          {isPending ? "Creating…" : "Create category"}
+          {isPending ? "Adding…" : "Add"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
         </Button>

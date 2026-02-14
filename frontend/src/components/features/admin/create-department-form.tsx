@@ -5,7 +5,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { CreateDepartmentBody } from "@/lib/schemas/departments.schema";
 import { createDepartmentBodySchema } from "@/lib/schemas/departments.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_LABEL_CLASS, FORM_ERROR_BLOCK_CLASS } from "./constants";
+import {
+  FORM_LABEL_CLASS,
+  FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  FORM_CARD_INPUT_CLASS,
+  DEPARTMENT_NAME_EXISTS_MESSAGE,
+} from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +28,6 @@ interface CreateDepartmentFormProps {
   onCancel: () => void;
   isPending: boolean;
   mutateAsync: (body: CreateDepartmentBody) => Promise<unknown>;
-  error: Error | null;
   /** When "dialog", renders form only (no card); use inside a Dialog. */
   variant?: "default" | "dialog";
 }
@@ -25,7 +37,6 @@ export function CreateDepartmentForm({
   onCancel,
   isPending,
   mutateAsync,
-  error,
   variant = "default",
 }: CreateDepartmentFormProps) {
   const {
@@ -43,33 +54,42 @@ export function CreateDepartmentForm({
       await mutateAsync(data);
       onSuccess();
     } catch (e) {
-      setError("root", {
-        message: getErrorMessage(e, "Failed to create department. Please try again."),
-      });
+      const message = getErrorMessage(e, "Unable to create department.");
+      const lower = message.toLowerCase().replace(/\s+/g, " ");
+      if (
+        (lower.includes("department") && lower.includes("name")) ||
+        lower.includes("already exists")
+      ) {
+        setError("name", { type: "server", message: DEPARTMENT_NAME_EXISTS_MESSAGE });
+      } else {
+        setError("name", { type: "server", message });
+      }
     }
   }
+
+  const isDialog = variant === "dialog";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className={
-        variant === "dialog"
-          ? "flex flex-col gap-6"
-          : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card px-6 py-6 shadow-sm"
+        isDialog
+          ? FORM_DIALOG_FORM_CLASS
+          : "flex flex-col gap-6 rounded-xl border border-border/80 bg-card px-6 py-6 shadow-sm"
       }
     >
       {variant === "default" && (
         <div>
-          <h2 className="font-serif text-base font-semibold tracking-tight text-foreground">
-            Add department
+          <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
+            Add Department
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Create a new department for institutional organisation.
           </p>
         </div>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="name" className={FORM_LABEL_CLASS}>
+      <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "space-y-2"}>
+        <Label htmlFor="name" className={isDialog ? FORM_DIALOG_LABEL_CLASS : FORM_LABEL_CLASS}>
           Name
         </Label>
         <Input
@@ -77,42 +97,33 @@ export function CreateDepartmentForm({
           type="text"
           autoComplete="organization"
           placeholder="e.g. Computer Science"
-          className="h-10 w-full text-sm rounded-lg"
+          className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "name-error" : undefined}
           {...register("name")}
         />
         {errors.name && (
-          <p id="name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+          <p id="name-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.name.message}
           </p>
         )}
       </div>
-      {(errors.root ?? error) && (
-        <p
-          className={FORM_ERROR_BLOCK_CLASS}
-          role="alert"
-          aria-live="polite"
-        >
-          {errors.root?.message ?? error?.message}
-        </p>
-      )}
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
-        >
-          {isPending ? "Creating…" : "Create department"}
-        </Button>
+      <div className={isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Adding…" : "Add"}
         </Button>
       </div>
     </form>

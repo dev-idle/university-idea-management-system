@@ -30,7 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS, CARD_CLASS } from "@/config/design";
+import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS, CARD_CLASS, FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
 import { Paperclip, X, Loader2, FileText, PenLine, Sparkles, FileCheck } from "lucide-react";
 
 /** Form values: attachments required (array), termsAccepted boolean for initial false. */
@@ -68,7 +68,7 @@ function AttachmentRow({
       window.open(url, "_blank", "noopener,noreferrer");
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e) {
-      setViewError(e instanceof Error ? e.message : "Failed to open file.");
+      setViewError(e instanceof Error ? e.message : "Unable to open file.");
     } finally {
       setViewLoading(false);
     }
@@ -84,8 +84,8 @@ function AttachmentRow({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="size-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            size="icon-sm"
+            className="rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label={`View ${att.fileName}`}
             onClick={handleView}
             disabled={viewLoading}
@@ -99,8 +99,8 @@ function AttachmentRow({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="size-8 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            size="icon-sm"
+            className="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             aria-label={`Remove ${att.fileName}`}
             onClick={onRemove}
           >
@@ -433,7 +433,7 @@ export function SubmitIdeaForm({
             PDF, Word, or images. Maximum {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB per file.
           </p>
           {uploadParamsStatus === "error" && (
-            <p className="text-sm text-amber-600 dark:text-amber-400" role="alert">
+            <p className="text-sm text-warning" role="alert">
               Document upload is currently unavailable. Please contact support if you need to attach files.
             </p>
           )}
@@ -453,7 +453,7 @@ export function SubmitIdeaForm({
                 type="button"
                 variant="outline"
                 size="default"
-                className="h-10 gap-2 rounded-lg border-border font-medium"
+                className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/10"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
               >
@@ -537,12 +537,12 @@ export function SubmitIdeaForm({
             </DialogTrigger>
             <DialogContent className="max-h-[85vh] max-w-lg flex flex-col gap-0 p-0 overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
               <DialogHeader className="shrink-0 border-b border-border/40 bg-muted/30 px-5 py-3.5 pr-10">
-                <DialogTitle className="font-serif text-base font-semibold tracking-tight text-foreground">
+                <DialogTitle className="font-sans text-base font-semibold tracking-tight text-foreground">
                   Terms and Conditions
                 </DialogTitle>
               </DialogHeader>
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 text-[13px] leading-relaxed text-muted-foreground">
-                <p className="font-serif text-base font-medium text-foreground">
+                <p className="font-sans text-base font-medium text-foreground">
                   Idea Submission — Terms and Conditions
                 </p>
                 <p className="mt-2">{TERMS_INTRO}</p>
@@ -581,7 +581,7 @@ export function SubmitIdeaForm({
         <Button
           type="submit"
           disabled={isPending || !termsAccepted}
-          className="h-10 rounded-lg px-6 font-medium focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
+          className={FORM_SUBMIT_BUTTON_CLASS}
         >
           {isPending ? "Submitting…" : "Submit proposal"}
         </Button>
@@ -591,7 +591,7 @@ export function SubmitIdeaForm({
             variant="outline"
             onClick={onCancel}
             disabled={isPending}
-            className="h-10 rounded-lg border-border px-6 font-medium focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2"
+            className={FORM_OUTLINE_BUTTON_CLASS}
           >
             Cancel
           </Button>

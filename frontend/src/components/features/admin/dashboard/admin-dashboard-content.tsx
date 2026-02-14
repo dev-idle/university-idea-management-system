@@ -5,13 +5,15 @@ import { Building2, CalendarDays, ChevronRight, Users } from "lucide-react";
 import { Can } from "@/components/ui/can";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  CARD_CLASS,
-  CARD_STAT_CLASS,
   SECTION_LABEL_CLASS,
   ICON_BOX_PRIMARY_CLASS,
   FOCUS_RING_CLASS,
-  MANAGEMENT_PAGE_SPACING,
+  TYPO_STAT,
 } from "@/config/design";
+import {
+  DASHBOARD_STAT_CARD_CLASS,
+  DASHBOARD_CARD_CLASS,
+} from "../constants";
 import { ROUTES } from "@/config/constants";
 import { useAcademicYearsQuery } from "@/hooks/use-academic-years";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
@@ -56,7 +58,7 @@ function AdminModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.03] hover:border-primary/30 hover:shadow-md hover:shadow-primary/[0.04] ${FOCUS_RING_CLASS} ${CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-150 hover:bg-primary/[0.04] hover:border-primary/20 hover:shadow-[0_2px_6px_rgba(0,0,0,0.04)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
       <div className={ICON_BOX_PRIMARY_CLASS}>
@@ -70,7 +72,7 @@ function AdminModuleLink({
           {description}
         </CardDescription>
       </CardHeader>
-      <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary/70 transition-colors group-hover:text-primary">
+      <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary/60 transition-colors group-hover:text-primary">
         Manage
         <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
       </span>
@@ -90,21 +92,21 @@ function AdminSummary() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      <div className={`px-5 py-4 ${CARD_STAT_CLASS}`}>
+      <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Total users</p>
-        <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-primary">
+        <p className={`mt-1 ${TYPO_STAT}`}>
           {totalUsers !== null ? totalUsers : "—"}
         </p>
       </div>
-      <div className={`px-5 py-4 ${CARD_STAT_CLASS}`}>
+      <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Departments</p>
-        <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-primary">
+        <p className={`mt-1 ${TYPO_STAT}`}>
           {departmentCount !== null ? departmentCount : "—"}
         </p>
       </div>
-      <div className={`px-5 py-4 ${CARD_STAT_CLASS}`}>
+      <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Active academic year</p>
-        <p className="mt-1 text-2xl font-bold tracking-tight text-primary">
+        <p className={`mt-1 ${TYPO_STAT}`}>
           {activeYear?.name ?? "—"}
         </p>
       </div>
@@ -114,7 +116,7 @@ function AdminSummary() {
 
 export function AdminDashboardContent() {
   return (
-    <div className={MANAGEMENT_PAGE_SPACING}>
+    <div className="space-y-8">
       <section aria-labelledby="admin-summary-heading">
         <h2 id="admin-summary-heading" className="sr-only">
           Summary

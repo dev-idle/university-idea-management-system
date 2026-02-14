@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ClipboardList } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
-import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
+import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "QA Coordinator",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function QaCoordinatorDashboardPage() {
   return (
-    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
+    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
       <PageHeader
         title="QA Coordinator"
         description="QA Coordinator dashboard. Access control is enforced server-side."

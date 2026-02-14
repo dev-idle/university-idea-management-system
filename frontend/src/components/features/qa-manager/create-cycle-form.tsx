@@ -20,7 +20,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FORM_LABEL_CLASS, FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
+import {
+  FORM_LABEL_CLASS,
+  FORM_ERROR_BLOCK_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_CARD_INPUT_CLASS,
+  FORM_CARD_SELECT_TRIGGER_CLASS,
+  FORM_CHECKBOX_ACADEMIC_CLASS,
+} from "@/components/features/admin/constants";
 import { useSubmissionCycleAcademicYearsQuery } from "@/hooks/use-submission-cycles";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 
@@ -104,7 +112,7 @@ export function CreateCycleForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Failed to create submission cycle. Please try again."),
+        message: getErrorMessage(e, "Unable to create submission cycle."),
       });
     }
   }
@@ -115,12 +123,12 @@ export function CreateCycleForm({
       className={
         variant === "dialog"
           ? "flex flex-col gap-6"
-          : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card px-6 py-6 shadow-sm"
+          : "flex flex-col gap-6 rounded-xl border border-border/80 bg-card px-6 py-6 shadow-sm"
       }
     >
       {variant === "default" && (
         <div>
-          <h2 className="font-serif text-base font-semibold tracking-tight text-foreground">
+          <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
             Add submission cycle
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -137,7 +145,7 @@ export function CreateCycleForm({
           rules={{ required: "Academic year is required" }}
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || undefined}>
-              <SelectTrigger className="h-10 w-full text-sm rounded-lg">
+              <SelectTrigger className={FORM_CARD_SELECT_TRIGGER_CLASS}>
                 <SelectValue placeholder="Select academic year" />
               </SelectTrigger>
               <SelectContent>
@@ -165,7 +173,7 @@ export function CreateCycleForm({
           id="cycle-name"
           type="text"
           placeholder="Summer 2026"
-          className="h-10 w-full text-sm rounded-lg"
+          className={FORM_CARD_INPUT_CLASS}
           {...register("name")}
         />
         <p className="text-xs text-muted-foreground">
@@ -188,6 +196,7 @@ export function CreateCycleForm({
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
                 <Checkbox
+                  className={FORM_CHECKBOX_ACADEMIC_CLASS}
                   checked={watch("categoryIds")?.includes(c.id) ?? false}
                   onCheckedChange={(checked) => {
                     const ids = watch("categoryIds") ?? [];
@@ -219,7 +228,7 @@ export function CreateCycleForm({
           <Input
             id="ideaSubmissionClosesAt"
             type="datetime-local"
-            className="h-10 w-full text-sm rounded-lg"
+            className={FORM_CARD_INPUT_CLASS}
             {...register("ideaSubmissionClosesAt", {
               setValueAs: (v) => (v ? new Date(v) : undefined),
             })}
@@ -237,7 +246,7 @@ export function CreateCycleForm({
           <Input
             id="interactionClosesAt"
             type="datetime-local"
-            className="h-10 w-full text-sm rounded-lg"
+            className={FORM_CARD_INPUT_CLASS}
             value={interactionClosesAt ?? ""}
             onChange={(e) => {
               setValue("interactionClosesAt", e.target.value ?? "", {
@@ -267,20 +276,20 @@ export function CreateCycleForm({
           aria-live="polite"
         >
           {errors.root?.message ??
-            getErrorMessage(error, "Failed to create submission cycle. Please try again.")}
+            getErrorMessage(error, "Unable to create submission cycle.")}
         </p>
       )}
 
       <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button type="submit" disabled={isPending} className="h-10 rounded-lg px-5 text-sm font-medium">
-          {isPending ? "Creating…" : "Create cycle"}
+        <Button type="submit" disabled={isPending} className={FORM_BUTTON_CLASS}>
+          {isPending ? "Adding…" : "Add"}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
         </Button>

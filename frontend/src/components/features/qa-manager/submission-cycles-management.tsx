@@ -415,7 +415,7 @@ export function SubmissionCyclesManagement() {
                                         <Button
                                           type="button"
                                           variant="ghost"
-                                          size="icon"
+                                          size="icon-sm"
                                           className={ACTION_BUTTON_EDIT_CLASS}
                                           onClick={() => setEditingCycle(c)}
                                           aria-label="Edit cycle"
@@ -436,7 +436,7 @@ export function SubmissionCyclesManagement() {
                                           <Button
                                             type="button"
                                             variant="ghost"
-                                            size="icon"
+                                            size="icon-sm"
                                             className={cn(
                                               canActivate(c)
                                                 ? ACTION_BUTTON_SUCCESS_CLASS
@@ -464,7 +464,7 @@ export function SubmissionCyclesManagement() {
                                         <Button
                                           type="button"
                                           variant="ghost"
-                                          size="icon"
+                                          size="icon-sm"
                                           className={ACTION_BUTTON_DESTRUCTIVE_CLASS}
                                           disabled={deactivateMutation.isPending}
                                           onClick={() => {
@@ -488,7 +488,7 @@ export function SubmissionCyclesManagement() {
                                         <Button
                                           type="button"
                                           variant="ghost"
-                                          size="icon"
+                                          size="icon-sm"
                                           className={ACTION_BUTTON_MUTED_CLASS}
                                           disabled={closeMutation.isPending}
                                           onClick={() => closeMutation.mutate(c.id)}
@@ -506,7 +506,7 @@ export function SubmissionCyclesManagement() {
                                           <Button
                                             type="button"
                                             variant="ghost"
-                                            size="icon"
+                                            size="icon-sm"
                                             className={cn(
                                               c.status !== "ACTIVE"
                                                 ? ACTION_BUTTON_DESTRUCTIVE_CLASS

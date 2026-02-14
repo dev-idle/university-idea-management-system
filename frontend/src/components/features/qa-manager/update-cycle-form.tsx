@@ -11,7 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FORM_LABEL_CLASS, FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
+import {
+  FORM_LABEL_CLASS,
+  FORM_ERROR_BLOCK_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_CARD_INPUT_CLASS,
+  FORM_CHECKBOX_ACADEMIC_CLASS,
+} from "@/components/features/admin/constants";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 
 function toDatetimeLocal(d: Date | string): string {
@@ -89,7 +96,7 @@ export function UpdateCycleForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Failed to update submission cycle. Please try again."),
+        message: getErrorMessage(e, "Unable to update submission cycle."),
       });
     }
   }
@@ -105,7 +112,7 @@ export function UpdateCycleForm({
     >
       {variant === "default" && (
         <div>
-          <h3 className="font-serif text-base font-semibold tracking-tight text-foreground">
+          <h3 className="font-sans text-base font-semibold tracking-tight text-foreground">
             Edit submission cycle
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -127,7 +134,7 @@ export function UpdateCycleForm({
           id="edit-cycle-name"
           type="text"
           placeholder="Summer 2026"
-          className="h-10 w-full text-sm rounded-lg"
+          className={FORM_CARD_INPUT_CLASS}
           {...register("name", { required: "Name is required", minLength: { value: 1, message: "Name is required" } })}
         />
         <p className="text-xs text-muted-foreground">
@@ -150,6 +157,7 @@ export function UpdateCycleForm({
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
                 <Checkbox
+                  className={FORM_CHECKBOX_ACADEMIC_CLASS}
                   checked={watch("categoryIds")?.includes(c.id) ?? false}
                   onCheckedChange={(checked) => {
                     const ids = getValues("categoryIds") ?? [];
@@ -181,7 +189,7 @@ export function UpdateCycleForm({
           <Input
             id="edit-ideaSubmissionClosesAt"
             type="datetime-local"
-            className="h-10 w-full text-sm rounded-lg"
+            className={FORM_CARD_INPUT_CLASS}
             {...register("ideaSubmissionClosesAt", {
               setValueAs: (v) => (v ? new Date(v) : undefined),
             })}
@@ -194,7 +202,7 @@ export function UpdateCycleForm({
           <Input
             id="edit-interactionClosesAt"
             type="datetime-local"
-            className="h-10 w-full text-sm rounded-lg"
+            className={FORM_CARD_INPUT_CLASS}
             value={interactionClosesAt ? toDatetimeLocal(interactionClosesAt) : ""}
             onChange={(e) => {
               const v = e.target.value;
@@ -220,15 +228,15 @@ export function UpdateCycleForm({
           aria-live="polite"
         >
           {errors.root?.message ??
-            getErrorMessage(error, "Failed to update submission cycle. Please try again.")}
+            getErrorMessage(error, "Unable to update submission cycle.")}
         </p>
       )}
 
       <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button type="submit" disabled={isPending} className="h-10 rounded-lg px-5 text-sm font-medium">
+        <Button type="submit" disabled={isPending} className={FORM_BUTTON_CLASS}>
           {isPending ? "Saving…" : "Save"}
         </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isPending} className="h-10 rounded-lg px-5 text-sm font-medium">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isPending} className={FORM_OUTLINE_BUTTON_CLASS}>
           Cancel
         </Button>
       </div>

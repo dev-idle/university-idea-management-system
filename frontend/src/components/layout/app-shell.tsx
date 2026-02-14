@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { motion, LayoutGroup } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutDashboard,
@@ -15,11 +16,8 @@ import {
   Lightbulb,
   FolderPen,
   Bell,
-  ChevronDown,
-  LogOut,
-  PanelLeft,
   PanelLeftClose,
-  User,
+  PanelLeftOpen,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -37,83 +35,43 @@ function isStaffOnly(roles: string[] | undefined): boolean {
   return hasStaff && !hasManagement;
 }
 
-/** Page title for main header (pathname → label). Used only for management layout. */
-const PATH_TO_TITLE: Record<string, string> = {
-  [ROUTES.ADMIN_DASHBOARD]: "Dashboard",
-  [ROUTES.ADMIN_USERS]: "Users Management",
-  [ROUTES.ADMIN_DEPARTMENTS]: "Departments Management",
-  [ROUTES.ADMIN_ACADEMIC_YEARS]: "Academic Years Management",
-  [ROUTES.QA_MANAGER_DASHBOARD]: "Dashboard",
-  [ROUTES.QA_MANAGER_CATEGORIES]: "Categories Management",
-  [ROUTES.QA_MANAGER_SUBMISSION_CYCLES]: "Submission Cycles Management",
-  [ROUTES.QA_COORDINATOR_DASHBOARD]: "QA Coordinator",
-  [ROUTES.IDEAS]: "Ideas",
-  [ROUTES.MY_IDEAS]: "My Ideas",
-  [ROUTES.PROFILE]: "Profile",
-};
-
-import { ROLE_LABELS, hasRole, type Role } from "@/lib/rbac";
+import { hasRole } from "@/lib/rbac";
 import { Can } from "@/components/ui/can";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { SiteBranding } from "@/components/layout/site-branding";
+import { SidebarHeader } from "@/components/layout/sidebar-header";
+import { NavbarHeader } from "@/components/layout/navbar-header";
+import { HeaderIconButton, UserMenu } from "@/components/layout/header-parts";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getAvatarInitial } from "@/lib/utils";
-
-function PageTitle({
-  pathname,
-  onGoBack,
-}: {
-  pathname: string;
-  onGoBack: () => void;
-}) {
-  const title = PATH_TO_TITLE[pathname] ?? "Dashboard";
-  return (
-    <h1 className="truncate font-serif text-xl font-semibold tracking-tight text-primary">
-      <button
-        type="button"
-        onClick={onGoBack}
-        className="rounded text-left font-inherit focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-        aria-label={`${title}. Click to go back to ${pathname}`}
-      >
-        {title}
-      </button>
-    </h1>
-  );
-}
-
-function PrimaryRoleLabel({ roles }: { roles: string[] | undefined }) {
-  if (!roles?.length) return null;
-  const order: Role[] = ["ADMIN", "QA_MANAGER", "QA_COORDINATOR", "STAFF"];
-  const primary = order.find((r) => roles.includes(r));
-  return primary ? <span>{ROLE_LABELS[primary]}</span> : null;
-}
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = "sidebar-collapsed";
 
-/** Section label above a group of nav items (expanded only). */
+/* ────────────────────────────────────────────────────────────────────────────
+ * Sidebar components — consistent, modern, intuitive
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** Section label — distinct header, separated from menu items. */
 function SidebarSectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-2 mt-5 first:mt-0 px-1">
-      <span className="text-[11px] font-semibold uppercase tracking-widest text-primary/60">
+    <div className="mt-6 flex flex-col gap-2 first:mt-0">
+      <span className="select-none px-4 text-[10px] font-medium uppercase tracking-wider text-sidebar-foreground/40">
         {children}
       </span>
+      <span
+        className="mx-4 h-px shrink-0 bg-sidebar-border/70"
+        aria-hidden
+      />
     </div>
   );
 }
 
+/**
+ * Sidebar nav link — Minimal, comfortable. Active indicator slides on navigation.
+ */
 function NavLink({
   href,
   label,
@@ -127,27 +85,44 @@ function NavLink({
   isActive: boolean;
   collapsed?: boolean;
 }) {
+  const base = "group/nav relative flex items-center transition-colors duration-150";
+  const shapeStyle = collapsed
+    ? "size-9 shrink-0 justify-center rounded-lg p-2"
+    : "w-full justify-start gap-3 rounded-lg pl-4 pr-4 py-2.5";
+  const inactiveStyle =
+    "cursor-pointer bg-transparent text-sidebar-foreground/75 hover:bg-sidebar-accent/40 hover:text-sidebar-accent-foreground";
+  const activeStyle =
+    "cursor-pointer bg-primary/[0.05] text-primary ring-1 ring-primary/10";
+  const stateStyle = isActive ? activeStyle : inactiveStyle;
+
   const linkContent = (
     <Link
       href={href}
-      className={`flex items-center text-sm font-medium transition-[color,background,border-color] duration-200 ease-out ${
-        collapsed
-          ? "size-9 w-full justify-center rounded-lg"
-          : "h-10 w-full justify-start gap-3 rounded-r-lg border-l-2 py-2 pr-3 pl-[calc(0.75rem+2px)]"
-      } ${
-        collapsed
-          ? isActive
-            ? "bg-primary/15 text-primary ring-1 ring-primary/20"
-            : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-          : isActive
-            ? "border-primary bg-primary/10 text-primary font-semibold"
-            : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground"
-      }`}
+      className={`${base} ${shapeStyle} ${stateStyle}`}
       aria-current={isActive ? "page" : undefined}
       aria-label={collapsed ? label : undefined}
     >
-      <Icon className="size-4 shrink-0" aria-hidden />
-      {!collapsed && <span className="truncate">{label}</span>}
+      {isActive && !collapsed && (
+        <motion.div
+          layoutId="active-pill"
+          className="absolute left-2 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-primary"
+          transition={{
+            type: "tween",
+            duration: 0.2,
+            ease: [0.25, 0.46, 0.45, 0.94],
+          }}
+          aria-hidden
+        />
+      )}
+      <Icon
+        className={`size-4 shrink-0 opacity-90 ${isActive ? "text-primary" : "text-sidebar-foreground/60"}`}
+        aria-hidden
+      />
+      {!collapsed && (
+        <span className={`truncate text-sm ${isActive ? "font-medium text-primary" : "font-normal text-sidebar-foreground/90"}`}>
+          {label}
+        </span>
+      )}
     </Link>
   );
 
@@ -155,7 +130,7 @@ function NavLink({
     return (
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8} className="text-xs">
+        <TooltipContent side="right" sideOffset={10} className="rounded-xl border border-border/50 px-3 py-2 text-xs font-medium shadow-xl backdrop-blur-sm">
           {label}
         </TooltipContent>
       </Tooltip>
@@ -175,7 +150,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
   if (hasRole(user.roles, "ADMIN")) {
     if (!collapsed) {
       items.push(
-        <SidebarSectionLabel key="mgmt-label">Management</SidebarSectionLabel>
+        <SidebarSectionLabel key="mgmt-label">Administration</SidebarSectionLabel>
       );
     }
     items.push(
@@ -214,7 +189,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
       <Can key="years" permission="ACADEMIC_YEARS">
         <NavLink
           href={ROUTES.ADMIN_ACADEMIC_YEARS}
-          label="Academic years"
+          label="Academic Years"
           icon={CalendarDays}
           isActive={pathname === ROUTES.ADMIN_ACADEMIC_YEARS}
           collapsed={collapsed}
@@ -225,7 +200,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
   if (hasRole(user.roles, "QA_MANAGER")) {
     if (!collapsed) {
       items.push(
-        <SidebarSectionLabel key="qa-label">Quality assurance</SidebarSectionLabel>
+        <SidebarSectionLabel key="qa-label">Quality Assurance</SidebarSectionLabel>
       );
     }
     items.push(
@@ -262,7 +237,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
   if (hasRole(user.roles, "QA_COORDINATOR")) {
     if (!collapsed) {
       items.push(
-        <SidebarSectionLabel key="qa-coord-label">Quality assurance</SidebarSectionLabel>
+        <SidebarSectionLabel key="qa-coord-label">Quality Assurance</SidebarSectionLabel>
       );
     }
     items.push(
@@ -286,7 +261,7 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
       <NavLink
         key={ROUTES.IDEAS}
         href={ROUTES.IDEAS}
-        label="Ideas"
+        label="Ideas Hub"
         icon={Lightbulb}
         isActive={pathname === ROUTES.IDEAS}
         collapsed={collapsed}
@@ -305,12 +280,14 @@ function SidebarNav({ collapsed }: { collapsed: boolean }) {
   }
 
   return (
-    <nav
-      className={`flex flex-col gap-0.5 pb-6 ${collapsed ? "px-2" : "px-3"}`}
-      aria-label="Main"
-    >
-      {items}
-    </nav>
+    <LayoutGroup id="sidebar-nav">
+      <nav
+        className={`flex flex-col gap-2 ${collapsed ? "items-center px-0" : "px-3"}`}
+        aria-label="Main"
+      >
+        {items}
+      </nav>
+    </LayoutGroup>
   );
 }
 
@@ -381,153 +358,73 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
+  /* ── Management layout: [ Sidebar (full-height) | Content (Navbar + Main) ] ─ */
   return (
     <div
-      className="flex h-screen flex-col overflow-hidden bg-background md:flex-row"
+      className="flex h-screen overflow-hidden bg-background"
       data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
     >
+      {/* ── Sidebar: flex flex-col h-screen — Logo | Menu | Footer ───────────── */}
       <aside
-        className={`flex h-full shrink-0 flex-col overflow-hidden border-r border-border/50 transition-[width] duration-300 ease-in-out ${
-          sidebarCollapsed
-            ? "w-full md:min-w-0 md:w-[4.25rem] bg-muted/25"
-            : "w-full md:w-64 bg-muted/20"
+        className={`flex h-screen shrink-0 flex-col border-r border-border bg-sidebar transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          sidebarCollapsed ? "w-full items-center md:w-20" : "w-full md:w-[272px]"
         }`}
       >
+        <SidebarHeader collapsed={sidebarCollapsed} />
         <div
-          className={`flex shrink-0 flex-col items-stretch border-b border-border/40 py-5 md:py-6 transition-[padding] duration-300 ease-in-out ${
-            sidebarCollapsed ? "px-0" : "px-4"
-          }`}
+          className={`min-h-0 flex-1 overflow-y-auto pt-5 pb-6 ${sidebarCollapsed ? "flex w-full flex-col items-center" : ""}`}
         >
-          <SiteBranding variant="sidebar" linkToEntry collapsed={sidebarCollapsed} />
-        </div>
-        <div className="scrollbar-hide min-h-0 flex-1 overflow-y-auto py-4 transition-opacity duration-300 ease-in-out">
           <SidebarNav collapsed={sidebarCollapsed} />
         </div>
-      </aside>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden transition-[margin] duration-300 ease-in-out">
-        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 md:px-6">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="size-8 shrink-0 rounded-md text-primary hover:bg-primary/10"
-                  onClick={toggleSidebar}
-                  aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                >
-                  {sidebarCollapsed ? (
-                    <PanelLeft className="size-4" aria-hidden />
-                  ) : (
-                    <PanelLeftClose className="size-4" aria-hidden />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" sideOffset={4}>
-                {sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              </TooltipContent>
-            </Tooltip>
-            <div className="h-4 w-px shrink-0 bg-border" aria-hidden />
-            <PageTitle pathname={pathname} onGoBack={() => router.push(pathname)} />
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {user && (
-              <>
-                {hasRole(user.roles, "STAFF") && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={ROUTES.IDEAS}
-                        className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                          pathname === ROUTES.IDEAS
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                        }`}
-                        aria-label="Ideas Hub"
-                        aria-current={pathname === ROUTES.IDEAS ? "page" : undefined}
-                      >
-                        <Lightbulb className="size-4" aria-hidden />
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" sideOffset={4}>
-                      Ideas Hub
-                    </TooltipContent>
-                  </Tooltip>
+        {/* ── Footer: Collapse toggle ───────────────────────────────────────── */}
+        <div
+          className={`shrink-0 border-t border-sidebar-border/80 bg-sidebar px-3 py-4 ${sidebarCollapsed ? "flex justify-center" : ""}`}
+        >
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className={`flex cursor-pointer items-center gap-2 rounded-lg text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/40 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-offset-2 ${
+                  sidebarCollapsed ? "size-9 justify-center p-0" : "w-full px-3 py-2"
+                }`}
+                aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {sidebarCollapsed ? (
+                  <PanelLeftOpen className="size-4 shrink-0" strokeWidth={1.5} aria-hidden />
+                ) : (
+                  <>
+                    <PanelLeftClose className="size-4 shrink-0" strokeWidth={1.5} aria-hidden />
+                    <span className="truncate text-xs font-normal text-sidebar-foreground/50">
+                      Collapse
+                    </span>
+                  </>
                 )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-                      aria-label="Notifications"
-                    >
-                      <Bell className="size-4" aria-hidden />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" sideOffset={4}>
-                    Notifications
-                  </TooltipContent>
-                </Tooltip>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 gap-2 rounded-lg border border-transparent pl-2 pr-2.5 font-normal text-muted-foreground transition-colors hover:border-border/60 hover:bg-primary/10 hover:text-primary focus-visible:border-border/80 focus-visible:ring-1 focus-visible:ring-primary/20"
-                    >
-                      <Avatar className="size-7 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/40">
-                        <AvatarFallback className="bg-muted/70 text-muted-foreground text-xs font-medium">
-                          {avatarInitial}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span
-                        className="max-w-[120px] truncate text-left text-sm sm:max-w-[180px]"
-                        title={displayName}
-                      >
-                        {displayName}
-                      </span>
-                      <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/70 shadow-xl" sideOffset={8}>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-9 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/50">
-                          <AvatarFallback className="bg-muted/70 text-muted-foreground text-sm font-medium">
-                            {avatarInitial}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                          <span className="truncate text-sm font-semibold tracking-tight text-foreground">{displayName}</span>
-                          <span className="text-xs text-muted-foreground">
-                            <PrimaryRoleLabel roles={user.roles} />
-                          </span>
-                        </div>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href={ROUTES.PROFILE} className="flex items-center gap-2">
-                        <User className="size-4" aria-hidden />
-                        Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem variant="destructive" onClick={handleLogout}>
-                      <LogOut className="size-4" aria-hidden />
-                      Log out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            )}
-          </div>
-        </header>
-        <main className="scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-8 md:px-6 md:py-10 lg:px-10 lg:py-12">
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="right"
+              sideOffset={10}
+              className="rounded-xl border border-border/50 px-3 py-2 text-xs font-medium shadow-lg backdrop-blur-sm"
+            >
+              {sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      </aside>
+
+      {/* ── Content area: Sticky Navbar + scrollable Main ─────────────────── */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <NavbarHeader
+          user={user}
+          displayName={displayName}
+          avatarInitial={avatarInitial}
+          onLogout={handleLogout}
+        />
+        <main className="scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-5 py-8 md:px-10 md:py-12 lg:px-12 lg:py-14">
           <div
             className={`mx-auto w-full transition-[max-width] duration-300 ease-in-out ${
-              sidebarCollapsed ? "max-w-screen-2xl" : "max-w-7xl"
+              sidebarCollapsed ? "max-w-screen-2xl" : "max-w-[90rem]"
             }`}
           >
             {children}
@@ -538,7 +435,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** Staff-only: minimal top bar (branding, active academic year, avatar). No sidebar. */
+/** Staff-only: compact top bar (branding, context, quick nav, user). No sidebar. */
 function StaffLayout({
   user,
   displayName,
@@ -560,122 +457,42 @@ function StaffLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-border/60 bg-card/80 backdrop-blur-xl px-4 md:px-6">
-        <div className="flex min-w-0 flex-1 items-center gap-4">
+      <header className="sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border/60 bg-background/95 px-4 backdrop-blur-sm md:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <SiteBranding variant="header" linkToEntry />
           {activeYearName && (
             <>
-              <span className="h-4 w-px shrink-0 bg-border" aria-hidden />
-              <span className="text-sm text-muted-foreground truncate" title={activeYearName}>
+              <div className="h-4 w-px shrink-0 bg-border/40" aria-hidden />
+              <span className="truncate text-sm text-muted-foreground/70" title={activeYearName}>
                 {activeYearName}
               </span>
             </>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href={ROUTES.IDEAS}
-                className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                  isIdeasPage
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                }`}
-                aria-label="Ideas Hub"
-                aria-current={isIdeasPage ? "page" : undefined}
-              >
-                <Lightbulb className="size-4" aria-hidden />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={4}>
-              Ideas Hub
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href={ROUTES.MY_IDEAS}
-                className={`inline-flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
-                  isMyIdeasPage
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                }`}
-                aria-label="My Ideas"
-                aria-current={isMyIdeasPage ? "page" : undefined}
-              >
-                <FolderPen className="size-4" aria-hidden />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={4}>
-              My Ideas
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-9 shrink-0 rounded-lg text-muted-foreground hover:bg-primary/10 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/20"
-                aria-label="Notifications"
-              >
-                <Bell className="size-4" aria-hidden />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={4}>
-              Notifications
-            </TooltipContent>
-          </Tooltip>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 gap-2 rounded-lg border border-transparent pl-2 pr-2.5 font-normal text-muted-foreground transition-colors hover:border-border/60 hover:bg-primary/10 hover:text-primary focus-visible:border-border/80 focus-visible:ring-1 focus-visible:ring-primary/20"
-              >
-                <Avatar className="size-7 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/40">
-                  <AvatarFallback className="bg-muted/70 text-muted-foreground text-xs font-medium">
-                    {avatarInitial}
-                  </AvatarFallback>
-                </Avatar>
-                <span
-                  className="max-w-[120px] truncate text-left text-sm sm:max-w-[180px]"
-                  title={displayName}
-                >
-                  {displayName}
-                </span>
-                <ChevronDown className="size-3.5 shrink-0 opacity-70" aria-hidden />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-xl border-border/70 shadow-xl" sideOffset={8}>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-9 shrink-0 rounded-full border border-border/80 bg-muted/50 ring-1 ring-border/50">
-                    <AvatarFallback className="bg-muted/70 text-muted-foreground text-sm font-medium">
-                      {avatarInitial}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                    <span className="truncate text-sm font-semibold tracking-tight text-foreground">{displayName}</span>
-                    <span className="text-xs text-muted-foreground">
-                      <PrimaryRoleLabel roles={user.roles} />
-                    </span>
-                  </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={ROUTES.PROFILE} className="flex items-center gap-2">
-                  <User className="size-4" aria-hidden />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive" onClick={onLogout}>
-                <LogOut className="size-4" aria-hidden />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <div className="flex items-center rounded-lg bg-muted/20 p-0.5">
+            <HeaderIconButton
+              icon={Lightbulb}
+              label="Ideas Hub"
+              href={ROUTES.IDEAS}
+              isActive={isIdeasPage}
+            />
+            <HeaderIconButton
+              icon={FolderPen}
+              label="My Ideas"
+              href={ROUTES.MY_IDEAS}
+              isActive={isMyIdeasPage}
+            />
+            <HeaderIconButton icon={Bell} label="Notifications" />
+          </div>
+          <div className="mx-2 h-5 w-px bg-border/60" aria-hidden />
+          <UserMenu
+            user={user}
+            displayName={displayName}
+            avatarInitial={avatarInitial}
+            onLogout={onLogout}
+            variant="pill"
+          />
         </div>
       </header>
       <main className="scrollbar-hide min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-8 md:px-6 md:py-10 lg:px-10 lg:py-12">

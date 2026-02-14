@@ -8,7 +8,19 @@ import type {
 } from "@/lib/schemas/departments.schema";
 import { updateDepartmentBodySchema } from "@/lib/schemas/departments.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS } from "./constants";
+import {
+  FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  FORM_CARD_INPUT_CLASS,
+  DEPARTMENT_NAME_EXISTS_MESSAGE,
+} from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +31,6 @@ interface UpdateDepartmentFormProps {
   onCancel: () => void;
   isPending: boolean;
   mutateAsync: (params: { id: string; body: UpdateDepartmentBody }) => Promise<unknown>;
-  error: Error | null;
   /** When "dialog", no card wrapper; use inside a Dialog. */
   variant?: "default" | "dialog";
 }
@@ -30,7 +41,6 @@ export function UpdateDepartmentForm({
   onCancel,
   isPending,
   mutateAsync,
-  error,
   variant = "default",
 }: UpdateDepartmentFormProps) {
   const {
@@ -52,25 +62,34 @@ export function UpdateDepartmentForm({
       await mutateAsync({ id: department.id, body: { name: data.name } });
       onSuccess();
     } catch (e) {
-      setError("root", {
-        message: getErrorMessage(e, "Failed to update department. Please try again."),
-      });
+      const message = getErrorMessage(e, "Unable to update department.");
+      const lower = message.toLowerCase().replace(/\s+/g, " ");
+      if (
+        (lower.includes("department") && lower.includes("name")) ||
+        lower.includes("already exists")
+      ) {
+        setError("name", { type: "server", message: DEPARTMENT_NAME_EXISTS_MESSAGE });
+      } else {
+        setError("name", { type: "server", message });
+      }
     }
   }
 
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const isDialog = variant === "dialog";
+  const labelClass = isDialog
+    ? FORM_DIALOG_LABEL_CLASS
+    : "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className={
-        variant === "dialog"
-          ? "space-y-6"
+        isDialog
+          ? FORM_DIALOG_FORM_CLASS
           : "flex flex-wrap items-end gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"
       }
     >
-      <div className={variant === "dialog" ? "space-y-2" : "min-w-[200px] flex-1 space-y-2"}>
+      <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-[200px] flex-1 space-y-2"}>
         <Label htmlFor="edit-name" className={labelClass}>
           Name
         </Label>
@@ -79,42 +98,33 @@ export function UpdateDepartmentForm({
           type="text"
           autoComplete="organization"
           placeholder="Department name"
-          className="h-10 w-full text-sm rounded-lg"
+          className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "edit-name-error" : undefined}
           {...register("name")}
         />
         {errors.name && (
-          <p id="edit-name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+          <p id="edit-name-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.name.message}
           </p>
         )}
       </div>
-      {(errors.root ?? error) && (
-        <p
-          className={FORM_ERROR_BLOCK_CLASS}
-          role="alert"
-          aria-live="polite"
-        >
-          {errors.root?.message ?? error?.message}
-        </p>
-      )}
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
-        >
-          {isPending ? "Saving…" : "Save"}
-        </Button>
+      <div className={isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Saving…" : "Save"}
         </Button>
       </div>
     </form>

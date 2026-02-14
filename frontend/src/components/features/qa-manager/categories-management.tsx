@@ -265,7 +265,7 @@ export function CategoriesManagement() {
                                       <Button
                                         type="button"
                                         variant="ghost"
-                                        size="icon"
+                                        size="icon-sm"
                                         className={ACTION_BUTTON_EDIT_CLASS}
                                         onClick={() => setEditingCategory(c)}
                                         aria-label="Edit category"
@@ -281,7 +281,7 @@ export function CategoriesManagement() {
                                         <Button
                                           type="button"
                                           variant="ghost"
-                                          size="icon"
+                                          size="icon-sm"
                                           className={cn(
                                             !categoryInUse(c)
                                               ? ACTION_BUTTON_DESTRUCTIVE_CLASS

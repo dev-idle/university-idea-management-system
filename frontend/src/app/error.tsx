@@ -21,7 +21,7 @@ export default function Error({
         title="Something went wrong"
         description={getErrorMessage(
           error,
-          "An unexpected error occurred. Please try again."
+          "An unexpected error occurred."
         )}
         onRetry={reset}
         primaryLink={{ href: "/", label: "Go home" }}

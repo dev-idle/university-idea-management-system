@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { LayoutDashboard } from "lucide-react";
 import { AdminDashboardContent } from "@/components/features/admin/dashboard";
-import { PageHeader } from "@/components/layout/page-header";
-import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
+import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Administration",
@@ -11,13 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
-      <PageHeader
-        title="Administration"
-        description="Manage users, departments, and academic years. Access control is enforced server-side."
-        descriptionWide
-        icon={LayoutDashboard}
-      />
+    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
       <AdminDashboardContent />
     </div>
   );

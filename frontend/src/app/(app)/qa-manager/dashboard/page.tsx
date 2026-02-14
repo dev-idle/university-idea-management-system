@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LayoutDashboard } from "lucide-react";
 import { QaManagerDashboardContent } from "@/components/features/qa-manager/qa-manager-dashboard-content";
 import { PageHeader } from "@/components/layout/page-header";
-import { MANAGEMENT_PAGE_SPACING, PAGE_CONTAINER_CLASS } from "@/config/design";
+import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function QaManagerDashboardPage() {
   return (
-    <div className={`${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`}>
+    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
       <PageHeader
         title="QA Manager"
         description="Manage categories and submission cycles for proposal collection. Access control is enforced server-side."

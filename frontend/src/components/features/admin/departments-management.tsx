@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -27,12 +25,18 @@ import {
 import type { Department } from "@/lib/schemas/departments.schema";
 import { getErrorMessage } from "@/lib/errors";
 import {
-  MANAGEMENT_CARD_HEADER_CLASS,
-  MANAGEMENT_CARD_CLASS,
-  DIALOG_CONTENT_CLASS,
-  DIALOG_HEADER_CLASS,
-  DIALOG_TITLE_CLASS,
-  DIALOG_DESCRIPTION_CLASS,
+  UNIFIED_CARD_CLASS,
+  UNIFIED_CARD_TOOLBAR_CLASS,
+  UNIFIED_SEARCH_INPUT_CLASS,
+  TOOLBAR_ADD_BUTTON_BASE_CLASS,
+  TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
+  LOADING_STATE_WRAPPER_CLASS,
+  LOADING_STATE_CONTENT_CLASS,
+  LOADING_SPINNER_CLASS,
+  DIALOG_CONTENT_SCULPTED_CLASS,
+  DIALOG_OVERLAY_SCULPTED_CLASS,
+  DIALOG_HEADER_SCULPTED_CLASS,
+  DIALOG_TITLE_SCULPTED_CLASS,
   TABLE_HEAD_CELL_CLASS,
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_2,
@@ -50,7 +54,6 @@ import {
   ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
-  formatManagementShowingRange,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { CreateDepartmentForm } from "./create-department-form";
@@ -66,31 +69,53 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { Building2, Pencil, Trash2 } from "lucide-react";
+import { Building2, Pencil, Plus, Trash2, Search } from "lucide-react";
 
 const COLUMN_COUNT = 2;
 
 export function DepartmentsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [searchQuery, setSearchQuery] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler, { capture: true });
+    return () => window.removeEventListener("keydown", handler, { capture: true });
+  }, []);
 
   const { data: departments, status, error, isFetching } = useDepartmentsQuery();
 
-  const total = departments?.length ?? 0;
+  const filtered = useMemo(() => {
+    if (!departments) return [];
+    if (!searchQuery.trim()) return departments;
+    const q = searchQuery.trim().toLowerCase();
+    return departments.filter((d) => d.name.toLowerCase().includes(q));
+  }, [departments, searchQuery]);
+
+  const total = filtered.length;
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / MANAGEMENT_PAGE_SIZE)),
     [total]
   );
   const paginatedList = useMemo(
     () =>
-      departments?.slice(
+      filtered.slice(
         (page - 1) * MANAGEMENT_PAGE_SIZE,
         page * MANAGEMENT_PAGE_SIZE
-      ) ?? [],
-    [departments, page]
+      ),
+    [filtered, page]
   );
+
   const createMutation = useCreateDepartmentMutation();
   const updateMutation = useUpdateDepartmentMutation();
   const deleteMutation = useDeleteDepartmentMutation();
@@ -109,22 +134,27 @@ export function DepartmentsManagement() {
   return (
     <div className="space-y-6">
       <Can permission="DEPARTMENTS">
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogContent className={DIALOG_CONTENT_CLASS}>
-            <DialogHeader className={DIALOG_HEADER_CLASS}>
-              <DialogTitle className={DIALOG_TITLE_CLASS}>
-                Add department
+        <Dialog
+          open={showCreate}
+          onOpenChange={(open) => {
+            if (!open) createMutation.reset();
+            setShowCreate(open);
+          }}
+        >
+          <DialogContent
+            className={DIALOG_CONTENT_SCULPTED_CLASS}
+            overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          >
+            <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
+                Add Department
               </DialogTitle>
-              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-                Create a new department for institutional organisation.
-              </DialogDescription>
             </DialogHeader>
             <CreateDepartmentForm
               onSuccess={() => setShowCreate(false)}
               onCancel={() => setShowCreate(false)}
               isPending={createMutation.isPending}
               mutateAsync={createMutation.mutateAsync}
-              error={createMutation.error ?? null}
               variant="dialog"
             />
           </DialogContent>
@@ -134,16 +164,19 @@ export function DepartmentsManagement() {
       <Can permission="DEPARTMENTS">
         <Dialog
           open={!!editingDepartment}
-          onOpenChange={(open) => !open && setEditingDepartment(null)}
+          onOpenChange={(open) => {
+            if (!open) updateMutation.reset();
+            if (!open) setEditingDepartment(null);
+          }}
         >
-          <DialogContent className={DIALOG_CONTENT_CLASS}>
-            <DialogHeader className={DIALOG_HEADER_CLASS}>
-              <DialogTitle className={DIALOG_TITLE_CLASS}>
+          <DialogContent
+            className={DIALOG_CONTENT_SCULPTED_CLASS}
+            overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          >
+            <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
                 Edit department
               </DialogTitle>
-              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-                Update the department name.
-              </DialogDescription>
             </DialogHeader>
             {editingDepartment && (
               <UpdateDepartmentForm
@@ -152,7 +185,6 @@ export function DepartmentsManagement() {
                 onCancel={() => setEditingDepartment(null)}
                 isPending={updateMutation.isPending}
                 mutateAsync={updateMutation.mutateAsync}
-                error={updateMutation.error ?? null}
                 variant="dialog"
               />
             )}
@@ -191,133 +223,178 @@ export function DepartmentsManagement() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className={MANAGEMENT_CARD_CLASS}>
+      <div className={UNIFIED_CARD_CLASS}>
         <Can permission="DEPARTMENTS">
-          <div className={MANAGEMENT_CARD_HEADER_CLASS}>
-            <p className="text-sm text-muted-foreground">
-              {departments
-                ? formatManagementShowingRange(page, MANAGEMENT_PAGE_SIZE, total)
-                : "Loading…"}
-            </p>
+          <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
+            <div className="relative w-72">
+              <Search
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                aria-hidden
+              />
+              <input
+                ref={searchInputRef}
+                type="search"
+                role="searchbox"
+                aria-label="Search departments"
+                placeholder="Search by name…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className={UNIFIED_SEARCH_INPUT_CLASS}
+              />
+              <kbd
+                className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+                aria-hidden
+              >
+                ⌘K
+              </kbd>
+            </div>
             <Button
               onClick={() => setShowCreate((v) => !v)}
               variant={showCreate ? "secondary" : "default"}
               size="sm"
-              className="shrink-0 gap-2"
+              className={cn(
+                TOOLBAR_ADD_BUTTON_BASE_CLASS,
+                !showCreate && TOOLBAR_ADD_BUTTON_PRIMARY_CLASS
+              )}
             >
-              <Building2 className="size-4 shrink-0" aria-hidden />
-              {showCreate ? "Cancel" : "Add department"}
+              {showCreate ? (
+                <Building2 className="size-4 shrink-0" aria-hidden />
+              ) : (
+                <Plus className="size-4 shrink-0" aria-hidden />
+              )}
+              {showCreate ? "Cancel" : "Add Department"}
             </Button>
           </div>
         </Can>
-        <CardContent className="gap-0 p-0">
-          {status === "pending" && !departments ? (
-            <div className={TABLE_LOADING_CELL_CLASS}>
-              Loading departments…
+
+        {status === "pending" && !departments ? (
+          <div className={LOADING_STATE_WRAPPER_CLASS}>
+            <div className={LOADING_STATE_CONTENT_CLASS}>
+              <div className={LOADING_SPINNER_CLASS} aria-hidden />
+              <p className="font-sans text-sm font-medium text-muted-foreground">Loading departments…</p>
             </div>
-          ) : (
-            <>
-              <TooltipProvider delayDuration={300}>
-                <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
-                  <table className={TABLE_BASE_CLASS}>
-                    <thead>
-                      <tr className={TABLE_HEAD_ROW_CLASS}>
-                        <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
-                          Name
+          </div>
+        ) : (
+          <>
+            <TooltipProvider delayDuration={300}>
+              <div className={cn("overflow-x-auto transition-opacity duration-200", isFetching && "opacity-60")}>
+                <table className={TABLE_BASE_CLASS}>
+                  <thead>
+                    <tr className={TABLE_HEAD_ROW_CLASS}>
+                      <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                        Name
+                      </th>
+                      <Can permission="DEPARTMENTS">
+                        <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
+                          Actions
                         </th>
-                        <Can permission="DEPARTMENTS">
-                          <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
-                            Actions
-                          </th>
-                        </Can>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {!departments || departments.length === 0 ? (
-                        <tr>
-                          <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
+                      </Can>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {!departments || departments.length === 0 ? (
+                      <tr>
+                        <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
+                          <p className="font-sans text-sm font-medium text-foreground">
                             No departments yet.
+                          </p>
+                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                            Add one to get started.
+                          </p>
+                        </td>
+                      </tr>
+                    ) : filtered.length === 0 ? (
+                      <tr>
+                        <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
+                          <p className="font-sans text-sm font-medium text-foreground">
+                            No matching departments.
+                          </p>
+                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                            Try a different search.
+                          </p>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedList.map((d) => (
+                        <tr key={d.id} className={TABLE_ROW_CLASS}>
+                          <td className={TABLE_CELL_NAME_CLASS}>
+                            {d.name}
                           </td>
-                        </tr>
-                      ) : (
-                        paginatedList.map((d) => (
-                          <tr key={d.id} className={TABLE_ROW_CLASS}>
-                            <td className={TABLE_CELL_NAME_CLASS}>
-                              {d.name}
-                            </td>
-                            <Can permission="DEPARTMENTS">
-                              <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
-                                <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
+                          <Can permission="DEPARTMENTS">
+                            <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
+                              <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon-sm"
+                                      className={ACTION_BUTTON_EDIT_CLASS}
+                                      onClick={() => setEditingDepartment(d)}
+                                      aria-label="Edit department"
+                                    >
+                                      <Pencil className="size-4" aria-hidden />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">Edit</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex shrink-0">
                                       <Button
                                         type="button"
                                         variant="ghost"
-                                        size="icon"
-                                        className={ACTION_BUTTON_EDIT_CLASS}
-                                        onClick={() => setEditingDepartment(d)}
-                                        aria-label="Edit department"
+                                        size="icon-sm"
+                                        className={cn(
+                                          (d._count?.users ?? 0) === 0
+                                            ? ACTION_BUTTON_DESTRUCTIVE_CLASS
+                                            : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                        )}
+                                        onClick={() => {
+                                          if ((d._count?.users ?? 0) > 0) return;
+                                          deleteMutation.reset();
+                                          setDepartmentToDelete(d);
+                                        }}
+                                        disabled={
+                                          deleteMutation.isPending ||
+                                          (d._count?.users ?? 0) > 0
+                                        }
+                                        aria-label="Delete department"
                                       >
-                                        <Pencil className="size-4" aria-hidden />
+                                        <Trash2 className="size-4" aria-hidden />
                                       </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">Edit</TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="inline-flex shrink-0">
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className={cn(
-                                            (d._count?.users ?? 0) === 0
-                                              ? ACTION_BUTTON_DESTRUCTIVE_CLASS
-                                              : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
-                                          )}
-                                          onClick={() => {
-                                            if ((d._count?.users ?? 0) > 0) return;
-                                            deleteMutation.reset();
-                                            setDepartmentToDelete(d);
-                                          }}
-                                          disabled={
-                                            deleteMutation.isPending ||
-                                            (d._count?.users ?? 0) > 0
-                                          }
-                                          aria-label="Delete department"
-                                        >
-                                          <Trash2 className="size-4" aria-hidden />
-                                        </Button>
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top">
-                                      {(d._count?.users ?? 0) > 0
-                                        ? "Has members — reassign or remove users first"
-                                        : "Delete department"}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                              </td>
-                            </Can>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </TooltipProvider>
-              {total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
-                <ManagementTablePagination
-                  page={page}
-                  totalPages={totalPages}
-                  setPage={setPage}
-                  ariaLabel="Departments pagination"
-                />
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    {(d._count?.users ?? 0) > 0
+                                      ? "Has members — reassign or remove users first"
+                                      : "Delete department"}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </td>
+                          </Can>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </TooltipProvider>
+            {total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
+              <ManagementTablePagination
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+                ariaLabel="Departments pagination"
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

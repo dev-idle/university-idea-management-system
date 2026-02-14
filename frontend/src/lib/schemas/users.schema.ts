@@ -9,20 +9,20 @@ import { ROLES } from "@/lib/rbac";
 export const createUserBodySchema = z.object({
   email: z
     .string()
-    .min(1, "Email is required.")
-    .email("Please enter a valid email address.")
-    .max(255, "Email must not exceed 255 characters."),
-  fullName: z.string().max(255, "Full name must not exceed 255 characters.").optional().nullable(),
+    .min(1, "Required.")
+    .email("Enter a valid email address.")
+    .max(255, "Max 255 characters."),
+  fullName: z.string().max(255, "Max 255 characters.").optional().nullable(),
   password: z
     .string()
-    .min(1, "Password is required.")
-    .min(8, "Password must be at least 8 characters.")
-    .max(128, "Password must not exceed 128 characters."),
+    .min(1, "Required.")
+    .min(8, "At least 8 characters.")
+    .max(128, "Max 128 characters."),
   role: z.enum(ROLES as unknown as [string, ...string[]]),
   departmentId: z
     .string()
-    .min(1, "Please select a department.")
-    .uuid("Please select a valid department."),
+    .min(1, "Select a department.")
+    .uuid("Select a valid department."),
 });
 
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
@@ -33,8 +33,8 @@ export const updateUserBodySchema = z.object({
   newPassword: z
     .string()
     .optional()
-    .refine((v) => !v || v.length >= 8, "Password must be at least 8 characters.")
-    .refine((v) => !v || v.length <= 128, "Password must not exceed 128 characters."),
+    .refine((v) => !v || v.length >= 8, "At least 8 characters.")
+    .refine((v) => !v || v.length <= 128, "Max 128 characters."),
 });
 
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;

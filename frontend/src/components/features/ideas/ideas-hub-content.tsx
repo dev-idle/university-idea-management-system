@@ -95,14 +95,14 @@ function IdeaCard({
   const long = (idea.description?.length ?? 0) > PREVIEW_LEN;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+    <article className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
       {/* Subtle gradient wash on hover */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       {/* ── Byline ───────────────────────────────────────────────────── */}
       <div className="relative flex items-center gap-3 px-6 pt-6 sm:px-7">
         <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
-          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/[0.03] text-[11px] font-semibold text-primary/60">
+          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/5 text-[11px] font-semibold text-primary/60">
             {initial}
           </AvatarFallback>
         </Avatar>
@@ -146,7 +146,7 @@ function IdeaCard({
           href={`${ROUTES.IDEAS}/${idea.id}`}
           className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <h2 className="font-serif text-xl font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-[22px]">
+          <h2 className="font-sans text-xl font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-[22px]">
             {idea.title}
           </h2>
         </Link>
@@ -192,7 +192,7 @@ function IdeaCard({
       </div>
 
       {/* ── Engagement ────────────────────────────────────────────────── */}
-      <div className="relative flex items-center gap-1.5 border-t border-border/15 px-6 py-3 sm:px-7">
+      <div className="relative flex items-center gap-1.5 border-t border-border/20 px-6 py-3 sm:px-7">
         <button
           type="button"
           disabled={votePending}
@@ -200,7 +200,7 @@ function IdeaCard({
           className={cn(
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
             myVote === "up"
-              ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400"
+              ? "bg-success/10 text-success"
               : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
           )}
           aria-label="Support"
@@ -216,7 +216,7 @@ function IdeaCard({
           className={cn(
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
             myVote === "down"
-              ? "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+              ? "bg-destructive/10 text-destructive"
               : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
           )}
           aria-label="Do not support"
@@ -259,14 +259,14 @@ function LatestCommentRow({ comment }: { comment: LatestComment }) {
       : comment.content;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/30 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+    <article className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div className="relative px-6 py-5 sm:px-7">
         {/* Author + time */}
         <div className="flex items-center gap-3">
           <Avatar className="size-8 shrink-0 rounded-full ring-1 ring-border/30">
-            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/[0.03] text-[10px] font-semibold text-primary/60">
+            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/5 text-[10px] font-semibold text-primary/60">
               {initial}
             </AvatarFallback>
           </Avatar>
@@ -289,7 +289,7 @@ function LatestCommentRow({ comment }: { comment: LatestComment }) {
           href={`${ROUTES.IDEAS}/${comment.idea.id}`}
           className="mt-3 block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <h3 className="font-serif text-[16px] font-semibold leading-[1.35] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary">
+          <h3 className="font-sans text-[16px] font-semibold leading-[1.35] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary">
             {comment.idea.title}
           </h3>
         </Link>
@@ -364,7 +364,7 @@ export function IdeasHubContent() {
       {canSubmit && (
         <Link href={ROUTES.IDEAS_NEW} className="group/cta block">
           <div className="flex items-center gap-4 rounded-2xl border border-border/30 bg-card px-6 py-5 transition-all duration-300 hover:border-border/60 hover:shadow-md hover:shadow-black/[0.03] sm:px-7">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/[0.06] text-primary/60 transition-colors duration-300 group-hover/cta:bg-primary/[0.10] group-hover/cta:text-primary/80">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary/60 transition-colors duration-300 group-hover/cta:bg-primary/[0.10] group-hover/cta:text-primary/80">
               <Lightbulb className="size-[22px]" aria-hidden />
             </div>
             <div className="min-w-0 flex-1">

@@ -110,7 +110,7 @@ function AttachmentItem({ att }: { att: Attachment }) {
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 px-2 text-[11px] text-muted-foreground/50 hover:text-foreground/70"
+          className="h-8 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
           onClick={() => handle("view")}
           disabled={!!loading}
         >
@@ -120,11 +120,11 @@ function AttachmentItem({ att }: { att: Attachment }) {
           type="button"
           variant="ghost"
           size="sm"
-          className="h-7 gap-1 px-2 text-[11px] text-muted-foreground/50 hover:text-foreground/70"
+          className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
           onClick={() => handle("download")}
           disabled={!!loading}
         >
-          <Download className="size-3.5 shrink-0" aria-hidden />
+          <Download className="size-4 shrink-0" aria-hidden />
           {loading === "download" ? "…" : "Save"}
         </Button>
       </div>
@@ -224,13 +224,13 @@ export default function IdeaDetailPage() {
 
       {/* ── Article ──────────────────────────────────────────────────── */}
       <article
-        className="overflow-hidden rounded-2xl border border-border/30 bg-card"
+        className="overflow-hidden rounded-2xl border border-border/40 bg-card"
         aria-labelledby="proposal-title"
       >
         {/* Byline */}
         <div className="flex items-center gap-3 px-6 py-5 sm:px-8">
           <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
-            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/[0.03] text-[11px] font-semibold text-primary/60">
+            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/5 text-[11px] font-semibold text-primary/60">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
@@ -278,7 +278,7 @@ export default function IdeaDetailPage() {
         <div className="px-6 py-10 sm:px-8 sm:py-12">
           <h1
             id="proposal-title"
-            className="font-serif text-[28px] font-bold leading-[1.2] tracking-tight text-foreground sm:text-[34px]"
+            className="font-sans text-[28px] font-bold leading-[1.2] tracking-tight text-foreground sm:text-[34px]"
           >
             {idea.title}
           </h1>
@@ -291,7 +291,7 @@ export default function IdeaDetailPage() {
           )}
 
           {idea.attachments.length > 0 && (
-            <div className="mt-10 border-t border-border/15 pt-7">
+            <div className="mt-10 border-t border-border/20 pt-7">
               <h2 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50">
                 <Paperclip className="size-3.5 shrink-0" aria-hidden />
                 Attachments ({idea.attachments.length})
@@ -306,7 +306,7 @@ export default function IdeaDetailPage() {
         </div>
 
         {/* Reactions */}
-        <div className="flex flex-wrap items-center gap-2 border-t border-border/15 px-6 py-3.5 sm:px-8">
+        <div className="flex flex-wrap items-center gap-2 border-t border-border/20 px-6 py-3.5 sm:px-8">
           <button
             type="button"
             disabled={!open || voteMutation.isPending}
@@ -314,7 +314,7 @@ export default function IdeaDetailPage() {
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
               myVote === "up"
-                ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400"
+                ? "bg-success/10 text-success"
                 : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
               (!open || voteMutation.isPending) &&
                 "pointer-events-none opacity-40",
@@ -332,7 +332,7 @@ export default function IdeaDetailPage() {
             className={cn(
               "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
               myVote === "down"
-                ? "bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400"
+                ? "bg-destructive/10 text-destructive"
                 : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
               (!open || voteMutation.isPending) &&
                 "pointer-events-none opacity-40",
@@ -363,14 +363,14 @@ export default function IdeaDetailPage() {
 
       {/* ── Discussion ───────────────────────────────────────────────── */}
       <section
-        className="overflow-hidden rounded-2xl border border-border/30 bg-card"
+        className="overflow-hidden rounded-2xl border border-border/40 bg-card"
         aria-labelledby="discussion-heading"
       >
         {/* Header */}
         <div className="px-6 py-5 sm:px-8">
           <h2
             id="discussion-heading"
-            className="font-serif text-lg font-semibold tracking-tight text-foreground"
+            className="font-sans text-lg font-semibold tracking-tight text-foreground"
           >
             Discussion
           </h2>

@@ -32,6 +32,18 @@ export class DepartmentsService {
     id: string,
     body: UpdateDepartmentBody,
   ): Promise<{ id: string; name: string }> {
+    if (body.name !== undefined) {
+      const existing = await this.prisma.department.findFirst({
+        where: {
+          name: { equals: body.name, mode: 'insensitive' },
+          id: { not: id },
+        },
+        select: { id: true },
+      });
+      if (existing) {
+        throw new ConflictException('Department with this name already exists');
+      }
+    }
     try {
       const department = await this.prisma.department.update({
         where: { id },

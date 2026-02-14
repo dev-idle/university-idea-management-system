@@ -8,7 +8,7 @@ import type {
 } from "@/lib/schemas/categories.schema";
 import { updateCategoryBodySchema } from "@/lib/schemas/categories.schema";
 import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
+import { FORM_ERROR_BLOCK_CLASS, FORM_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS, FORM_CARD_INPUT_CLASS, FORM_DIALOG_LABEL_CLASS } from "@/components/features/admin/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,13 +53,12 @@ export function UpdateCategoryForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Failed to update category. Please try again."),
+        message: getErrorMessage(e, "Unable to update category."),
       });
     }
   }
 
-  const labelClass =
-    "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const labelClass = FORM_DIALOG_LABEL_CLASS;
 
   return (
     <form
@@ -79,7 +78,7 @@ export function UpdateCategoryForm({
           type="text"
           autoComplete="off"
           placeholder="Category name"
-          className="h-10 w-full text-sm rounded-lg"
+          className={FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "edit-name-error" : undefined}
           {...register("name")}
@@ -103,7 +102,7 @@ export function UpdateCategoryForm({
         <Button
           type="submit"
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_BUTTON_CLASS}
         >
           {isPending ? "Saving…" : "Save"}
         </Button>
@@ -112,7 +111,7 @@ export function UpdateCategoryForm({
           variant="outline"
           onClick={onCancel}
           disabled={isPending}
-          className="h-10 rounded-lg px-5 text-sm font-medium"
+          className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
         </Button>

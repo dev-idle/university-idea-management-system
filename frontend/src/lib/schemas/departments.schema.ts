@@ -8,8 +8,8 @@ import { z } from "zod";
 export const createDepartmentBodySchema = z.object({
   name: z
     .string()
-    .min(1, "Department name is required.")
-    .max(255, "Department name must not exceed 255 characters."),
+    .min(1, "Required.")
+    .max(255, "Max 255 characters."),
 });
 
 export type CreateDepartmentBody = z.infer<typeof createDepartmentBodySchema>;
@@ -17,8 +17,8 @@ export type CreateDepartmentBody = z.infer<typeof createDepartmentBodySchema>;
 export const updateDepartmentBodySchema = z.object({
   name: z
     .string()
-    .min(1, "Department name is required.")
-    .max(255, "Department name must not exceed 255 characters.")
+    .min(1, "Required.")
+    .max(255, "Max 255 characters.")
     .optional(),
 });
 

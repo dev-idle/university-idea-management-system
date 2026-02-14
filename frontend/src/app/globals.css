@@ -1,58 +1,48 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark theme class: must match config/theme.ts THEME_CLASS.DARK (next-themes applies it to <html>). */
+/* Dark theme: next-themes applies .dark to <html>; must match config/theme.ts */
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  /* ==============================================
-     THEME: GREENWICH ACADEMIC (Light Mode)
-     Vibe: Clean, Trusted, Professional, Scholarly
-     Dominant: Greenwich Purple/Indigo (primary)
-     Brand reference: University of Greenwich #28224B
-     ============================================== */
+/* =============================================================================
+   BASE LAYER — Root Variables (Source of Truth)
+   All colors in OKLCH for perceptual uniformity.
+   ============================================================================= */
 
-  /* Background: Tinted very faintly purple for a scholarly feel */
-  --background: oklch(0.985 0.003 280);
-  /* Foreground: Soft Black with purple undertone */
+:root {
+  /* --- 1. Base (Surfaces & Typography) --- */
+  --background: oklch(0.985 0.003 280); /* Slightly purple-tinted (premium, not pure white) */
   --foreground: oklch(0.15 0.02 280);
 
-  /* Card: Pure White for separation */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.15 0.02 280);
 
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0.02 280);
 
-  /* Primary: Greenwich Purple — Deep Indigo (Authority & Scholarship) */
-  --primary: oklch(0.3 0.12 280);
+  /* --- 2. Brand (Greenwich Identity) --- */
+  --primary: oklch(0.3 0.12 280); /* Deep Indigo/Purple — Greenwich #28224B */
   --primary-foreground: oklch(0.98 0 0);
 
-  /* Secondary: Cool Lavender Slate — Harmonizes with Purple */
+  /* --- 3. Semantic (UI Feedback) --- */
   --secondary: oklch(0.95 0.012 280);
   --secondary-foreground: oklch(0.3 0.12 280);
 
-  /* Muted: Used for backgrounds of disabled inputs or subtle borders */
   --muted: oklch(0.94 0.01 280);
   --muted-foreground: oklch(0.5 0.03 280);
 
-  /* Accent: "Innovation Teal" - Modern, encourages interaction */
   --accent: oklch(0.94 0.02 200);
   --accent-foreground: oklch(0.4 0.12 200);
 
-  /* Semantic: Destructive (Thumbs Down / Delete) */
   --destructive: oklch(0.58 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
 
-  /* Semantic: Success (Thumbs Up / Approved) */
   --success: oklch(0.55 0.15 150);
   --success-foreground: oklch(0.98 0 0);
 
-  /* Semantic: Warning (Deadlines / Closure) */
   --warning: oklch(0.75 0.15 85);
   --warning-foreground: oklch(0.2 0.05 50);
 
-  /* Semantic: Info (Notices) */
   --info: oklch(0.6 0.15 240);
   --info-foreground: oklch(0.98 0 0);
 
@@ -60,26 +50,15 @@
   --input: oklch(0.9 0.01 280);
   --ring: oklch(0.3 0.12 280);
 
-  /* Chart colors - Distinct for Pie/Bar charts */
-  --chart-1: oklch(0.3 0.12 280); /* Purple (Primary) */
-  --chart-2: oklch(0.55 0.15 150); /* Green (Success) */
-  --chart-3: oklch(0.4 0.12 200); /* Teal (Accent) */
+  /* --- 4. Charts (Data viz) --- */
+  --chart-1: oklch(0.3 0.12 280);
+  --chart-2: oklch(0.55 0.15 150);
+  --chart-3: oklch(0.4 0.12 200);
   --chart-4: oklch(0.65 0.18 45);
   --chart-5: oklch(0.55 0.2 330);
 
-  --radius: 0.6rem;
-
-  /* Overlay for modals/dialogs (from color standards) */
-  --overlay: oklch(0 0 0 / 0.5);
-  /* Card/panel shadow */
-  --shadow-card: 0 4px 24px oklch(0 0 0 / 0.06);
-
-  /* Login page: grid line (slightly muted), radial overlay for depth */
-  --login-grid-line: oklch(0.45 0.02 280 / 0.04);
-  --login-radial-overlay: oklch(0 0 0 / 0.035);
-
-  /* Sidebar */
-  --sidebar: oklch(0.99 0.002 280);
+  /* --- 5. Sidebar (Distinct but subtle contrast from main content) --- */
+  --sidebar: oklch(0.98 0.004 280);
   --sidebar-foreground: oklch(0.25 0.05 280);
   --sidebar-primary: oklch(0.3 0.12 280);
   --sidebar-primary-foreground: oklch(0.98 0 0);
@@ -87,16 +66,24 @@
   --sidebar-accent-foreground: oklch(0.3 0.12 280);
   --sidebar-border: oklch(0.92 0.01 280);
   --sidebar-ring: oklch(0.3 0.12 280);
+
+  /* --- Shape & Elevation --- */
+  --radius: 0.6rem;
+  --overlay: oklch(0 0 0 / 0.5);
+  --overlay-modal: oklch(0 0 0 / 0.45);
+  --shadow-card: 0 4px 24px oklch(0 0 0 / 0.06);
+  --header-elevation: 0 1px 3px oklch(0 0 0 / 0.03);
+
+  /* --- Login (Special) --- */
+  --login-grid-line: oklch(0.45 0.02 280 / 0.04);
+  --login-radial-overlay: oklch(0 0 0 / 0.035);
 }
 
-/* Applied to <html> by next-themes when dark; keep in sync with config/theme.ts */
-.dark {
-  /* ==============================================
-     THEME: GREENWICH NIGHT (Dark Mode)
-     Vibe: Focus, High Contrast, Low Eye Strain
-     Dominant: Bright Lavender (primary)
-     ============================================== */
+/* =============================================================================
+   DARK MODE — Greenwich Night
+   ============================================================================= */
 
+.dark {
   --background: oklch(0.12 0.03 280);
   --foreground: oklch(0.95 0.01 280);
 
@@ -134,9 +121,6 @@
   --input: oklch(0.22 0.03 280);
   --ring: oklch(0.65 0.18 280);
 
-  --overlay: oklch(0 0 0 / 0.5);
-  --shadow-card: 0 4px 24px oklch(0 0 0 / 0.25);
-
   --chart-1: oklch(0.65 0.18 280);
   --chart-2: oklch(0.6 0.16 150);
   --chart-3: oklch(0.55 0.14 200);
@@ -152,45 +136,24 @@
   --sidebar-border: oklch(0.22 0.03 280);
   --sidebar-ring: oklch(0.65 0.18 280);
 
+  --overlay: oklch(0 0 0 / 0.5);
+  --overlay-modal: oklch(0 0 0 / 0.45);
+  --shadow-card: 0 4px 24px oklch(0 0 0 / 0.25);
+  --header-elevation: 0 1px 3px oklch(0 0 0 / 0.15);
+
   --login-grid-line: oklch(0.92 0.01 280 / 0.045);
   --login-radial-overlay: oklch(1 0 0 / 0.04);
 }
 
-/* Login page only: subtle square grid (caro) + radial depth. Optional noise omitted for reliability. */
-.login-page-bg {
-  --login-cell: 40px; /* 32–48px range */
-  background-color: var(--background);
-  background-image:
-    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 20%, var(--login-radial-overlay) 100%),
-    linear-gradient(
-      to right,
-      var(--login-grid-line) 0,
-      var(--login-grid-line) 1px,
-      transparent 1px,
-      transparent var(--login-cell)
-    ),
-    linear-gradient(
-      to bottom,
-      var(--login-grid-line) 0,
-      var(--login-grid-line) 1px,
-      transparent 1px,
-      transparent var(--login-cell)
-    );
-  background-size:
-    100% 100%,
-    var(--login-cell) var(--login-cell),
-    var(--login-cell) var(--login-cell);
-  background-position:
-    0 0,
-    0 0,
-    0 0;
-}
+/* =============================================================================
+   TAILWIND v4 @theme — Maps CSS vars to Tailwind utilities
+   ============================================================================= */
 
 @theme inline {
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
-  --font-serif: var(--font-crimson-pro), Georgia, serif;
-  --color-overlay: var(--overlay);
+  --font-mono: ui-monospace, monospace;
+  --font-serif: var(--font-geist-sans), system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -221,13 +184,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -236,41 +193,140 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-overlay: var(--overlay);
+  --color-overlay-modal: var(--overlay-modal);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
+
+/* =============================================================================
+   BASE LAYER — Global Styles (Source of Truth Sync)
+   ============================================================================= */
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
   }
+  *:focus-visible {
+    outline: 2px solid color-mix(in oklch, var(--primary) 50%, transparent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
   html,
   body {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
+
   html::-webkit-scrollbar,
   body::-webkit-scrollbar {
-    display: none;
+    width: 8px;
+    height: 8px;
   }
+
+  html::-webkit-scrollbar-track,
+  body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  html::-webkit-scrollbar-thumb,
+  body::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  html::-webkit-scrollbar-thumb:hover,
+  body::-webkit-scrollbar-thumb:hover {
+    background-color: oklch(from var(--border) calc(l - 0.05) c h);
+  }
+
   body {
     @apply bg-background font-sans text-foreground antialiased;
   }
 }
 
-/*
- * Brand logo recolor: SVG feColorMatrix replaces RGB with the primary color
- * while preserving the original alpha channel (smooth anti-aliased edges).
- *
- * Light: oklch(0.30 0.12 280) → #262067  rgb(38, 32, 103)
- * Dark:  oklch(0.65 0.18 280) → #7d7df9  rgb(125, 125, 249)
- */
-.brand-logo {
-  filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c' color-interpolation-filters='sRGB'%3E%3CfeColorMatrix values='0 0 0 0 0.1490 0 0 0 0 0.1255 0 0 0 0 0.4039 0 0 0 1 0'/%3E%3C/filter%3E%3C/svg%3E#c");
-}
-.dark .brand-logo {
-  filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='c' color-interpolation-filters='sRGB'%3E%3CfeColorMatrix values='0 0 0 0 0.4902 0 0 0 0 0.4902 0 0 0 0 0.9765 0 0 0 1 0'/%3E%3C/filter%3E%3C/svg%3E#c");
+/* =============================================================================
+   BRAND LOGO — Mask-based (uses --primary from design system)
+   Apply .brand-logo or .brand-icon + bg-primary for Greenwich brand color.
+   The mask reveals the fill; --primary (Deep Indigo #28224B) is the brand color.
+   ============================================================================= */
+
+.brand-logo,
+.brand-icon {
+  background-color: var(--primary);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
-/* Hide scrollbar while keeping element scrollable (sidebar, main content) */
+.brand-logo {
+  -webkit-mask-image: url("/greenwich-logo.png");
+  mask-image: url("/greenwich-logo.png");
+}
+
+.brand-icon {
+  -webkit-mask-image: url("/greenwich-icon.png");
+  mask-image: url("/greenwich-icon.png");
+}
+
+/* =============================================================================
+   LOGIN PAGE — Grid background
+   ============================================================================= */
+
+.login-page-bg {
+  --login-cell: 40px;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 90% 80% at 50% 50%, transparent 20%, var(--login-radial-overlay) 100%),
+    linear-gradient(
+      to right,
+      var(--login-grid-line) 0,
+      var(--login-grid-line) 1px,
+      transparent 1px,
+      transparent var(--login-cell)
+    ),
+    linear-gradient(
+      to bottom,
+      var(--login-grid-line) 0,
+      var(--login-grid-line) 1px,
+      transparent 1px,
+      transparent var(--login-cell)
+    );
+  background-size:
+    100% 100%,
+    var(--login-cell) var(--login-cell),
+    var(--login-cell) var(--login-cell);
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+}
+
+/* =============================================================================
+   UTILITIES
+   ============================================================================= */
+
+.header-elevation {
+  box-shadow: var(--header-elevation);
+}
+
+/* Optional: Hide scrollbar for specific UI elements (e.g. carousels) */
 .scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;

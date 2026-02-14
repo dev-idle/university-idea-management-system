@@ -13,6 +13,15 @@ import {
   FORM_BUTTON_CLASS,
   FORM_OUTLINE_BUTTON_CLASS,
   FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_ERROR_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  FORM_CARD_INPUT_CLASS,
 } from "./constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,17 +84,18 @@ export function EditUserForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Failed to update user. Please try again."),
+        message: getErrorMessage(e, "Unable to update user."),
       });
     }
   }
 
   const hasError = !!errors.root || !!error;
+  const isDialog = variant === "dialog";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6"
+      className={isDialog ? FORM_DIALOG_FORM_CLASS : "space-y-6"}
       aria-describedby={hasError ? "edit-user-form-error" : undefined}
     >
       {variant === "default" && (
@@ -93,9 +103,9 @@ export function EditUserForm({
           Update display name or reset password. Leave password blank to keep the current one.
         </p>
       )}
-      <div className="space-y-6">
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="edit-fullName" className={FORM_LABEL_CLASS}>
+      <div className={isDialog ? "space-y-6" : "space-y-6"}>
+        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-0 space-y-2"}>
+          <Label htmlFor="edit-fullName" className={isDialog ? FORM_DIALOG_LABEL_CLASS : FORM_LABEL_CLASS}>
             Full name
           </Label>
           <Input
@@ -103,20 +113,20 @@ export function EditUserForm({
             type="text"
             autoComplete="name"
             placeholder="Jane Smith"
-            className="h-10 w-full text-sm rounded-lg"
+            className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
             aria-invalid={!!errors.fullName}
             aria-describedby={errors.fullName ? "edit-fullName-error" : undefined}
             {...register("fullName")}
           />
           {errors.fullName && (
-            <p id="edit-fullName-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="edit-fullName-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.fullName.message}
             </p>
           )}
         </div>
 
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="edit-newPassword" className={FORM_LABEL_CLASS}>
+        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-0 space-y-2"}>
+          <Label htmlFor="edit-newPassword" className={isDialog ? FORM_DIALOG_LABEL_CLASS : FORM_LABEL_CLASS}>
             New password{" "}
             <span className="font-normal normal-case text-muted-foreground/80">
               (optional)
@@ -127,13 +137,13 @@ export function EditUserForm({
             type="password"
             autoComplete="new-password"
             placeholder="Leave blank to keep current"
-            className="h-10 w-full text-sm rounded-lg"
+            className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
             aria-invalid={!!errors.newPassword}
             aria-describedby={errors.newPassword ? "edit-newPassword-error" : undefined}
             {...register("newPassword")}
           />
           {errors.newPassword && (
-            <p id="edit-newPassword-error" className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="edit-newPassword-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.newPassword.message}
             </p>
           )}
@@ -143,22 +153,15 @@ export function EditUserForm({
       {(errors.root ?? error) && (
         <p
           id="edit-user-form-error"
-          className={FORM_ERROR_BLOCK_CLASS}
+          className={isDialog ? FORM_DIALOG_ROOT_ERROR_CLASS : FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >
-          {getErrorMessage(errors.root ?? error, "Failed to update user. Please try again.")}
+          {getErrorMessage(errors.root ?? error, "Unable to update user.")}
         </p>
       )}
 
-      <div className={FORM_ACTIONS_CLASS}>
-        <Button
-          type="submit"
-          disabled={isPending}
-          className={FORM_BUTTON_CLASS}
-        >
-          {isPending ? "Saving…" : "Save changes"}
-        </Button>
+      <div className={isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
@@ -167,6 +170,13 @@ export function EditUserForm({
           className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Saving…" : "Save changes"}
         </Button>
       </div>
     </form>

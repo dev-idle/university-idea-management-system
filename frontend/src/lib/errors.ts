@@ -32,7 +32,7 @@ function parseApiMessage(jsonStr: string): string | null {
  */
 export function getErrorMessage(
   error: unknown,
-  fallback = "Something went wrong. Please try again."
+  fallback = "Something went wrong."
 ): string {
   if (error == null) return fallback;
 

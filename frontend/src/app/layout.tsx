@@ -1,26 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
-import { Crimson_Pro, Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import { Providers } from "./providers";
 import { SessionRestore } from "@/components/auth/session-restore";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const crimsonPro = Crimson_Pro({
-  weight: ["500", "600"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-crimson-pro",
-});
 
 export const metadata: Metadata = {
   title: { default: "Greenwich University — Idea Management", template: "%s | Greenwich University" },
@@ -42,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${crimsonPro.variable}`}>
+      <body className={`${GeistSans.variable} font-sans antialiased`}>
         <Providers>
           <Suspense
             fallback={
