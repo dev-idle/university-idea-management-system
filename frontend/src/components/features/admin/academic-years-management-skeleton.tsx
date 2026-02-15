@@ -1,8 +1,12 @@
 "use client";
 
-import { UNIFIED_CARD_CLASS, UNIFIED_CARD_TOOLBAR_CLASS } from "./constants";
+import {
+  UNIFIED_CARD_CLASS,
+  UNIFIED_CARD_TOOLBAR_CLASS,
+  TABLE_HEAD_ROW_CLASS,
+} from "./constants";
 
-/** Skeleton matched to Academic Years card layout — 2026 refined. */
+/** Skeleton matched to Academic Years card layout — Admin source of truth. */
 export function AcademicYearsManagementSkeleton() {
   return (
     <div className={UNIFIED_CARD_CLASS}>
@@ -10,8 +14,7 @@ export function AcademicYearsManagementSkeleton() {
         <div className="h-9 w-72 animate-pulse rounded-lg border border-border bg-muted/10" />
         <div className="h-9 w-28 animate-pulse rounded-lg bg-muted/40" />
       </div>
-      {/* Table header */}
-      <div className="border-b border-border bg-muted/25 px-6 py-3.5">
+      <div className={`${TABLE_HEAD_ROW_CLASS} px-6 py-3.5`}>
         <div className="flex gap-8">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="h-3.5 w-16 animate-pulse rounded bg-muted/40" />

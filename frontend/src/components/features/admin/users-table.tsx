@@ -22,7 +22,7 @@ import {
   TABLE_CELL_STATUS_CLASS,
   TABLE_ACTIONS_WRAPPER_CLASS,
   ACTION_BUTTON_EDIT_CLASS,
-  ACTION_BUTTON_DESTRUCTIVE_CLASS,
+  ACTION_BUTTON_WARNING_CLASS,
   ACTION_BUTTON_SUCCESS_CLASS,
   STATUS_BADGE_ACTIVE_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
@@ -194,7 +194,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
-                                className={ACTION_BUTTON_DESTRUCTIVE_CLASS}
+                                className={ACTION_BUTTON_WARNING_CLASS}
                                 disabled={togglingId === user.id}
                                 onClick={() => setDeactivateUser(user)}
                                 aria-label="Deactivate user"
@@ -252,7 +252,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              variant="destructive"
+              variant="warning"
               onClick={handleConfirmDeactivate}
             >
               Deactivate

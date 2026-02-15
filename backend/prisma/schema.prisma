@@ -154,6 +154,8 @@ model IdeaSubmissionCycle {
   ideaSubmissionClosesAt DateTime
   interactionClosesAt    DateTime
   status                 String          @db.VarChar(20)
+  isLocked               Boolean         @default(false)
+  wasEverClosed          Boolean         @default(false)
   cycleCategories        CycleCategory[]
   ideas                  Idea[]
   createdAt              DateTime        @default(now())

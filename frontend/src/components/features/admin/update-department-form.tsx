@@ -7,7 +7,7 @@ import type {
   UpdateDepartmentBody,
 } from "@/lib/schemas/departments.schema";
 import { updateDepartmentBodySchema } from "@/lib/schemas/departments.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   FORM_ACTIONS_CLASS,
   FORM_ACTIONS_DIALOG_CLASS,
@@ -62,7 +62,7 @@ export function UpdateDepartmentForm({
       await mutateAsync({ id: department.id, body: { name: data.name } });
       onSuccess();
     } catch (e) {
-      const message = getErrorMessage(e, "Unable to update department.");
+      const message = getErrorMessage(e, ERROR_FALLBACK_FORM.updateDepartment);
       const lower = message.toLowerCase().replace(/\s+/g, " ");
       if (
         (lower.includes("department") && lower.includes("name")) ||
@@ -86,7 +86,7 @@ export function UpdateDepartmentForm({
       className={
         isDialog
           ? FORM_DIALOG_FORM_CLASS
-          : "flex flex-wrap items-end gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"
+          : "flex flex-wrap items-end gap-6 rounded-xl border border-border/80 bg-card p-6 shadow-sm"
       }
     >
       <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-[200px] flex-1 space-y-2"}>

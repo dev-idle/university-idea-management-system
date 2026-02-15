@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK } from "@/lib/errors";
 import { ErrorBoundaryView } from "@/components/ui/error-boundary-view";
 import { ROUTES } from "@/config/constants";
 
@@ -19,10 +19,7 @@ export default function QaManagerCategoriesError({
   return (
     <ErrorBoundaryView
       title="Unable to load categories"
-      description={getErrorMessage(
-        error,
-        "The request failed. You may not have permission, or the service may be unavailable."
-      )}
+      description={getErrorMessage(error, ERROR_FALLBACK.load)}
       onRetry={reset}
       primaryLink={{ href: ROUTES.QA_MANAGER_DASHBOARD, label: "Back to QA Manager" }}
     />

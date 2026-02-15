@@ -1,15 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useAuthStore } from "@/stores/auth.store";
 import { hasRole } from "@/lib/rbac";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -36,19 +34,24 @@ import {
   useDeleteCategoryMutation,
 } from "@/hooks/use-categories";
 import type { Category } from "@/lib/schemas/categories.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
-  MANAGEMENT_CARD_HEADER_CLASS,
-  MANAGEMENT_CARD_CLASS,
-  DIALOG_CONTENT_CLASS,
-  DIALOG_HEADER_CLASS,
-  DIALOG_TITLE_CLASS,
-  DIALOG_DESCRIPTION_CLASS,
+  UNIFIED_CARD_CLASS,
+  UNIFIED_CARD_TOOLBAR_CLASS,
+  UNIFIED_SEARCH_INPUT_CLASS,
+  TOOLBAR_ADD_BUTTON_BASE_CLASS,
+  TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
+  DIALOG_CONTENT_SCULPTED_CLASS,
+  DIALOG_OVERLAY_SCULPTED_CLASS,
+  DIALOG_HEADER_SCULPTED_CLASS,
+  DIALOG_TITLE_SCULPTED_CLASS,
+  LOADING_STATE_WRAPPER_CLASS,
+  LOADING_STATE_CONTENT_CLASS,
+  LOADING_SPINNER_CLASS,
   TABLE_HEAD_CELL_CLASS,
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_2,
   TABLE_ACTIONS_CELL_CLASS,
-  TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
   TABLE_BASE_CLASS,
   TABLE_HEAD_ROW_CLASS,
@@ -61,13 +64,12 @@ import {
   ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
-  formatManagementShowingRange,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCategoryForm } from "./create-category-form";
 import { UpdateCategoryForm } from "./update-category-form";
 import { cn } from "@/lib/utils";
-import { Tags, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 /** Columns: Name + Actions (when QA_MANAGER). Used for empty-state colSpan. */
 const COLUMNS_WITH_ACTIONS = 2;
@@ -78,24 +80,45 @@ export function CategoriesManagement() {
   const isQaManager = hasRole(user?.roles, "QA_MANAGER");
 
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [searchQuery, setSearchQuery] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler, { capture: true });
+    return () => window.removeEventListener("keydown", handler, { capture: true });
+  }, []);
 
   const { data: categories, status, error, isFetching } = useCategoriesQuery();
 
-  const total = categories?.length ?? 0;
+  const filtered = useMemo(() => {
+    if (!categories) return [];
+    if (!searchQuery.trim()) return categories;
+    const q = searchQuery.trim().toLowerCase();
+    return categories.filter((c) => c.name.toLowerCase().includes(q));
+  }, [categories, searchQuery]);
+
+  const total = filtered.length;
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / MANAGEMENT_PAGE_SIZE)),
     [total]
   );
   const paginatedList = useMemo(
     () =>
-      categories?.slice(
+      filtered.slice(
         (page - 1) * MANAGEMENT_PAGE_SIZE,
         page * MANAGEMENT_PAGE_SIZE
-      ) ?? [],
-    [categories, page]
+      ),
+    [filtered, page]
   );
   const createMutation = useCreateCategoryMutation();
   const updateMutation = useUpdateCategoryMutation();
@@ -118,15 +141,21 @@ export function CategoriesManagement() {
   return (
     <div className="space-y-6">
       {isQaManager && (
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
-          <DialogContent className={DIALOG_CONTENT_CLASS}>
-            <DialogHeader className={DIALOG_HEADER_CLASS}>
-              <DialogTitle className={DIALOG_TITLE_CLASS}>
+        <Dialog
+          open={showCreate}
+          onOpenChange={(open) => {
+            if (!open) createMutation.reset();
+            setShowCreate(open);
+          }}
+        >
+          <DialogContent
+            className={DIALOG_CONTENT_SCULPTED_CLASS}
+            overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          >
+            <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
                 Add category
               </DialogTitle>
-              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-                Create a new category for idea classification. Duplicate names are not allowed.
-              </DialogDescription>
             </DialogHeader>
             <CreateCategoryForm
               onSuccess={() => setShowCreate(false)}
@@ -143,16 +172,19 @@ export function CategoriesManagement() {
       {isQaManager && (
         <Dialog
           open={!!editingCategory}
-          onOpenChange={(open) => !open && setEditingCategory(null)}
+          onOpenChange={(open) => {
+            if (!open) updateMutation.reset();
+            if (!open) setEditingCategory(null);
+          }}
         >
-          <DialogContent className={DIALOG_CONTENT_CLASS}>
-            <DialogHeader className={DIALOG_HEADER_CLASS}>
-              <DialogTitle className={DIALOG_TITLE_CLASS}>
+          <DialogContent
+            className={DIALOG_CONTENT_SCULPTED_CLASS}
+            overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          >
+            <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+              <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
                 Edit category
               </DialogTitle>
-              <DialogDescription className={DIALOG_DESCRIPTION_CLASS}>
-                Update the category name. Duplicate names are not allowed.
-              </DialogDescription>
             </DialogHeader>
             {editingCategory && (
               <UpdateCategoryForm
@@ -179,10 +211,10 @@ export function CategoriesManagement() {
             <AlertDialogDescription>
               {categoryToDelete?.name}
               {" — "}
-              Delete is only available when the category is not used in submission cycles or by ideas; remove or reassign first if needed.
+              Delete when not in use; remove from cycles or ideas first.
               {deleteMutation.isError && (
                 <span className={ALERT_DIALOG_ERROR_CLASS}>
-                  {getErrorMessage(deleteMutation.error, "Delete failed.")}
+                  {getErrorMessage(deleteMutation.error, ERROR_FALLBACK_FORM.delete)}
                 </span>
               )}
             </AlertDialogDescription>
@@ -200,34 +232,61 @@ export function CategoriesManagement() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className={MANAGEMENT_CARD_CLASS}>
+      <div className={UNIFIED_CARD_CLASS}>
         {isQaManager && (
-          <div className={MANAGEMENT_CARD_HEADER_CLASS}>
-            <p className="text-sm text-muted-foreground">
-              {categories
-                ? formatManagementShowingRange(page, MANAGEMENT_PAGE_SIZE, total)
-                : "Loading…"}
-            </p>
+          <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
+            <div className="relative w-72">
+              <Search
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                aria-hidden
+              />
+              <input
+                ref={searchInputRef}
+                type="search"
+                role="searchbox"
+                aria-label="Search categories"
+                placeholder="Search by name…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className={UNIFIED_SEARCH_INPUT_CLASS}
+              />
+              <kbd
+                className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+                aria-hidden
+              >
+                ⌘K
+              </kbd>
+            </div>
             <Button
               onClick={() => setShowCreate((v) => !v)}
               variant={showCreate ? "secondary" : "default"}
               size="sm"
-              className="shrink-0 gap-2"
+              className={cn(
+                TOOLBAR_ADD_BUTTON_BASE_CLASS,
+                !showCreate && TOOLBAR_ADD_BUTTON_PRIMARY_CLASS
+              )}
             >
-              <Tags className="size-4 shrink-0" aria-hidden />
+              <Plus className="size-4 shrink-0" aria-hidden />
               {showCreate ? "Cancel" : "Add category"}
             </Button>
           </div>
         )}
-        <CardContent className="gap-0 p-0">
-          {status === "pending" && !categories ? (
-            <div className={TABLE_LOADING_CELL_CLASS}>
-              Loading categories…
+        {status === "pending" && !categories ? (
+          <div className={LOADING_STATE_WRAPPER_CLASS}>
+            <div className={LOADING_STATE_CONTENT_CLASS}>
+              <div className={LOADING_SPINNER_CLASS} aria-hidden />
+              <p className="font-sans text-sm font-medium text-muted-foreground">
+                Loading categories…
+              </p>
             </div>
-          ) : (
+          </div>
+        ) : (
             <>
               <TooltipProvider delayDuration={300}>
-                <div className={cn("overflow-x-auto", isFetching && "opacity-70")}>
+                <div className={cn("overflow-x-auto transition-opacity duration-200", isFetching && "opacity-60")}>
                   <table className={TABLE_BASE_CLASS}>
                     <thead>
                       <tr className={TABLE_HEAD_ROW_CLASS}>
@@ -242,13 +301,20 @@ export function CategoriesManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {!categories || categories.length === 0 ? (
+                      {!filtered || filtered.length === 0 ? (
                         <tr>
                           <td
                             colSpan={isQaManager ? COLUMNS_WITH_ACTIONS : COLUMNS_NAME_ONLY}
                             className={TABLE_EMPTY_CELL_CLASS}
                           >
-                            No categories yet.
+                            <p className="font-sans text-sm font-medium text-foreground">
+                              {searchQuery.trim()
+                                ? "No matching categories."
+                                : "No categories yet."}
+                            </p>
+                            <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                              {searchQuery.trim() ? "Try a different search." : "Add one to get started."}
+                            </p>
                           </td>
                         </tr>
                       ) : (
@@ -304,8 +370,8 @@ export function CategoriesManagement() {
                                     </TooltipTrigger>
                                     <TooltipContent side="top">
                                       {categoryInUse(c)
-                                        ? "In use by ideas or submission cycles — remove or reassign first"
-                                        : "Delete category"}
+                                        ? "In use — remove or reassign first"
+                                        : "Delete"}
                                     </TooltipContent>
                                   </Tooltip>
                                 </div>
@@ -328,8 +394,7 @@ export function CategoriesManagement() {
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

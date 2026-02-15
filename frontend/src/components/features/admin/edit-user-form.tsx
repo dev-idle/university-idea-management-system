@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { UpdateUserBody } from "@/lib/schemas/users.schema";
 import { updateUserBodySchema } from "@/lib/schemas/users.schema";
 import type { UserListItem } from "@/lib/schemas/users.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   FORM_LABEL_CLASS,
   FORM_DESCRIPTION_CLASS,
@@ -84,7 +84,7 @@ export function EditUserForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Unable to update user."),
+        message: getErrorMessage(e, ERROR_FALLBACK_FORM.updateUser),
       });
     }
   }
@@ -157,7 +157,7 @@ export function EditUserForm({
           role="alert"
           aria-live="polite"
         >
-          {getErrorMessage(errors.root ?? error, "Unable to update user.")}
+          {getErrorMessage(errors.root ?? error, ERROR_FALLBACK_FORM.updateUser)}
         </p>
       )}
 

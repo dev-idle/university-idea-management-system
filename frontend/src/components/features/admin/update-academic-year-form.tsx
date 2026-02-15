@@ -8,7 +8,7 @@ import type {
   UpdateAcademicYearFormValues,
 } from "@/lib/schemas/academic-years.schema";
 import { updateAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   FORM_ACTIONS_DIALOG_CLASS,
   FORM_ACTIONS_CLASS,
@@ -18,12 +18,10 @@ import {
   FORM_DIALOG_INPUT_CLASS,
   FORM_DIALOG_FORM_CLASS,
   FORM_DIALOG_FIELD_WRAPPER_CLASS,
-  FORM_DIALOG_ERROR_CLASS,
   FORM_DIALOG_ROOT_ERROR_CLASS,
   FORM_FIELD_ERROR_CLASS,
   FORM_CARD_INPUT_CLASS,
 } from "./constants";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -86,7 +84,7 @@ export function UpdateAcademicYearForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Unable to update academic year."),
+        message: getErrorMessage(e, ERROR_FALLBACK_FORM.updateAcademicYear),
       });
     }
   }
@@ -101,7 +99,7 @@ export function UpdateAcademicYearForm({
       className={
         isDialog
           ? FORM_DIALOG_FORM_CLASS
-          : "flex flex-col gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"
+          : "flex flex-col gap-6 rounded-xl border border-border/80 bg-card p-6 shadow-sm"
       }
     >
       {variant === "default" && (
@@ -193,8 +191,12 @@ export function UpdateAcademicYearForm({
         </div>
       </div>
       {errors.root && (
-        <p className={isDialog ? FORM_DIALOG_ROOT_ERROR_CLASS : "text-xs text-destructive"} role="alert" aria-live="polite">
-          {getErrorMessage(errors.root, "Unable to update academic year.")}
+        <p
+          className={FORM_DIALOG_ROOT_ERROR_CLASS}
+          role="alert"
+          aria-live="polite"
+        >
+          {errors.root.message}
         </p>
       )}
       <div

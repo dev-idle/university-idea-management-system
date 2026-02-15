@@ -46,9 +46,9 @@ export const MANAGEMENT_CARD_HEADER_CLASS =
 /** Management card wrapper (table card). Uses shared CARD_CLASS. */
 export const MANAGEMENT_CARD_CLASS = `overflow-hidden ${CARD_CLASS} py-0`;
 
-/** Unified card — refined, academic. */
+/** Unified card — refined, academic. Uses --shadow-card-subtle from globals.css. */
 export const UNIFIED_CARD_CLASS =
-  "overflow-hidden rounded-xl border border-border/60 bg-background shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-shadow duration-200";
+  "overflow-hidden rounded-xl border border-border/60 bg-background shadow-[var(--shadow-card-subtle)] transition-shadow duration-200";
 
 /** Unified card toolbar — minimal, refined. */
 export const UNIFIED_CARD_TOOLBAR_CLASS =
@@ -65,6 +65,10 @@ export const DIALOG_OVERLAY_SCULPTED_CLASS =
 /** Sculpted modal panel (elegant, academic). */
 export const DIALOG_CONTENT_SCULPTED_CLASS =
   "flex flex-col gap-6 max-h-[90vh] overflow-y-auto rounded-2xl border border-border/80 bg-background p-6 shadow-xl sm:max-w-lg";
+
+/** Sculpted modal panel (wider, e.g. submission cycle form). */
+export const DIALOG_CONTENT_SCULPTED_CLASS_LG =
+  "flex flex-col gap-6 max-h-[90vh] overflow-y-auto rounded-2xl border border-border/80 bg-background p-6 shadow-xl sm:max-w-2xl";
 
 /** Dialog content (standard width). */
 export const DIALOG_CONTENT_CLASS =
@@ -111,6 +115,9 @@ export const TABLE_ACTIONS_MIN_W_2 = "min-w-[5.5rem]";
 
 /** Min-width for Actions column (3 icon buttons). */
 export const TABLE_ACTIONS_MIN_W_3 = "min-w-[6rem]";
+
+/** Min-width for Actions column (4 icon buttons, e.g. Edit + Activate + Lock + Delete). */
+export const TABLE_ACTIONS_MIN_W_4 = "min-w-[7.5rem]";
 
 /** Actions column cell (padding + right align). */
 export const TABLE_ACTIONS_CELL_CLASS = "px-6 py-4 text-right";
@@ -160,9 +167,9 @@ export const TABLE_EMPTY_CELL_CLASS =
 
 // ─── Dashboard & Profile (aligned with Academic Years) ────────────────────
 
-/** Dashboard stat card — refined, primary top accent. */
+/** Dashboard stat card — refined, primary top accent. Uses --shadow-card-subtle from globals.css. */
 export const DASHBOARD_STAT_CARD_CLASS =
-  "overflow-hidden rounded-xl border border-border/60 bg-background shadow-[0_1px_3px_rgba(0,0,0,0.04)] border-t-[1px] border-t-primary/20 px-6 py-4";
+  "overflow-hidden rounded-xl border border-border/60 bg-background shadow-[var(--shadow-card-subtle)] border-t-[1px] border-t-primary/20 px-6 py-4";
 
 /** Dashboard/Profile module or content card — matches UNIFIED_CARD. */
 export const DASHBOARD_CARD_CLASS = UNIFIED_CARD_CLASS;
@@ -411,9 +418,13 @@ export const ACTION_BUTTON_EDIT_CLASS =
 export const ACTION_BUTTON_DESTRUCTIVE_CLASS =
   `${ACTION_BTN_BASE} cursor-pointer text-destructive/70 hover:bg-destructive/5 hover:text-destructive`;
 
-/** Success/activate action. */
+/** Warning/deactivate action (reversible, uses predefined warning color). */
+export const ACTION_BUTTON_WARNING_CLASS =
+  `${ACTION_BTN_BASE} cursor-pointer text-warning/70 hover:bg-warning/5 hover:text-warning`;
+
+/** Success/activate action (uses predefined success color). */
 export const ACTION_BUTTON_SUCCESS_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-muted-foreground hover:bg-primary/5 hover:text-primary`;
+  `${ACTION_BTN_BASE} cursor-pointer text-success/70 hover:bg-success/5 hover:text-success`;
 
 /** Muted action (close, archive). */
 export const ACTION_BUTTON_MUTED_CLASS =
@@ -429,7 +440,12 @@ export const STATUS_BADGE_ACTIVE_CLASS =
   "inline-flex rounded-full border border-success/25 bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success";
 export const STATUS_BADGE_INACTIVE_CLASS =
   "inline-flex rounded-full border border-border/60 bg-muted/20 px-2.5 py-0.5 text-xs font-medium text-muted-foreground";
-export const STATUS_BADGE_CLOSED_CLASS = STATUS_BADGE_WARNING_CLASS;
+/** Active (warm): idea deadline passed, votes/comments still open. */
+export const STATUS_BADGE_ACTIVE_WARM_CLASS =
+  "inline-flex rounded-full border border-warning/30 bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning";
+/** Cycle ended with ideas (destructive/red). */
+export const STATUS_BADGE_CLOSED_CLASS =
+  "inline-flex rounded-full border border-destructive/25 bg-destructive/10 px-2.5 py-0.5 text-xs font-medium text-destructive";
 
 /** AlertDialog error message — subtle. */
 export const ALERT_DIALOG_ERROR_CLASS =

@@ -417,3 +417,176 @@ function DatePicker({
 }
 
 export { DatePicker, formatDateForInput, parseInputDate, formatDisplayDate }
+
+// ─── DateTimePicker (datetime-local format, Calendar UI + time) ─────────────────
+
+function parseDatetimeLocal(str: string): { date: Date; time: string } | null {
+  if (!str || !str.trim()) return null
+  const d = new Date(str)
+  if (isNaN(d.getTime())) return null
+  const h = d.getHours()
+  const m = d.getMinutes()
+  const time = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+  return { date: d, time }
+}
+
+function toDatetimeLocal(date: Date, time: string): string {
+  const [h = 0, m = 0] = time.split(":").map(Number)
+  const d = new Date(date)
+  d.setHours(h, m, 0, 0)
+  return `${format(d, "yyyy-MM-dd")}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+}
+
+/** Display format: "MMM dd, yyyy, HH:mm" */
+function formatDisplayDatetime(date: Date, time: string): string {
+  const [h = 0, m = 0] = time.split(":").map(Number)
+  return `${format(date, "MMM dd, yyyy")} ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
+}
+
+export interface DateTimePickerProps {
+  value?: string
+  onChange?: (value: string) => void
+  placeholder?: string
+  disabled?: boolean
+  id?: string
+  "aria-invalid"?: boolean
+  "aria-describedby"?: string
+  className?: string
+}
+
+function DateTimePicker({
+  value,
+  onChange,
+  placeholder = "Pick date and time",
+  disabled = false,
+  id,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
+  className,
+}: DateTimePickerProps) {
+  const parsed = parseDatetimeLocal(value ?? "")
+  const [open, setOpen] = React.useState(false)
+  const [tempDate, setTempDate] = React.useState<Date | undefined>(parsed?.date)
+  const [tempTime, setTempTime] = React.useState(parsed?.time ?? "23:59")
+  const [month, setMonthState] = React.useState<Date | undefined>(() =>
+    parsed?.date ?? new Date()
+  )
+  const [viewMode, setViewMode] = React.useState<ViewMode>("days")
+
+  React.useEffect(() => {
+    const p = parseDatetimeLocal(value ?? "")
+    if (p) {
+      setTempDate(p.date)
+      setTempTime(p.time)
+    }
+  }, [value, open])
+
+  const displayValue =
+    tempDate && tempTime
+      ? formatDisplayDatetime(tempDate, tempTime)
+      : ""
+
+  const handleOpenChange = (o: boolean) => {
+    setOpen(o)
+    if (!o) {
+      setViewMode("days")
+      if (tempDate && tempTime && onChange) {
+        onChange(toDatetimeLocal(tempDate, tempTime))
+      }
+    }
+  }
+
+  const handleSelect = (d: Date | undefined) => {
+    if (d) setTempDate(d)
+  }
+
+  return (
+    <DatePickerViewContext.Provider value={{ viewMode, setViewMode }}>
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            aria-invalid={ariaInvalid}
+            aria-describedby={ariaDescribedBy}
+            disabled={disabled}
+            id={id}
+            className={cn(
+              "h-10 w-full cursor-pointer justify-between rounded-lg border border-border bg-transparent text-left font-normal text-foreground transition-colors hover:border-primary/30 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10 [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center [&>span]:gap-2",
+              !displayValue && "text-muted-foreground",
+              className
+            )}
+          >
+            <span className="flex-1 truncate">
+              {displayValue || placeholder}
+            </span>
+            <CalendarIcon
+              className="text-muted-foreground size-4 shrink-0"
+              aria-hidden
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-auto overflow-hidden rounded-xl border border-border p-0 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.04)]"
+          align="start"
+          sideOffset={6}
+        >
+          <div
+            data-slot="datetime-picker-container"
+            className="flex min-h-0 flex-col overflow-hidden rounded-xl border-0 bg-popover"
+          >
+            <div className="flex min-h-[16rem] min-w-[15rem] flex-col overflow-hidden">
+              <Calendar
+                mode="single"
+                selected={tempDate}
+                onSelect={handleSelect}
+                month={month}
+                onMonthChange={setMonthState}
+                initialFocus
+                hideNavigation
+                classNames={{
+                  root: "min-h-full min-w-full [--cell-size:2rem]",
+                  months: "flex min-h-full flex-col",
+                  month: "flex min-h-full flex-col gap-0 px-3 pb-3 pt-1",
+                  month_grid: "transition-opacity duration-150",
+                  table: "w-full border-collapse table-fixed",
+                  weekdays: "flex border-b border-border/60 pb-1.5 mb-0.5",
+                  weekday:
+                    "text-muted-foreground flex flex-1 items-center justify-center py-1 text-[11px] font-medium uppercase tracking-wider tabular-nums",
+                  week: "flex w-full",
+                  day: "relative p-0.5 text-center [&_button]:mx-auto",
+                  outside: "text-muted-foreground/50",
+                  disabled: "text-muted-foreground/40 opacity-50",
+                  hidden: "invisible",
+                }}
+                components={{
+                  DayButton: DatePickerDayButton,
+                  MonthCaption: DatePickerMonthCaption,
+                  Month: DatePickerMonthWrapper,
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-2 border-t border-border/60 px-3 pb-3 pt-2">
+              <label
+                htmlFor="datetime-picker-time"
+                className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground"
+              >
+                Time
+              </label>
+              <input
+                id="datetime-picker-time"
+                type="time"
+                value={tempTime}
+                onChange={(e) => setTempTime(e.target.value)}
+                className="h-9 flex-1 min-w-0 rounded-lg border border-border bg-transparent px-3 py-2 text-sm text-foreground transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/10"
+              />
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </DatePickerViewContext.Provider>
+  )
+}
+
+export { DateTimePicker }

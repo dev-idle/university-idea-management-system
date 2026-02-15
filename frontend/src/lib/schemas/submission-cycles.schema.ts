@@ -26,7 +26,7 @@ export const createCycleBodySchema = z
       return interaction > data.ideaSubmissionClosesAt;
     },
     {
-      message: "Comments & votes close must be after idea submission closure",
+      message: "Comments and votes must close after idea closure",
       path: ["interactionClosesAt"],
     }
   );
@@ -40,19 +40,12 @@ export const createCycleFormSchema = z
     name: z.string().min(1, "Name is required").max(255),
     categoryIds: z.array(z.string().uuid()).min(1, "At least one category is required"),
     ideaSubmissionClosesAt: z.string().min(1, "Idea submission closure is required"),
-    interactionClosesAt: z.string().optional(),
+    interactionClosesAt: z.string().min(1, "Comments and votes closure is required"),
   })
   .refine(
-    (data) => {
-      const ideaClose = new Date(data.ideaSubmissionClosesAt);
-      const interaction =
-        data.interactionClosesAt
-          ? new Date(data.interactionClosesAt)
-          : new Date(ideaClose.getTime() + DEFAULT_INTERACTION_DAYS * 24 * 60 * 60 * 1000);
-      return interaction > ideaClose;
-    },
+    (data) => new Date(data.interactionClosesAt) > new Date(data.ideaSubmissionClosesAt),
     {
-      message: "Comments & votes close must be after idea submission closure",
+      message: "Comments and votes must close after idea closure",
       path: ["interactionClosesAt"],
     }
   );
@@ -72,18 +65,28 @@ export const updateCycleBodySchema = z
       return data.interactionClosesAt > data.ideaSubmissionClosesAt;
     },
     {
-      message: "Comments & votes close must be after idea submission closure",
+      message: "Comments and votes must close after idea closure",
       path: ["interactionClosesAt"],
     }
   );
 
 export type UpdateCycleBody = z.infer<typeof updateCycleBodySchema>;
 
-/** Form schema for edit cycle: name and categoryIds required. */
-export const updateCycleFormSchema = updateCycleBodySchema.safeExtend({
-  name: z.string().min(1, "Name is required").max(255).transform((s) => s.trim()),
-  categoryIds: z.array(z.string().uuid()).min(1, "At least one category is required"),
-});
+/** Form schema for edit cycle: datetime as strings (DateTimePicker). */
+export const updateCycleFormSchema = z
+  .object({
+    name: z.string().min(1, "Name is required").max(255).transform((s) => s.trim()),
+    categoryIds: z.array(z.string().uuid()).min(1, "At least one category is required"),
+    ideaSubmissionClosesAt: z.string().min(1),
+    interactionClosesAt: z.string().min(1),
+  })
+  .refine(
+    (data) => new Date(data.interactionClosesAt) > new Date(data.ideaSubmissionClosesAt),
+    {
+      message: "Comments and votes must close after idea closure",
+      path: ["interactionClosesAt"],
+    }
+  );
 export type UpdateCycleFormValues = z.infer<typeof updateCycleFormSchema>;
 
 const academicYearRefSchema = z.object({
@@ -106,8 +109,11 @@ export const submissionCycleSchema = z.object({
   ideaSubmissionClosesAt: z.coerce.date(),
   interactionClosesAt: z.coerce.date(),
   status: z.enum(CYCLE_STATUS),
+  isLocked: z.boolean().optional(),
+  wasEverClosed: z.boolean().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  _count: z.object({ ideas: z.number().int().min(0) }).optional(),
   academicYear: academicYearRefSchema,
   categories: z.array(categoryRefSchema),
 });

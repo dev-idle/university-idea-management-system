@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { CreateDepartmentBody } from "@/lib/schemas/departments.schema";
 import { createDepartmentBodySchema } from "@/lib/schemas/departments.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   FORM_LABEL_CLASS,
   FORM_ACTIONS_CLASS,
@@ -54,7 +54,7 @@ export function CreateDepartmentForm({
       await mutateAsync(data);
       onSuccess();
     } catch (e) {
-      const message = getErrorMessage(e, "Unable to create department.");
+      const message = getErrorMessage(e, ERROR_FALLBACK_FORM.createDepartment);
       const lower = message.toLowerCase().replace(/\s+/g, " ");
       if (
         (lower.includes("department") && lower.includes("name")) ||

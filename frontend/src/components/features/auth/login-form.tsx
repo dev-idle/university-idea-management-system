@@ -16,11 +16,10 @@ import {
   FORM_DIALOG_FIELD_WRAPPER_CLASS,
   FORM_FIELD_ERROR_CLASS,
 } from "@/components/features/admin/constants";
+import { ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const GENERIC_ERROR = "Invalid email or password.";
 
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
@@ -70,13 +69,13 @@ export function LoginForm() {
       const roles = user?.roles ?? [];
       const entry = getEntryRouteForRoles(roles);
       if (entry === ROUTES.LOGIN) {
-        setError("root", { message: GENERIC_ERROR });
+        setError("root", { message: ERROR_FALLBACK_FORM.loginInvalid });
         return;
       }
       router.replace(entry);
       return;
     }
-    setError("root", { message: GENERIC_ERROR });
+    setError("root", { message: ERROR_FALLBACK_FORM.loginInvalid });
   }
 
   return (

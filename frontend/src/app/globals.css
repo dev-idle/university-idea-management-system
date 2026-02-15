@@ -72,6 +72,8 @@
   --overlay: oklch(0 0 0 / 0.5);
   --overlay-modal: oklch(0 0 0 / 0.45);
   --shadow-card: 0 4px 24px oklch(0 0 0 / 0.06);
+  --shadow-card-subtle: 0 1px 3px oklch(0 0 0 / 0.04);
+  --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.06);
   --header-elevation: 0 1px 3px oklch(0 0 0 / 0.03);
 
   /* --- Login (Special) --- */
@@ -139,6 +141,8 @@
   --overlay: oklch(0 0 0 / 0.5);
   --overlay-modal: oklch(0 0 0 / 0.45);
   --shadow-card: 0 4px 24px oklch(0 0 0 / 0.25);
+  --shadow-card-subtle: 0 1px 3px oklch(0 0 0 / 0.08);
+  --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.12);
   --header-elevation: 0 1px 3px oklch(0 0 0 / 0.15);
 
   --login-grid-line: oklch(0.92 0.01 280 / 0.045);

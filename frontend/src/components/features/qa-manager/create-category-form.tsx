@@ -4,8 +4,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { CreateCategoryBody } from "@/lib/schemas/categories.schema";
 import { createCategoryBodySchema } from "@/lib/schemas/categories.schema";
-import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS, FORM_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS, FORM_CARD_INPUT_CLASS, FORM_DIALOG_LABEL_CLASS } from "@/components/features/admin/constants";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
+import {
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
+  FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_CARD_INPUT_CLASS,
+} from "@/components/features/admin/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,20 +56,20 @@ export function CreateCategoryForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Unable to create category."),
+        message: getErrorMessage(e, ERROR_FALLBACK_FORM.createCategory),
       });
     }
   }
 
-  const labelClass = FORM_DIALOG_LABEL_CLASS;
+  const isDialog = variant === "dialog";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className={
-        variant === "dialog"
-          ? "space-y-6"
-          : "space-y-6 rounded-xl border border-border/90 bg-card px-6 py-6 shadow-sm"
+        isDialog
+          ? FORM_DIALOG_FORM_CLASS
+          : "space-y-6 rounded-xl border border-border/80 bg-card px-6 py-6 shadow-sm"
       }
     >
       {variant === "default" && (
@@ -70,8 +82,8 @@ export function CreateCategoryForm({
           </p>
         </div>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="name" className={labelClass}>
+      <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "space-y-2"}>
+        <Label htmlFor="name" className={FORM_DIALOG_LABEL_CLASS}>
           Name
         </Label>
         <Input
@@ -79,34 +91,28 @@ export function CreateCategoryForm({
           type="text"
           autoComplete="off"
           placeholder="e.g. Teaching & Learning"
-          className={FORM_CARD_INPUT_CLASS}
+          className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "name-error" : undefined}
           {...register("name")}
         />
         {errors.name && (
-          <p id="name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+          <p id="name-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.name.message}
           </p>
         )}
       </div>
       {(errors.root ?? error) && (
         <p
-          className={FORM_ERROR_BLOCK_CLASS}
+          className={FORM_DIALOG_ROOT_ERROR_CLASS}
           role="alert"
           aria-live="polite"
         >
-          {errors.root?.message ?? error?.message}
+          {errors.root?.message ??
+            getErrorMessage(error, ERROR_FALLBACK_FORM.createCategory)}
         </p>
       )}
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className={FORM_BUTTON_CLASS}
-        >
-          {isPending ? "Adding…" : "Add"}
-        </Button>
+      <div className={isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
@@ -115,6 +121,13 @@ export function CreateCategoryForm({
           className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Adding…" : "Add"}
         </Button>
       </div>
     </form>

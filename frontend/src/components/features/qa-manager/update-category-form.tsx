@@ -7,8 +7,20 @@ import type {
   UpdateCategoryBody,
 } from "@/lib/schemas/categories.schema";
 import { updateCategoryBodySchema } from "@/lib/schemas/categories.schema";
-import { getErrorMessage } from "@/lib/errors";
-import { FORM_ERROR_BLOCK_CLASS, FORM_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS, FORM_CARD_INPUT_CLASS, FORM_DIALOG_LABEL_CLASS } from "@/components/features/admin/constants";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
+import {
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
+  FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+  FORM_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_CARD_INPUT_CLASS,
+} from "@/components/features/admin/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,24 +65,24 @@ export function UpdateCategoryForm({
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Unable to update category."),
+        message: getErrorMessage(e, ERROR_FALLBACK_FORM.updateCategory),
       });
     }
   }
 
-  const labelClass = FORM_DIALOG_LABEL_CLASS;
+  const isDialog = variant === "dialog";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className={
-        variant === "dialog"
-          ? "space-y-6"
-          : "flex flex-wrap items-end gap-6 rounded-xl border border-border/90 bg-card p-6 shadow-sm"
+        isDialog
+          ? FORM_DIALOG_FORM_CLASS
+          : "flex flex-wrap items-end gap-6 rounded-xl border border-border/80 bg-card p-6 shadow-sm"
       }
     >
-      <div className={variant === "dialog" ? "space-y-2" : "min-w-[200px] flex-1 space-y-2"}>
-        <Label htmlFor="edit-name" className={labelClass}>
+      <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-[200px] flex-1 space-y-2"}>
+        <Label htmlFor="edit-name" className={FORM_DIALOG_LABEL_CLASS}>
           Name
         </Label>
         <Input
@@ -78,34 +90,28 @@ export function UpdateCategoryForm({
           type="text"
           autoComplete="off"
           placeholder="Category name"
-          className={FORM_CARD_INPUT_CLASS}
+          className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "edit-name-error" : undefined}
           {...register("name")}
         />
         {errors.name && (
-          <p id="edit-name-error" className="mt-1.5 text-sm text-destructive" role="alert">
+          <p id="edit-name-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.name.message}
           </p>
         )}
       </div>
       {(errors.root ?? error) && (
         <p
-          className={FORM_ERROR_BLOCK_CLASS}
+          className={FORM_DIALOG_ROOT_ERROR_CLASS}
           role="alert"
           aria-live="polite"
         >
-          {errors.root?.message ?? error?.message}
+          {errors.root?.message ??
+            getErrorMessage(error, ERROR_FALLBACK_FORM.updateCategory)}
         </p>
       )}
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button
-          type="submit"
-          disabled={isPending}
-          className={FORM_BUTTON_CLASS}
-        >
-          {isPending ? "Saving…" : "Save"}
-        </Button>
+      <div className={isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
@@ -114,6 +120,13 @@ export function UpdateCategoryForm({
           className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isPending}
+          className={FORM_BUTTON_CLASS}
+        >
+          {isPending ? "Saving…" : "Save"}
         </Button>
       </div>
     </form>

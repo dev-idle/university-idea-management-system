@@ -7,7 +7,7 @@ import type {
   CreateAcademicYearFormValues,
 } from "@/lib/schemas/academic-years.schema";
 import { createAcademicYearFormSchema } from "@/lib/schemas/academic-years.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   FORM_ACTIONS_DIALOG_CLASS,
   FORM_ACTIONS_CLASS,
@@ -17,6 +17,7 @@ import {
   FORM_DIALOG_INPUT_CLASS,
   FORM_DIALOG_FORM_CLASS,
   FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
   FORM_FIELD_ERROR_CLASS,
   FORM_CARD_INPUT_CLASS,
 } from "./constants";
@@ -62,7 +63,7 @@ export function CreateAcademicYearForm({
     if (data.startDate && new Date(data.endDate) < new Date(data.startDate)) {
       setError("endDate", {
         type: "manual",
-        message: "End date must be on or after start date.",
+        message: "End date must be on or after start date",
       });
       return;
     }
@@ -75,7 +76,7 @@ export function CreateAcademicYearForm({
       await mutateAsync(body);
       onSuccess();
     } catch (e) {
-      const message = getErrorMessage(e, "Unable to create academic year.");
+      const message = getErrorMessage(e, ERROR_FALLBACK_FORM.createAcademicYear);
       const lower = message.toLowerCase();
       const isDuplicateName =
         (lower.includes("already exists") &&
@@ -84,6 +85,8 @@ export function CreateAcademicYearForm({
         lower.includes("duplicated");
       if (isDuplicateName) {
         setError("name", { type: "server", message });
+      } else {
+        setError("root", { type: "server", message });
       }
     }
   }
@@ -187,6 +190,15 @@ export function CreateAcademicYearForm({
           )}
         </div>
       </div>
+      {errors.root && (
+        <p
+          className={FORM_DIALOG_ROOT_ERROR_CLASS}
+          role="alert"
+          aria-live="polite"
+        >
+          {errors.root.message}
+        </p>
+      )}
       <div
         className={
           variant === "dialog" ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS

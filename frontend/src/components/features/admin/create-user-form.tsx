@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import type { CreateUserBody } from "@/lib/schemas/users.schema";
 import { createUserBodySchema } from "@/lib/schemas/users.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   FORM_ACTIONS_CLASS,
   FORM_ACTIONS_DIALOG_CLASS,
@@ -19,6 +19,7 @@ import {
   FORM_CARD_INPUT_CLASS,
   FORM_CARD_SELECT_TRIGGER_CLASS,
   FORM_DIALOG_HINT_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
   FORM_HINT_CLASS,
   FORM_FIELD_ERROR_CLASS,
   QA_COORDINATOR_CONFLICT_MESSAGE,
@@ -91,7 +92,7 @@ export function CreateUserForm({
       await mutateAsync(payload);
       onSuccess();
     } catch (e) {
-      const message = getErrorMessage(e, "Unable to create user.");
+      const message = getErrorMessage(e, ERROR_FALLBACK_FORM.createUser);
       const lower = message.toLowerCase().replace(/\s+/g, " ");
       if (
         (lower.includes("qa coordinator") && lower.includes("department")) ||
@@ -108,7 +109,7 @@ export function CreateUserForm({
       } else if (lower.includes("role") && lower.includes("not found")) {
         setError("role", { type: "server", message });
       } else {
-        setError("email", { type: "server", message });
+        setError("root", { type: "server", message });
       }
     }
   }
@@ -295,6 +296,17 @@ export function CreateUserForm({
           )}
         </div>
       </div>
+
+      {(errors.root ?? error) && (
+        <p
+          className={FORM_DIALOG_ROOT_ERROR_CLASS}
+          role="alert"
+          aria-live="polite"
+        >
+          {errors.root?.message ??
+            getErrorMessage(error, ERROR_FALLBACK_FORM.createUser)}
+        </p>
+      )}
 
       <div className={formActionsClass}>
         <Button

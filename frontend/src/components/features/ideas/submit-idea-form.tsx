@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { CreateIdeaBody, IdeasContext } from "@/lib/schemas/ideas.schema";
 import { createIdeaBodySchema } from "@/lib/schemas/ideas.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { useUploadParamsQuery, uploadFileViaBackend, type IdeaAttachmentRef } from "@/hooks/use-ideas";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
@@ -68,7 +68,7 @@ function AttachmentRow({
       window.open(url, "_blank", "noopener,noreferrer");
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e) {
-      setViewError(e instanceof Error ? e.message : "Unable to open file.");
+      setViewError(e instanceof Error ? e.message : ERROR_FALLBACK_FORM.openFile);
     } finally {
       setViewLoading(false);
     }
@@ -220,7 +220,7 @@ export function SubmitIdeaForm({
       const msg =
         err instanceof Error
           ? err.message
-          : "Upload failed.";
+          : ERROR_FALLBACK_FORM.upload;
       setUploadError(
         msg === "Failed to fetch"
           ? "Could not reach the server. Check that the backend is running and NEXT_PUBLIC_API_BASE is correct."
@@ -252,7 +252,7 @@ export function SubmitIdeaForm({
       await mutateAsync(body);
       onSuccess();
     } catch (err) {
-      const message = getErrorMessage(err, "Submission could not be completed.");
+      const message = getErrorMessage(err, ERROR_FALLBACK_FORM.submitIdea);
       const isDuplicateTitle =
         message.toLowerCase().includes("already exists") &&
         message.toLowerCase().includes("title");
@@ -572,7 +572,7 @@ export function SubmitIdeaForm({
           className="rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90"
           role="alert"
         >
-          {getErrorMessage(error ?? errors.root?.message, "Submission could not be completed.")}
+          {getErrorMessage(error ?? errors.root?.message, ERROR_FALLBACK_FORM.submitIdea)}
         </div>
       )}
 

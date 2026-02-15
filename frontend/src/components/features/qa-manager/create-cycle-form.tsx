@@ -7,10 +7,11 @@ import type {
   CreateCycleFormValues,
 } from "@/lib/schemas/submission-cycles.schema";
 import { createCycleFormSchema } from "@/lib/schemas/submission-cycles.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateTimePicker } from "@/components/ui/date-picker";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -22,7 +23,15 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   FORM_LABEL_CLASS,
-  FORM_ERROR_BLOCK_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_SELECT_TRIGGER_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
+  FORM_ACTIONS_CLASS,
+  FORM_ACTIONS_DIALOG_CLASS,
+  FORM_FIELD_ERROR_CLASS,
   FORM_BUTTON_CLASS,
   FORM_OUTLINE_BUTTON_CLASS,
   FORM_CARD_INPUT_CLASS,
@@ -32,14 +41,13 @@ import {
 import { useSubmissionCycleAcademicYearsQuery } from "@/hooks/use-submission-cycles";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 
-function toDatetimeLocal(d: Date): string {
+function toDatetimeLocal(d: Date, time = "23:59"): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   const y = d.getFullYear();
   const m = pad(d.getMonth() + 1);
   const day = pad(d.getDate());
-  const h = pad(d.getHours());
-  const min = pad(d.getMinutes());
-  return `${y}-${m}-${day}T${h}:${min}`;
+  const [h, min] = time.split(":").map(Number);
+  return `${y}-${m}-${day}T${pad(h ?? 23)}:${pad(min ?? 59)}`;
 }
 
 interface CreateCycleFormProps {
@@ -82,47 +90,46 @@ export function CreateCycleForm({
   });
 
   const ideaSubmissionClosesAt = watch("ideaSubmissionClosesAt");
-  const interactionClosesAt = watch("interactionClosesAt");
 
   function setInteractionDefault() {
     if (!ideaSubmissionClosesAt) return;
     const d = new Date(ideaSubmissionClosesAt);
     d.setDate(d.getDate() + 14);
-    setValue("interactionClosesAt", toDatetimeLocal(d), { shouldValidate: true });
+    const timePart = ideaSubmissionClosesAt.split("T")[1]?.slice(0, 5);
+    const time = timePart ?? "23:59";
+    setValue("interactionClosesAt", toDatetimeLocal(d, time), { shouldValidate: true });
   }
 
   async function onSubmit(data: CreateCycleFormValues) {
     try {
-      const ideaSubmissionClosesAt = new Date(data.ideaSubmissionClosesAt);
-      const interactionClosesAt = data.interactionClosesAt
-        ? new Date(data.interactionClosesAt)
-        : (() => {
-            const d = new Date(ideaSubmissionClosesAt);
-            d.setDate(d.getDate() + 14);
-            return d;
-          })();
       const body: CreateCycleBody = {
         academicYearId: data.academicYearId,
         name: data.name.trim(),
         categoryIds: data.categoryIds,
-        ideaSubmissionClosesAt,
-        interactionClosesAt,
+        ideaSubmissionClosesAt: new Date(data.ideaSubmissionClosesAt),
+        interactionClosesAt: new Date(data.interactionClosesAt),
       };
       await mutateAsync(body);
       onSuccess();
     } catch (e) {
       setError("root", {
-        message: getErrorMessage(e, "Unable to create submission cycle."),
+        message: getErrorMessage(e, ERROR_FALLBACK_FORM.createCycle),
       });
     }
   }
+
+  const isDialog = variant === "dialog";
+  const labelClass = isDialog ? FORM_DIALOG_LABEL_CLASS : FORM_LABEL_CLASS;
+  const inputClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
+  const triggerClass = isDialog ? FORM_DIALOG_SELECT_TRIGGER_CLASS : FORM_CARD_SELECT_TRIGGER_CLASS;
+  const fieldWrapper = isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "space-y-2";
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className={
-        variant === "dialog"
-          ? "flex flex-col gap-6"
+        isDialog
+          ? FORM_DIALOG_FORM_CLASS
           : "flex flex-col gap-6 rounded-xl border border-border/80 bg-card px-6 py-6 shadow-sm"
       }
     >
@@ -132,20 +139,20 @@ export function CreateCycleForm({
             Add submission cycle
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Create a new idea submission cycle (DRAFT). Each cycle is linked to an academic year and defines closure times for ideas, comments, and votes. Name is required and unique; select at least one category. Only one cycle can be ACTIVE at a time.
+            Create a new submission cycle (DRAFT). Linked to an academic year; define closure times.
           </p>
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label className={FORM_LABEL_CLASS}>Academic year</Label>
+      <div className={fieldWrapper}>
+        <Label className={labelClass}>Academic year</Label>
         <Controller
           name="academicYearId"
           control={control}
           rules={{ required: "Academic year is required" }}
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || undefined}>
-              <SelectTrigger className={FORM_CARD_SELECT_TRIGGER_CLASS}>
+              <SelectTrigger className={triggerClass}>
                 <SelectValue placeholder="Select academic year" />
               </SelectTrigger>
               <SelectContent>
@@ -159,110 +166,127 @@ export function CreateCycleForm({
           )}
         />
         {errors.academicYearId && (
-          <p className="mt-1.5 text-sm text-destructive" role="alert">
+          <p className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.academicYearId.message}
           </p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="cycle-name" className={FORM_LABEL_CLASS}>
-          Name (required)
+      <div className={fieldWrapper}>
+        <Label htmlFor="cycle-name" className={labelClass}>
+          Name
         </Label>
         <Input
           id="cycle-name"
           type="text"
-          placeholder="Summer 2026"
-          className={FORM_CARD_INPUT_CLASS}
+          placeholder="e.g. Summer 2026"
+          className={inputClass}
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "cycle-name-error" : undefined}
           {...register("name")}
         />
-        <p className="text-xs text-muted-foreground">
-          Name is mandatory and cannot be duplicated.
-        </p>
         {errors.name && (
-          <p className="text-sm text-destructive" role="alert">
+          <p id="cycle-name-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.name.message}
           </p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label className={FORM_LABEL_CLASS}>Categories (at least one)</Label>
-        <ScrollArea className="h-40 overflow-hidden rounded-lg border border-input px-3 py-2">
-          <div className="flex flex-col gap-2 pt-0.5 pb-2 pr-1">
-            {categories.map((c) => (
-              <label
-                key={c.id}
-                className="flex items-center gap-2 text-sm cursor-pointer"
-              >
-                <Checkbox
-                  className={FORM_CHECKBOX_ACADEMIC_CLASS}
-                  checked={watch("categoryIds")?.includes(c.id) ?? false}
-                  onCheckedChange={(checked) => {
-                    const ids = watch("categoryIds") ?? [];
-                    const next = checked
-                      ? [...ids, c.id]
-                      : ids.filter((id: string) => id !== c.id);
-                    setValue("categoryIds", next, { shouldValidate: true });
-                  }}
-                />
-                <span className="text-foreground">{c.name}</span>
-              </label>
-            ))}
-          </div>
-        </ScrollArea>
+      <div className={fieldWrapper}>
+        <Label className={labelClass}>Categories</Label>
+        <Controller
+          name="categoryIds"
+          control={control}
+          render={({ field }) => (
+            <ScrollArea className="h-40 overflow-hidden rounded-lg border border-input px-3 py-2">
+              <div className="flex flex-col gap-2 pt-2 pb-2 pr-1">
+                {categories.map((c) => (
+                  <label
+                    key={c.id}
+                    className="flex items-center gap-2 text-sm cursor-pointer"
+                  >
+                    <Checkbox
+                      className={FORM_CHECKBOX_ACADEMIC_CLASS}
+                      checked={field.value?.includes(c.id) ?? false}
+                      onCheckedChange={(checked) => {
+                        const ids = field.value ?? [];
+                        const next =
+                          checked === true
+                            ? [...ids, c.id]
+                            : ids.filter((id: string) => id !== c.id);
+                        field.onChange(next);
+                      }}
+                    />
+                    <span className="text-foreground">{c.name}</span>
+                  </label>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        />
         {errors.categoryIds && (
-          <p className="mt-1.5 text-sm text-destructive" role="alert">
+          <p className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.categoryIds.message}
           </p>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-start">
-        <div className="space-y-2">
-          <div className="flex min-h-[1.25rem] items-center">
-            <Label htmlFor="ideaSubmissionClosesAt" className={FORM_LABEL_CLASS}>
-              Idea submission closes
-            </Label>
-          </div>
-          <Input
-            id="ideaSubmissionClosesAt"
-            type="datetime-local"
-            className={FORM_CARD_INPUT_CLASS}
-            {...register("ideaSubmissionClosesAt", {
-              setValueAs: (v) => (v ? new Date(v) : undefined),
-            })}
+        <div className={fieldWrapper}>
+          <Label htmlFor="ideaSubmissionClosesAt" className={labelClass}>
+            Idea closes
+          </Label>
+          <Controller
+            name="ideaSubmissionClosesAt"
+            control={control}
+            rules={{ required: "Idea submission closure is required" }}
+            render={({ field }) => (
+              <DateTimePicker
+                id="ideaSubmissionClosesAt"
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Select date and time"
+                aria-invalid={!!errors.ideaSubmissionClosesAt}
+                aria-describedby={errors.ideaSubmissionClosesAt ? "ideaSubmissionClosesAt-error" : undefined}
+                className={inputClass}
+              />
+            )}
           />
           {errors.ideaSubmissionClosesAt && (
-            <p className="mt-1.5 text-sm text-destructive" role="alert">
+            <p id="ideaSubmissionClosesAt-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.ideaSubmissionClosesAt.message}
             </p>
           )}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="interactionClosesAt" className={FORM_LABEL_CLASS}>
+        <div className={fieldWrapper}>
+          <Label htmlFor="interactionClosesAt" className={labelClass}>
             Comments & votes close
           </Label>
-          <Input
-            id="interactionClosesAt"
-            type="datetime-local"
-            className={FORM_CARD_INPUT_CLASS}
-            value={interactionClosesAt ?? ""}
-            onChange={(e) => {
-              setValue("interactionClosesAt", e.target.value ?? "", {
-                shouldValidate: true,
-              });
-            }}
+          <Controller
+            name="interactionClosesAt"
+            control={control}
+            rules={{ required: "Comments and votes closure is required" }}
+            render={({ field }) => (
+              <DateTimePicker
+                id="interactionClosesAt"
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Select date and time"
+                aria-invalid={!!errors.interactionClosesAt}
+                aria-describedby={errors.interactionClosesAt ? "interactionClosesAt-error" : undefined}
+                className={inputClass}
+              />
+            )}
           />
           <button
             type="button"
             onClick={setInteractionDefault}
             className="text-xs text-primary hover:underline"
           >
-            Set to idea close + 14 days
+            +14 days from idea close
           </button>
           {errors.interactionClosesAt && (
-            <p className="mt-1.5 text-sm text-destructive" role="alert">
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.interactionClosesAt.message}
             </p>
           )}
@@ -271,19 +295,16 @@ export function CreateCycleForm({
 
       {(errors.root ?? error) && (
         <p
-          className={FORM_ERROR_BLOCK_CLASS}
+          className={FORM_DIALOG_ROOT_ERROR_CLASS}
           role="alert"
           aria-live="polite"
         >
           {errors.root?.message ??
-            getErrorMessage(error, "Unable to create submission cycle.")}
+            getErrorMessage(error, ERROR_FALLBACK_FORM.createCycle)}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-3 border-t border-border/80 pt-6">
-        <Button type="submit" disabled={isPending} className={FORM_BUTTON_CLASS}>
-          {isPending ? "Adding…" : "Add"}
-        </Button>
+      <div className={isDialog ? FORM_ACTIONS_DIALOG_CLASS : FORM_ACTIONS_CLASS}>
         <Button
           type="button"
           variant="outline"
@@ -292,6 +313,9 @@ export function CreateCycleForm({
           className={FORM_OUTLINE_BUTTON_CLASS}
         >
           Cancel
+        </Button>
+        <Button type="submit" disabled={isPending} className={FORM_BUTTON_CLASS}>
+          {isPending ? "Adding…" : "Add"}
         </Button>
       </div>
     </form>

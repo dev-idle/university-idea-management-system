@@ -18,7 +18,7 @@ import {
 import type { UpdateIdeaBody } from "@/lib/schemas/ideas.schema";
 import { updateIdeaBodySchema } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
@@ -102,7 +102,7 @@ function AttachmentRow({
       window.open(url, "_blank", "noopener,noreferrer");
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e) {
-      setViewError(e instanceof Error ? e.message : "Unable to open file.");
+      setViewError(e instanceof Error ? e.message : ERROR_FALLBACK_FORM.openFile);
     } finally {
       setViewLoading(false);
     }
@@ -273,7 +273,7 @@ export default function EditIdeaPage() {
       await updateMutation.mutateAsync({ id: id!, body: data });
       router.push(ROUTES.MY_IDEAS);
     } catch (err) {
-      const message = getErrorMessage(err, "Update could not be completed.");
+      const message = getErrorMessage(err, ERROR_FALLBACK_FORM.updateIdea);
       const isDuplicateTitle =
         message.toLowerCase().includes("already exists") &&
         message.toLowerCase().includes("title");
@@ -310,11 +310,11 @@ export default function EditIdeaPage() {
       }
     } catch (err) {
       const msg =
-        err instanceof Error ? err.message : "Upload failed.";
+        err instanceof Error ? err.message : ERROR_FALLBACK_FORM.upload;
       setUploadError(
         msg === "Failed to fetch"
           ? "Could not reach the server."
-          : getErrorMessage(err, "Upload failed."),
+          : getErrorMessage(err, ERROR_FALLBACK_FORM.upload),
       );
     } finally {
       setUploading(false);
@@ -603,7 +603,7 @@ export default function EditIdeaPage() {
             >
               {getErrorMessage(
                 updateMutation.error ?? errors.root?.message,
-                "Update could not be completed.",
+                ERROR_FALLBACK_FORM.updateIdea,
               )}
             </div>
           </div>

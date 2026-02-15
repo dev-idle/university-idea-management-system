@@ -43,7 +43,7 @@ import {
   FORM_ERROR_BLOCK_CLASS,
 } from "@/components/features/admin/constants";
 
-const GENERIC_ERROR = "Unable to update password.";
+import { ERROR_FALLBACK_FORM } from "@/lib/errors";
 
 export function ChangePasswordForm() {
   const [showCurrent, setShowCurrent] = useState(false);
@@ -81,7 +81,7 @@ export function ChangePasswordForm() {
       form.setValue("newPassword", "");
       form.setValue("confirmNewPassword", "");
     } catch {
-      setError("root", { message: GENERIC_ERROR });
+      setError("root", { message: ERROR_FALLBACK_FORM.updatePassword });
     }
   }
 

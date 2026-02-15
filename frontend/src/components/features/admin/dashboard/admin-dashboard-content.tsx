@@ -58,7 +58,7 @@ function AdminModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-all duration-150 hover:bg-primary/[0.04] hover:border-primary/20 hover:shadow-[0_2px_6px_rgba(0,0,0,0.04)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-150 hover:bg-primary/[0.04] hover:border-primary/20 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
       <div className={ICON_BOX_PRIMARY_CLASS}>

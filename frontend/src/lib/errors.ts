@@ -1,9 +1,45 @@
 /**
  * Normalized error handling: extract user-facing messages from API/Error.
  * Use everywhere we display errors (error boundaries, forms, toasts).
+ *
+ * Fallback style: sentence case, concise, consistent.
+ * - Operations: "Could not [verb] [object]."
+ * - Destructive actions: "Could not [verb]."
+ * - Load failures: "Could not load [resource]."
  */
 
 const API_PREFIX = "API ";
+
+/** Shared fallbacks for error boundaries and load failures. */
+export const ERROR_FALLBACK = {
+  /** When a list or resource fails to load. */
+  load: "Could not load. Please try again.",
+  /** Generic when no specific message applies. */
+  generic: "Something went wrong.",
+} as const;
+
+/** Form and action fallbacks — use with getErrorMessage(error, FALLBACK.createCategory) etc. */
+export const ERROR_FALLBACK_FORM = {
+  createCategory: "Could not create category.",
+  updateCategory: "Could not update category.",
+  createCycle: "Could not create submission cycle.",
+  updateCycle: "Could not update submission cycle.",
+  createUser: "Could not create user.",
+  updateUser: "Could not update user.",
+  createDepartment: "Could not create department.",
+  updateDepartment: "Could not update department.",
+  createAcademicYear: "Could not create academic year.",
+  updateAcademicYear: "Could not update academic year.",
+  delete: "Could not delete.",
+  deactivate: "Could not deactivate.",
+  submitIdea: "Submission could not be completed.",
+  updateIdea: "Update could not be completed.",
+  upload: "Upload failed.",
+  openFile: "Could not open file.",
+  updatePassword: "Could not update password.",
+  /** Login failed (invalid credentials or auth error). */
+  loginInvalid: "Invalid email or password.",
+} as const;
 
 /**
  * Tries to parse NestJS-style error body: { message: string } or { message: string[] }.
@@ -32,9 +68,10 @@ function parseApiMessage(jsonStr: string): string | null {
  */
 export function getErrorMessage(
   error: unknown,
-  fallback = "Something went wrong."
+  fallback?: string
 ): string {
-  if (error == null) return fallback;
+  const fb = fallback ?? ERROR_FALLBACK.generic;
+  if (error == null) return fb;
 
   let raw = "";
   if (error instanceof Error) {
@@ -42,11 +79,11 @@ export function getErrorMessage(
   } else if (typeof error === "string") {
     raw = error;
   } else {
-    return fallback;
+    return fb;
   }
 
   const trimmed = raw.trim();
-  if (!trimmed) return fallback;
+  if (!trimmed) return fb;
 
   // API client throws "API 400: {...}" or "API 401: Unauthorized"
   if (trimmed.startsWith(API_PREFIX)) {
@@ -56,11 +93,11 @@ export function getErrorMessage(
     const parsed = parseApiMessage(body);
     if (parsed) return parsed;
     // If body looks like JSON but we didn't get message, avoid showing raw JSON
-    if (body.startsWith("{")) return fallback;
+    if (body.startsWith("{")) return fb;
     if (body.length > 0 && body.length < 200) return body;
   }
 
   // Don't expose long stack traces or internal messages
-  if (trimmed.length > 300) return fallback;
+  if (trimmed.length > 300) return fb;
   return trimmed;
 }

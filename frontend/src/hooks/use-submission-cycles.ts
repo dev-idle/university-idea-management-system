@@ -104,12 +104,12 @@ export function useActivateSubmissionCycleMutation() {
   });
 }
 
-/** Close cycle (ACTIVE → CLOSED, only after vote closure). */
-export function useCloseSubmissionCycleMutation() {
+/** Deactivate cycle (ACTIVE → DRAFT). Reopens cycle for editing. */
+export function useDeactivateSubmissionCycleMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetchWithAuth<SubmissionCycle>(`submission-cycles/${id}/close`, {
+      const res = await fetchWithAuth<SubmissionCycle>(`submission-cycles/${id}/deactivate`, {
         method: "POST",
       });
       return res as SubmissionCycle;
@@ -120,12 +120,28 @@ export function useCloseSubmissionCycleMutation() {
   });
 }
 
-/** Deactivate cycle (ACTIVE → DRAFT). Reopens cycle for editing. */
-export function useDeactivateSubmissionCycleMutation() {
+/** Lock cycle (Closed only). Disables Edit and Activate. */
+export function useLockSubmissionCycleMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetchWithAuth<SubmissionCycle>(`submission-cycles/${id}/deactivate`, {
+      const res = await fetchWithAuth<SubmissionCycle>(`submission-cycles/${id}/lock`, {
+        method: "POST",
+      });
+      return res as SubmissionCycle;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
+    },
+  });
+}
+
+/** Unlock cycle. Re-enables Edit and Activate. */
+export function useUnlockSubmissionCycleMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetchWithAuth<SubmissionCycle>(`submission-cycles/${id}/unlock`, {
         method: "POST",
       });
       return res as SubmissionCycle;

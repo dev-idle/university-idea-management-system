@@ -23,7 +23,7 @@ import {
   useDeleteDepartmentMutation,
 } from "@/hooks/use-departments";
 import type { Department } from "@/lib/schemas/departments.schema";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   UNIFIED_CARD_CLASS,
   UNIFIED_CARD_TOOLBAR_CLASS,
@@ -205,7 +205,7 @@ export function DepartmentsManagement() {
               All authorization is enforced by the backend. Delete is only available when no users are assigned; reassign or remove users first if needed.
               {deleteMutation.isError && (
                 <span className={ALERT_DIALOG_ERROR_CLASS}>
-                  {getErrorMessage(deleteMutation.error, "Delete failed.")}
+                  {getErrorMessage(deleteMutation.error, ERROR_FALLBACK_FORM.delete)}
                 </span>
               )}
             </AlertDialogDescription>

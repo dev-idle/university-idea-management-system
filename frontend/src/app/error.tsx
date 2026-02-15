@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK } from "@/lib/errors";
 import { ErrorBoundaryView } from "@/components/ui/error-boundary-view";
 
 export default function Error({
@@ -18,11 +18,8 @@ export default function Error({
   return (
     <div className="grid min-h-screen place-items-center bg-background px-4 font-sans">
       <ErrorBoundaryView
-        title="Something went wrong"
-        description={getErrorMessage(
-          error,
-          "An unexpected error occurred."
-        )}
+        title={ERROR_FALLBACK.generic}
+        description={getErrorMessage(error, ERROR_FALLBACK.generic)}
         onRetry={reset}
         primaryLink={{ href: "/", label: "Go home" }}
       />

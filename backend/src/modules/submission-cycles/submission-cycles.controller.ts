@@ -94,6 +94,22 @@ export class SubmissionCyclesController {
     return this.submissionCyclesService.deactivate(params.id);
   }
 
+  @Post(':id/lock')
+  @HttpCode(HttpStatus.OK)
+  async lock(
+    @Param(new ZodValidationPipe(cycleIdParamSchema)) params: { id: string },
+  ) {
+    return this.submissionCyclesService.lock(params.id);
+  }
+
+  @Post(':id/unlock')
+  @HttpCode(HttpStatus.OK)
+  async unlock(
+    @Param(new ZodValidationPipe(cycleIdParamSchema)) params: { id: string },
+  ) {
+    return this.submissionCyclesService.unlock(params.id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
