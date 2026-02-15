@@ -129,7 +129,7 @@ function AttachmentItem({ att }: { att: Attachment }) {
         </Button>
       </div>
       {error && (
-        <p className="mt-1.5 basis-full text-[11px] text-destructive" role="alert">
+        <p className="mt-1.5 basis-full text-xs leading-relaxed text-destructive/90" role="alert">
           {error}
         </p>
       )}

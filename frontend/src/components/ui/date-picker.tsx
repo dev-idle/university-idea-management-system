@@ -357,7 +357,7 @@ function DatePicker({
             disabled={disabled}
             id={id}
             className={cn(
-              "h-10 w-full cursor-pointer justify-between rounded-lg border border-border bg-transparent text-left font-normal text-foreground transition-colors hover:border-primary/30 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 aria-[invalid=true]:border-destructive [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center [&>span]:gap-2",
+              "h-10 w-full cursor-pointer justify-between rounded-lg border border-border bg-transparent text-left font-normal text-foreground transition-colors hover:border-primary/30 focus-visible:outline-none focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10 [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center [&>span]:gap-2",
               !displayValue && "text-muted-foreground",
               className
             )}

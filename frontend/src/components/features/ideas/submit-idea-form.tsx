@@ -109,7 +109,7 @@ function AttachmentRow({
         </div>
       </div>
       {viewError ? (
-        <span className="text-xs text-destructive" role="alert">
+        <span className="text-xs leading-relaxed text-destructive/90" role="alert">
           {viewError}
         </span>
       ) : null}
@@ -316,7 +316,7 @@ export function SubmitIdeaForm({
             Select the category that best describes your proposal.
           </p>
           {errors.categoryId && (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
               {errors.categoryId.message}
             </p>
           )}
@@ -340,7 +340,7 @@ export function SubmitIdeaForm({
             Provide a clear, concise title that summarises the proposal. Titles must be unique within this submission cycle.
           </p>
           {errors.title && (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
               {errors.title.message}
             </p>
           )}
@@ -367,7 +367,7 @@ export function SubmitIdeaForm({
             Include context, recommendation, and expected benefits in a clear, constructive manner.
           </p>
           {errors.description && (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
               {errors.description.message}
             </p>
           )}
@@ -465,7 +465,7 @@ export function SubmitIdeaForm({
                 {uploading ? "Uploading…" : "Add document"}
               </Button>
               {uploadError && (
-                <p className="text-sm text-destructive" role="alert">
+                <p className="text-xs leading-relaxed text-destructive/90" role="alert">
                   {uploadError}
                 </p>
               )}
@@ -561,7 +561,7 @@ export function SubmitIdeaForm({
           </Dialog>
         </div>
         {errors.termsAccepted && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-xs leading-relaxed text-destructive/90" role="alert">
             {errors.termsAccepted.message}
           </p>
         )}
@@ -569,7 +569,7 @@ export function SubmitIdeaForm({
 
       {(error || errors.root) && (
         <div
-          className="rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-3.5 text-sm text-destructive"
+          className="rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90"
           role="alert"
         >
           {getErrorMessage(error ?? errors.root?.message, "Submission could not be completed.")}

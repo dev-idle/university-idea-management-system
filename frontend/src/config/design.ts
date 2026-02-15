@@ -1,6 +1,9 @@
 /**
  * Shared design tokens for the application (Staff + Role Managers).
- * Use for consistent, professional UI: cards, headers, spacing, typography.
+ * Use for consistent, elegant, academic UI: cards, headers, spacing, typography.
+ *
+ * Quality: Prefer design tokens over ad-hoc values. Maintain refined borders,
+ * subtle hovers, and consistent typography across all views.
  *
  * Color opacity scale (use consistently across Academic, User, Department, Profile, Dashboard):
  * - Borders: border/20 (hairline), border/40 (subtle), border/60 (medium), border/80 (strong)
@@ -63,6 +66,14 @@ export const TYPO_NAV =
 /** Label: form labels, badges, chips. */
 export const TYPO_LABEL =
   "text-xs font-medium";
+
+/** Caption extra-small: breadcrumbs, overlines, micro labels (academic). */
+export const TYPO_CAPTION_XS =
+  "text-[11px] font-medium uppercase tracking-wider text-muted-foreground";
+
+/** Body compact: secondary copy, metadata, table cells (13px). */
+export const TYPO_BODY_COMPACT =
+  "text-[13px] leading-relaxed text-muted-foreground";
 
 /** Table header cell. */
 export const TYPO_TABLE_HEAD =
@@ -218,13 +229,13 @@ export const ICON_BOX_PRIMARY_CLASS =
 export const ALERT_WARNING_CLASS =
   "rounded-xl border border-warning/30 bg-warning/10 text-warning";
 
-/** Inline destructive block (validation, errors). */
+/** Inline error block — subtle, minimalist. */
 export const DESTRUCTIVE_INLINE_CLASS =
-  "rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive";
+  "rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90";
 
-/** Inline destructive with left accent (form/block errors). */
+/** Inline error with left accent — form/block errors, refined. */
 export const DESTRUCTIVE_INLINE_ACCENT_CLASS =
-  "rounded-lg border-l-4 border-destructive/50 border border-destructive/20 bg-destructive/5 px-3 py-2.5 text-sm leading-relaxed text-destructive";
+  "rounded-lg border-l-[3px] border-l-destructive/40 border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90";
 
 // ─── Buttons & form actions (refined, consistent) ─────────────────────────────
 

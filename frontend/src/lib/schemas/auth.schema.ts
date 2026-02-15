@@ -5,8 +5,12 @@ import { z } from "zod";
  */
 
 export const loginBodySchema = z.object({
-  email: z.string().email().max(255),
-  password: z.string().min(1).max(512),
+  email: z.string().min(1, "Email is required").email("Enter a valid email address").max(255),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(8, "Password must be at least 8 characters")
+    .max(512),
 });
 
 export type LoginBody = z.infer<typeof loginBodySchema>;

@@ -18,7 +18,7 @@ import { User, KeyRound } from "lucide-react";
 export const metadata: Metadata = {
   title: "Profile",
   description:
-    "Your account details and security. No registration; contact administrator for access.",
+    "Account details and security. Access is by invitation only; contact your administrator for provisioning.",
 };
 
 /** Profile loading skeleton — matches ProfileContent structure. */

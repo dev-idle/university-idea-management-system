@@ -181,7 +181,7 @@ function AttachmentRow({
         </div>
       </div>
       {viewError && (
-        <span className="px-1 text-[11px] text-destructive" role="alert">
+        <span className="px-1 text-xs leading-relaxed text-destructive/90" role="alert">
           {viewError}
         </span>
       )}
@@ -418,7 +418,7 @@ export default function EditIdeaPage() {
               </SelectContent>
             </Select>
             {errors.categoryId && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-xs leading-relaxed text-destructive/90" role="alert">
                 {errors.categoryId.message}
               </p>
             )}
@@ -446,7 +446,7 @@ export default function EditIdeaPage() {
               Titles must be unique within the submission cycle.
             </p>
             {errors.title && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-xs leading-relaxed text-destructive/90" role="alert">
                 {errors.title.message}
               </p>
             )}
@@ -471,7 +471,7 @@ export default function EditIdeaPage() {
               {...register("description")}
             />
             {errors.description && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-xs leading-relaxed text-destructive/90" role="alert">
                 {errors.description.message}
               </p>
             )}
@@ -598,7 +598,7 @@ export default function EditIdeaPage() {
         {(updateMutation.error || errors.root) && (
           <div className="mx-6 mb-6 sm:mx-8">
             <div
-              className="rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-3.5 text-sm text-destructive"
+              className="rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90"
               role="alert"
             >
               {getErrorMessage(
@@ -666,7 +666,7 @@ export default function EditIdeaPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           {deleteMutation.error && (
-            <p className="text-[13px] text-destructive" role="alert">
+            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
               {getErrorMessage(
                 deleteMutation.error,
                 "Could not delete the proposal.",

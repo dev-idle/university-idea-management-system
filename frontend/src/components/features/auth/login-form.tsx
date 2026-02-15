@@ -9,17 +9,24 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/stores/auth.store";
 import { ROUTES, getEntryRouteForRoles } from "@/config/constants";
 import { loginBodySchema, type LoginBody } from "@/lib/schemas/auth.schema";
+import { DESTRUCTIVE_INLINE_CLASS } from "@/config/design";
+import {
+  FORM_DIALOG_INPUT_CLASS,
+  FORM_DIALOG_LABEL_CLASS,
+  FORM_DIALOG_FIELD_WRAPPER_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+} from "@/components/features/admin/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const GENERIC_ERROR = "Invalid credentials";
+const GENERIC_ERROR = "Invalid email or password.";
 
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button
       type="submit"
-      className="h-11 w-full font-medium"
+      className="h-11 w-full rounded-lg font-medium"
       disabled={pending}
       aria-busy={pending}
       aria-live="polite"
@@ -75,67 +82,57 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-0"
+      className="space-y-6"
       noValidate
       aria-label="Sign in"
     >
-      <div className="flex flex-col rounded-xl border border-border/60 bg-muted/20 px-5 py-5 dark:bg-muted/10 sm:px-6 sm:py-6">
-        <div className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="login-email" className="text-foreground">
+      <div className="flex flex-col gap-6 rounded-xl border border-border/50 bg-muted/5 px-5 py-5 sm:px-6 sm:py-6">
+        <div className="space-y-6">
+          <div className={FORM_DIALOG_FIELD_WRAPPER_CLASS}>
+            <Label htmlFor="login-email" className={FORM_DIALOG_LABEL_CLASS}>
               Email
             </Label>
-            <p id="login-email-hint" className="text-xs text-muted-foreground">
-              University email address
-            </p>
             <Input
               id="login-email"
               type="email"
               autoComplete="email"
               placeholder="name@gre.ac.uk"
-              className="h-11"
+              className={FORM_DIALOG_INPUT_CLASS}
               aria-invalid={!!errors.email}
               aria-describedby={
-                errors.email ? "login-email-error" : "login-email-hint"
+                errors.email ? "login-email-error" : undefined
               }
               {...register("email")}
             />
             {errors.email && !errors.root && (
-              <p
-                id="login-email-error"
-                className="text-sm text-destructive"
-                role="alert"
-              >
+              <p id="login-email-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
                 {errors.email.message}
               </p>
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="login-password" className="text-foreground">
+          <div className={FORM_DIALOG_FIELD_WRAPPER_CLASS}>
+            <Label htmlFor="login-password" className={FORM_DIALOG_LABEL_CLASS}>
               Password
             </Label>
-            <p id="login-password-hint" className="text-xs text-muted-foreground">
-              Your account password
-            </p>
-            <div className="relative">
+            <div className="relative group/field">
               <Input
                 id="login-password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 placeholder="••••••••"
-                className="h-11 pr-11"
+                className={`${FORM_DIALOG_INPUT_CLASS} pr-11`}
                 aria-invalid={!!errors.password}
                 aria-describedby={
-                  errors.password ? "login-password-error" : "login-password-hint"
+                  errors.password ? "login-password-error" : undefined
                 }
                 {...register("password")}
               />
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-11 w-11 text-muted-foreground hover:bg-primary/10 hover:text-primary focus-visible:bg-primary/10 focus-visible:text-primary focus-visible:ring-ring/50 dark:hover:bg-primary/20 dark:focus-visible:bg-primary/20"
+                size="icon-sm"
+                className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 tabIndex={-1}
@@ -148,11 +145,7 @@ export function LoginForm() {
               </Button>
             </div>
             {errors.password && !errors.root && (
-              <p
-                id="login-password-error"
-                className="text-sm text-destructive"
-                role="alert"
-              >
+              <p id="login-password-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
                 {errors.password.message}
               </p>
             )}
@@ -161,7 +154,7 @@ export function LoginForm() {
 
         {errors.root && (
           <div
-            className="mt-5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive"
+            className={DESTRUCTIVE_INLINE_CLASS}
             role="alert"
             aria-live="assertive"
           >
@@ -169,7 +162,7 @@ export function LoginForm() {
           </div>
         )}
 
-        <div className="mt-6 w-full">
+        <div className="w-full">
           <SubmitButton pending={isSubmitting} />
         </div>
       </div>
