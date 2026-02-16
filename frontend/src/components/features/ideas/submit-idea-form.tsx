@@ -85,7 +85,7 @@ function AttachmentRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="rounded-lg text-muted-foreground hover:bg-muted/[0.06] hover:text-foreground"
             aria-label={`View ${att.fileName}`}
             onClick={handleView}
             disabled={viewLoading}
@@ -453,7 +453,7 @@ export function SubmitIdeaForm({
                 type="button"
                 variant="outline"
                 size="default"
-                className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/10"
+                className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/[0.06]"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
               >

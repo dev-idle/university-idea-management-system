@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -56,5 +57,14 @@ export class AcademicYearsController {
   @Get()
   async findAll() {
     return this.academicYearsService.findAll();
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @Param(new ZodValidationPipe(academicYearIdParamSchema))
+    params: { id: string },
+  ) {
+    await this.academicYearsService.remove(params.id);
   }
 }

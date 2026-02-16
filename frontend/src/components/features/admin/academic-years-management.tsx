@@ -5,6 +5,16 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -20,6 +30,7 @@ import {
   useAcademicYearsQuery,
   useCreateAcademicYearMutation,
   useUpdateAcademicYearMutation,
+  useDeleteAcademicYearMutation,
 } from "@/hooks/use-academic-years";
 import type { AcademicYear } from "@/lib/schemas/academic-years.schema";
 import { CreateAcademicYearForm } from "./create-academic-year-form";
@@ -43,7 +54,7 @@ import {
   TABLE_HEAD_ROW_CLASS,
   TABLE_HEAD_CELL_CLASS,
   TABLE_HEAD_CELL_ACTIONS_CLASS,
-  TABLE_ACTIONS_MIN_W_2,
+  TABLE_ACTIONS_MIN_W_3,
   TABLE_ROW_CLASS,
   TABLE_CELL_NAME_CLASS,
   TABLE_CELL_CLASS,
@@ -56,12 +67,15 @@ import {
   ACTION_BUTTON_EDIT_CLASS,
   ACTION_BUTTON_SUCCESS_CLASS,
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
+  ACTION_BUTTON_DESTRUCTIVE_CLASS,
+  ALERT_DIALOG_ERROR_CLASS,
   TOOLBAR_ADD_BUTTON_BASE_CLASS,
   TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Pencil, CircleCheck, Plus, Search } from "lucide-react";
+import { CalendarDays, Pencil, CircleCheck, Plus, Search, Trash2 } from "lucide-react";
 
 function formatDate(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -78,6 +92,7 @@ export function AcademicYearsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [showCreate, setShowCreate] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
+  const [yearToDelete, setYearToDelete] = useState<AcademicYear | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,6 +141,7 @@ export function AcademicYearsManagement() {
   );
   const createMutation = useCreateAcademicYearMutation();
   const updateMutation = useUpdateAcademicYearMutation();
+  const deleteMutation = useDeleteAcademicYearMutation();
 
   if (status === "error") {
     throw error;
@@ -135,6 +151,13 @@ export function AcademicYearsManagement() {
     if (year.isActive) return;
     updateMutation.mutate({ id: year.id, body: { isActive: true } });
   };
+
+  function handleConfirmDelete() {
+    if (!yearToDelete) return;
+    deleteMutation.mutate(yearToDelete.id, {
+      onSuccess: () => setYearToDelete(null),
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -180,7 +203,7 @@ export function AcademicYearsManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Edit Academic Year
+                Edit academic year
               </DialogTitle>
             </DialogHeader>
             {editingYear && (
@@ -197,34 +220,68 @@ export function AcademicYearsManagement() {
         </Dialog>
       </Can>
 
-      <div className={UNIFIED_CARD_CLASS}>
-        <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-          <div className="relative w-72">
-            <Search
-              className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
-              aria-hidden
-            />
-            <input
-              ref={searchInputRef}
-              type="search"
-              role="searchbox"
-              aria-label="Search by year"
-              placeholder="Search by year..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setPage(1);
-              }}
-              className={UNIFIED_SEARCH_INPUT_CLASS}
-            />
-            <kbd
-              className={SHOWING_RANGE_BADGE_CLASS}
-              aria-hidden
+      <AlertDialog
+        open={!!yearToDelete}
+        onOpenChange={(open) => !open && setYearToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete academic year?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {yearToDelete?.name}
+              {" — "}
+              Deactivate first if active; remove cycles before deletion.
+              {deleteMutation.isError && (
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
+                  {getErrorMessage(
+                    deleteMutation.error,
+                    ERROR_FALLBACK_FORM.deleteAcademicYear
+                  )}
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
             >
-              ⌘K
-            </kbd>
-          </div>
-          <Can permission="ACADEMIC_YEARS">
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <div className={UNIFIED_CARD_CLASS}>
+        <Can permission="ACADEMIC_YEARS">
+          <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
+            <div className="relative w-72">
+              <Search
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                aria-hidden
+              />
+              <input
+                ref={searchInputRef}
+                type="search"
+                role="searchbox"
+                aria-label="Search academic years"
+                placeholder="Search by name…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                className={UNIFIED_SEARCH_INPUT_CLASS}
+              />
+              <kbd
+                className={SHOWING_RANGE_BADGE_CLASS}
+                aria-hidden
+              >
+                ⌘K
+              </kbd>
+            </div>
             <Button
               onClick={() => setShowCreate((v) => !v)}
               variant={showCreate ? "secondary" : "default"}
@@ -241,8 +298,8 @@ export function AcademicYearsManagement() {
               )}
               {showCreate ? "Cancel" : "Add Academic Year"}
             </Button>
-          </Can>
-        </div>
+          </div>
+        </Can>
 
         {status === "pending" && !years ? (
           <div className={LOADING_STATE_WRAPPER_CLASS}>
@@ -271,7 +328,7 @@ export function AcademicYearsManagement() {
                         Status
                       </th>
                       <Can permission="ACADEMIC_YEARS">
-                        <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
+                        <th scope="col" className={cn(TABLE_ACTIONS_MIN_W_3, TABLE_HEAD_CELL_ACTIONS_CLASS)}>
                           Actions
                         </th>
                       </Can>
@@ -287,7 +344,7 @@ export function AcademicYearsManagement() {
                               : "No academic years yet."}
                           </p>
                           <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
-                            {searchQuery.trim() ? "Try another search." : "Add one to begin."}
+                            {searchQuery.trim() ? "Try a different search." : "Add one to begin."}
                           </p>
                         </td>
                       </tr>
@@ -309,7 +366,7 @@ export function AcademicYearsManagement() {
                             </span>
                           </td>
                           <Can permission="ACADEMIC_YEARS">
-                            <td className={cn(TABLE_ACTIONS_MIN_W_2, TABLE_ACTIONS_CELL_CLASS)}>
+                            <td className={cn(TABLE_ACTIONS_MIN_W_3, TABLE_ACTIONS_CELL_CLASS)}>
                               <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -360,8 +417,58 @@ export function AcademicYearsManagement() {
                                     </TooltipContent>
                                   </Tooltip>
                                 ) : (
-                                  <span className="size-8 shrink-0" aria-hidden />
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-flex shrink-0">
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon-sm"
+                                          className={ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"}
+                                          disabled
+                                          aria-label="Active (disabled)"
+                                        >
+                                          <CircleCheck className="size-4" aria-hidden />
+                                        </Button>
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">
+                                      Active (disabled)
+                                    </TooltipContent>
+                                  </Tooltip>
                                 )}
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex shrink-0">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon-sm"
+                                        className={cn(
+                                          y.isActive
+                                            ? ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                            : ACTION_BUTTON_DESTRUCTIVE_CLASS
+                                        )}
+                                        disabled={
+                                          y.isActive || deleteMutation.isPending
+                                        }
+                                        onClick={() =>
+                                          !y.isActive &&
+                                          (deleteMutation.reset(),
+                                            setYearToDelete(y))
+                                        }
+                                        aria-label="Delete academic year"
+                                      >
+                                        <Trash2 className="size-4" aria-hidden />
+                                      </Button>
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top">
+                                    {y.isActive
+                                      ? "Deactivate first"
+                                      : "Delete"}
+                                  </TooltipContent>
+                                </Tooltip>
                               </div>
                             </td>
                           </Can>

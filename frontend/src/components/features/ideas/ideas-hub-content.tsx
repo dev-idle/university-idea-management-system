@@ -201,7 +201,7 @@ function IdeaCard({
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
             myVote === "up"
               ? "bg-success/10 text-success"
-              : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+              : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
           )}
           aria-label="Support"
         >
@@ -217,7 +217,7 @@ function IdeaCard({
             "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
             myVote === "down"
               ? "bg-destructive/10 text-destructive"
-              : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+              : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
           )}
           aria-label="Do not support"
         >

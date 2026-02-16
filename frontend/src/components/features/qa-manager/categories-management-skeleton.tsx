@@ -12,7 +12,7 @@ export function CategoriesManagementSkeleton() {
   return (
     <div className={UNIFIED_CARD_CLASS}>
       <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-          <div className="h-9 w-72 animate-pulse rounded-lg border border-border/80 bg-muted/[0.03]" />
+  y        <div className="h-9 w-72 animate-pulse rounded-lg border border-border/80 bg-muted/[0.03]" />
         <div className="h-9 w-28 animate-pulse rounded-lg bg-muted/30" />
       </div>
       <div className={`${TABLE_HEAD_ROW_CLASS} px-6 py-3.5`}>

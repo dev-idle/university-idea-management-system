@@ -13,28 +13,50 @@ export const createAcademicYearBodySchema = z.object({
 
 export type CreateAcademicYearBody = z.infer<typeof createAcademicYearBodySchema>;
 
-/** Academic year name format: YYYY-YYYY (e.g. 2026-2027). */
+/** Academic year name format: YYYY-YYYY, end = start + 1 (e.g. 2025-2026). */
 const ACADEMIC_YEAR_NAME_REGEX = /^\d{4}-\d{4}$/;
 
 /** Form schema: date fields as strings from input[type=date]. Use for react-hook-form + zodResolver; convert to Date in submit. */
-export const createAcademicYearFormSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Required.")
-    .max(255)
-    .regex(ACADEMIC_YEAR_NAME_REGEX, "Use YYYY-YYYY format.")
-    .refine(
-      (val) => {
-        const m = val.match(/^(\d{4})-(\d{4})$/);
-        if (!m) return true;
-        return parseInt(m[2], 10) > parseInt(m[1], 10);
-      },
-      { message: "End year must follow start year." }
-    ),
-  startDate: z.string().min(1, "Required."),
-  endDate: z.string().min(1, "Required."),
-});
+export const createAcademicYearFormSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, "Required.")
+      .max(255)
+      .regex(ACADEMIC_YEAR_NAME_REGEX, "Use YYYY-YYYY format.")
+      .refine(
+        (val) => {
+          const m = val.match(/^(\d{4})-(\d{4})$/);
+          if (!m) return true;
+          return parseInt(m[2], 10) === parseInt(m[1], 10) + 1;
+        },
+        { message: "End year must be start year + 1 (e.g. 2025-2026)." },
+      ),
+    startDate: z.string().min(1, "Required."),
+    endDate: z.string().min(1, "Required."),
+  })
+  .superRefine((data, ctx) => {
+    const m = data.name.trim().match(/^(\d{4})-(\d{4})$/);
+    if (!m) return;
+    const [startYear, endYear] = [parseInt(m[1], 10), parseInt(m[2], 10)];
+    const start = new Date(data.startDate);
+    const end = new Date(data.endDate);
+    if (start.getFullYear() !== startYear) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Start date must be in ${startYear}.`,
+        path: ["startDate"],
+      });
+    }
+    if (end.getFullYear() !== endYear) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `End date must be in ${endYear}.`,
+        path: ["endDate"],
+      });
+    }
+  });
 
 export type CreateAcademicYearFormValues = z.infer<typeof createAcademicYearFormSchema>;
 
@@ -45,13 +67,61 @@ export const updateAcademicYearBodySchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-/** Form-friendly: date fields as strings from input[type=date]; empty endDate → null. Use for react-hook-form + zodResolver; convert to Date in submit. */
-export const updateAcademicYearFormSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  isActive: z.boolean().optional(),
-});
+/** Form-friendly: date fields as strings from input[type=date]. Use for react-hook-form + zodResolver; convert to Date in submit. */
+export const updateAcademicYearFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "Required.")
+      .max(255)
+      .regex(ACADEMIC_YEAR_NAME_REGEX, "Use YYYY-YYYY format.")
+      .refine(
+        (val) => {
+          const m = val.match(/^(\d{4})-(\d{4})$/);
+          if (!m) return true;
+          return parseInt(m[2], 10) === parseInt(m[1], 10) + 1;
+        },
+        { message: "End year must be start year + 1 (e.g. 2025-2026)." },
+      )
+      .optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().min(1, "Required."),
+    isActive: z.boolean().optional(),
+  })
+  .refine(
+    (data) => {
+      if (!data.startDate || !data.endDate) return true;
+      return new Date(data.endDate) >= new Date(data.startDate);
+    },
+    { message: "End date must be on or after start date.", path: ["endDate"] },
+  )
+  .superRefine((data, ctx) => {
+    const name = data.name?.trim();
+    if (!name) return;
+    const m = name.match(/^(\d{4})-(\d{4})$/);
+    if (!m) return;
+    const [startYear, endYear] = [parseInt(m[1], 10), parseInt(m[2], 10)];
+    if (data.startDate) {
+      const y = new Date(data.startDate).getFullYear();
+      if (y !== startYear) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Start date must be in ${startYear}.`,
+          path: ["startDate"],
+        });
+      }
+    }
+    if (data.endDate) {
+      const y = new Date(data.endDate).getFullYear();
+      if (y !== endYear) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `End date must be in ${endYear}.`,
+          path: ["endDate"],
+        });
+      }
+    }
+  });
 
 export type UpdateAcademicYearFormValues = z.infer<typeof updateAcademicYearFormSchema>;
 

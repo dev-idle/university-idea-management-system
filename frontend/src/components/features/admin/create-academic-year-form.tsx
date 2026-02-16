@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { computeEndDateFromStart } from "./academic-years.utils";
 
 interface CreateAcademicYearFormProps {
   onSuccess: () => void;
@@ -47,6 +48,8 @@ export function CreateAcademicYearForm({
     register,
     control,
     handleSubmit,
+    setValue,
+    getValues,
     setError,
     formState: { errors },
   } = useForm<CreateAcademicYearFormValues>({
@@ -83,8 +86,32 @@ export function CreateAcademicYearForm({
           (lower.includes("name") || lower.includes("year"))) ||
         lower.includes("duplicate") ||
         lower.includes("duplicated");
+      const isDateRangeError =
+        (lower.includes("start date") || lower.includes("end date")) &&
+        lower.includes("must be in");
       if (isDuplicateName) {
         setError("name", { type: "server", message });
+      } else if (isDateRangeError) {
+        // API may return "startDate: msg; endDate: msg" or single "Start/End date must..."
+        const hasFieldPrefix = /^(startDate|endDate):/i.test(message);
+        if (hasFieldPrefix) {
+          const parts = message.split(/;\s*/);
+          for (const part of parts) {
+            const colonIdx = part.indexOf(":");
+            if (colonIdx >= 0) {
+              const field = part.slice(0, colonIdx).trim();
+              const msg = part.slice(colonIdx + 1).trim();
+              if (field === "startDate") setError("startDate", { type: "server", message: msg });
+              else if (field === "endDate") setError("endDate", { type: "server", message: msg });
+            }
+          }
+        } else {
+          const isStart = lower.includes("start date");
+          const isEnd = lower.includes("end date") && !isStart;
+          if (isStart) setError("startDate", { type: "server", message });
+          else if (isEnd) setError("endDate", { type: "server", message });
+          else setError("startDate", { type: "server", message });
+        }
       } else {
         setError("root", { type: "server", message });
       }
@@ -122,7 +149,7 @@ export function CreateAcademicYearForm({
           <Input
             id="name"
             type="text"
-            placeholder="e.g. 2026-2027"
+            placeholder="e.g. 2025-2026"
             className={inputBaseClass}
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "name-error" : undefined}
@@ -135,7 +162,7 @@ export function CreateAcademicYearForm({
           )}
           {variant !== "dialog" && (
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Use format YYYY-YYYY (e.g. 2026-2027). Names must be unique.
+              Use format YYYY-YYYY (e.g. 2025-2026). Start date in first year, end date in second year. Names must be unique.
             </p>
           )}
         </div>
@@ -183,6 +210,21 @@ export function CreateAcademicYearForm({
               />
             )}
           />
+          <button
+            type="button"
+            onClick={() => {
+              const startVal = getValues("startDate");
+              if (startVal) {
+                const { formatted } = computeEndDateFromStart(startVal);
+                setValue("endDate", formatted, {
+                  shouldValidate: true,
+                });
+              }
+            }}
+            className="text-xs text-primary hover:underline"
+          >
+            +1 year from start date
+          </button>
           {errors.endDate && (
             <p id="endDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.endDate.message}

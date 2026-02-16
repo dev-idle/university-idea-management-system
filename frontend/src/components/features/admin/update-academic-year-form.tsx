@@ -26,11 +26,7 @@ import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-function toInputDate(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toISOString().slice(0, 10);
-}
+import { computeEndDateFromStart, toInputDate } from "./academic-years.utils";
 
 interface UpdateAcademicYearFormProps {
   academicYear: AcademicYear;
@@ -57,6 +53,8 @@ export function UpdateAcademicYearForm({
     register,
     control,
     handleSubmit,
+    setValue,
+    getValues,
     setError,
     formState: { errors },
   } = useForm<UpdateAcademicYearFormValues>({
@@ -75,7 +73,7 @@ export function UpdateAcademicYearForm({
         ...(data.startDate !== undefined &&
           data.startDate !== "" && { startDate: new Date(data.startDate) }),
         ...(data.endDate !== undefined &&
-          (data.endDate === "" ? { endDate: null } : { endDate: new Date(data.endDate) })),
+          data.endDate !== "" && { endDate: new Date(data.endDate) }),
       };
       await mutateAsync({
         id: academicYear.id,
@@ -83,9 +81,34 @@ export function UpdateAcademicYearForm({
       });
       onSuccess();
     } catch (e) {
-      setError("root", {
-        message: getErrorMessage(e, ERROR_FALLBACK_FORM.updateAcademicYear),
-      });
+      const message = getErrorMessage(e, ERROR_FALLBACK_FORM.updateAcademicYear);
+      const lower = message.toLowerCase();
+      const isDateRangeError =
+        (lower.includes("start date") || lower.includes("end date")) &&
+        lower.includes("must be in");
+      if (isDateRangeError) {
+        const hasFieldPrefix = /^(startDate|endDate):/i.test(message);
+        if (hasFieldPrefix) {
+          const parts = message.split(/;\s*/);
+          for (const part of parts) {
+            const colonIdx = part.indexOf(":");
+            if (colonIdx >= 0) {
+              const field = part.slice(0, colonIdx).trim();
+              const msg = part.slice(colonIdx + 1).trim();
+              if (field === "startDate") setError("startDate", { type: "server", message: msg });
+              else if (field === "endDate") setError("endDate", { type: "server", message: msg });
+            }
+          }
+        } else {
+          const isStart = lower.includes("start date");
+          const isEnd = lower.includes("end date") && !isStart;
+          if (isStart) setError("startDate", { type: "server", message });
+          else if (isEnd) setError("endDate", { type: "server", message });
+          else setError("startDate", { type: "server", message });
+        }
+      } else {
+        setError("root", { type: "server", message });
+      }
     }
   }
 
@@ -120,7 +143,7 @@ export function UpdateAcademicYearForm({
           <Input
             id="edit-name"
             type="text"
-            placeholder="e.g. 2026-2027"
+            placeholder="e.g. 2025-2026"
             className={inputBaseClass}
             aria-invalid={!!errors.name}
             aria-describedby={errors.name ? "edit-name-error" : undefined}
@@ -161,10 +184,7 @@ export function UpdateAcademicYearForm({
         </div>
         <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
           <Label htmlFor="edit-endDate" className={labelClass}>
-            End date{" "}
-            <span className="font-normal normal-case text-muted-foreground/80">
-              (optional)
-            </span>
+            End date
           </Label>
           <Controller
             name="endDate"
@@ -174,7 +194,7 @@ export function UpdateAcademicYearForm({
                 id="edit-endDate"
                 value={field.value ?? ""}
                 onChange={field.onChange}
-                placeholder="Select end date (optional)"
+                placeholder="Select end date"
                 aria-invalid={!!errors.endDate}
                 aria-describedby={
                   errors.endDate ? "edit-endDate-error" : undefined
@@ -183,6 +203,21 @@ export function UpdateAcademicYearForm({
               />
             )}
           />
+          <button
+            type="button"
+            onClick={() => {
+              const startVal = getValues("startDate");
+              if (startVal) {
+                const { formatted } = computeEndDateFromStart(startVal);
+                setValue("endDate", formatted, {
+                  shouldValidate: true,
+                });
+              }
+            }}
+            className="text-xs text-primary hover:underline"
+          >
+            +1 year from start date
+          </button>
           {errors.endDate && (
             <p id="edit-endDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.endDate.message}

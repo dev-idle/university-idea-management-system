@@ -127,7 +127,7 @@ function AttachmentRow({
 
   return (
     <li className="flex flex-col gap-1">
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/20">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <FileText
             className="size-4 shrink-0 text-muted-foreground/40"
@@ -558,7 +558,7 @@ export default function EditIdeaPage() {
                     type="button"
                     variant="outline"
                     size="default"
-                    className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/10"
+                    className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/[0.06]"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={
                       uploading || attachments.length >= MAX_ATTACHMENTS

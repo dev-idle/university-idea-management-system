@@ -142,7 +142,7 @@ export function UserMenu({
           className={
             isPill
               ? `group flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/[0.04] pl-1 pr-2.5 py-1 ${HOVER_TRANSITION_NAV} hover:border-border/60 hover:bg-muted/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:border-transparent`
-              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
+              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
           }
         >
           <Avatar className={isPill ? "size-7 shrink-0" : "shrink-0"}>
@@ -160,7 +160,7 @@ export function UserMenu({
             </p>
           </div>
           <ChevronDown
-            className="size-3.5 shrink-0 text-muted-foreground/60 transition-transform duration-200 group-data-[state=open]:rotate-180"
+            className="size-3.5 shrink-0 text-muted-foreground/60 transition-[color,transform] duration-200 group-hover:text-muted-foreground/80 group-data-[state=open]:rotate-180"
             aria-hidden
           />
         </button>

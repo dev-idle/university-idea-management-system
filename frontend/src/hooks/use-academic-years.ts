@@ -67,3 +67,17 @@ export function useUpdateAcademicYearMutation() {
     },
   });
 }
+
+/** Delete academic year. Fails if active or has proposal cycles. Backend enforces ACADEMIC_YEARS permission. */
+export function useDeleteAcademicYearMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await fetchWithAuth(`academic-years/${id}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
+    },
+  });
+}

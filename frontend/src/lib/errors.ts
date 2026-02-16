@@ -30,6 +30,7 @@ export const ERROR_FALLBACK_FORM = {
   updateDepartment: "Could not update department.",
   createAcademicYear: "Could not create academic year.",
   updateAcademicYear: "Could not update academic year.",
+  deleteAcademicYear: "Could not delete academic year.",
   delete: "Could not delete.",
   deactivate: "Could not deactivate.",
   submitIdea: "Submission could not be completed.",

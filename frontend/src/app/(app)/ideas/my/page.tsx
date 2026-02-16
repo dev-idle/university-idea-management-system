@@ -142,7 +142,7 @@ function IdeaRow({
             {editable && (
               <Link
                 href={`${ROUTES.MY_IDEAS}/${idea.id}/edit`}
-                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-foreground/80"
+                className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-muted/[0.06] hover:text-foreground/80"
                 aria-label="Edit proposal"
               >
                 <Pencil className="size-3.5" aria-hidden />

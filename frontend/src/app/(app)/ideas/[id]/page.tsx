@@ -92,7 +92,7 @@ function AttachmentItem({ att }: { att: Attachment }) {
   };
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/20">
+    <li className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <FileText
           className="size-4 shrink-0 text-muted-foreground/40"
@@ -315,7 +315,7 @@ export default function IdeaDetailPage() {
               "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
               myVote === "up"
                 ? "bg-success/10 text-success"
-                : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+                : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
               (!open || voteMutation.isPending) &&
                 "pointer-events-none opacity-40",
             )}
@@ -333,7 +333,7 @@ export default function IdeaDetailPage() {
               "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
               myVote === "down"
                 ? "bg-destructive/10 text-destructive"
-                : "text-muted-foreground/50 hover:bg-muted/50 hover:text-foreground/70",
+                : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
               (!open || voteMutation.isPending) &&
                 "pointer-events-none opacity-40",
             )}
