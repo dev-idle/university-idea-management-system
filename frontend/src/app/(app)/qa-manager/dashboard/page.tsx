@@ -6,7 +6,7 @@ import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "QA Manager dashboard. Manage categories and submission cycles.",
+  description: "QA Manager dashboard. Manage categories and proposal cycles.",
 };
 
 export default function QaManagerDashboardPage() {
@@ -14,7 +14,7 @@ export default function QaManagerDashboardPage() {
     <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
       <PageHeader
         title="QA Manager"
-        description="Manage categories and submission cycles for proposal collection. Access control is enforced server-side."
+        description="Manage categories and proposal cycles for proposal collection. Access control is enforced server-side."
         descriptionWide
         icon={LayoutDashboard}
       />

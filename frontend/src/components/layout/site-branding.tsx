@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ROUTES } from "@/config/constants";
 import { useAuthStore } from "@/stores/auth.store";
 import { getEntryRouteForRoles } from "@/config/constants";
+import { SIDEBAR_COLLAPSED_HIT } from "@/config/design";
 import { BrandLogo } from "./brand-logo";
 import { BrandIcon } from "./brand-icon";
 
@@ -40,9 +41,9 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
     return logo;
   }
 
-  /* ── Sidebar: collapsed = icon in w-10 h-10 rail cell, expanded = logo ── */
+  /* ── Sidebar: collapsed = icon, expanded = logo — clean, no fill ── */
   const content = collapsed ? (
-    <span className="flex size-10 shrink-0 items-center justify-center">
+    <span className={`flex ${SIDEBAR_COLLAPSED_HIT} shrink-0 items-center justify-center`}>
       <BrandIcon className="size-full object-contain" />
     </span>
   ) : (
@@ -50,14 +51,14 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
   );
 
   const wrapperClassName = collapsed
-    ? "flex size-10 shrink-0 items-center justify-center"
+    ? "flex shrink-0 items-center justify-center"
     : "flex items-center";
 
   if (linkToEntry) {
     return (
       <Link
         href={entryHref}
-        className={`${wrapperClassName} rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring transition-[padding] duration-300 ease-in-out`}
+        className={`${wrapperClassName} rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring transition-[padding,opacity] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)]`}
         aria-label={collapsed ? `${UNIVERSITY_NAME}. Go to home.` : undefined}
       >
         {content}

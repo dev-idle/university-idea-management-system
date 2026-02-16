@@ -54,6 +54,8 @@ import {
   ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
+  SHOWING_RANGE_BADGE_CLASS,
+  LOADING_TABLE_TEXT_CLASS,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { CreateDepartmentForm } from "./create-department-form";
@@ -202,7 +204,7 @@ export function DepartmentsManagement() {
             <AlertDialogDescription>
               {departmentToDelete?.name}
               {" — "}
-              All authorization is enforced by the backend. Delete is only available when no users are assigned; reassign or remove users first if needed.
+              Reassign or remove members before deletion.
               {deleteMutation.isError && (
                 <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deleteMutation.error, ERROR_FALLBACK_FORM.delete)}
@@ -245,7 +247,7 @@ export function DepartmentsManagement() {
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
-                className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+                className={SHOWING_RANGE_BADGE_CLASS}
                 aria-hidden
               >
                 ⌘K
@@ -274,7 +276,7 @@ export function DepartmentsManagement() {
           <div className={LOADING_STATE_WRAPPER_CLASS}>
             <div className={LOADING_STATE_CONTENT_CLASS}>
               <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className="font-sans text-sm font-medium text-muted-foreground">Loading departments…</p>
+              <p className={LOADING_TABLE_TEXT_CLASS}>Loading departments…</p>
             </div>
           </div>
         ) : (
@@ -302,7 +304,7 @@ export function DepartmentsManagement() {
                             No departments yet.
                           </p>
                           <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
-                            Add one to get started.
+                            Add one to begin.
                           </p>
                         </td>
                       </tr>
@@ -370,8 +372,8 @@ export function DepartmentsManagement() {
                                   </TooltipTrigger>
                                   <TooltipContent side="top">
                                     {(d._count?.users ?? 0) > 0
-                                      ? "Has members — reassign or remove users first"
-                                      : "Delete department"}
+                                      ? "Has members; reassign first"
+                                      : "Delete"}
                                   </TooltipContent>
                                 </Tooltip>
                               </div>

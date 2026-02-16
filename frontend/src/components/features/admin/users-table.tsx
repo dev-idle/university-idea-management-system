@@ -66,7 +66,7 @@ function formatRoles(roles: string[] | undefined): string {
 interface UsersTableProps {
   users: UserListItem[];
   isRefetching?: boolean;
-  /** When true and empty, show "No users found" / "Try a different search."; otherwise "No users yet." / "Add one to get started." */
+  /** When true and empty, show "No users found" / "Try another search."; otherwise "No users yet." / "Add one to begin." */
   hasActiveSearch?: boolean;
 }
 
@@ -131,7 +131,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                     {hasActiveSearch ? "No users found." : "No users yet."}
                   </p>
                   <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
-                    {hasActiveSearch ? "Try a different search." : "Add one to get started."}
+                    {hasActiveSearch ? "Try another search." : "Add one to begin."}
                   </p>
                 </td>
               </tr>
@@ -185,7 +185,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                               <Pencil className="size-4" aria-hidden />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent side="top">Edit (name & password)</TooltipContent>
+                          <TooltipContent side="top">Edit</TooltipContent>
                         </Tooltip>
                         {user.isActive ? (
                           <Tooltip>

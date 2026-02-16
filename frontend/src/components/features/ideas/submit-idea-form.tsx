@@ -131,15 +131,15 @@ const TERMS_CLAUSES = [
   },
   {
     title: "Institutional use and evaluation",
-    body: "The University may use, review, evaluate, and process your submission in accordance with its institutional policies, academic integrity guidelines, and the rules governing the current submission cycle. Submission does not create any contractual or proprietary obligation on the part of the University beyond those set out in applicable policies.",
+    body: "The University may use, review, evaluate, and process your submission in accordance with its institutional policies, academic integrity guidelines, and the rules governing the current proposal cycle. Submission does not create any contractual or proprietary obligation on the part of the University beyond those set out in applicable policies.",
   },
   {
     title: "Identity and anonymity",
     body: "Your identity will be recorded and retained for audit, governance, and accountability purposes. Where you have elected to submit anonymously, your identity will not be displayed to other users but will remain stored for authorised administrative and compliance purposes.",
   },
   {
-    title: "Submission cycle",
-    body: "Submissions are governed by the current submission cycle, including its opening and closure dates. Late or out-of-cycle submissions are not accepted. The University reserves the right to amend cycle rules in accordance with institutional requirements.",
+    title: "Proposal cycle",
+    body: "Submissions are governed by the current proposal cycle, including its opening and closure dates. Late or out-of-cycle submissions are not accepted. The University reserves the right to amend cycle rules in accordance with institutional requirements.",
   },
 ] as const;
 
@@ -337,7 +337,7 @@ export function SubmitIdeaForm({
             {...register("title")}
           />
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Provide a clear, concise title that summarises the proposal. Titles must be unique within this submission cycle.
+            Provide a clear, concise title that summarises the proposal. Titles must be unique within this proposal cycle.
           </p>
           {errors.title && (
             <p className="text-xs leading-relaxed text-destructive/90" role="alert">
@@ -462,7 +462,7 @@ export function SubmitIdeaForm({
                 ) : (
                   <Paperclip className="size-4" aria-hidden />
                 )}
-                {uploading ? "Uploading…" : "Add document"}
+                {uploading ? "Uploading…" : "Add Document"}
               </Button>
               {uploadError && (
                 <p className="text-xs leading-relaxed text-destructive/90" role="alert">

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Bell, Lightbulb } from "lucide-react";
 import { getEntryRouteForRoles, ROUTES } from "@/config/constants";
 import { hasRole } from "@/lib/rbac";
+import { LAYOUT_BORDER_MAIN, LAYOUT_DIVIDER_LINE } from "@/config/design";
 import {
   HeaderBreadcrumbs,
   HeaderIconButton,
@@ -34,7 +35,7 @@ export function NavbarHeader({
 
   return (
     <header
-      className={`sticky top-0 z-10 flex ${TOP_BAR_HEIGHT} min-w-0 shrink-0 items-center gap-4 border-b border-border/50 bg-background/98 px-5 backdrop-blur-md md:px-6`}
+      className={`sticky top-0 z-10 flex ${TOP_BAR_HEIGHT} min-w-0 shrink-0 items-center gap-4 border-b bg-background/98 px-5 backdrop-blur-md md:px-6 ${LAYOUT_BORDER_MAIN}`}
     >
       <div className="flex min-w-0 flex-1 items-center">
         <HeaderBreadcrumbs
@@ -55,7 +56,7 @@ export function NavbarHeader({
         )}
         <HeaderIconButton icon={Bell} label="Notifications" />
 
-        <div className="mx-2 hidden h-5 w-px bg-border/60 md:block" aria-hidden />
+        <div className={`mx-2 hidden h-5 w-px md:block ${LAYOUT_DIVIDER_LINE}`} aria-hidden />
 
         <UserMenu
           user={user}

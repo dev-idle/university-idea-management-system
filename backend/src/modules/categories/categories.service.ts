@@ -84,7 +84,7 @@ export class CategoriesService {
     }
     if (category._count.ideas > 0 || category._count.cycleCategories > 0) {
       throw new ConflictException(
-        'Cannot delete category that is used in submission cycles or by ideas. Remove or reassign first.',
+        'Cannot delete category that is used in proposal cycles or by ideas. Remove or reassign first.',
       );
     }
     await this.prisma.category.delete({

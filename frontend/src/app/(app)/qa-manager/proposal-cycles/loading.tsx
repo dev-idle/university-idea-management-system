@@ -1,4 +1,4 @@
-export default function QaManagerSubmissionCyclesLoading() {
+export default function QaManagerProposalCyclesLoading() {
   return (
     <div className="space-y-4">
       <div className="h-9 w-48 animate-pulse rounded bg-muted" />

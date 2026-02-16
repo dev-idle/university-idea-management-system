@@ -46,7 +46,7 @@ export class SubmissionCyclesService {
       select: { id: true },
     });
     if (existingByName) {
-      throw new ConflictException('A submission cycle with this name already exists.');
+      throw new ConflictException('A proposal cycle with this name already exists.');
     }
     const cycle = await this.prisma.ideaSubmissionCycle.create({
       data: {
@@ -94,7 +94,7 @@ export class SubmissionCyclesService {
       select: this.cycleSelect(),
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     const now = new Date();
     if (
@@ -117,18 +117,18 @@ export class SubmissionCyclesService {
       select: { id: true, status: true, isLocked: true, _count: { select: { ideas: true } } },
     });
     if (!existing) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     const hasIdeas = (existing._count?.ideas ?? 0) >= 1;
     const isClosedDisplay = existing.status === STATUS_CLOSED || (existing.status === STATUS_DRAFT && hasIdeas);
     if (existing.status !== STATUS_DRAFT && existing.status !== STATUS_ACTIVE && existing.status !== STATUS_CLOSED) {
-      throw new BadRequestException('Cycle cannot be updated');
+      throw new BadRequestException('Proposal cycle cannot be updated');
     }
     if (existing.status === STATUS_CLOSED && existing.isLocked) {
-      throw new BadRequestException('Locked cycles cannot be edited. Unlock first.');
+      throw new BadRequestException('Locked proposal cycles cannot be edited. Unlock first.');
     }
     if (isClosedDisplay && existing.status === STATUS_DRAFT && existing.isLocked) {
-      throw new BadRequestException('Locked cycles cannot be edited. Unlock first.');
+      throw new BadRequestException('Locked proposal cycles cannot be edited. Unlock first.');
     }
     if (body.name !== undefined) {
       const duplicateByName = await this.prisma.ideaSubmissionCycle.findFirst({
@@ -136,7 +136,7 @@ export class SubmissionCyclesService {
         select: { id: true },
       });
       if (duplicateByName) {
-        throw new ConflictException('A submission cycle with this name already exists.');
+        throw new ConflictException('A proposal cycle with this name already exists.');
       }
     }
     const interactionClosesAt =
@@ -165,7 +165,7 @@ export class SubmissionCyclesService {
       return this.mapCycle(cycle);
     } catch (e) {
       if (isPrismaNotFound(e)) {
-        throw new NotFoundException('Submission cycle not found');
+        throw new NotFoundException('Proposal cycle not found');
       }
       throw e;
     }
@@ -185,17 +185,17 @@ export class SubmissionCyclesService {
       },
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status !== STATUS_DRAFT && cycle.status !== STATUS_CLOSED) {
-      throw new BadRequestException('Only DRAFT or CLOSED cycles can be activated');
+      throw new BadRequestException('Only DRAFT or CLOSED proposal cycles can be activated');
     }
     if (cycle.status === STATUS_CLOSED && cycle.isLocked) {
-      throw new BadRequestException('Locked cycles cannot be activated. Unlock first.');
+      throw new BadRequestException('Locked proposal cycles cannot be activated. Unlock first.');
     }
     const hasIdeas = (cycle._count?.ideas ?? 0) >= 1;
     if (cycle.status === STATUS_DRAFT && hasIdeas && cycle.isLocked) {
-      throw new BadRequestException('Locked cycles cannot be activated. Unlock first.');
+      throw new BadRequestException('Locked proposal cycles cannot be activated. Unlock first.');
     }
     const now = new Date();
     if (cycle.interactionClosesAt <= now) {
@@ -205,7 +205,7 @@ export class SubmissionCyclesService {
     }
     if (!cycle.academicYear?.isActive) {
       throw new BadRequestException(
-        "The cycle's academic year is not active. An Admin must set the academic year to Active in Academic Years first.",
+        "The proposal cycle's academic year is not active. An Admin must set the academic year to Active in Academic Years first.",
       );
     }
     const otherActive = await this.prisma.ideaSubmissionCycle.findFirst({
@@ -214,7 +214,7 @@ export class SubmissionCyclesService {
     });
     if (otherActive && otherActive.id !== id) {
       throw new ConflictException(
-        'Another submission cycle is already active. Only one cycle can be active at a time.',
+        'Another proposal cycle is already active. Only one cycle can be active at a time.',
       );
     }
     // When reactivating from CLOSED, ensure wasEverClosed=true so UI shows Edit+Lock correctly.
@@ -236,10 +236,10 @@ export class SubmissionCyclesService {
       select: { id: true, status: true, interactionClosesAt: true },
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status !== STATUS_ACTIVE) {
-      throw new BadRequestException('Only ACTIVE cycles can be closed');
+      throw new BadRequestException('Only active proposal cycles can be closed');
     }
     if (cycle.interactionClosesAt > new Date()) {
       throw new BadRequestException(
@@ -261,10 +261,10 @@ export class SubmissionCyclesService {
       select: { id: true, status: true },
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status !== STATUS_ACTIVE) {
-      throw new BadRequestException('Only ACTIVE cycles can be deactivated');
+      throw new BadRequestException('Only active proposal cycles can be deactivated');
     }
     const updated = await this.prisma.ideaSubmissionCycle.update({
       where: { id },
@@ -281,11 +281,11 @@ export class SubmissionCyclesService {
       select: { id: true, status: true },
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status === STATUS_ACTIVE) {
       throw new BadRequestException(
-        'Cannot delete an ACTIVE cycle. Deactivate it first.',
+        'Cannot delete an active proposal cycle. Deactivate it first.',
       );
     }
     await this.prisma.ideaSubmissionCycle.delete({
@@ -362,7 +362,7 @@ export class SubmissionCyclesService {
       select: { id: true, status: true, wasEverClosed: true, _count: { select: { ideas: true } } },
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     const hasIdeas = (cycle._count?.ideas ?? 0) >= 1;
     const canLockCycle =
@@ -390,10 +390,10 @@ export class SubmissionCyclesService {
       select: { id: true, isLocked: true },
     });
     if (!cycle) {
-      throw new NotFoundException('Submission cycle not found');
+      throw new NotFoundException('Proposal cycle not found');
     }
     if (!cycle.isLocked) {
-      throw new BadRequestException('Cycle is not locked');
+      throw new BadRequestException('Proposal cycle is not locked');
     }
     return this.prisma.ideaSubmissionCycle
       .update({

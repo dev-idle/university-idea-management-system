@@ -20,6 +20,7 @@ import {
   DIALOG_HEADER_SCULPTED_CLASS,
   DIALOG_TITLE_SCULPTED_CLASS,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
+  SHOWING_RANGE_BADGE_CLASS,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { UsersTable } from "./users-table";
@@ -172,7 +173,7 @@ export function AdminUsersManagement() {
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
-                className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+                className={SHOWING_RANGE_BADGE_CLASS}
                 aria-hidden
               >
                 ⌘K

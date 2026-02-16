@@ -12,7 +12,7 @@ import { submissionCyclesListResponseSchema } from "@/lib/schemas/submission-cyc
 
 function parseCyclesList(data: unknown): SubmissionCycle[] {
   const parsed = submissionCyclesListResponseSchema.safeParse(data);
-  if (!parsed.success) throw new Error("Invalid submission cycles response");
+  if (!parsed.success) throw new Error("Invalid proposal cycles response");
   return parsed.data;
 }
 

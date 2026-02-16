@@ -58,6 +58,8 @@ import {
   ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
+  SHOWING_RANGE_BADGE_CLASS,
+  LOADING_TABLE_TEXT_CLASS,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCycleForm } from "./create-cycle-form";
@@ -109,13 +111,13 @@ function getCycleDisplayStatus(c: SubmissionCycle): {
       return {
         label: "Closed",
         badgeClass: STATUS_BADGE_CLOSED_CLASS,
-        tooltip: "Closed – deactivated with at least one idea",
+        tooltip: "Deactivated; contains ideas",
       };
     }
     return {
       label: "Draft",
       badgeClass: STATUS_BADGE_INACTIVE_CLASS,
-      tooltip: "Draft – not yet open; can be edited and activated",
+      tooltip: "Draft; not yet open",
     };
   }
 
@@ -124,27 +126,27 @@ function getCycleDisplayStatus(c: SubmissionCycle): {
       return {
         label: "Active",
         badgeClass: STATUS_BADGE_ACTIVE_CLASS,
-        tooltip: "Active – idea submission deadline still open",
+        tooltip: "Accepting submissions",
       };
     }
     if (now < interactionCloses) {
       return {
         label: "Active",
         badgeClass: STATUS_BADGE_ACTIVE_WARM_CLASS,
-        tooltip: "Active – votes and comments still open; idea deadline passed",
+        tooltip: "Voting phase",
       };
     }
     if (ideaCount >= 1) {
       return {
         label: "Closed",
         badgeClass: STATUS_BADGE_CLOSED_CLASS,
-        tooltip: "Closed – cycle ended with at least one idea",
+        tooltip: "Closed; contains ideas",
       };
     }
     return {
       label: "Draft",
       badgeClass: STATUS_BADGE_INACTIVE_CLASS,
-      tooltip: "Draft – cycle ended with no ideas",
+      tooltip: "Closed; no submissions",
     };
   }
 
@@ -153,13 +155,13 @@ function getCycleDisplayStatus(c: SubmissionCycle): {
       return {
         label: "Closed",
         badgeClass: STATUS_BADGE_CLOSED_CLASS,
-        tooltip: "Closed – cycle ended with at least one idea",
+        tooltip: "Closed; contains ideas",
       };
     }
     return {
       label: "Draft",
       badgeClass: STATUS_BADGE_INACTIVE_CLASS,
-      tooltip: "Draft – cycle ended with no ideas",
+      tooltip: "Closed; no submissions",
     };
   }
 
@@ -270,7 +272,7 @@ export function SubmissionCyclesManagement() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Deactivate submission cycle?</AlertDialogTitle>
+            <AlertDialogTitle>Deactivate proposal cycle?</AlertDialogTitle>
             <AlertDialogDescription>
               {cycleToDeactivate?.name ?? cycleToDeactivate?.academicYear?.name}
               {" — "}
@@ -304,7 +306,7 @@ export function SubmissionCyclesManagement() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete submission cycle?</AlertDialogTitle>
+            <AlertDialogTitle>Delete proposal cycle?</AlertDialogTitle>
             <AlertDialogDescription>
               {cycleToDelete?.name ?? cycleToDelete?.academicYear?.name}
               {" — "}
@@ -346,7 +348,7 @@ export function SubmissionCyclesManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Add submission cycle
+                Add Proposal Cycle
               </DialogTitle>
             </DialogHeader>
             <CreateCycleForm
@@ -375,7 +377,7 @@ export function SubmissionCyclesManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Edit submission cycle
+                Edit proposal cycle
               </DialogTitle>
             </DialogHeader>
             <UpdateCycleForm
@@ -403,7 +405,7 @@ export function SubmissionCyclesManagement() {
                 ref={searchInputRef}
                 type="search"
                 role="searchbox"
-                aria-label="Search submission cycles"
+                aria-label="Search proposal cycles"
                 placeholder="Search by name or year…"
                 value={searchQuery}
                 onChange={(e) => {
@@ -413,7 +415,7 @@ export function SubmissionCyclesManagement() {
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
-                className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+                className={SHOWING_RANGE_BADGE_CLASS}
                 aria-hidden
               >
                 ⌘K
@@ -433,7 +435,7 @@ export function SubmissionCyclesManagement() {
               ) : (
                 <Plus className="size-4 shrink-0" aria-hidden />
               )}
-              {showCreate ? "Cancel" : "Add cycle"}
+              {showCreate ? "Cancel" : "Add Proposal Cycle"}
             </Button>
           </div>
         )}
@@ -442,8 +444,8 @@ export function SubmissionCyclesManagement() {
           <div className={LOADING_STATE_WRAPPER_CLASS}>
             <div className={LOADING_STATE_CONTENT_CLASS}>
               <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className="font-sans text-sm font-medium text-muted-foreground">
-                Loading submission cycles…
+              <p className={LOADING_TABLE_TEXT_CLASS}>
+                Loading proposal cycles…
               </p>
             </div>
           </div>
@@ -502,12 +504,12 @@ export function SubmissionCyclesManagement() {
                           <p className="font-sans text-sm font-medium text-foreground">
                             {searchQuery.trim()
                               ? "No matching cycles."
-                              : "No submission cycles yet."}
+                              : "No proposal cycles yet."}
                           </p>
                           <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
                             {searchQuery.trim()
                               ? "Try a different search."
-                              : "Add one to get started."}
+                              : "Add one to begin."}
                           </p>
                         </td>
                       </tr>
@@ -558,24 +560,10 @@ export function SubmissionCyclesManagement() {
                                   {c.categories.length}
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent
-                                side="top"
-                                className="max-w-xs"
-                              >
-                                <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                                  Categories
-                                </p>
-                                {c.categories.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground">
-                                    None assigned
-                                  </p>
-                                ) : (
-                                  <ul className="space-y-1 text-sm text-foreground">
-                                    {c.categories.map((cat) => (
-                                      <li key={cat.id}>{cat.name}</li>
-                                    ))}
-                                  </ul>
-                                )}
+                              <TooltipContent side="top" className="max-w-xs">
+                                {c.categories.length === 0
+                                  ? "None assigned"
+                                  : c.categories.map((cat) => cat.name).join(", ")}
                               </TooltipContent>
                             </Tooltip>
                           </td>
@@ -623,7 +611,7 @@ export function SubmissionCyclesManagement() {
                 page={page}
                 totalPages={totalPages}
                 setPage={setPage}
-                ariaLabel="Submission cycles pagination"
+                ariaLabel="Proposal cycles pagination"
               />
             )}
           </>

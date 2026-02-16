@@ -29,21 +29,21 @@
   --secondary-foreground: oklch(0.3 0.12 280);
 
   --muted: oklch(0.94 0.01 280);
-  --muted-foreground: oklch(0.5 0.03 280);
+  --muted-foreground: oklch(0.48 0.025 280);
 
   --accent: oklch(0.94 0.02 200);
   --accent-foreground: oklch(0.4 0.12 200);
 
-  --destructive: oklch(0.58 0.2 25);
+  --destructive: oklch(0.55 0.14 25);
   --destructive-foreground: oklch(0.98 0 0);
 
-  --success: oklch(0.55 0.15 150);
+  --success: oklch(0.5 0.12 155);
   --success-foreground: oklch(0.98 0 0);
 
-  --warning: oklch(0.75 0.15 85);
-  --warning-foreground: oklch(0.2 0.05 50);
+  --warning: oklch(0.72 0.1 85);
+  --warning-foreground: oklch(0.25 0.04 50);
 
-  --info: oklch(0.6 0.15 240);
+  --info: oklch(0.52 0.08 250);
   --info-foreground: oklch(0.98 0 0);
 
   --border: oklch(0.9 0.01 280);
@@ -52,29 +52,30 @@
 
   /* --- 4. Charts (Data viz) --- */
   --chart-1: oklch(0.3 0.12 280);
-  --chart-2: oklch(0.55 0.15 150);
-  --chart-3: oklch(0.4 0.12 200);
+  --chart-2: oklch(0.5 0.12 155);
+  --chart-3: oklch(0.4 0.1 250);
   --chart-4: oklch(0.65 0.18 45);
   --chart-5: oklch(0.55 0.2 330);
 
-  /* --- 5. Sidebar (Distinct but subtle contrast from main content) --- */
-  --sidebar: oklch(0.98 0.004 280);
-  --sidebar-foreground: oklch(0.25 0.05 280);
+  /* --- 5. Sidebar (Refined, luxurious contrast from main content) --- */
+  --sidebar: oklch(0.982 0.003 280);
+  --sidebar-foreground: oklch(0.28 0.04 280);
   --sidebar-primary: oklch(0.3 0.12 280);
   --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.95 0.012 280);
+  --sidebar-accent: oklch(0.96 0.008 280);
   --sidebar-accent-foreground: oklch(0.3 0.12 280);
-  --sidebar-border: oklch(0.92 0.01 280);
+  --sidebar-border: oklch(0.93 0.008 280);
   --sidebar-ring: oklch(0.3 0.12 280);
 
   /* --- Shape & Elevation --- */
   --radius: 0.6rem;
   --overlay: oklch(0 0 0 / 0.5);
   --overlay-modal: oklch(0 0 0 / 0.45);
-  --shadow-card: 0 4px 24px oklch(0 0 0 / 0.06);
-  --shadow-card-subtle: 0 1px 3px oklch(0 0 0 / 0.04);
-  --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.06);
-  --header-elevation: 0 1px 3px oklch(0 0 0 / 0.03);
+  --shadow-card: 0 2px 12px oklch(0 0 0 / 0.04);
+  --shadow-card-subtle: 0 1px 2px oklch(0 0 0 / 0.03);
+  --shadow-card-hover: 0 2px 8px oklch(0 0 0 / 0.04);
+  --shadow-dialog: 0 8px 32px oklch(0 0 0 / 0.08);
+  --header-elevation: 0 1px 2px oklch(0 0 0 / 0.02);
 
   /* --- Login (Special) --- */
   --login-grid-line: oklch(0.45 0.02 280 / 0.04);
@@ -102,21 +103,21 @@
   --secondary-foreground: oklch(0.9 0.01 280);
 
   --muted: oklch(0.2 0.02 280);
-  --muted-foreground: oklch(0.65 0.04 280);
+  --muted-foreground: oklch(0.62 0.03 280);
 
   --accent: oklch(0.25 0.06 200);
   --accent-foreground: oklch(0.85 0.1 200);
 
-  --destructive: oklch(0.6 0.2 25);
+  --destructive: oklch(0.55 0.14 25);
   --destructive-foreground: oklch(0.12 0.03 280);
 
-  --success: oklch(0.6 0.16 150);
+  --success: oklch(0.55 0.12 155);
   --success-foreground: oklch(0.12 0.03 280);
 
-  --warning: oklch(0.75 0.16 80);
+  --warning: oklch(0.7 0.1 80);
   --warning-foreground: oklch(0.12 0.03 280);
 
-  --info: oklch(0.65 0.16 240);
+  --info: oklch(0.58 0.08 250);
   --info-foreground: oklch(0.12 0.03 280);
 
   --border: oklch(0.22 0.03 280);
@@ -124,26 +125,27 @@
   --ring: oklch(0.65 0.18 280);
 
   --chart-1: oklch(0.65 0.18 280);
-  --chart-2: oklch(0.6 0.16 150);
-  --chart-3: oklch(0.55 0.14 200);
+  --chart-2: oklch(0.55 0.12 155);
+  --chart-3: oklch(0.55 0.1 250);
   --chart-4: oklch(0.7 0.18 45);
   --chart-5: oklch(0.65 0.22 330);
 
-  --sidebar: oklch(0.14 0.03 280);
-  --sidebar-foreground: oklch(0.92 0.01 280);
+  --sidebar: oklch(0.145 0.025 280);
+  --sidebar-foreground: oklch(0.9 0.015 280);
   --sidebar-primary: oklch(0.65 0.18 280);
   --sidebar-primary-foreground: oklch(0.12 0.03 280);
-  --sidebar-accent: oklch(0.2 0.03 280);
-  --sidebar-accent-foreground: oklch(0.92 0.01 280);
-  --sidebar-border: oklch(0.22 0.03 280);
+  --sidebar-accent: oklch(0.22 0.025 280);
+  --sidebar-accent-foreground: oklch(0.9 0.02 280);
+  --sidebar-border: oklch(0.24 0.025 280);
   --sidebar-ring: oklch(0.65 0.18 280);
 
   --overlay: oklch(0 0 0 / 0.5);
   --overlay-modal: oklch(0 0 0 / 0.45);
-  --shadow-card: 0 4px 24px oklch(0 0 0 / 0.25);
-  --shadow-card-subtle: 0 1px 3px oklch(0 0 0 / 0.08);
-  --shadow-card-hover: 0 2px 6px oklch(0 0 0 / 0.12);
-  --header-elevation: 0 1px 3px oklch(0 0 0 / 0.15);
+  --shadow-card: 0 2px 12px oklch(0 0 0 / 0.2);
+  --shadow-card-subtle: 0 1px 2px oklch(0 0 0 / 0.06);
+  --shadow-card-hover: 0 2px 8px oklch(0 0 0 / 0.1);
+  --shadow-dialog: 0 8px 32px oklch(0 0 0 / 0.2);
+  --header-elevation: 0 1px 2px oklch(0 0 0 / 0.12);
 
   --login-grid-line: oklch(0.92 0.01 280 / 0.045);
   --login-radial-overlay: oklch(1 0 0 / 0.04);
@@ -330,11 +332,34 @@
   box-shadow: var(--header-elevation);
 }
 
+/* Sidebar section label — smooth fade-in when expanding (opacity-only for fluid feel) */
+@keyframes sidebar-label-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sidebar-label-fade-in {
+  animation: sidebar-label-fade-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) 0.1s both;
+}
+
 /* Optional: Hide scrollbar for specific UI elements (e.g. carousels) */
 .scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Main content scroll — reserve scrollbar space to prevent layout shift when scrolling */
+.scrollbar-hide-stable {
+  scrollbar-gutter: stable;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide-stable::-webkit-scrollbar {
   display: none;
 }

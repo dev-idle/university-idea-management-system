@@ -443,7 +443,7 @@ export default function EditIdeaPage() {
               {...register("title")}
             />
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Titles must be unique within the submission cycle.
+              Titles must be unique within the proposal cycle.
             </p>
             {errors.title && (
               <p className="text-xs leading-relaxed text-destructive/90" role="alert">
@@ -572,7 +572,7 @@ export default function EditIdeaPage() {
                     ) : (
                       <Paperclip className="size-4" aria-hidden />
                     )}
-                    {uploading ? "Uploading…" : "Add document"}
+                    {uploading ? "Uploading…" : "Add Document"}
                   </Button>
                 </>
               )}

@@ -82,7 +82,7 @@ export class AcademicYearsService {
           });
         if (otherYearsWithActiveCycle) {
           throw new BadRequestException(
-            'Cannot change active year: another academic year has an active submission cycle. Deactivate or close that cycle in Submission Cycles (QA Manager) first.',
+            'Cannot change active year: another academic year has an active proposal cycle. Deactivate or close that cycle in Proposal Cycles (QA Manager) first.',
           );
         }
         const [, updated] = await this.prisma.$transaction([
@@ -112,7 +112,7 @@ export class AcademicYearsService {
           });
         if (activeCycleForYear) {
           throw new BadRequestException(
-            'Cannot deactivate this academic year while it has an active submission cycle. Deactivate or close the cycle in Submission Cycles (QA Manager) first.',
+            'Cannot deactivate this academic year while it has an active proposal cycle. Deactivate or close that cycle in Proposal Cycles (QA Manager) first.',
           );
         }
       }

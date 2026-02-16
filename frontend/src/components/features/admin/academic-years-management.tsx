@@ -31,6 +31,8 @@ import {
   DIALOG_TITLE_SCULPTED_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
+  SHOWING_RANGE_BADGE_CLASS,
+  LOADING_TABLE_TEXT_CLASS,
   UNIFIED_CARD_CLASS,
   UNIFIED_CARD_TOOLBAR_CLASS,
   UNIFIED_SEARCH_INPUT_CLASS,
@@ -216,7 +218,7 @@ export function AcademicYearsManagement() {
               className={UNIFIED_SEARCH_INPUT_CLASS}
             />
             <kbd
-              className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+              className={SHOWING_RANGE_BADGE_CLASS}
               aria-hidden
             >
               ⌘K
@@ -246,7 +248,7 @@ export function AcademicYearsManagement() {
           <div className={LOADING_STATE_WRAPPER_CLASS}>
             <div className={LOADING_STATE_CONTENT_CLASS}>
               <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className="font-sans text-sm font-medium text-muted-foreground">Loading academic years…</p>
+              <p className={LOADING_TABLE_TEXT_CLASS}>Loading academic years…</p>
             </div>
           </div>
         ) : (
@@ -285,7 +287,7 @@ export function AcademicYearsManagement() {
                               : "No academic years yet."}
                           </p>
                           <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
-                            {searchQuery.trim() ? "Try a different search." : "Add one to get started."}
+                            {searchQuery.trim() ? "Try another search." : "Add one to begin."}
                           </p>
                         </td>
                       </tr>
@@ -353,7 +355,7 @@ export function AcademicYearsManagement() {
                                     </TooltipTrigger>
                                     <TooltipContent side="top">
                                       {hasActiveSubmissionCycleInSystem
-                                        ? "A submission cycle is active. Deactivate or close it in Submission Cycles (QA Manager) to change active year."
+                                        ? "Cycle active; close in Proposal Cycles"
                                         : "Activate"}
                                     </TooltipContent>
                                   </Tooltip>

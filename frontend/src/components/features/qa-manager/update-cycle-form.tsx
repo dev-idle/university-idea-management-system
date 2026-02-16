@@ -123,7 +123,7 @@ export function UpdateCycleForm({
       {variant === "default" && (
         <div>
           <h3 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Edit submission cycle
+            Edit proposal cycle
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Update closure times for DRAFT or ACTIVE cycles.

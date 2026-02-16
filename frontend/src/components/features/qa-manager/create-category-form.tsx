@@ -75,10 +75,10 @@ export function CreateCategoryForm({
       {variant === "default" && (
         <div>
           <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Add category
+            Add Category
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Create a new category for idea classification.
+            Create a category for proposal classification.
           </p>
         </div>
       )}

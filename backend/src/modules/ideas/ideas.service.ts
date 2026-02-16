@@ -539,7 +539,7 @@ export class IdeasService {
     const cycle = await this.getActiveCycle();
     if (!cycle || cycle.id !== body.cycleId) {
       throw new BadRequestException(
-        'No active submission cycle is open for ideas, or the selected cycle is not active.',
+        'No active proposal cycle is open for ideas, or the selected cycle is not active.',
       );
     }
     const now = new Date();
@@ -555,7 +555,7 @@ export class IdeasService {
     });
     if (!categoryInCycle) {
       throw new BadRequestException(
-        'The selected category is not available for this submission cycle.',
+        'The selected category is not available for this proposal cycle.',
       );
     }
 
@@ -569,7 +569,7 @@ export class IdeasService {
     });
     if (existingWithSameTitle) {
       throw new BadRequestException(
-        'A proposal with this title already exists in this submission cycle.',
+        'A proposal with this title already exists in this proposal cycle.',
       );
     }
 
@@ -915,7 +915,7 @@ export class IdeasService {
       });
       if (!categoryInCycle) {
         throw new BadRequestException(
-          'The selected category is not available for this submission cycle.',
+          'The selected category is not available for this proposal cycle.',
         );
       }
     }
@@ -933,7 +933,7 @@ export class IdeasService {
       });
       if (duplicate) {
         throw new BadRequestException(
-          'A proposal with this title already exists in this submission cycle.',
+          'A proposal with this title already exists in this proposal cycle.',
         );
       }
     }

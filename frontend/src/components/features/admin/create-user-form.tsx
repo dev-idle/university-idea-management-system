@@ -132,7 +132,7 @@ export function CreateUserForm({
     >
       {variant === "default" && (
         <p className="text-sm leading-relaxed text-muted-foreground">
-          Create an institutional account. All fields except full name are required.
+          Create an institutional account. All fields are required except full name.
         </p>
       )}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -337,7 +337,7 @@ export function CreateUserForm({
     <Card className="overflow-hidden rounded-xl border border-border/80 bg-card py-0 shadow-sm">
       <CardHeader className="border-b border-border/80 px-6 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/30 text-muted-foreground/90">
             <UserPlus className="size-4" strokeWidth={1.25} aria-hidden />
           </div>
           <CardTitle className="font-sans text-base font-semibold tracking-tight text-foreground">

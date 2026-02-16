@@ -474,7 +474,7 @@ export function IdeasHubContent() {
               <p className="mt-1 text-[12px] text-muted-foreground/50">
                 {canSubmit
                   ? "Be the first to share an idea"
-                  : "Check back when a submission cycle opens"}
+                  : "Check back when a proposal cycle opens"}
               </p>
             </div>
           ) : (

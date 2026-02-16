@@ -25,7 +25,7 @@ const ADMIN_FUNCTIONS = [
     permission: "USERS" as const,
     href: ROUTES.ADMIN_USERS,
     title: "User management",
-    description: "Create and manage user accounts and roles.",
+    description: "Manage user accounts and roles.",
     icon: Users,
   },
   {
@@ -58,7 +58,7 @@ function AdminModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-all duration-150 hover:bg-primary/[0.04] hover:border-primary/20 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
       <div className={ICON_BOX_PRIMARY_CLASS}>

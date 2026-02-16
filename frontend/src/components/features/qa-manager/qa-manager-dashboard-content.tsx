@@ -26,9 +26,9 @@ const QA_MANAGER_FUNCTIONS = [
     icon: Tags,
   },
   {
-    href: ROUTES.QA_MANAGER_SUBMISSION_CYCLES,
-    title: "Submission cycles",
-    description: "Create and manage proposal submission cycles.",
+    href: ROUTES.QA_MANAGER_PROPOSAL_CYCLES,
+    title: "Proposal cycles",
+    description: "Create and manage proposal cycles.",
     icon: CalendarRange,
   },
 ] as const;
@@ -47,7 +47,7 @@ function QaManagerModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-all duration-150 hover:bg-primary/[0.04] hover:border-primary/20 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
       <div className={ICON_BOX_PRIMARY_CLASS}>
@@ -83,7 +83,7 @@ function QaManagerSummary() {
         </p>
       </div>
       <div className={DASHBOARD_STAT_CARD_CLASS}>
-        <p className={SECTION_LABEL_CLASS}>Active submission cycle</p>
+        <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
         <p className={`mt-1 ${TYPO_STAT}`}>
           {activeCycle?.name ?? "—"}
         </p>

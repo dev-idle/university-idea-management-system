@@ -5,13 +5,12 @@
  * Quality: Prefer design tokens over ad-hoc values. Maintain refined borders,
  * subtle hovers, and consistent typography across all views.
  *
- * Color opacity scale (use consistently across Academic, User, Department, Profile, Dashboard):
- * - Borders: border/20 (hairline), border/40 (subtle), border/60 (medium), border/80 (strong)
- * - Muted bg: muted/10, muted/20, muted/25, muted/40, muted/50
- * - Primary accents: primary/5 (hover), primary/10 (bg), primary/20 (border), primary/30 (accent)
- * - Text: foreground, foreground/85, foreground/90; muted-foreground, muted-foreground/90
- * - Destructive: destructive/5 (bg), destructive/20 (border)
- * - Use semantic tokens (primary, muted, destructive, etc.) — never raw colors.
+ * Color opacity scale (use consistently):
+ * - Borders: /40 divider, /55 card/main, /80 input
+ * - Muted bg: /[0.03] toolbar, /[0.04] badge, /[0.05] header, /[0.06] hover light, /[0.10] row hover
+ * - Primary: /[0.06] ghost hover, /[0.08] action ring, /[0.12] accent bar, /30 border hover, /80 focus
+ * - Text: foreground/78 header, /88 secondary, /92–95 primary; muted-foreground/80 hint
+ * - Transitions: duration-200 standard
  *
  * Typography scale (2026): Use tokens below — avoid ad-hoc text-[Npx].
  * - Caption: labels, metadata, overlines
@@ -149,7 +148,7 @@ export const SECTION_CARD_DESCRIPTION_CLASS = TYPO_LEAD;
 
 /** Back / secondary link (muted until hover). */
 export const BACK_LINK_CLASS =
-  "inline-flex items-center gap-2 rounded-lg px-2 py-1.5 " + TYPO_NAV + " text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+  "inline-flex items-center gap-2 rounded-lg px-2 py-1.5 " + TYPO_NAV + " text-muted-foreground transition-colors duration-200 hover:bg-muted/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 /** Primary action button (height + rounding). */
 export const BUTTON_PRIMARY_CLASS = "h-9 gap-2 rounded-lg px-4";
@@ -180,6 +179,9 @@ export const MANAGEMENT_PAGE_SPACING = "space-y-10";
 
 // ─── Focus & interaction ───────────────────────────────────────────────────
 
+/** Standard hover transition for nav/menu items — consistent across sidebar, header, dropdown. */
+export const HOVER_TRANSITION_NAV = "transition-colors duration-200 ease-out";
+
 /** Standard focus ring (outline + ring). Use for links, cards, buttons. */
 export const FOCUS_RING_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
@@ -187,6 +189,147 @@ export const FOCUS_RING_CLASS =
 /** Primary-tinted focus ring for buttons and interactive elements. */
 export const FOCUS_RING_PRIMARY_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2";
+
+// ─── Sidebar (collapsible menu) — aligned with color opacity scale ───────────
+
+/** Easing for sidebar expand/collapse — smooth decelerate. */
+export const SIDEBAR_EASING = "cubic-bezier(0.32, 0.72, 0, 1)";
+
+/** Sidebar transition duration. */
+export const SIDEBAR_DURATION = "280ms";
+
+/** Sidebar nav: padding when expanded (align 4px grid). */
+export const SIDEBAR_NAV_PADDING = "pl-4 pr-4 py-2.5";
+
+/** Sidebar nav: gap icon ↔ text when expanded. */
+export const SIDEBAR_NAV_GAP = "gap-3";
+
+/** Sidebar nav: gap between items — expanded. */
+export const SIDEBAR_NAV_ITEM_GAP = "gap-1.5";
+
+/** Sidebar nav: gap between items — collapsed. */
+export const SIDEBAR_NAV_ITEM_GAP_COLLAPSED = "gap-2";
+
+/** Sidebar scroll: padding top — expanded (space from logo). */
+export const SIDEBAR_SCROLL_PT = "pt-8";
+
+/** Sidebar scroll: padding top — collapsed. */
+export const SIDEBAR_SCROLL_PT_COLLAPSED = "pt-5";
+
+/** Sidebar scroll: padding bottom. */
+export const SIDEBAR_SCROLL_PB = "pb-6";
+
+/** Sidebar scroll: horizontal padding when expanded. */
+export const SIDEBAR_SCROLL_PX = "px-3";
+
+/** Sidebar footer: padding. */
+export const SIDEBAR_FOOTER_PADDING = "px-3 py-4";
+
+/** Sidebar footer: button padding when expanded. */
+export const SIDEBAR_FOOTER_BUTTON_PADDING = "px-3 py-2";
+
+/** Sidebar active pill (left indicator). */
+export const SIDEBAR_ACTIVE_PILL = "absolute left-2 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-primary";
+
+/** Sidebar tooltip offset. */
+export const SIDEBAR_TOOLTIP_OFFSET = 8;
+
+/** Label expand delay (ms) — show labels after width is ~90% expanded. */
+export const SIDEBAR_LABELS_EXPAND_DELAY_MS = 260;
+
+/** Layout: unified border scale — clear, refined, design: /50 card, /40 between ─ */
+
+/** Main structural edge (sidebar right, navbar bottom). Design: /55. */
+export const LAYOUT_BORDER_MAIN = "border-border/55";
+
+/** Sidebar main edge — matches layout. */
+export const SIDEBAR_BORDER = "border-sidebar-border/55";
+
+/** Inner dividers (header/footer, vertical sep). Design: /40. */
+export const LAYOUT_BORDER_DIVIDER = "border-border/40";
+
+/** Sidebar inner — header/footer, section divider. */
+export const SIDEBAR_BORDER_INNER = "border-sidebar-border/40";
+
+/** Vertical/horizontal divider line (w-px, h-px). */
+export const LAYOUT_DIVIDER_LINE = "bg-border/40";
+
+/** Role Manager: card/panel border. Matches layout scale. */
+export const MGMT_BORDER_CARD = "border-border/55";
+
+/** Role Manager: divider (toolbar, table header, dialog header). */
+export const MGMT_BORDER_DIVIDER = "border-border/40";
+
+/** Role Manager: table row divider, subtle. */
+export const MGMT_BORDER_ROW = "border-border/40";
+
+/** Role Manager: muted toolbar/header bg. Design: /[0.03]. */
+export const MGMT_BG_TOOLBAR = "bg-muted/[0.03]";
+
+/** Role Manager: table header row bg. Design: /[0.05]. */
+export const MGMT_BG_TABLE_HEAD = "bg-muted/[0.05]";
+
+/** Role Manager: row hover. Design: /[0.10]. */
+export const MGMT_BG_ROW_HOVER = "hover:bg-muted/[0.10]";
+
+/** Role Manager: divide-y between rows (skeleton, list). */
+export const MGMT_DIVIDE = "divide-border/40";
+
+/** Section label typography — caption, readable. */
+export const SIDEBAR_SECTION_LABEL_CLASS =
+  "text-[11px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/52";
+
+/** Section label divider line. */
+export const SIDEBAR_SECTION_DIVIDER = "bg-sidebar-border/40";
+
+/** Section label: margin between sections when expanded. */
+export const SIDEBAR_SECTION_MARGIN = "mt-6";
+
+/** Section label: grid row height when expanded. */
+export const SIDEBAR_SECTION_ROW = "grid-rows-[2.5rem]";
+
+/** Section label: inner gap (label ↔ divider). */
+export const SIDEBAR_SECTION_INNER_GAP = "gap-2";
+
+/** Collapsed separator height. */
+export const SIDEBAR_COLLAPSED_SEP_HEIGHT = "h-4";
+
+/** Collapsed separator dot size. */
+export const SIDEBAR_COLLAPSED_SEP_DOT = "size-1";
+
+/** Collapsed state: subtle dot separator between icon groups. */
+export const SIDEBAR_COLLAPSED_SEP = "bg-sidebar-border/45";
+
+/** Collapsed nav: icon size — refined. */
+export const SIDEBAR_COLLAPSED_ICON_SIZE = "size-[18px]";
+
+/** Collapsed nav: hit area. Design: 36px standard. */
+export const SIDEBAR_COLLAPSED_HIT = "size-9";
+
+/** Nav item: inactive icon. Design: foreground/75 header. */
+export const SIDEBAR_NAV_INACTIVE = "text-sidebar-foreground/75";
+
+/** Nav item: inactive icon when collapsed. */
+export const SIDEBAR_NAV_ICON_COLLAPSED = "text-sidebar-foreground/52";
+
+/** Nav item: inactive text expanded. Design: /85 secondary. */
+export const SIDEBAR_NAV_TEXT_INACTIVE = "text-sidebar-foreground/88";
+
+/** Nav item & footer: hover. Design: subtle. */
+export const SIDEBAR_HOVER_BG = "hover:bg-sidebar-accent/45";
+
+/** Nav item: active. Design: /[0.06] ghost hover, /[0.08] action ring. */
+export const SIDEBAR_NAV_ACTIVE = "bg-primary/[0.06] ring-1 ring-primary/[0.08]";
+
+/** Footer collapse: icon when collapsed. */
+export const SIDEBAR_FOOTER_ICON = "text-sidebar-foreground/52";
+
+/** Footer collapse: "Collapse" text. */
+export const SIDEBAR_FOOTER_TEXT = "text-sidebar-foreground/78";
+
+/** Sidebar tooltip — refined. */
+export const SIDEBAR_TOOLTIP_CLASS =
+  "text-[11px] font-normal text-muted-foreground tracking-wide border-border/40";
 
 /** Input/select focus (border + ring). Use with rounded-lg inputs. */
 export const INPUT_FOCUS_RING_CLASS =
@@ -200,15 +343,15 @@ export const STATUS_BADGE_BASE =
 
 /** Active / approved status (success). */
 export const STATUS_BADGE_SUCCESS_CLASS =
-  `${STATUS_BADGE_BASE} border-success/30 bg-success/10 text-success`;
+  `${STATUS_BADGE_BASE} border-success/15 bg-success/[0.06] text-success/90`;
 
 /** Inactive / draft status (muted). */
 export const STATUS_BADGE_MUTED_CLASS =
-  `${STATUS_BADGE_BASE} border-border bg-muted/50 text-muted-foreground`;
+  `${STATUS_BADGE_BASE} border-border/35 bg-muted/[0.04] text-muted-foreground/90`;
 
 /** Closed / deadline status (warning). */
 export const STATUS_BADGE_WARNING_CLASS =
-  `${STATUS_BADGE_BASE} border-warning/30 bg-warning/10 text-warning-foreground`;
+  `${STATUS_BADGE_BASE} border-warning/15 bg-warning/[0.06] text-warning/90`;
 
 // ─── Icon boxes (section headers, cards) ─────────────────────────────────────
 
@@ -225,24 +368,24 @@ export const ICON_BOX_PRIMARY_CLASS =
 
 // ─── Alerts & inline feedback ───────────────────────────────────────────────
 
-/** Warning/closure alert. Use for submission closed, deadlines. Uses semantic --warning. */
+/** Warning/closure alert. Use for submission closed, deadlines. */
 export const ALERT_WARNING_CLASS =
-  "rounded-xl border border-warning/30 bg-warning/10 text-warning";
+  "rounded-xl border border-warning/15 bg-warning/[0.06] text-warning/90";
 
 /** Inline error block — subtle, minimalist. */
 export const DESTRUCTIVE_INLINE_CLASS =
-  "rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90";
+  "rounded-lg border border-destructive/12 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90";
 
 /** Inline error with left accent — form/block errors, refined. */
 export const DESTRUCTIVE_INLINE_ACCENT_CLASS =
-  "rounded-lg border-l-[3px] border-l-destructive/40 border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90";
+  "rounded-lg border-l-[3px] border-l-destructive/30 border border-destructive/12 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90";
 
 // ─── Buttons & form actions (refined, consistent) ─────────────────────────────
 
 /** Standard form submit button — h-9, refined. */
 export const FORM_SUBMIT_BUTTON_CLASS =
-  "h-9 min-w-[6rem] rounded-lg px-4 text-sm font-semibold bg-primary text-primary-foreground shadow-sm shadow-primary/5 transition-all duration-150 hover:bg-primary/90";
+  "h-9 min-w-[6rem] rounded-lg px-4 text-sm font-semibold bg-primary text-primary-foreground shadow-[var(--shadow-card-subtle)] transition-all duration-200 hover:bg-primary/95";
 
 /** Standard form outline/cancel button — h-9, matches submit height. */
 export const FORM_OUTLINE_BUTTON_CLASS =
-  "h-9 rounded-lg border border-border px-4 text-sm font-medium transition-colors hover:bg-muted/10";
+  "h-9 rounded-lg border border-border/80 px-4 text-sm font-medium transition-colors duration-200 hover:bg-muted/[0.06]";

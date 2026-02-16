@@ -107,7 +107,7 @@ export function CreateAcademicYearForm({
       {variant === "default" && (
         <div>
           <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Add academic year
+            Add Academic Year
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Define a new academic year with name and date range. Exactly one year can be active at a time.

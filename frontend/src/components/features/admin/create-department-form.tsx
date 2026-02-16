@@ -84,7 +84,7 @@ export function CreateDepartmentForm({
             Add Department
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Create a new department for institutional organisation.
+            Create a new department. Used for institutional organisation.
           </p>
         </div>
       )}

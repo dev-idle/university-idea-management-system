@@ -8,7 +8,7 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { TYPO_CAPTION_STRONG, TYPO_LABEL, TYPO_NAV } from "@/config/design";
+import { TYPO_CAPTION_STRONG, TYPO_LABEL, TYPO_NAV, HOVER_TRANSITION_NAV } from "@/config/design";
 import { PROFILE_AVATAR_FALLBACK_CLASS } from "@/components/features/admin/constants";
 import { ROUTES } from "@/config/constants";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -31,7 +31,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   "academic-years": "Academic Years",
   "qa-manager": "QA Manager",
   categories: "Categories",
-  "submission-cycles": "Submission Cycles",
+  "submission-cycles": "Proposal Cycles",
+  "proposal-cycles": "Proposal Cycles",
   "qa-coordinator": "QA Coordinator",
   ideas: "Ideas",
   new: "New",
@@ -75,7 +76,7 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
 /** Shared icon button for top app bars — size-8, rounded-lg. */
 const HEADER_ICON_CLASS =
-  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  `inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${HOVER_TRANSITION_NAV} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`;
 
 export function HeaderIconButton({
   icon: Icon,
@@ -90,7 +91,7 @@ export function HeaderIconButton({
   isActive?: boolean;
   onClick?: () => void;
 }) {
-  const activeClass = isActive ? "bg-background/80 text-primary shadow-sm" : "text-muted-foreground/60 hover:text-foreground";
+  const activeClass = isActive ? "bg-background/80 text-primary shadow-[var(--shadow-card-subtle)]" : "text-muted-foreground/65 hover:text-foreground/90";
   const content = (
     <span className={`flex items-center justify-center ${HEADER_ICON_CLASS} ${activeClass}`}>
       <Icon className="size-4" aria-hidden />
@@ -110,7 +111,7 @@ export function HeaderIconButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{wrapped}</TooltipTrigger>
-      <TooltipContent side="bottom" sideOffset={6} className={TYPO_LABEL}>
+      <TooltipContent side="bottom">
         {label}
       </TooltipContent>
     </Tooltip>
@@ -140,8 +141,8 @@ export function UserMenu({
           type="button"
           className={
             isPill
-              ? "group flex items-center gap-2.5 rounded-full border border-border/40 bg-muted/20 pl-1 pr-2.5 py-1 transition-all duration-200 hover:border-border/60 hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:border-transparent"
-              : "group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 transition-colors duration-200 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              ? `group flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/[0.04] pl-1 pr-2.5 py-1 ${HOVER_TRANSITION_NAV} hover:border-border/60 hover:bg-muted/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:border-transparent`
+              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
           }
         >
           <Avatar className={isPill ? "size-7 shrink-0" : "shrink-0"}>
@@ -159,7 +160,7 @@ export function UserMenu({
             </p>
           </div>
           <ChevronDown
-            className="size-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-200 group-data-[state=open]:rotate-180"
+            className="size-3.5 shrink-0 text-muted-foreground/60 transition-transform duration-200 group-data-[state=open]:rotate-180"
             aria-hidden
           />
         </button>
@@ -167,9 +168,9 @@ export function UserMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-64 overflow-hidden rounded-xl border border-border bg-popover p-0 shadow-lg"
+        className="w-64 overflow-hidden rounded-xl border border-border/55 bg-popover p-0 shadow-[var(--shadow-dialog)]"
       >
-        <div className="border-b border-border px-4 py-3.5">
+        <div className="border-b border-border/40 px-4 py-3.5">
           <div className="flex items-center gap-3">
             <Avatar className="size-10 shrink-0 rounded-full">
               <AvatarFallback className={`${PROFILE_AVATAR_FALLBACK_CLASS} text-sm font-semibold`}>
@@ -177,8 +178,8 @@ export function UserMenu({
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className={`truncate ${TYPO_NAV} font-semibold text-foreground`}>{displayName}</p>
-              <span className={`inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 ${TYPO_LABEL} text-primary`}>
+              <p className={`truncate ${TYPO_NAV} font-semibold text-foreground/95`}>{displayName}</p>
+              <span className={`inline-flex items-center rounded-md bg-primary/[0.08] px-1.5 py-0.5 ${TYPO_LABEL} text-primary/90`}>
                 <PrimaryRoleLabel roles={user.roles} />
               </span>
             </div>
@@ -187,7 +188,7 @@ export function UserMenu({
         <div className="p-1">
           <DropdownMenuItem asChild>
             <Link href={ROUTES.PROFILE} className={`flex items-center gap-2 rounded-md px-3 py-2 ${TYPO_NAV}`}>
-              <Settings className="size-4 text-muted-foreground" aria-hidden />
+              <Settings className="size-4 text-muted-foreground/80" aria-hidden />
               Account settings
             </Link>
           </DropdownMenuItem>
@@ -225,7 +226,7 @@ export function HeaderBreadcrumbs({
           <li>
             <Link
               href={getEntryRouteForRoles(user.roles)}
-              className="rounded-sm py-0.5 text-muted-foreground/70 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className={`rounded-sm py-0.5 text-muted-foreground/72 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
             >
               Dashboard
             </Link>
@@ -248,7 +249,7 @@ export function HeaderBreadcrumbs({
               ) : i < breadcrumbs.length - 1 ? (
                 <Link
                   href={item.href}
-                  className="truncate rounded-sm py-0.5 text-muted-foreground/75 transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+                  className={`truncate rounded-sm py-0.5 text-muted-foreground/75 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
                 >
                   {item.label}
                 </Link>

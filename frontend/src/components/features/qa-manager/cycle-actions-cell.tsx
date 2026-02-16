@@ -13,6 +13,7 @@ import {
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
   ACTION_BUTTON_DESTRUCTIVE_CLASS,
   ACTION_BUTTON_EDIT_CLASS,
+  ACTION_BUTTON_LOCK_CLASS,
   ACTION_BUTTON_MUTED_CLASS,
   ACTION_BUTTON_SUCCESS_CLASS,
   ACTION_BUTTON_WARNING_CLASS,
@@ -138,18 +139,18 @@ function CycleActionsCellInner({
     !cycles?.some((x) => x.id !== c.id && x.status === "ACTIVE");
 
   const getActivateTooltipDraft = () => {
-    if (!interactionStillOpen()) return "Votes & comments period has ended";
-    if (!c.academicYear?.isActive) return "Activate academic year first (Admin)";
+    if (!interactionStillOpen()) return "Interaction period ended";
+    if (!c.academicYear?.isActive) return "Academic year inactive";
     if (cycles?.some((x) => x.id !== c.id && x.status === "ACTIVE"))
-      return "Another cycle is active";
+      return "Another cycle active";
     return "Activate";
   };
   const getActivateTooltipReactivate = () => {
-    if (c.isLocked) return "Unlock to activate";
+    if (c.isLocked) return "Unlock to proceed";
     if (canReactivate()) return "Activate";
-    if (!interactionStillOpen()) return "Votes & comments period has ended";
-    if (!c.academicYear?.isActive) return "Activate academic year first (Admin)";
-    return "Another cycle is active";
+    if (!interactionStillOpen()) return "Interaction period ended";
+    if (!c.academicYear?.isActive) return "Academic year inactive";
+    return "Another cycle active";
   };
 
   const lockedEditClass = c.isLocked ? ACTION_BUTTON_DISABLED_BLUR_CLASS : ACTION_BUTTON_EDIT_CLASS;
@@ -171,7 +172,7 @@ function CycleActionsCellInner({
           {c.status === "ACTIVE" ? (
             <ActionBtn
               label="Activate cycle"
-              tooltip="Already active"
+              tooltip="Currently active"
               icon={CircleCheck}
               className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
               disabled
@@ -182,7 +183,7 @@ function CycleActionsCellInner({
               label="Activate cycle"
               tooltip={
                 c.isLocked
-                  ? "Unlock to activate"
+                  ? "Unlock to proceed"
                   : canReactivate()
                     ? "Activate"
                     : getActivateTooltipReactivate()
@@ -214,7 +215,7 @@ function CycleActionsCellInner({
               label="Lock cycle"
               tooltip="Lock"
               icon={Lock}
-              className={ACTION_BUTTON_MUTED_CLASS}
+              className={ACTION_BUTTON_LOCK_CLASS}
               disabled={lockMutation.isPending}
               onClick={() => lockMutation.mutate(c.id)}
             />
@@ -246,7 +247,7 @@ function CycleActionsCellInner({
         />
         <ActionBtn
           label="Lock (available when cycle closes)"
-          tooltip="Lock (available when cycle closes)"
+          tooltip="Available after closure"
           icon={Lock}
           className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
           disabled
@@ -315,7 +316,7 @@ function CycleActionsCellInner({
         getIdeaCount(c) >= 1 ? (
           <ActionBtn
             label="Lock"
-            tooltip="Activate and close cycle to lock"
+            tooltip="Requires closure first"
             icon={Lock}
             className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
             disabled
@@ -352,7 +353,7 @@ function CycleActionsCellInner({
                 label="Lock cycle"
                 tooltip="Lock"
                 icon={Lock}
-                className={ACTION_BUTTON_MUTED_CLASS}
+                className={ACTION_BUTTON_LOCK_CLASS}
                 disabled={lockMutation.isPending}
                 onClick={() => lockMutation.mutate(c.id)}
               />
@@ -360,7 +361,7 @@ function CycleActionsCellInner({
           ) : (
             <ActionBtn
               label="Lock cycle"
-              tooltip="Close cycle first to lock"
+              tooltip="Requires closure first"
               icon={Lock}
               className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
               disabled
@@ -370,7 +371,7 @@ function CycleActionsCellInner({
         ) : (
           <ActionBtn
             label="Delete cycle"
-            tooltip="Deactivate first to delete"
+            tooltip="Deactivate to proceed"
             icon={Trash2}
             className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
             disabled

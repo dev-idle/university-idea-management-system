@@ -64,6 +64,8 @@ import {
   ALERT_DIALOG_ERROR_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
+  SHOWING_RANGE_BADGE_CLASS,
+  LOADING_TABLE_TEXT_CLASS,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCategoryForm } from "./create-category-form";
@@ -154,7 +156,7 @@ export function CategoriesManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Add category
+                Add Category
               </DialogTitle>
             </DialogHeader>
             <CreateCategoryForm
@@ -211,7 +213,7 @@ export function CategoriesManagement() {
             <AlertDialogDescription>
               {categoryToDelete?.name}
               {" — "}
-              Delete when not in use; remove from cycles or ideas first.
+              Remove from cycles or ideas before deletion.
               {deleteMutation.isError && (
                 <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deleteMutation.error, ERROR_FALLBACK_FORM.delete)}
@@ -254,7 +256,7 @@ export function CategoriesManagement() {
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
-                className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border border-border bg-muted/20 px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground sm:inline-flex"
+                className={SHOWING_RANGE_BADGE_CLASS}
                 aria-hidden
               >
                 ⌘K
@@ -270,7 +272,7 @@ export function CategoriesManagement() {
               )}
             >
               <Plus className="size-4 shrink-0" aria-hidden />
-              {showCreate ? "Cancel" : "Add category"}
+              {showCreate ? "Cancel" : "Add Category"}
             </Button>
           </div>
         )}
@@ -278,7 +280,7 @@ export function CategoriesManagement() {
           <div className={LOADING_STATE_WRAPPER_CLASS}>
             <div className={LOADING_STATE_CONTENT_CLASS}>
               <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className="font-sans text-sm font-medium text-muted-foreground">
+              <p className={LOADING_TABLE_TEXT_CLASS}>
                 Loading categories…
               </p>
             </div>
@@ -313,7 +315,7 @@ export function CategoriesManagement() {
                                 : "No categories yet."}
                             </p>
                             <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
-                              {searchQuery.trim() ? "Try a different search." : "Add one to get started."}
+                              {searchQuery.trim() ? "Try another search." : "Add one to begin."}
                             </p>
                           </td>
                         </tr>
@@ -370,7 +372,7 @@ export function CategoriesManagement() {
                                     </TooltipTrigger>
                                     <TooltipContent side="top">
                                       {categoryInUse(c)
-                                        ? "In use — remove or reassign first"
+                                        ? "In use; reassign first"
                                         : "Delete"}
                                     </TooltipContent>
                                   </Tooltip>

@@ -22,8 +22,8 @@ export const ERROR_FALLBACK = {
 export const ERROR_FALLBACK_FORM = {
   createCategory: "Could not create category.",
   updateCategory: "Could not update category.",
-  createCycle: "Could not create submission cycle.",
-  updateCycle: "Could not update submission cycle.",
+  createCycle: "Could not create proposal cycle.",
+  updateCycle: "Could not update proposal cycle.",
   createUser: "Could not create user.",
   updateUser: "Could not update user.",
   createDepartment: "Could not create department.",

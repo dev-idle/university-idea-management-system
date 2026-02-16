@@ -136,10 +136,10 @@ export function CreateCycleForm({
       {variant === "default" && (
         <div>
           <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Add submission cycle
+            Add Proposal Cycle
           </h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Create a new submission cycle (DRAFT). Linked to an academic year; define closure times.
+            Create a proposal cycle (DRAFT). Link to an academic year and set closure dates.
           </p>
         </div>
       )}
