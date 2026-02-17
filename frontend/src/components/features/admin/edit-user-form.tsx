@@ -133,7 +133,7 @@ export function EditUserForm({
     }
   }
 
-  const hasError = !!errors.root || !!error;
+  const hasError = !!errors.root;
   const isDialog = variant === "dialog";
 
   return (
@@ -289,14 +289,14 @@ export function EditUserForm({
         </div>
       </div>
 
-      {(errors.root ?? error) && (
+      {errors.root && (
         <p
           id="edit-user-form-error"
           className={isDialog ? FORM_DIALOG_ROOT_ERROR_CLASS : FORM_ERROR_BLOCK_CLASS}
           role="alert"
           aria-live="polite"
         >
-          {getErrorMessage(errors.root ?? error, ERROR_FALLBACK_FORM.updateUser)}
+          {errors.root.message}
         </p>
       )}
 

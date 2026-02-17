@@ -3,8 +3,9 @@
 import type { Resolver } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo } from "react";
 import type { SubmissionCycle, UpdateCycleBody } from "@/lib/schemas/submission-cycles.schema";
-import { updateCycleFormSchema, type UpdateCycleFormValues } from "@/lib/schemas/submission-cycles.schema";
+import { updateCycleFormSchemaWithAcademicYear, type UpdateCycleFormValues } from "@/lib/schemas/submission-cycles.schema";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,9 +26,12 @@ import {
   FORM_BUTTON_CLASS,
   FORM_OUTLINE_BUTTON_CLASS,
   FORM_CARD_INPUT_CLASS,
+  DATE_PICKER_INPUT_CLASS,
   FORM_CHECKBOX_ACADEMIC_CLASS,
+  FORM_CATEGORIES_SCROLL_AREA_CLASS,
 } from "@/components/features/admin/constants";
 import { useCategoriesQuery } from "@/hooks/use-categories";
+import { cn } from "@/lib/utils";
 
 function dateToDatetimeLocal(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -54,6 +58,11 @@ export function UpdateCycleForm({
   variant = "default",
 }: UpdateCycleFormProps) {
   const { data: categories = [] } = useCategoriesQuery();
+
+  const updateCycleFormSchema = useMemo(
+    () => updateCycleFormSchemaWithAcademicYear(cycle.academicYear),
+    [cycle.academicYear]
+  );
 
   const {
     register,
@@ -109,6 +118,7 @@ export function UpdateCycleForm({
   const isDialog = variant === "dialog";
   const labelClass = isDialog ? FORM_DIALOG_LABEL_CLASS : FORM_LABEL_CLASS;
   const inputClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
+  const dateTimeClass = DATE_PICKER_INPUT_CLASS;
   const fieldWrapper = isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "space-y-2";
 
   return (
@@ -132,7 +142,7 @@ export function UpdateCycleForm({
       )}
 
       <div className={fieldWrapper}>
-        <Label className={labelClass}>Academic year</Label>
+        <span className={labelClass}>Academic year</span>
         <p className="text-sm font-medium text-foreground">{cycle.academicYear.name}</p>
       </div>
 
@@ -156,19 +166,21 @@ export function UpdateCycleForm({
       </div>
 
       <div className={fieldWrapper}>
-        <Label className={labelClass}>Categories</Label>
+        <Label htmlFor={categories[0] ? `edit-cycle-cat-${categories[0].id}` : undefined} className={cn(labelClass, categories.length > 0 && "cursor-pointer")}>Categories</Label>
         <Controller
           name="categoryIds"
           control={control}
           render={({ field }) => (
-            <ScrollArea className="h-40 overflow-hidden rounded-lg border border-input px-3 py-2">
+            <ScrollArea className={FORM_CATEGORIES_SCROLL_AREA_CLASS}>
               <div className="flex flex-col gap-2 pt-2 pb-2 pr-1">
-                {categories.map((c) => (
+                {categories.map((c, idx) => (
                   <label
                     key={c.id}
+                    htmlFor={idx === 0 ? `edit-cycle-cat-${c.id}` : undefined}
                     className="flex items-center gap-2 text-sm cursor-pointer"
                   >
                     <Checkbox
+                      id={idx === 0 ? `edit-cycle-cat-${c.id}` : undefined}
                       className={FORM_CHECKBOX_ACADEMIC_CLASS}
                       checked={field.value?.includes(c.id) ?? false}
                       onCheckedChange={(checked) => {
@@ -194,7 +206,7 @@ export function UpdateCycleForm({
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-start">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:items-start">
         <div className={fieldWrapper}>
           <Label htmlFor="edit-ideaSubmissionClosesAt" className={labelClass}>
             Idea closes
@@ -209,10 +221,16 @@ export function UpdateCycleForm({
                 onChange={field.onChange}
                 placeholder="Select date and time"
                 aria-invalid={!!errors.ideaSubmissionClosesAt}
-                className={inputClass}
+                aria-describedby={errors.ideaSubmissionClosesAt ? "edit-ideaSubmissionClosesAt-error" : undefined}
+                className={dateTimeClass}
               />
             )}
           />
+          {errors.ideaSubmissionClosesAt && (
+            <p id="edit-ideaSubmissionClosesAt-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
+              {errors.ideaSubmissionClosesAt.message}
+            </p>
+          )}
         </div>
         <div className={fieldWrapper}>
           <Label htmlFor="edit-interactionClosesAt" className={labelClass}>
@@ -229,14 +247,14 @@ export function UpdateCycleForm({
                 placeholder="Select date and time"
                 aria-invalid={!!errors.interactionClosesAt}
                 aria-describedby={errors.interactionClosesAt ? "edit-interactionClosesAt-error" : undefined}
-                className={inputClass}
+                className={dateTimeClass}
               />
             )}
           />
           <button
             type="button"
             onClick={setInteractionDefault}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-muted-foreground/80 transition-colors duration-200 hover:text-primary hover:bg-primary/[0.06] rounded-md px-2 py-1 -ml-2"
           >
             +14 days from idea close
           </button>

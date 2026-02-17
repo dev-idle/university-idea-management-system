@@ -31,7 +31,7 @@ export function SessionRestore({ children }: { children: ReactNode }) {
 
     if (triedRestore.current) return;
     triedRestore.current = true;
-    setRestoring(true);
+    queueMicrotask(() => setRestoring(true));
 
     refreshAction()
       .then((result) => {

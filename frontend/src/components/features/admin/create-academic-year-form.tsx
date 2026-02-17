@@ -20,8 +20,8 @@ import {
   FORM_DIALOG_ROOT_ERROR_CLASS,
   FORM_FIELD_ERROR_CLASS,
   FORM_CARD_INPUT_CLASS,
+  DATE_PICKER_INPUT_CLASS,
 } from "./constants";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
@@ -119,8 +119,9 @@ export function CreateAcademicYearForm({
   }
 
   const isDialog = variant === "dialog";
-  const labelClass = isDialog ? FORM_DIALOG_LABEL_CLASS : "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+  const labelClass = isDialog ? FORM_DIALOG_LABEL_CLASS : "text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80";
   const inputBaseClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
+  const datePickerClass = DATE_PICKER_INPUT_CLASS;
 
   return (
     <form
@@ -141,7 +142,7 @@ export function CreateAcademicYearForm({
           </p>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="space-y-6">
         <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
           <Label htmlFor="name" className={labelClass}>
             Name
@@ -166,70 +167,72 @@ export function CreateAcademicYearForm({
             </p>
           )}
         </div>
-        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
-          <Label htmlFor="startDate" className={labelClass}>
-            Start date
-          </Label>
-          <Controller
-            name="startDate"
-            control={control}
-            render={({ field }) => (
-              <DatePicker
-                id="startDate"
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Select start date"
-                aria-invalid={!!errors.startDate}
-                aria-describedby={errors.startDate ? "startDate-error" : undefined}
-                className={inputBaseClass}
-              />
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
+            <Label htmlFor="startDate" className={labelClass}>
+              Start date
+            </Label>
+            <Controller
+              name="startDate"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  id="startDate"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select start date"
+                  aria-invalid={!!errors.startDate}
+                  aria-describedby={errors.startDate ? "startDate-error" : undefined}
+                  className={datePickerClass}
+                />
+              )}
+            />
+            {errors.startDate && (
+              <p id="startDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
+                {errors.startDate.message}
+              </p>
             )}
-          />
-          {errors.startDate && (
-            <p id="startDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
-              {errors.startDate.message}
-            </p>
-          )}
-        </div>
-        <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
-          <Label htmlFor="endDate" className={labelClass}>
-            End date
-          </Label>
-          <Controller
-            name="endDate"
-            control={control}
-            render={({ field }) => (
-              <DatePicker
-                id="endDate"
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Select end date"
-                aria-invalid={!!errors.endDate}
-                aria-describedby={errors.endDate ? "endDate-error" : undefined}
-                className={inputBaseClass}
-              />
+          </div>
+          <div className={isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "group min-w-0 space-y-2"}>
+            <Label htmlFor="endDate" className={labelClass}>
+              End date
+            </Label>
+            <Controller
+              name="endDate"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  id="endDate"
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select end date"
+                  aria-invalid={!!errors.endDate}
+                  aria-describedby={errors.endDate ? "endDate-error" : undefined}
+                  className={datePickerClass}
+                />
+              )}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const startVal = getValues("startDate");
+                if (startVal) {
+                  const { formatted } = computeEndDateFromStart(startVal);
+                  setValue("endDate", formatted, {
+                    shouldValidate: true,
+                  });
+                }
+              }}
+              className="text-xs text-muted-foreground/80 transition-colors duration-200 hover:text-primary hover:bg-primary/[0.06] rounded-md px-2 py-1 -ml-2"
+            >
+              +1 year from start date
+            </button>
+            {errors.endDate && (
+              <p id="endDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
+                {errors.endDate.message}
+              </p>
             )}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              const startVal = getValues("startDate");
-              if (startVal) {
-                const { formatted } = computeEndDateFromStart(startVal);
-                setValue("endDate", formatted, {
-                  shouldValidate: true,
-                });
-              }
-            }}
-            className="text-xs text-primary hover:underline"
-          >
-            +1 year from start date
-          </button>
-          {errors.endDate && (
-            <p id="endDate-error" className={FORM_FIELD_ERROR_CLASS} role="alert">
-              {errors.endDate.message}
-            </p>
-          )}
+          </div>
         </div>
       </div>
       {errors.root && (

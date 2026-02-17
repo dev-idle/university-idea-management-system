@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useMyIdeasQuery, useDeleteMyIdeaMutation } from "@/hooks/use-ideas";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage } from "@/lib/errors";
-import { cn, timeAgo } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { timeAgo } from "@/lib/utils";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -189,7 +188,6 @@ function IdeaRow({
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 
 export default function MyIdeasPage() {
-  const router = useRouter();
   const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<OwnIdeaListItem | null>(
     null,
@@ -244,16 +242,13 @@ export default function MyIdeasPage() {
       {/* Feed */}
       {status === "pending" ? (
         <div className="flex flex-col items-center py-28">
-          <div className="size-7 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
-          <p className="mt-5 text-[13px] text-muted-foreground/60">
-            Loading your proposals…
-          </p>
+          <LoadingState message="Loading your proposals…" />
         </div>
       ) : !ideas.length ? (
         <div className="flex flex-col items-center py-28 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/30">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/[0.08]">
             <Lightbulb
-              className="size-6 text-muted-foreground/30"
+              className="size-6 text-muted-foreground/40"
               aria-hidden
             />
           </div>

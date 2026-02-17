@@ -22,6 +22,43 @@ function defaultInteractionClosesAt(ideaSubmissionClosesAt: Date): Date {
   return d;
 }
 
+function endOfDay(d: Date): Date {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+}
+
+function assertDatesWithinAcademicYear(
+  ideaSubmissionClosesAt: Date,
+  interactionClosesAt: Date,
+  startDate: Date,
+  endDate: Date | null,
+) {
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  const end = endDate ? endOfDay(endDate) : null;
+  if (ideaSubmissionClosesAt < start) {
+    throw new BadRequestException(
+      'Idea closure date must be within the academic year (on or after start date)',
+    );
+  }
+  if (end != null && ideaSubmissionClosesAt > end) {
+    throw new BadRequestException(
+      'Idea closure date must be within the academic year (on or before end date)',
+    );
+  }
+  if (interactionClosesAt < start) {
+    throw new BadRequestException(
+      'Comments & votes closure date must be within the academic year (on or after start date)',
+    );
+  }
+  if (end != null && interactionClosesAt > end) {
+    throw new BadRequestException(
+      'Comments & votes closure date must be within the academic year (on or before end date)',
+    );
+  }
+}
+
 @Injectable()
 export class SubmissionCyclesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -36,11 +73,17 @@ export class SubmissionCyclesService {
     }
     const academicYear = await this.prisma.academicYear.findUnique({
       where: { id: body.academicYearId },
-      select: { id: true },
+      select: { id: true, startDate: true, endDate: true },
     });
     if (!academicYear) {
       throw new NotFoundException('Academic year not found');
     }
+    assertDatesWithinAcademicYear(
+      body.ideaSubmissionClosesAt,
+      interactionClosesAt,
+      academicYear.startDate,
+      academicYear.endDate,
+    );
     const existingByName = await this.prisma.ideaSubmissionCycle.findFirst({
       where: { name: body.name },
       select: { id: true },
@@ -114,7 +157,15 @@ export class SubmissionCyclesService {
   async update(id: string, body: UpdateCycleBody) {
     const existing = await this.prisma.ideaSubmissionCycle.findUnique({
       where: { id },
-      select: { id: true, status: true, isLocked: true, _count: { select: { ideas: true } } },
+      select: {
+        id: true,
+        status: true,
+        isLocked: true,
+        ideaSubmissionClosesAt: true,
+        interactionClosesAt: true,
+        academicYear: { select: { startDate: true, endDate: true } },
+        _count: { select: { ideas: true } },
+      },
     });
     if (!existing) {
       throw new NotFoundException('Proposal cycle not found');
@@ -139,18 +190,29 @@ export class SubmissionCyclesService {
         throw new ConflictException('A proposal cycle with this name already exists.');
       }
     }
+    const ideaSubmissionClosesAt =
+      body.ideaSubmissionClosesAt ?? existing.ideaSubmissionClosesAt;
     const interactionClosesAt =
       body.interactionClosesAt ??
       (body.ideaSubmissionClosesAt
         ? defaultInteractionClosesAt(body.ideaSubmissionClosesAt)
-        : undefined);
+        : existing.interactionClosesAt);
+    if (body.ideaSubmissionClosesAt != null || body.interactionClosesAt != null) {
+      const ay = existing.academicYear;
+      assertDatesWithinAcademicYear(
+        ideaSubmissionClosesAt,
+        interactionClosesAt,
+        ay.startDate,
+        ay.endDate,
+      );
+    }
     try {
       const cycle = await this.prisma.ideaSubmissionCycle.update({
         where: { id },
         data: {
           ...(body.name !== undefined && { name: body.name.trim() }),
           ...(body.ideaSubmissionClosesAt !== undefined && {
-            ideaSubmissionClosesAt: body.ideaSubmissionClosesAt,
+            ideaSubmissionClosesAt,
           }),
           ...(interactionClosesAt !== undefined && { interactionClosesAt }),
           ...(body.categoryIds !== undefined && {

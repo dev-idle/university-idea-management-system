@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/pagination";
 import { getAvatarInitial, cn, timeAgo } from "@/lib/utils";
 import { ALERT_WARNING_CLASS } from "@/config/design";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -363,7 +364,7 @@ export function IdeasHubContent() {
       {/* ── Compose CTA ──────────────────────────────────────────────── */}
       {canSubmit && (
         <Link href={ROUTES.IDEAS_NEW} className="group/cta block">
-          <div className="flex items-center gap-4 rounded-2xl border border-border/30 bg-card px-6 py-5 transition-all duration-300 hover:border-border/60 hover:shadow-md hover:shadow-black/[0.03] sm:px-7">
+          <div className="flex items-center gap-4 rounded-2xl border border-border/55 bg-card px-6 py-5 transition-all duration-300 hover:border-border/80 hover:shadow-md hover:shadow-black/[0.03] sm:px-7">
             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary/60 transition-colors duration-300 group-hover/cta:bg-primary/[0.10] group-hover/cta:text-primary/80">
               <Lightbulb className="size-[22px]" aria-hidden />
             </div>
@@ -422,16 +423,13 @@ export function IdeasHubContent() {
       {isCommentsView ? (
         commentsStatus === "pending" ? (
           <div className="flex flex-col items-center py-28">
-            <div className="size-7 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
-            <p className="mt-5 text-[13px] text-muted-foreground/60">
-              Loading comments…
-            </p>
+            <LoadingState message="Loading comments…" />
           </div>
         ) : latestComments.length === 0 ? (
           <div className="flex flex-col items-center py-28 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/30">
-              <MessageSquare
-                className="size-6 text-muted-foreground/30"
+<div className="flex size-14 items-center justify-center rounded-2xl bg-muted/[0.08]">
+                <MessageSquare
+                  className="size-6 text-muted-foreground/40"
                 aria-hidden
               />
             </div>
@@ -455,16 +453,13 @@ export function IdeasHubContent() {
           {(ctxStatus === "pending" || ideasStatus === "pending") &&
           !listData ? (
             <div className="flex flex-col items-center py-28">
-              <div className="size-7 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
-              <p className="mt-5 text-[13px] text-muted-foreground/60">
-                Loading proposals…
-              </p>
+              <LoadingState message="Loading proposals…" />
             </div>
           ) : !ideas.length ? (
             <div className="flex flex-col items-center py-28 text-center">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/30">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/[0.08]">
                 <Lightbulb
-                  className="size-6 text-muted-foreground/30"
+                  className="size-6 text-muted-foreground/40"
                   aria-hidden
                 />
               </div>

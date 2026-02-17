@@ -45,9 +45,6 @@ import {
   DIALOG_OVERLAY_SCULPTED_CLASS,
   DIALOG_HEADER_SCULPTED_CLASS,
   DIALOG_TITLE_SCULPTED_CLASS,
-  LOADING_STATE_WRAPPER_CLASS,
-  LOADING_STATE_CONTENT_CLASS,
-  LOADING_SPINNER_CLASS,
   TABLE_HEAD_CELL_CLASS,
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_2,
@@ -65,11 +62,11 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
-  LOADING_TABLE_TEXT_CLASS,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCategoryForm } from "./create-category-form";
 import { UpdateCategoryForm } from "./update-category-form";
+import { LoadingState } from "@/components/ui/loading-state";
 import { cn } from "@/lib/utils";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 
@@ -239,7 +236,7 @@ export function CategoriesManagement() {
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
             <div className="relative w-72">
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
                 aria-hidden
               />
               <input
@@ -277,14 +274,7 @@ export function CategoriesManagement() {
           </div>
         )}
         {status === "pending" && !categories ? (
-          <div className={LOADING_STATE_WRAPPER_CLASS}>
-            <div className={LOADING_STATE_CONTENT_CLASS}>
-              <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className={LOADING_TABLE_TEXT_CLASS}>
-                Loading categories…
-              </p>
-            </div>
-          </div>
+          <LoadingState message="Loading categories…" />
         ) : (
             <>
               <TooltipProvider delayDuration={300}>
@@ -314,7 +304,7 @@ export function CategoriesManagement() {
                                 ? "No matching categories."
                                 : "No categories yet."}
                             </p>
-                            <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                            <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
                               {searchQuery.trim() ? "Try another search." : "Add one to begin."}
                             </p>
                           </td>

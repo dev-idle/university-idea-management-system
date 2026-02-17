@@ -591,7 +591,7 @@ function StaffLayout({
           {activeYearName && (
             <>
               <div className={`h-4 w-px shrink-0 ${LAYOUT_DIVIDER_LINE}`} aria-hidden />
-              <span className="truncate text-sm text-muted-foreground/70" title={activeYearName}>
+              <span className="truncate text-sm text-muted-foreground/80" title={activeYearName}>
                 {activeYearName}
               </span>
             </>

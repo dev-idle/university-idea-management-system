@@ -160,6 +160,48 @@ export const LOADING_WRAPPER_CLASS =
 /** Loading / empty state text. */
 export const LOADING_TEXT_CLASS = TYPO_BODY_SM;
 
+/** Loading spinner — design scale primary/[0.08] track, full primary tip. Smooth ease-in-out via .loading-spinner. */
+export const LOADING_SPINNER_CLASS =
+  "loading-spinner size-4 shrink-0 rounded-full border border-primary/[0.08] border-t-primary";
+
+/** Loading spinner large (root, full-page) — size-8. */
+export const LOADING_SPINNER_LG_CLASS =
+  "loading-spinner size-8 shrink-0 rounded-full border-2 border-primary/[0.08] border-t-primary";
+
+/** Loading spinner on primary/dark bg (button) — use primary-foreground. */
+export const LOADING_SPINNER_ON_PRIMARY_CLASS =
+  "loading-spinner size-4 shrink-0 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground";
+
+/** Loading spinner on primary — small (size-3) for compact buttons. */
+export const LOADING_SPINNER_ON_PRIMARY_SM_CLASS =
+  "loading-spinner size-3 shrink-0 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground";
+
+/** Loading state block (spinner + optional label). Tighter, minimal. */
+export const LOADING_STATE_WRAPPER_CLASS =
+  "flex min-h-[8rem] items-center justify-center py-12";
+
+/** Loading state content — compact vertical stack. */
+export const LOADING_STATE_CONTENT_CLASS =
+  "flex flex-col items-center gap-3";
+
+/** Loading state label — design: muted-foreground/80 hint. */
+export const LOADING_STATE_TEXT_CLASS =
+  "text-xs font-medium text-muted-foreground/80";
+
+// ─── Skeleton (unified color scale — muted, primary accent optional) ──────────
+
+/** Skeleton base — subtle. Use for blocks, rows. Design: muted/[0.06]. */
+export const SKELETON_BG_SUBTLE = "bg-muted/[0.06]";
+
+/** Skeleton medium — toolbar buttons, header cells. Design: muted/[0.08]. */
+export const SKELETON_BG_MEDIUM = "bg-muted/[0.08]";
+
+/** Skeleton strong — emphasis blocks. Design: muted/[0.10]. */
+export const SKELETON_BG_STRONG = "bg-muted/[0.10]";
+
+/** Skeleton toolbar/input placeholder. Matches MGMT_BG_TOOLBAR. */
+export const SKELETON_BG_INPUT = "bg-muted/[0.03]";
+
 /** Stat/summary card with primary top accent (dashboards). */
 export const CARD_STAT_CLASS =
   `${CARD_CLASS} border-t-2 border-t-primary/30`;
@@ -239,20 +281,20 @@ export const SIDEBAR_LABELS_EXPAND_DELAY_MS = 260;
 
 /** Layout: unified border scale — clear, refined, design: /50 card, /40 between ─ */
 
-/** Main structural edge (sidebar right, navbar bottom). Design: /55. */
-export const LAYOUT_BORDER_MAIN = "border-border/55";
+/** Main structural edge (sidebar right, navbar bottom). Design: /65. */
+export const LAYOUT_BORDER_MAIN = "border-border/65";
 
 /** Sidebar main edge — matches layout. */
-export const SIDEBAR_BORDER = "border-sidebar-border/55";
+export const SIDEBAR_BORDER = "border-sidebar-border/65";
 
-/** Inner dividers (header/footer, vertical sep). Design: /40. */
-export const LAYOUT_BORDER_DIVIDER = "border-border/40";
+/** Inner dividers (header/footer, vertical sep). Design: /65 — visible, synced with main edge. */
+export const LAYOUT_BORDER_DIVIDER = "border-border/65";
 
-/** Sidebar inner — header/footer, section divider. */
-export const SIDEBAR_BORDER_INNER = "border-sidebar-border/40";
+/** Sidebar inner — header/footer, section divider. Synced with layout. */
+export const SIDEBAR_BORDER_INNER = "border-sidebar-border/65";
 
-/** Vertical/horizontal divider line (w-px, h-px). */
-export const LAYOUT_DIVIDER_LINE = "bg-border/40";
+/** Vertical/horizontal divider line (w-px, h-px). Synced with layout. */
+export const LAYOUT_DIVIDER_LINE = "bg-border/65";
 
 /** Role Manager: card/panel border. Matches layout scale. */
 export const MGMT_BORDER_CARD = "border-border/55";
@@ -279,8 +321,8 @@ export const MGMT_DIVIDE = "divide-border/40";
 export const SIDEBAR_SECTION_LABEL_CLASS =
   "text-[11px] font-medium uppercase tracking-[0.08em] text-sidebar-foreground/52";
 
-/** Section label divider line. */
-export const SIDEBAR_SECTION_DIVIDER = "bg-sidebar-border/40";
+/** Section label divider — softer than logo line, avoids repetition. */
+export const SIDEBAR_SECTION_DIVIDER = "bg-sidebar-border/35";
 
 /** Section label: margin between sections when expanded. */
 export const SIDEBAR_SECTION_MARGIN = "mt-6";

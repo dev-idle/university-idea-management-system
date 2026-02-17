@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function QaManagerProposalCyclesPage() {
   return (
-    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
+    <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
       <Suspense fallback={<SubmissionCyclesManagementSkeleton />}>
         <SubmissionCyclesManagement />
       </Suspense>

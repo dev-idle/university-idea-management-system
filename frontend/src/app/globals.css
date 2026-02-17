@@ -332,6 +332,36 @@
   box-shadow: var(--header-elevation);
 }
 
+/* Loading spinner — smooth ease-in-out rotation, 2026 design. */
+@keyframes loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: opacity pulse instead of spin. */
+@keyframes loading-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.loading-spinner {
+  animation: loading-spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: loading-pulse 1.2s ease-in-out infinite;
+  }
+}
+
 /* Sidebar section label — smooth fade-in when expanding (opacity-only for fluid feel) */
 @keyframes sidebar-label-fade-in {
   from {

@@ -9,12 +9,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAuthStore } from "@/stores/auth.store";
 import { ROUTES, getEntryRouteForRoles } from "@/config/constants";
 import { loginBodySchema, type LoginBody } from "@/lib/schemas/auth.schema";
-import { DESTRUCTIVE_INLINE_CLASS } from "@/config/design";
+import { LOADING_SPINNER_ON_PRIMARY_CLASS } from "@/config/design";
 import {
   FORM_DIALOG_INPUT_CLASS,
   FORM_DIALOG_LABEL_CLASS,
   FORM_DIALOG_FIELD_WRAPPER_CLASS,
   FORM_FIELD_ERROR_CLASS,
+  FORM_ERROR_BLOCK_CLASS,
 } from "@/components/features/admin/constants";
 import { ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ function SubmitButton({ pending }: { pending: boolean }) {
   return (
     <Button
       type="submit"
-      className="h-11 w-full rounded-lg font-medium"
+      className="h-11 w-full rounded-lg font-semibold shadow-[var(--shadow-card-subtle)] transition-all duration-200 hover:bg-primary/95"
       disabled={pending}
       aria-busy={pending}
       aria-live="polite"
@@ -33,7 +34,7 @@ function SubmitButton({ pending }: { pending: boolean }) {
       {pending ? (
         <span className="inline-flex items-center gap-2">
           <span
-            className="size-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent"
+            className={LOADING_SPINNER_ON_PRIMARY_CLASS}
             aria-hidden
           />
           Signing in…
@@ -85,7 +86,7 @@ export function LoginForm() {
       noValidate
       aria-label="Sign in"
     >
-      <div className="flex flex-col gap-6 rounded-xl border border-border/50 bg-muted/5 px-5 py-5 sm:px-6 sm:py-6">
+      <div className="flex flex-col gap-6 rounded-xl border border-border/40 bg-muted/[0.03] px-5 py-5 sm:px-6 sm:py-6">
         <div className="space-y-6">
           <div className={FORM_DIALOG_FIELD_WRAPPER_CLASS}>
             <Label htmlFor="login-email" className={FORM_DIALOG_LABEL_CLASS}>
@@ -131,7 +132,7 @@ export function LoginForm() {
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-muted-foreground transition-colors hover:bg-primary/5 hover:text-primary"
+                className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-muted-foreground/80 transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 tabIndex={-1}
@@ -153,7 +154,7 @@ export function LoginForm() {
 
         {errors.root && (
           <div
-            className={DESTRUCTIVE_INLINE_CLASS}
+            className={FORM_ERROR_BLOCK_CLASS}
             role="alert"
             aria-live="assertive"
           >

@@ -30,9 +30,6 @@ import {
   UNIFIED_SEARCH_INPUT_CLASS,
   TOOLBAR_ADD_BUTTON_BASE_CLASS,
   TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
-  LOADING_STATE_WRAPPER_CLASS,
-  LOADING_STATE_CONTENT_CLASS,
-  LOADING_SPINNER_CLASS,
   DIALOG_CONTENT_SCULPTED_CLASS,
   DIALOG_OVERLAY_SCULPTED_CLASS,
   DIALOG_HEADER_SCULPTED_CLASS,
@@ -41,7 +38,6 @@ import {
   TABLE_HEAD_CELL_ACTIONS_CLASS,
   TABLE_ACTIONS_MIN_W_2,
   TABLE_ACTIONS_CELL_CLASS,
-  TABLE_LOADING_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
   TABLE_BASE_CLASS,
   TABLE_HEAD_ROW_CLASS,
@@ -55,7 +51,6 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
-  LOADING_TABLE_TEXT_CLASS,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { CreateDepartmentForm } from "./create-department-form";
@@ -70,6 +65,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LoadingState } from "@/components/ui/loading-state";
 import { cn } from "@/lib/utils";
 import { Building2, Pencil, Plus, Trash2, Search } from "lucide-react";
 
@@ -230,7 +226,7 @@ export function DepartmentsManagement() {
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
             <div className="relative w-72">
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
                 aria-hidden
               />
               <input
@@ -273,12 +269,7 @@ export function DepartmentsManagement() {
         </Can>
 
         {status === "pending" && !departments ? (
-          <div className={LOADING_STATE_WRAPPER_CLASS}>
-            <div className={LOADING_STATE_CONTENT_CLASS}>
-              <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className={LOADING_TABLE_TEXT_CLASS}>Loading departments…</p>
-            </div>
-          </div>
+          <LoadingState message="Loading departments…" />
         ) : (
           <>
             <TooltipProvider delayDuration={300}>
@@ -303,7 +294,7 @@ export function DepartmentsManagement() {
                           <p className="font-sans text-sm font-medium text-foreground">
                             No departments yet.
                           </p>
-                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
                             Add one to begin.
                           </p>
                         </td>
@@ -314,7 +305,7 @@ export function DepartmentsManagement() {
                           <p className="font-sans text-sm font-medium text-foreground">
                             No matching departments.
                           </p>
-                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
                             Try a different search.
                           </p>
                         </td>

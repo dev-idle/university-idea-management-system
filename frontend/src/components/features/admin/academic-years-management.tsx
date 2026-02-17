@@ -43,13 +43,9 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
-  LOADING_TABLE_TEXT_CLASS,
   UNIFIED_CARD_CLASS,
   UNIFIED_CARD_TOOLBAR_CLASS,
   UNIFIED_SEARCH_INPUT_CLASS,
-  LOADING_STATE_WRAPPER_CLASS,
-  LOADING_STATE_CONTENT_CLASS,
-  LOADING_SPINNER_CLASS,
   TABLE_BASE_CLASS,
   TABLE_HEAD_ROW_CLASS,
   TABLE_HEAD_CELL_CLASS,
@@ -74,6 +70,7 @@ import {
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
+import { LoadingState } from "@/components/ui/loading-state";
 import { cn } from "@/lib/utils";
 import { CalendarDays, Pencil, CircleCheck, Plus, Search, Trash2 } from "lucide-react";
 
@@ -259,7 +256,7 @@ export function AcademicYearsManagement() {
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
             <div className="relative w-72">
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
                 aria-hidden
               />
               <input
@@ -302,12 +299,7 @@ export function AcademicYearsManagement() {
         </Can>
 
         {status === "pending" && !years ? (
-          <div className={LOADING_STATE_WRAPPER_CLASS}>
-            <div className={LOADING_STATE_CONTENT_CLASS}>
-              <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className={LOADING_TABLE_TEXT_CLASS}>Loading academic years…</p>
-            </div>
-          </div>
+          <LoadingState message="Loading academic years…" />
         ) : (
           <>
             <TooltipProvider delayDuration={300}>
@@ -343,7 +335,7 @@ export function AcademicYearsManagement() {
                               ? "No matching academic years."
                               : "No academic years yet."}
                           </p>
-                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
                             {searchQuery.trim() ? "Try a different search." : "Add one to begin."}
                           </p>
                         </td>

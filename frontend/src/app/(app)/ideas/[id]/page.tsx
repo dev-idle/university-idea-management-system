@@ -18,17 +18,15 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
-  LOADING_WRAPPER_CLASS,
-  LOADING_TEXT_CLASS,
   BACK_LINK_CLASS,
   STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import {
   ThumbsUp,
   ThumbsDown,
-  MessageSquare,
   ArrowLeft,
   Download,
   FileText,
@@ -92,7 +90,7 @@ function AttachmentItem({ att }: { att: Attachment }) {
   };
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
+    <li className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/[0.06] px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <FileText
           className="size-4 shrink-0 text-muted-foreground/40"
@@ -162,11 +160,7 @@ export default function IdeaDetailPage() {
   if (status === "pending" || !idea) {
     return (
       <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <div className={LOADING_WRAPPER_CLASS}>
-          <p className={LOADING_TEXT_CLASS} aria-live="polite">
-            Loading proposal…
-          </p>
-        </div>
+        <LoadingState message="Loading proposal…" fullPage />
       </div>
     );
   }
@@ -426,7 +420,7 @@ export default function IdeaDetailPage() {
           {/* Comments */}
           {commentsStatus === "pending" && (
             <div className="flex flex-col items-center py-12">
-              <div className="size-6 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
+              <div className={cn("loading-spinner size-6 shrink-0 rounded-full border border-primary/[0.08] border-t-primary")} aria-hidden />
               <p className="mt-4 text-[12px] text-muted-foreground/50">
                 Loading comments…
               </p>

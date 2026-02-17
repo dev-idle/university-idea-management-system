@@ -1,5 +1,6 @@
 "use client";
 
+import type { ComponentProps } from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +13,7 @@ import {
   type ChangePasswordBody,
 } from "@/lib/schemas/profile.schema";
 import { Button } from "@/components/ui/button";
+import { LOADING_SPINNER_ON_PRIMARY_SM_CLASS } from "@/config/design";
 import {
   Card,
   CardAction,
@@ -38,12 +40,39 @@ import {
   PROFILE_INPUT_GROUP_HOVER_CLASS,
   PROFILE_FORM_FIELD_STACK,
   PROFILE_FORM_ITEM_CLASS,
-  PROFILE_PASSWORD_TOGGLE_CLASS,
-  PROFILE_PASSWORD_FIELD_WRAPPER_CLASS,
   FORM_ERROR_BLOCK_CLASS,
 } from "@/components/features/admin/constants";
 
 import { ERROR_FALLBACK_FORM } from "@/lib/errors";
+
+/** Wraps Input+toggle so FormControl can pass id to the Input for label association. */
+function PasswordInputWithToggle({
+  id,
+  show,
+  onToggle,
+  ...inputProps
+}: ComponentProps<typeof Input> & { show?: boolean; onToggle?: () => void }) {
+  return (
+    <div className="group/field relative">
+      <Input id={id} {...inputProps} />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-lg text-muted-foreground/80 transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary"
+        onClick={onToggle}
+        aria-label={show ? "Hide password" : "Show password"}
+        tabIndex={-1}
+      >
+        {show ? (
+          <EyeOff className="size-4" aria-hidden />
+        ) : (
+          <Eye className="size-4" aria-hidden />
+        )}
+      </Button>
+    </div>
+  );
+}
 
 export function ChangePasswordForm() {
   const [showCurrent, setShowCurrent] = useState(false);
@@ -103,7 +132,7 @@ export function ChangePasswordForm() {
             {isSubmitting ? (
               <span className="inline-flex items-center gap-1.5">
                 <span
-                  className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                  className={LOADING_SPINNER_ON_PRIMARY_SM_CLASS}
                   aria-hidden
                 />
                 Updating…
@@ -141,32 +170,16 @@ export function ChangePasswordForm() {
                     Current password
                   </FormLabel>
                   <FormControl>
-                    <div className={PROFILE_PASSWORD_FIELD_WRAPPER_CLASS}>
-                      <Input
-                        type={showCurrent ? "text" : "password"}
-                        autoComplete="current-password"
-                        placeholder="••••••••"
-                        className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-10`}
-                        aria-invalid={!!errors.currentPassword}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className={PROFILE_PASSWORD_TOGGLE_CLASS}
-                        onClick={() => setShowCurrent((p) => !p)}
-                        aria-label={
-                          showCurrent ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showCurrent ? (
-                          <EyeOff className="size-4" aria-hidden />
-                        ) : (
-                          <Eye className="size-4" aria-hidden />
-                        )}
-                      </Button>
-                    </div>
+                    <PasswordInputWithToggle
+                      type={showCurrent ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-11`}
+                      aria-invalid={!!errors.currentPassword}
+                      show={showCurrent}
+                      onToggle={() => setShowCurrent((p) => !p)}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -181,32 +194,16 @@ export function ChangePasswordForm() {
                     New password
                   </FormLabel>
                   <FormControl>
-                    <div className={PROFILE_PASSWORD_FIELD_WRAPPER_CLASS}>
-                      <Input
-                        type={showNew ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="••••••••"
-                        className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-10`}
-                        aria-invalid={!!errors.newPassword}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className={PROFILE_PASSWORD_TOGGLE_CLASS}
-                        onClick={() => setShowNew((p) => !p)}
-                        aria-label={
-                          showNew ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showNew ? (
-                          <EyeOff className="size-4" aria-hidden />
-                        ) : (
-                          <Eye className="size-4" aria-hidden />
-                        )}
-                      </Button>
-                    </div>
+                    <PasswordInputWithToggle
+                      type={showNew ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-11`}
+                      aria-invalid={!!errors.newPassword}
+                      show={showNew}
+                      onToggle={() => setShowNew((p) => !p)}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -221,32 +218,16 @@ export function ChangePasswordForm() {
                     Confirm new password
                   </FormLabel>
                   <FormControl>
-                    <div className={PROFILE_PASSWORD_FIELD_WRAPPER_CLASS}>
-                      <Input
-                        type={showConfirm ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="••••••••"
-                        className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-10`}
-                        aria-invalid={!!errors.confirmNewPassword}
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className={PROFILE_PASSWORD_TOGGLE_CLASS}
-                        onClick={() => setShowConfirm((p) => !p)}
-                        aria-label={
-                          showConfirm ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showConfirm ? (
-                          <EyeOff className="size-4" aria-hidden />
-                        ) : (
-                          <Eye className="size-4" aria-hidden />
-                        )}
-                      </Button>
-                    </div>
+                    <PasswordInputWithToggle
+                      type={showConfirm ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-11`}
+                      aria-invalid={!!errors.confirmNewPassword}
+                      show={showConfirm}
+                      onToggle={() => setShowConfirm((p) => !p)}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

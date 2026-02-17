@@ -1,9 +1,15 @@
+import {
+  LOADING_SPINNER_LG_CLASS,
+  LOADING_STATE_CONTENT_CLASS,
+  LOADING_STATE_TEXT_CLASS,
+} from "@/config/design";
+
 export default function RootLoading() {
   return (
     <div className="grid min-h-screen place-items-center bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <div className="size-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="text-sm text-muted-foreground">Loading…</p>
+      <div className={LOADING_STATE_CONTENT_CLASS}>
+        <div className={LOADING_SPINNER_LG_CLASS} aria-hidden />
+        <p className={LOADING_STATE_TEXT_CLASS}>Loading…</p>
       </div>
     </div>
   );

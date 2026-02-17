@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import {
-  Bell,
   ChevronDown,
   LogOut,
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { TYPO_CAPTION_STRONG, TYPO_LABEL, TYPO_NAV, HOVER_TRANSITION_NAV } from "@/config/design";
+import { TYPO_LABEL, TYPO_NAV, HOVER_TRANSITION_NAV } from "@/config/design";
 import { PROFILE_AVATAR_FALLBACK_CLASS } from "@/components/features/admin/constants";
 import { ROUTES } from "@/config/constants";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";

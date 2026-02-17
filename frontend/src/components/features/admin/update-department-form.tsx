@@ -78,7 +78,7 @@ export function UpdateDepartmentForm({
   const isDialog = variant === "dialog";
   const labelClass = isDialog
     ? FORM_DIALOG_LABEL_CLASS
-    : "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+    : "text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80";
 
   return (
     <form

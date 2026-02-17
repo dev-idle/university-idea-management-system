@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { IdeasHubContent } from "@/components/features/ideas/ideas-hub-content";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
   PAGE_TITLE_CLASS,
@@ -27,10 +28,7 @@ export default function IdeasPage() {
       <Suspense
         fallback={
           <div className="flex flex-col items-center py-28">
-            <div className="size-7 animate-spin rounded-full border-[1.5px] border-muted-foreground/15 border-t-primary/70" />
-            <p className="mt-5 text-[13px] text-muted-foreground/60">
-              Loading…
-            </p>
+            <LoadingState message="Loading…" />
           </div>
         }
       >

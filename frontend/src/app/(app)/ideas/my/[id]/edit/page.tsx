@@ -20,7 +20,6 @@ import { updateIdeaBodySchema } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { fetchWithAuthResponse } from "@/lib/api/client";
-import { cn } from "@/lib/utils";
 import { FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,14 +48,13 @@ import {
   PAGE_WRAPPER_NARROW_CLASS,
   BACK_LINK_CLASS,
   ALERT_WARNING_CLASS,
-  LOADING_WRAPPER_CLASS,
-  LOADING_TEXT_CLASS,
+  LOADING_SPINNER_CLASS,
 } from "@/config/design";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   ArrowLeft,
   Paperclip,
   X,
-  Loader2,
   FileText,
   Download,
   Trash2,
@@ -127,7 +125,7 @@ function AttachmentRow({
 
   return (
     <li className="flex flex-col gap-1">
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/25 bg-muted/10 px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/[0.06] px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <FileText
             className="size-4 shrink-0 text-muted-foreground/40"
@@ -172,7 +170,7 @@ function AttachmentRow({
               disabled={removing}
             >
               {removing ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden />
+                <span className={LOADING_SPINNER_CLASS} aria-hidden />
               ) : (
                 <X className="size-4" aria-hidden />
               )}
@@ -253,11 +251,7 @@ export default function EditIdeaPage() {
   if (status === "pending" || !idea) {
     return (
       <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <div className={LOADING_WRAPPER_CLASS}>
-          <p className={LOADING_TEXT_CLASS} aria-live="polite">
-            Loading proposal…
-          </p>
-        </div>
+        <LoadingState message="Loading proposal…" fullPage />
       </div>
     );
   }
@@ -385,14 +379,14 @@ export default function EditIdeaPage() {
       {/* Form */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="overflow-hidden rounded-2xl border border-border/30 bg-card"
+        className="overflow-hidden rounded-2xl border border-border/55 bg-card"
       >
         <div className="space-y-8 px-6 py-8 sm:px-8 sm:py-10">
           {/* Category */}
           <div className="space-y-3">
             <Label
               htmlFor="edit-category"
-              className="text-sm font-medium text-foreground"
+              className="cursor-pointer text-sm font-medium text-foreground"
             >
               Category
             </Label>
@@ -428,7 +422,7 @@ export default function EditIdeaPage() {
           <div className="space-y-3">
             <Label
               htmlFor="edit-title"
-              className="text-sm font-medium text-foreground"
+              className="cursor-pointer text-sm font-medium text-foreground"
             >
               Title
             </Label>
@@ -456,7 +450,7 @@ export default function EditIdeaPage() {
           <div className="space-y-3">
             <Label
               htmlFor="edit-content"
-              className="text-sm font-medium text-foreground"
+              className="cursor-pointer text-sm font-medium text-foreground"
             >
               Content
             </Label>
@@ -491,7 +485,7 @@ export default function EditIdeaPage() {
             <div className="grid gap-0.5">
               <Label
                 htmlFor="edit-anonymous"
-                className="cursor-pointer text-sm font-medium text-foreground"
+                className="text-sm font-medium cursor-pointer text-foreground"
               >
                 Submit anonymously
               </Label>
@@ -565,8 +559,8 @@ export default function EditIdeaPage() {
                     }
                   >
                     {uploading ? (
-                      <Loader2
-                        className="size-4 animate-spin"
+                      <span
+                        className={LOADING_SPINNER_CLASS}
                         aria-hidden
                       />
                     ) : (

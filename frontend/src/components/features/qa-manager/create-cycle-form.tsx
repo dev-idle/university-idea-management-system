@@ -2,11 +2,12 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo } from "react";
 import type {
   CreateCycleBody,
   CreateCycleFormValues,
 } from "@/lib/schemas/submission-cycles.schema";
-import { createCycleFormSchema } from "@/lib/schemas/submission-cycles.schema";
+import { createCycleFormSchemaWithAcademicYears } from "@/lib/schemas/submission-cycles.schema";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,10 +37,13 @@ import {
   FORM_OUTLINE_BUTTON_CLASS,
   FORM_CARD_INPUT_CLASS,
   FORM_CARD_SELECT_TRIGGER_CLASS,
+  DATE_PICKER_INPUT_CLASS,
   FORM_CHECKBOX_ACADEMIC_CLASS,
+  FORM_CATEGORIES_SCROLL_AREA_CLASS,
 } from "@/components/features/admin/constants";
 import { useSubmissionCycleAcademicYearsQuery } from "@/hooks/use-submission-cycles";
 import { useCategoriesQuery } from "@/hooks/use-categories";
+import { cn } from "@/lib/utils";
 
 function toDatetimeLocal(d: Date, time = "23:59"): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -69,6 +73,11 @@ export function CreateCycleForm({
 }: CreateCycleFormProps) {
   const { data: academicYears = [] } = useSubmissionCycleAcademicYearsQuery();
   const { data: categories = [] } = useCategoriesQuery();
+
+  const createCycleFormSchema = useMemo(
+    () => createCycleFormSchemaWithAcademicYears(academicYears),
+    [academicYears]
+  );
 
   const {
     register,
@@ -121,6 +130,7 @@ export function CreateCycleForm({
   const isDialog = variant === "dialog";
   const labelClass = isDialog ? FORM_DIALOG_LABEL_CLASS : FORM_LABEL_CLASS;
   const inputClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
+  const dateTimeClass = DATE_PICKER_INPUT_CLASS;
   const triggerClass = isDialog ? FORM_DIALOG_SELECT_TRIGGER_CLASS : FORM_CARD_SELECT_TRIGGER_CLASS;
   const fieldWrapper = isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "space-y-2";
 
@@ -145,14 +155,14 @@ export function CreateCycleForm({
       )}
 
       <div className={fieldWrapper}>
-        <Label className={labelClass}>Academic year</Label>
+        <Label htmlFor="create-cycle-academicYearId" className={labelClass}>Academic year</Label>
         <Controller
           name="academicYearId"
           control={control}
           rules={{ required: "Academic year is required" }}
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || undefined}>
-              <SelectTrigger className={triggerClass}>
+              <SelectTrigger id="create-cycle-academicYearId" className={triggerClass}>
                 <SelectValue placeholder="Select academic year" />
               </SelectTrigger>
               <SelectContent>
@@ -193,19 +203,21 @@ export function CreateCycleForm({
       </div>
 
       <div className={fieldWrapper}>
-        <Label className={labelClass}>Categories</Label>
+        <Label htmlFor={categories[0] ? `create-cycle-cat-${categories[0].id}` : undefined} className={cn(labelClass, categories.length > 0 && "cursor-pointer")}>Categories</Label>
         <Controller
           name="categoryIds"
           control={control}
           render={({ field }) => (
-            <ScrollArea className="h-40 overflow-hidden rounded-lg border border-input px-3 py-2">
+            <ScrollArea className={FORM_CATEGORIES_SCROLL_AREA_CLASS}>
               <div className="flex flex-col gap-2 pt-2 pb-2 pr-1">
-                {categories.map((c) => (
+                {categories.map((c, idx) => (
                   <label
                     key={c.id}
+                    htmlFor={idx === 0 ? `create-cycle-cat-${c.id}` : undefined}
                     className="flex items-center gap-2 text-sm cursor-pointer"
                   >
                     <Checkbox
+                      id={idx === 0 ? `create-cycle-cat-${c.id}` : undefined}
                       className={FORM_CHECKBOX_ACADEMIC_CLASS}
                       checked={field.value?.includes(c.id) ?? false}
                       onCheckedChange={(checked) => {
@@ -231,7 +243,7 @@ export function CreateCycleForm({
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-start">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:items-start">
         <div className={fieldWrapper}>
           <Label htmlFor="ideaSubmissionClosesAt" className={labelClass}>
             Idea closes
@@ -248,7 +260,7 @@ export function CreateCycleForm({
                 placeholder="Select date and time"
                 aria-invalid={!!errors.ideaSubmissionClosesAt}
                 aria-describedby={errors.ideaSubmissionClosesAt ? "ideaSubmissionClosesAt-error" : undefined}
-                className={inputClass}
+                className={dateTimeClass}
               />
             )}
           />
@@ -274,14 +286,14 @@ export function CreateCycleForm({
                 placeholder="Select date and time"
                 aria-invalid={!!errors.interactionClosesAt}
                 aria-describedby={errors.interactionClosesAt ? "interactionClosesAt-error" : undefined}
-                className={inputClass}
+                className={dateTimeClass}
               />
             )}
           />
           <button
             type="button"
             onClick={setInteractionDefault}
-            className="text-xs text-primary hover:underline"
+            className="text-xs text-muted-foreground/80 transition-colors duration-200 hover:text-primary hover:bg-primary/[0.06] rounded-md px-2 py-1 -ml-2"
           >
             +14 days from idea close
           </button>

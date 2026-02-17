@@ -19,6 +19,7 @@ const STRICT_CSP = [
   "form-action 'self'",
 ].join("; ");
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- Next.js middleware signature requires request
 export function proxy(request: NextRequest) {
   const response = NextResponse.next();
 

@@ -130,7 +130,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                   <p className="font-sans text-sm font-medium text-foreground">
                     {hasActiveSearch ? "No users found." : "No users yet."}
                   </p>
-                  <p className="mt-1.5 font-sans text-xs text-muted-foreground/90">
+                  <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
                     {hasActiveSearch ? "Try another search." : "Add one to begin."}
                   </p>
                 </td>

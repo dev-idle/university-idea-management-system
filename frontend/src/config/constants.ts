@@ -39,9 +39,6 @@ export const ROUTES = {
   PROFILE: "/profile",
 } as const;
 
-/** Priority order for redirect when user has multiple roles (highest first). */
-const ROLE_ENTRY_PRIORITY: Role[] = ["ADMIN", "QA_MANAGER", "QA_COORDINATOR", "STAFF"];
-
 const ROLE_TO_ENTRY: Record<Role, string> = {
   ADMIN: ROUTES.ADMIN_DASHBOARD,
   QA_MANAGER: ROUTES.QA_MANAGER_DASHBOARD,

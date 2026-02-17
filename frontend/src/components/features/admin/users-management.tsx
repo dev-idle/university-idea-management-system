@@ -12,9 +12,6 @@ import {
   UNIFIED_SEARCH_INPUT_CLASS,
   TOOLBAR_ADD_BUTTON_BASE_CLASS,
   TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
-  LOADING_STATE_WRAPPER_CLASS,
-  LOADING_STATE_CONTENT_CLASS,
-  LOADING_SPINNER_CLASS,
   DIALOG_CONTENT_SCULPTED_CLASS,
   DIALOG_OVERLAY_SCULPTED_CLASS,
   DIALOG_HEADER_SCULPTED_CLASS,
@@ -32,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { UserPlus, Plus, Search } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { cn } from "@/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -95,7 +93,7 @@ export function AdminUsersManagement() {
 
   const totalPages = useMemo(
     () => (data ? Math.ceil(data.total / data.limit) : 0),
-    [data?.total, data?.limit]
+    [data]
   );
 
   const createMutation = useCreateUserMutation();
@@ -140,7 +138,7 @@ export function AdminUsersManagement() {
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
             <div className="relative w-72">
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/70"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
                 aria-hidden
               />
               <input
@@ -199,12 +197,7 @@ export function AdminUsersManagement() {
         </Can>
 
         {status === "pending" && !data ? (
-          <div className={LOADING_STATE_WRAPPER_CLASS}>
-            <div className={LOADING_STATE_CONTENT_CLASS}>
-              <div className={LOADING_SPINNER_CLASS} aria-hidden />
-              <p className="font-sans text-sm font-medium text-muted-foreground">Loading accounts…</p>
-            </div>
-          </div>
+          <LoadingState message="Loading accounts…" />
         ) : (
           <>
             <UsersTable

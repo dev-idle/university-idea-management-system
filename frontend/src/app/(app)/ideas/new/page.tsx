@@ -6,9 +6,8 @@ import { useRouter } from "next/navigation";
 import { useIdeasContextQuery, useCreateIdeaMutation } from "@/hooks/use-ideas";
 import { SubmitIdeaForm } from "@/components/features/ideas/submit-idea-form";
 import { ROUTES } from "@/config/constants";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
-  LOADING_WRAPPER_CLASS,
-  LOADING_TEXT_CLASS,
   PAGE_WRAPPER_NARROW_CLASS,
   BACK_LINK_CLASS,
   ALERT_WARNING_CLASS,
@@ -46,11 +45,7 @@ export default function SubmitIdeaPage() {
   ) {
     return (
       <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <div className={LOADING_WRAPPER_CLASS}>
-          <p className={LOADING_TEXT_CLASS} aria-live="polite">
-            Loading…
-          </p>
-        </div>
+        <LoadingState message="Loading…" fullPage />
       </div>
     );
   }

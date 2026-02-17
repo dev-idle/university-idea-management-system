@@ -44,6 +44,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SKELETON_BG_SUBTLE, SKELETON_BG_MEDIUM, SKELETON_BG_STRONG } from "@/config/design";
 import {
   PROFILE_PAGE_CLASS,
   PROFILE_IDENTITY_CARD_CLASS,
@@ -54,6 +55,7 @@ import {
   PROFILE_SECTION_TITLE_CLASS,
   PROFILE_LABEL_CLASS,
   PROFILE_INPUT_CLASS,
+  DATE_PICKER_INPUT_CLASS,
   PROFILE_OPTIONAL_CLASS,
   PROFILE_HEADER_BUTTON_CLASS,
   PROFILE_AVATAR_CLASS,
@@ -67,6 +69,10 @@ import {
   PROFILE_SM_PRIMARY_CLASS,
   PROFILE_EDIT_BUTTON_CLASS,
 } from "@/components/features/admin/constants";
+import {
+  LOADING_SPINNER_ON_PRIMARY_CLASS,
+  LOADING_SPINNER_ON_PRIMARY_SM_CLASS,
+} from "@/config/design";
 import { getAvatarInitial } from "@/lib/utils";
 
 const GENDER_NONE = "__none__";
@@ -79,16 +85,16 @@ const GENDER_OPTIONS = [
 ] as const;
 
 
-/** Profile loading skeleton: uses muted background per design system. */
+/** Profile loading skeleton: uses design-system skeleton tokens. */
 function ProfileSkeleton() {
   return (
     <div className={PROFILE_PAGE_CLASS}>
       <section className={PROFILE_IDENTITY_CARD_CLASS} aria-hidden>
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
-          <Skeleton className="size-20 sm:size-24 shrink-0 rounded-full bg-muted/40" />
+          <Skeleton className={`size-20 sm:size-24 shrink-0 rounded-full ${SKELETON_BG_STRONG}`} />
           <div className="min-w-0 flex-1 space-y-3">
-            <Skeleton className="h-8 w-48 bg-muted/40" />
-            <Skeleton className="h-4 w-64 bg-muted/30" />
+            <Skeleton className={`h-8 w-48 ${SKELETON_BG_STRONG}`} />
+            <Skeleton className={`h-4 w-64 ${SKELETON_BG_MEDIUM}`} />
           </div>
         </div>
       </section>
@@ -100,15 +106,15 @@ function ProfileSkeleton() {
               Personal information
             </CardTitle>
             <CardAction>
-              <Skeleton className="h-9 w-24 rounded-lg bg-muted/25" />
+              <Skeleton className={`h-9 w-24 rounded-lg ${SKELETON_BG_MEDIUM}`} />
             </CardAction>
           </CardHeader>
           <CardContent className="px-8 py-6">
             <div className={`grid ${PROFILE_FORM_FIELD_GAP} sm:grid-cols-2`}>
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className={i === 2 ? "sm:col-span-2" : ""}>
-                  <Skeleton className="mb-2 h-4 w-24 bg-muted/30" />
-                  <Skeleton className="h-11 w-full rounded-lg bg-muted/20" />
+                  <Skeleton className={`mb-2 h-4 w-24 ${SKELETON_BG_MEDIUM}`} />
+                  <Skeleton className={`h-11 w-full rounded-lg ${SKELETON_BG_SUBTLE}`} />
                 </div>
               ))}
             </div>
@@ -191,7 +197,7 @@ function EditableDisplayName({
             className={PROFILE_SM_PRIMARY_CLASS}
           >
             {isSaving ? (
-              <span className="size-4 shrink-0 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" aria-hidden />
+              <span className={LOADING_SPINNER_ON_PRIMARY_CLASS} aria-hidden />
             ) : (
               <Check className="size-4 shrink-0" aria-hidden />
             )}
@@ -322,7 +328,7 @@ export function ProfileContent() {
               {roleLabel}
               {profile.department?.name && (
                 <>
-                  <span className="mx-1.5 text-muted-foreground/60" aria-hidden>|</span>
+                  <span className="mx-1.5 text-muted-foreground/80" aria-hidden>|</span>
                   {profile.department.name}
                 </>
               )}
@@ -349,7 +355,7 @@ export function ProfileContent() {
                 {updateProfileMutation.isPending ? (
                   <span className="inline-flex items-center gap-1.5">
                     <span
-                      className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                      className={LOADING_SPINNER_ON_PRIMARY_SM_CLASS}
                       aria-hidden
                     />
                     Saving…
@@ -365,7 +371,7 @@ export function ProfileContent() {
               <form
                 id="edit-profile-form"
                 onSubmit={form.handleSubmit(onSubmitEditProfile)}
-                className="space-y-5"
+                className="space-y-6"
                 noValidate
                 aria-label="Edit profile"
               >
@@ -386,6 +392,7 @@ export function ProfileContent() {
                       <FormItem className={PROFILE_FORM_ITEM_CLASS}>
                         <FormLabel className={PROFILE_LABEL_CLASS}>
                           Full name
+                          <span className={PROFILE_OPTIONAL_CLASS}>(optional)</span>
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -488,7 +495,7 @@ export function ProfileContent() {
                             placeholder="Select date of birth"
                             aria-invalid={!!form.formState.errors.dateOfBirth}
                             aria-describedby={form.formState.errors.dateOfBirth ? "dateOfBirth-error" : undefined}
-                            className={PROFILE_INPUT_CLASS}
+                            className={DATE_PICKER_INPUT_CLASS}
                           />
                         </FormControl>
                         <FormMessage />

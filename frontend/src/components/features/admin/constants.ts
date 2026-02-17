@@ -3,9 +3,11 @@
  * Aligned with app design system (config/design) for consistency with Staff pages.
  * List tables: use MANAGEMENT_PAGE_SIZE and formatManagementShowingRange for standardization.
  *
- * Opacity scale (consistent):
- * - Borders: /30 row divider, /35 section divider, /50 card outline
- * - Muted bg: /[0.03] toolbar, /[0.04] badge, /[0.05] table header, /[0.10] row hover
+ * Design scale (config/design.ts):
+ * - Borders: /40 divider, /55 card, /80 input
+ * - Muted bg: /[0.03] toolbar, /[0.05] header, /[0.06] hover, /[0.10] row hover
+ * - Primary: /[0.06] hover, /[0.08] ring, /30 border hover, /80 focus
+ * - Text: muted-foreground/80 hint; foreground/78 header, /88 secondary
  * - Transitions: duration-200 standard
  */
 import {
@@ -17,10 +19,8 @@ import {
   DESTRUCTIVE_INLINE_ACCENT_CLASS,
   DESTRUCTIVE_INLINE_CLASS,
   FOCUS_RING_CLASS,
-  STATUS_BADGE_WARNING_CLASS,
   TYPO_BODY_SM,
   TYPO_CAPTION_XS,
-  TYPO_HEADING_SM,
   TYPO_LEAD,
   MGMT_BORDER_CARD,
   MGMT_BORDER_DIVIDER,
@@ -29,10 +29,28 @@ import {
   MGMT_BG_TABLE_HEAD,
   MGMT_BG_ROW_HOVER,
   MGMT_DIVIDE,
+  LOADING_SPINNER_CLASS,
+  LOADING_STATE_WRAPPER_CLASS,
+  LOADING_STATE_CONTENT_CLASS,
+  LOADING_STATE_TEXT_CLASS,
+  SKELETON_BG_SUBTLE,
+  SKELETON_BG_MEDIUM,
+  SKELETON_BG_STRONG,
+  SKELETON_BG_INPUT,
 } from "@/config/design";
 
-/** Re-export outline button class from design for management forms. */
-export { FORM_OUTLINE_BUTTON_CLASS };
+/** Re-export from design for management forms and loading states. */
+export {
+  FORM_OUTLINE_BUTTON_CLASS,
+  LOADING_SPINNER_CLASS,
+  LOADING_STATE_WRAPPER_CLASS,
+  LOADING_STATE_CONTENT_CLASS,
+  LOADING_STATE_TEXT_CLASS,
+  SKELETON_BG_SUBTLE,
+  SKELETON_BG_MEDIUM,
+  SKELETON_BG_STRONG,
+  SKELETON_BG_INPUT,
+};
 
 /** Page size for all Role Manager list tables (Admin + QA Manager). Not used by Staff. */
 export const MANAGEMENT_PAGE_SIZE = 7;
@@ -66,9 +84,9 @@ export const UNIFIED_CARD_CLASS =
 export const UNIFIED_CARD_TOOLBAR_CLASS =
   `flex justify-between items-center gap-4 border-b px-6 py-4 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
 
-/** Unified search input — subtle, refined. */
+/** Unified search input — design: border/80, ring /[0.08]. */
 export const UNIFIED_SEARCH_INPUT_CLASS =
-  "h-9 w-full rounded-lg border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-colors duration-200 focus:border-primary/60 focus:bg-background focus:ring-2 focus:ring-primary/[0.08] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
+  "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-colors duration-200 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
 
 /** Sculpted modal overlay (depth, refined separation). */
 export const DIALOG_OVERLAY_SCULPTED_CLASS =
@@ -114,7 +132,7 @@ export const DIALOG_DESCRIPTION_CLASS = `text-muted-foreground ${TYPO_LEAD}`;
 /** Sculpted dialog description. */
 export const DIALOG_DESCRIPTION_SCULPTED_CLASS = TYPO_BODY_SM;
 
-/** Table header cell (data columns) — subtle. Design: /75 header. */
+/** Table header cell (data columns). Design: foreground/78 header. */
 export const TABLE_HEAD_CELL_CLASS =
   "px-6 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-foreground/78";
 
@@ -138,21 +156,20 @@ export const TABLE_ACTIONS_CELL_CLASS = "px-6 py-4 text-right";
 export const PAGINATION_FOOTER_CLASS =
   `flex items-center justify-end border-t px-4 py-3 sm:px-6 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
 
-/** "Showing X–Y of Z" badge inside search input (pointer-events-none, right-aligned). */
+/** "Showing X–Y of Z" badge inside search input. Design: muted-foreground/80. */
 export const SHOWING_RANGE_BADGE_CLASS =
-  `pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border bg-muted/[0.06] px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground/90 sm:inline-flex ${MGMT_BORDER_CARD}`;
+  `pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border bg-muted/[0.06] px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground/80 sm:inline-flex ${MGMT_BORDER_CARD}`;
 
-/** Loading state text (table toolbar). */
-export const LOADING_TABLE_TEXT_CLASS =
-  "font-sans text-sm font-medium text-muted-foreground/90";
+/** Loading state text (table toolbar) — alias for LOADING_STATE_TEXT_CLASS. */
+export const LOADING_TABLE_TEXT_CLASS = LOADING_STATE_TEXT_CLASS;
 
 // ─── Editorial Page Header (Breadcrumb + Title + Actions) ─────────────────────
 
 /** Ghost-style breadcrumb (uppercase, subtle, academic). */
 export const BREADCRUMB_GHOST_CLASS = TYPO_CAPTION_XS;
 
-/** Breadcrumb separator: delicate. */
-export const BREADCRUMB_SEP_CLASS = "text-muted-foreground/50 mx-2";
+/** Breadcrumb separator: design scale muted-foreground/80. */
+export const BREADCRUMB_SEP_CLASS = "text-muted-foreground/80 mx-2";
 
 /** Main page title (refined, academic). */
 export const PAGE_TITLE_HIGH_END_CLASS =
@@ -164,18 +181,6 @@ export const PAGE_SUBTITLE_CLASS = TYPO_LEAD;
 /** Page header wrapper: flex layout, mb-8. */
 export const MANAGEMENT_PAGE_HEADER_CLASS =
   "mb-8 flex justify-between items-end pl-6 pr-4 sm:pr-6";
-
-/** Loading state wrapper (centered spinner + text — Academic Years source of truth). */
-export const LOADING_STATE_WRAPPER_CLASS =
-  "flex items-center justify-center py-24";
-
-/** Loading state content (spinner + label). */
-export const LOADING_STATE_CONTENT_CLASS =
-  "flex flex-col items-center gap-4";
-
-/** Loading spinner (refined). */
-export const LOADING_SPINNER_CLASS =
-  "size-5 animate-spin rounded-full border-2 border-primary/15 border-t-primary";
 
 /** Loading / empty state cell (centered, padded). */
 export const TABLE_LOADING_CELL_CLASS =
@@ -229,24 +234,24 @@ export const PROFILE_SECTION_HEADER_CLASS =
 export const PROFILE_HEADER_BUTTON_CLASS =
   "h-9 shrink-0 rounded-lg px-4 text-sm font-semibold bg-primary text-primary-foreground shadow-[var(--shadow-card-subtle)] transition-all duration-200 hover:bg-primary/95";
 
-/** Profile section title — subtle, slightly larger, icon + text. */
+/** Profile section title — subtle, icon + text. Design: muted-foreground/80. */
 export const PROFILE_SECTION_TITLE_CLASS =
-  "flex items-center gap-2.5 text-base font-medium text-muted-foreground";
+  "flex items-center gap-2.5 text-sm font-medium text-muted-foreground/80";
 
 /** Profile form item — group + min-w-0. */
 export const PROFILE_FORM_ITEM_CLASS = "group min-w-0";
 
-/** Profile form label — matches FORM_DIALOG_LABEL. */
+/** Profile form label — design: muted-foreground/80. Cursor pointer for label→control association. */
 export const PROFILE_LABEL_CLASS =
-  "text-xs font-medium uppercase tracking-wider text-foreground/80 transition-colors duration-200 group-focus-within:text-primary/90";
+  "cursor-pointer text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 transition-colors duration-200 group-focus-within:text-primary";
 
-/** Profile input — matches FORM_DIALOG_INPUT (Academic Year). */
+/** Profile input — matches FORM_DIALOG_INPUT. Design: border/80. */
 export const PROFILE_INPUT_CLASS =
-  "h-11 w-full rounded-lg border border-border/90 bg-card text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-2 focus:ring-primary/[0.08] focus:bg-card aria-[invalid=true]:border-destructive/60 aria-[invalid=true]:ring-destructive/[0.08]";
+  "h-11 w-full rounded-xl border border-border/80 bg-background text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
 
-/** Profile select trigger — matches FORM_DIALOG_SELECT_TRIGGER. */
+/** Profile select trigger — matches input. */
 export const PROFILE_SELECT_TRIGGER_CLASS =
-  "!h-11 w-full min-w-0 rounded-lg border border-border/90 bg-card px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
+  "!h-11 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
 
 /** Profile password toggle button — matches primary hover. */
 export const PROFILE_PASSWORD_TOGGLE_CLASS =
@@ -265,13 +270,13 @@ export const PROFILE_BUTTON_CLASS = FORM_SUBMIT_BUTTON_CLASS;
 /** Profile outline button — matches FORM_OUTLINE_BUTTON. */
 export const PROFILE_OUTLINE_BUTTON_CLASS = FORM_OUTLINE_BUTTON_CLASS;
 
-/** Profile avatar — matches icon box (primary tint). */
+/** Profile avatar. Design: border/55, primary/[0.10]. */
 export const PROFILE_AVATAR_CLASS =
-  "size-20 sm:size-24 rounded-full border border-border/60 bg-primary/10";
+  "size-20 sm:size-24 rounded-full border border-border/55 bg-primary/[0.10]";
 
 /** Profile avatar fallback — matches navbar (primary accent). */
 export const PROFILE_AVATAR_FALLBACK_CLASS =
-  "rounded-full bg-primary/10 text-primary text-lg font-medium";
+  "rounded-full bg-primary/[0.10] text-primary text-lg font-medium";
 
 /** Profile form vertical spacing — generous, calm. */
 export const PROFILE_FORM_FIELD_GAP = "gap-6";
@@ -280,9 +285,9 @@ export const PROFILE_FORM_FIELD_STACK = "space-y-6";
 /** Profile load/block error (simpler, no accent). */
 export const PROFILE_ERROR_CLASS = DESTRUCTIVE_INLINE_CLASS;
 
-/** Profile inline outline button (Edit modal Cancel). */
+/** Profile inline outline button (Edit modal Cancel). Design: border/80. */
 export const PROFILE_SM_OUTLINE_CLASS =
-  "h-8 rounded-lg border border-border/80 px-3 text-sm font-medium transition-colors duration-200 hover:bg-muted/[0.06]";
+  "h-8 rounded-xl border border-border/80 px-3 text-sm font-medium transition-colors duration-200 hover:bg-muted/[0.06] hover:border-primary/30";
 
 /** Profile inline primary button (Edit modal Save). */
 export const PROFILE_SM_PRIMARY_CLASS =
@@ -291,9 +296,6 @@ export const PROFILE_SM_PRIMARY_CLASS =
 /** Profile Edit button (ghost, next to display name). */
 export const PROFILE_EDIT_BUTTON_CLASS =
   "h-8 shrink-0 gap-1.5 rounded-lg px-2 text-sm text-muted-foreground transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary";
-
-/** Form label (aligned with SECTION_LABEL_CLASS). */
-export const FORM_LABEL_CLASS = SECTION_LABEL_CLASS;
 
 /** Form default wrapper (card style when not in dialog). */
 export const FORM_CARD_CLASS = `flex flex-col gap-6 ${CARD_CLASS} px-6 py-6`;
@@ -306,6 +308,9 @@ export const FORM_HEADING_CLASS = "font-sans text-base font-semibold tracking-ti
 
 /** Form section description (aligned with SECTION_CARD_DESCRIPTION_CLASS). */
 export const FORM_DESCRIPTION_CLASS = `mt-2 ${SECTION_CARD_DESCRIPTION_CLASS}`;
+
+/** Form label (aligned with SECTION_LABEL_CLASS). */
+export const FORM_LABEL_CLASS = SECTION_LABEL_CLASS;
 
 /** Form field spacing wrapper. */
 export const FORM_FIELD_SPACE = "space-y-2";
@@ -336,17 +341,21 @@ export const FORM_ERROR_BLOCK_CLASS = DESTRUCTIVE_INLINE_ACCENT_CLASS;
 /** Dialog form wrapper — space-y-6. */
 export const FORM_DIALOG_FORM_CLASS = "space-y-6";
 
-/** Dialog label — uppercase, subtle. */
+/** Dialog label — uppercase, subtle. Design: muted-foreground/80 hint. Cursor pointer for label→control association. */
 export const FORM_DIALOG_LABEL_CLASS =
-  "text-xs font-medium uppercase tracking-wider text-foreground/80 transition-colors duration-200 group-focus-within:text-primary/90";
+  "cursor-pointer text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 transition-colors duration-200 group-focus-within:text-primary";
 
-/** Dialog input — h-11, refined hover/focus. */
+/** Dialog input — h-11, refined hover/focus. Design: border/80 input. */
 export const FORM_DIALOG_INPUT_CLASS =
-  "h-11 w-full rounded-lg border border-border/90 bg-card text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-2 focus:ring-primary/[0.08] focus:bg-card aria-[invalid=true]:border-destructive/60 aria-[invalid=true]:ring-destructive/[0.08]";
+  "h-11 w-full rounded-xl border border-border/80 bg-background text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
 
 /** Card input — h-10, same focus/hover as dialog. */
 export const FORM_CARD_INPUT_CLASS =
-  "h-10 w-full rounded-lg border border-border/90 bg-card text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-2 focus:ring-primary/[0.08] focus:bg-card aria-[invalid=true]:border-destructive/60 aria-[invalid=true]:ring-destructive/[0.08]";
+  "h-10 w-full rounded-xl border border-border/80 bg-background text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
+
+/** DatePicker/DateTimePicker trigger — matches proposal-cycles. Use for academic-years, profile. Design: h-11, border/80. */
+export const DATE_PICKER_INPUT_CLASS =
+  "h-11 w-full rounded-xl border border-border/80 bg-background text-foreground text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
 
 /** Dialog field wrapper — group + min-w-0 for truncation. */
 export const FORM_DIALOG_FIELD_WRAPPER_CLASS = "group min-w-0 space-y-2";
@@ -380,27 +389,31 @@ export const EMAIL_ALREADY_EXISTS_MESSAGE =
 export const DEPARTMENT_NAME_EXISTS_MESSAGE =
   "Name already in use.";
 
-/** Dialog Select trigger — matches input height, refined focus/hover (Academic Year). */
+/** Dialog Select trigger — matches input. Design: border/80. */
 export const FORM_DIALOG_SELECT_TRIGGER_CLASS =
-  "!h-11 w-full min-w-0 rounded-lg border border-border/90 bg-card px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
+  "!h-11 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
 
 /** Extends input hover to full field when inside group (e.g. password + toggle). */
 export const PROFILE_INPUT_GROUP_HOVER_CLASS = "group-hover/field:border-primary/30";
 
-/** Card Select trigger — h-10, same focus/hover as dialog (Role Manager card forms). */
+/** Card Select trigger — h-10, matches input. */
 export const FORM_CARD_SELECT_TRIGGER_CLASS =
-  "!h-10 w-full min-w-0 rounded-lg border border-border/90 bg-card px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
+  "!h-10 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
 
 /** Checkbox in Role Manager — refined focus/hover (sync with Academic input). */
 export const FORM_CHECKBOX_ACADEMIC_CLASS =
   "transition-colors duration-200 hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2";
 
+/** ScrollArea for categories list (proposal cycles) — design: border-border/80. */
+export const FORM_CATEGORIES_SCROLL_AREA_CLASS =
+  "h-40 overflow-hidden rounded-lg border border-border/80 px-3 py-2";
+
 /** Focus ring for links and cards (management). */
 export const MANAGEMENT_FOCUS_RING_CLASS = FOCUS_RING_CLASS;
 
-/** Action button in a disabled/locked state — muted, non-interactive. */
+/** Action button in a disabled/locked state. Design: muted-foreground/80. */
 export const ACTION_BUTTON_DISABLED_BLUR_CLASS =
-  "cursor-not-allowed text-muted-foreground/70 opacity-50";
+  "cursor-not-allowed text-muted-foreground/80 opacity-50";
 
 // ─── Table body ──────────────────────────────────────────────────────────────
 
@@ -432,29 +445,29 @@ export const TABLE_CELL_STATUS_CLASS = "px-6 py-4";
 /** Base action icon button (shared size, shrink, refined transition). */
 const ACTION_BTN_BASE = "inline-flex size-8 shrink-0 items-center justify-center rounded-full p-2 transition-colors duration-200";
 
-/** Edit action (primary accent) — subtle at rest. */
+/** Edit action. Design: /80 at rest, /[0.08] hover. */
 export const ACTION_BUTTON_EDIT_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-primary/75 hover:bg-primary/[0.08] hover:text-primary`;
+  `${ACTION_BTN_BASE} cursor-pointer text-primary/80 hover:bg-primary/[0.08] hover:text-primary`;
 
-/** Destructive/delete action — subtle. */
+/** Destructive/delete action. */
 export const ACTION_BUTTON_DESTRUCTIVE_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-destructive/75 hover:bg-destructive/[0.08] hover:text-destructive`;
+  `${ACTION_BTN_BASE} cursor-pointer text-destructive/80 hover:bg-destructive/[0.08] hover:text-destructive`;
 
-/** Warning/deactivate action (reversible). */
+/** Warning/deactivate action. */
 export const ACTION_BUTTON_WARNING_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-warning/75 hover:bg-warning/[0.08] hover:text-warning`;
+  `${ACTION_BTN_BASE} cursor-pointer text-warning/80 hover:bg-warning/[0.08] hover:text-warning`;
 
 /** Success/activate action. */
 export const ACTION_BUTTON_SUCCESS_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-success/75 hover:bg-success/[0.08] hover:text-success`;
+  `${ACTION_BTN_BASE} cursor-pointer text-success/80 hover:bg-success/[0.08] hover:text-success`;
 
-/** Muted action (close, archive, unlock). */
+/** Muted action. Design: muted/80, hover /[0.06]. */
 export const ACTION_BUTTON_MUTED_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-muted-foreground/80 hover:bg-muted/[0.15] hover:text-foreground/90`;
+  `${ACTION_BTN_BASE} cursor-pointer text-muted-foreground/80 hover:bg-muted/[0.06] hover:text-foreground`;
 
-/** Lock action (security — info accent). */
+/** Lock action. */
 export const ACTION_BUTTON_LOCK_CLASS =
-  `${ACTION_BTN_BASE} cursor-pointer text-info/75 hover:bg-info/[0.08] hover:text-info`;
+  `${ACTION_BTN_BASE} cursor-pointer text-info/80 hover:bg-info/[0.08] hover:text-info`;
 
 /** Inline actions wrapper (right-aligned, gap — matches Academic Years). */
 export const TABLE_ACTIONS_WRAPPER_CLASS =
@@ -466,7 +479,7 @@ export const TABLE_ACTIONS_WRAPPER_CLASS =
 export const STATUS_BADGE_ACTIVE_CLASS =
   "inline-flex rounded-full border border-success/15 bg-success/[0.06] px-2.5 py-0.5 text-xs font-medium text-success/90";
 export const STATUS_BADGE_INACTIVE_CLASS =
-  "inline-flex rounded-full border border-border/35 bg-muted/[0.04] px-2.5 py-0.5 text-xs font-medium text-muted-foreground/90";
+  "inline-flex rounded-full border border-border/40 bg-muted/[0.04] px-2.5 py-0.5 text-xs font-medium text-muted-foreground/80";
 export const STATUS_BADGE_ACTIVE_WARM_CLASS =
   "inline-flex rounded-full border border-warning/15 bg-warning/[0.06] px-2.5 py-0.5 text-xs font-medium text-warning/90";
 export const STATUS_BADGE_CLOSED_CLASS =

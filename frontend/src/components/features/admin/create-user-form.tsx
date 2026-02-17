@@ -118,7 +118,7 @@ export function CreateUserForm({
 
   const labelClass = isDialog
     ? FORM_DIALOG_LABEL_CLASS
-    : "text-muted-foreground text-[11px] font-medium uppercase tracking-[0.12em]";
+    : "text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80";
   const inputClass = isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS;
   const triggerClass = isDialog ? FORM_DIALOG_SELECT_TRIGGER_CLASS : FORM_CARD_SELECT_TRIGGER_CLASS;
   const fieldWrapperClass = isDialog ? FORM_DIALOG_FIELD_WRAPPER_CLASS : "min-w-0 space-y-2";
@@ -297,14 +297,13 @@ export function CreateUserForm({
         </div>
       </div>
 
-      {(errors.root ?? error) && (
+      {errors.root && (
         <p
           className={FORM_DIALOG_ROOT_ERROR_CLASS}
           role="alert"
           aria-live="polite"
         >
-          {errors.root?.message ??
-            getErrorMessage(error, ERROR_FALLBACK_FORM.createUser)}
+          {errors.root.message}
         </p>
       )}
 
@@ -337,7 +336,7 @@ export function CreateUserForm({
     <Card className="overflow-hidden rounded-xl border border-border/80 bg-card py-0 shadow-sm">
       <CardHeader className="border-b border-border/80 px-6 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/30 text-muted-foreground/90">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/[0.06] text-muted-foreground/80">
             <UserPlus className="size-4" strokeWidth={1.25} aria-hidden />
           </div>
           <CardTitle className="font-sans text-base font-semibold tracking-tight text-foreground">

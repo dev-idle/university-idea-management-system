@@ -41,13 +41,13 @@ function getPageNumbers(
 const PAGE_BTN_BASE =
   "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-sm font-medium tabular-nums transition-colors duration-150";
 const PAGE_BTN_INACTIVE =
-  "text-muted-foreground/90 hover:bg-muted/[0.06] hover:text-foreground";
+  "text-muted-foreground/80 hover:bg-muted/[0.06] hover:text-foreground";
 const PAGE_BTN_ACTIVE =
   "bg-primary/15 text-primary font-semibold";
 
 /** Prev/Next: minimal, harmonious. */
 const NAV_BTN_BASE =
-  "flex size-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-muted-foreground/90 transition-colors duration-150 hover:bg-muted/[0.06] hover:text-foreground sm:size-auto sm:h-8 sm:min-w-[3.5rem] sm:px-3";
+  "flex size-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-muted-foreground/80 transition-colors duration-200 hover:bg-muted/[0.06] hover:text-foreground sm:size-auto sm:h-8 sm:min-w-[3.5rem] sm:px-3";
 
 export interface ManagementTablePaginationProps {
   page: number;
@@ -100,7 +100,7 @@ export function ManagementTablePagination({
           {pageNumbers.map((p) =>
             p === "ellipsis-left" || p === "ellipsis-right" ? (
               <PaginationItem key={p}>
-                <PaginationEllipsis className="flex size-8 items-center justify-center text-muted-foreground/60" />
+                <PaginationEllipsis className="flex size-8 items-center justify-center text-muted-foreground/80" />
               </PaginationItem>
             ) : (
               <PaginationItem key={p}>

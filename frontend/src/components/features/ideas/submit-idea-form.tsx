@@ -30,8 +30,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS, CARD_CLASS, FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
-import { Paperclip, X, Loader2, FileText, PenLine, Sparkles, FileCheck } from "lucide-react";
+import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS, CARD_CLASS, FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS, LOADING_SPINNER_CLASS } from "@/config/design";
+import { Paperclip, X, FileText, PenLine, Sparkles, FileCheck } from "lucide-react";
 
 /** Form values: attachments required (array), termsAccepted boolean for initial false. */
 type SubmitIdeaFormValues = Omit<CreateIdeaBody, "attachments" | "termsAccepted"> & {
@@ -91,7 +91,7 @@ function AttachmentRow({
             disabled={viewLoading}
           >
             {viewLoading ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
+              <span className={LOADING_SPINNER_CLASS} aria-hidden />
             ) : (
               <FileText className="size-4" aria-hidden />
             )}
@@ -268,7 +268,7 @@ export function SubmitIdeaForm({
   const fieldSpacing = isFullPage ? "space-y-4" : "space-y-2";
   const blockPadding = isFullPage ? "p-5 sm:p-6" : "";
   const blockStyle = isFullPage
-    ? "rounded-xl border border-border bg-muted/5"
+    ? "rounded-xl border border-border bg-muted/[0.05]"
     : "";
   const sectionSpacing = isFullPage ? "space-y-8" : "space-y-6";
 
@@ -278,7 +278,7 @@ export function SubmitIdeaForm({
       <section className={sectionSpacing} aria-labelledby="section-proposal-heading">
         {isFullPage && (
           <div className="flex items-start gap-4">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-primary/5 text-primary/90">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-primary/[0.08] text-primary/90">
               <PenLine className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
@@ -294,7 +294,7 @@ export function SubmitIdeaForm({
 
         {/* Category — listed first */}
         <div className={cn(fieldSpacing, blockStyle, blockPadding)}>
-          <Label htmlFor="idea-category" className="text-sm font-medium text-foreground">
+          <Label htmlFor="idea-category" className="cursor-pointer text-sm font-medium text-foreground">
             Category
           </Label>
           <Select
@@ -323,7 +323,7 @@ export function SubmitIdeaForm({
         </div>
 
         <div className={cn(fieldSpacing, blockStyle, blockPadding)}>
-          <Label htmlFor="idea-title" className="text-sm font-medium text-foreground">
+          <Label htmlFor="idea-title" className="cursor-pointer text-sm font-medium text-foreground">
             Title
           </Label>
           <Input
@@ -347,7 +347,7 @@ export function SubmitIdeaForm({
         </div>
 
         <div className={cn(fieldSpacing, blockStyle, blockPadding)}>
-          <Label htmlFor="idea-content" className="text-sm font-medium text-foreground">
+          <Label htmlFor="idea-content" className="cursor-pointer text-sm font-medium text-foreground">
             Content
           </Label>
           <Textarea
@@ -383,7 +383,7 @@ export function SubmitIdeaForm({
       <section className={sectionSpacing} aria-labelledby="section-optional-heading">
         {isFullPage && (
           <div className="flex items-start gap-4">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/10 bg-muted/30 text-muted-foreground">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-muted/[0.06] text-muted-foreground">
               <Sparkles className="size-5" aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
@@ -425,7 +425,7 @@ export function SubmitIdeaForm({
         </div>
 
         <div className={fieldSpacing}>
-          <Label className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <Label htmlFor="idea-attachments-trigger" className="flex cursor-pointer items-center gap-2 text-sm font-medium text-foreground">
             <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             Supporting documents
           </Label>
@@ -450,6 +450,7 @@ export function SubmitIdeaForm({
                 disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
               />
               <Button
+                id="idea-attachments-trigger"
                 type="button"
                 variant="outline"
                 size="default"
@@ -458,7 +459,7 @@ export function SubmitIdeaForm({
                 disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
               >
                 {uploading ? (
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  <span className={LOADING_SPINNER_CLASS} aria-hidden />
                 ) : (
                   <Paperclip className="size-4" aria-hidden />
                 )}
@@ -470,7 +471,7 @@ export function SubmitIdeaForm({
                 </p>
               )}
               {attachments.length > 0 && (
-                <ul className="mt-3 space-y-1.5 rounded-xl border border-border bg-muted/5 px-5 py-3">
+                <ul className="mt-3 space-y-1.5 rounded-xl border border-border bg-muted/[0.05] px-5 py-3">
                   {attachments.map((att, index) => (
                     <AttachmentRow
                       key={`${att.cloudinaryPublicId}-${index}`}
@@ -490,7 +491,7 @@ export function SubmitIdeaForm({
       {/* Terms: single checkbox + popup to view full text */}
       <section className={sectionSpacing} aria-labelledby="section-terms-heading">
         <div className="flex items-start gap-4">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-primary/5 text-primary/90">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-primary/[0.08] text-primary/90">
             <FileCheck className="size-5" aria-hidden />
           </div>
           <div className="min-w-0 flex-1">
@@ -536,7 +537,7 @@ export function SubmitIdeaForm({
               </Button>
             </DialogTrigger>
             <DialogContent className="max-h-[85vh] max-w-lg flex flex-col gap-0 p-0 overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-              <DialogHeader className="shrink-0 border-b border-border/40 bg-muted/30 px-5 py-3.5 pr-10">
+              <DialogHeader className="shrink-0 border-b border-border/40 bg-muted/[0.05] px-5 py-3.5 pr-10">
                 <DialogTitle className="font-sans text-base font-semibold tracking-tight text-foreground">
                   Terms and Conditions
                 </DialogTitle>
@@ -604,7 +605,7 @@ export function SubmitIdeaForm({
     return (
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="overflow-hidden rounded-2xl border border-border/30 bg-card space-y-12 px-6 py-10 sm:px-8"
+        className="overflow-hidden rounded-2xl border border-border/55 bg-card space-y-12 px-6 py-10 sm:px-8"
       >
         {formContent}
       </form>
