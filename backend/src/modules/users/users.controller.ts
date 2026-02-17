@@ -52,6 +52,8 @@ export class UsersController {
       isActive?: boolean;
       fullName?: string | null;
       newPassword?: string;
+      role?: string;
+      departmentId?: string;
     },
   ) {
     return this.usersService.update(params.id, body);

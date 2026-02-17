@@ -35,6 +35,8 @@ export const updateUserBodySchema = z.object({
     .optional()
     .refine((v) => !v || v.length >= 8, "At least 8 characters.")
     .refine((v) => !v || v.length <= 128, "Max 128 characters."),
+  role: z.enum(ROLES as unknown as [string, ...string[]]).optional(),
+  departmentId: z.string().uuid("Select a valid department.").optional(),
 });
 
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;

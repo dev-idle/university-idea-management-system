@@ -112,12 +112,61 @@ export class UsersService {
       isActive?: boolean;
       fullName?: string | null;
       passwordHash?: string;
+      roleId?: string;
+      departmentId?: string | null;
     } = {};
     if (body.isActive !== undefined) data.isActive = body.isActive;
     if (body.fullName !== undefined) data.fullName = body.fullName ?? null;
     if (body.newPassword != null && body.newPassword !== '') {
       data.passwordHash = await hashPassword(body.newPassword);
     }
+
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id },
+      select: { roleId: true, role: { select: { name: true } }, departmentId: true },
+    });
+    if (!currentUser) throw new NotFoundException('User not found');
+
+    if (body.role !== undefined) {
+      const role = await this.prisma.role.findUnique({
+        where: { name: body.role },
+        select: { id: true },
+      });
+      if (!role) throw new NotFoundException('Role not found');
+      data.roleId = role.id;
+    }
+    if (body.departmentId !== undefined) {
+      const dept = await this.prisma.department.findUnique({
+        where: { id: body.departmentId },
+        select: { id: true },
+      });
+      if (!dept) throw new NotFoundException('Department not found');
+      data.departmentId = body.departmentId;
+    }
+
+    const newRole = body.role ?? currentUser.role?.name;
+    const newDeptId = body.departmentId ?? currentUser.departmentId;
+    if (newRole === 'QA_COORDINATOR' && newDeptId) {
+      const qaCoordinatorRole = await this.prisma.role.findUnique({
+        where: { name: 'QA_COORDINATOR' },
+        select: { id: true },
+      });
+      if (qaCoordinatorRole) {
+        const existing = await this.prisma.user.count({
+          where: {
+            roleId: qaCoordinatorRole.id,
+            departmentId: newDeptId,
+            id: { not: id },
+          },
+        });
+        if (existing > 0) {
+          throw new ConflictException(
+            'This department already has a QA Coordinator. Each department can have only one.',
+          );
+        }
+      }
+    }
+
     if (Object.keys(data).length === 0) {
       const user = await this.prisma.user.findUnique({
         where: { id },

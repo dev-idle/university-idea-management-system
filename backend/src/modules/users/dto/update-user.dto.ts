@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import { ROLES } from '../../auth/constants/roles';
 
 export const updateUserBodySchema = z.object({
   isActive: z.boolean().optional(),
   fullName: z.string().max(255).optional().nullable(),
   newPassword: z.string().min(8).max(128).optional(),
+  role: z.enum(ROLES as unknown as [string, ...string[]]).optional(),
+  departmentId: z.string().uuid().optional(),
 });
 
 export const userIdParamSchema = z.object({
