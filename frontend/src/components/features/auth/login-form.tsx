@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-function SubmitButton({ pending }: { pending: boolean }) {
+function SubmitButton({ pending, ariaDescribedBy }: { pending: boolean; ariaDescribedBy?: string }) {
   return (
     <Button
       type="submit"
@@ -30,6 +30,7 @@ function SubmitButton({ pending }: { pending: boolean }) {
       disabled={pending}
       aria-busy={pending}
       aria-live="polite"
+      aria-describedby={ariaDescribedBy}
     >
       {pending ? (
         <span className="inline-flex items-center gap-2">
@@ -154,6 +155,7 @@ export function LoginForm() {
 
         {errors.root && (
           <div
+            id="login-root-error"
             className={FORM_ERROR_BLOCK_CLASS}
             role="alert"
             aria-live="assertive"
@@ -163,7 +165,7 @@ export function LoginForm() {
         )}
 
         <div className="w-full">
-          <SubmitButton pending={isSubmitting} />
+          <SubmitButton pending={isSubmitting} ariaDescribedBy={errors.root ? "login-root-error" : undefined} />
         </div>
       </div>
     </form>

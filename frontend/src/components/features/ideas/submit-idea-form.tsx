@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { SECTION_LABEL_CLASS, SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS, CARD_CLASS, FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS, LOADING_SPINNER_CLASS } from "@/config/design";
+import { FORM_FIELD_ERROR_CLASS, FORM_ERROR_BLOCK_CLASS } from "@/components/features/admin/constants";
 import { Paperclip, X, FileText, PenLine, Sparkles, FileCheck } from "lucide-react";
 
 /** Form values: attachments required (array), termsAccepted boolean for initial false. */
@@ -100,7 +101,7 @@ function AttachmentRow({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="rounded-lg text-muted-foreground hover:bg-destructive/[0.08] hover:text-destructive"
             aria-label={`Remove ${att.fileName}`}
             onClick={onRemove}
           >
@@ -109,7 +110,7 @@ function AttachmentRow({
         </div>
       </div>
       {viewError ? (
-        <span className="text-xs leading-relaxed text-destructive/90" role="alert">
+        <span className={FORM_FIELD_ERROR_CLASS} role="alert">
           {viewError}
         </span>
       ) : null}
@@ -316,7 +317,7 @@ export function SubmitIdeaForm({
             Select the category that best describes your proposal.
           </p>
           {errors.categoryId && (
-            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.categoryId.message}
             </p>
           )}
@@ -340,7 +341,7 @@ export function SubmitIdeaForm({
             Provide a clear, concise title that summarises the proposal. Titles must be unique within this proposal cycle.
           </p>
           {errors.title && (
-            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.title.message}
             </p>
           )}
@@ -367,7 +368,7 @@ export function SubmitIdeaForm({
             Include context, recommendation, and expected benefits in a clear, constructive manner.
           </p>
           {errors.description && (
-            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.description.message}
             </p>
           )}
@@ -433,7 +434,7 @@ export function SubmitIdeaForm({
             PDF, Word, or images. Maximum {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB per file.
           </p>
           {uploadParamsStatus === "error" && (
-            <p className="text-sm text-warning" role="alert">
+            <p className="text-sm text-warning/90" role="alert">
               Document upload is currently unavailable. Please contact support if you need to attach files.
             </p>
           )}
@@ -466,7 +467,7 @@ export function SubmitIdeaForm({
                 {uploading ? "Uploading…" : "Add Document"}
               </Button>
               {uploadError && (
-                <p className="text-xs leading-relaxed text-destructive/90" role="alert">
+                <p className={FORM_FIELD_ERROR_CLASS} role="alert">
                   {uploadError}
                 </p>
               )}
@@ -562,7 +563,7 @@ export function SubmitIdeaForm({
           </Dialog>
         </div>
         {errors.termsAccepted && (
-          <p className="text-xs leading-relaxed text-destructive/90" role="alert">
+          <p className={FORM_FIELD_ERROR_CLASS} role="alert">
             {errors.termsAccepted.message}
           </p>
         )}
@@ -570,7 +571,7 @@ export function SubmitIdeaForm({
 
       {(error || errors.root) && (
         <div
-          className="rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90"
+          className={FORM_ERROR_BLOCK_CLASS}
           role="alert"
         >
           {getErrorMessage(error ?? errors.root?.message, ERROR_FALLBACK_FORM.submitIdea)}

@@ -334,7 +334,9 @@ export const TOOLBAR_ADD_BUTTON_PRIMARY_CLASS =
   "bg-primary text-primary-foreground shadow-[var(--shadow-card-subtle)] hover:bg-primary/95";
 
 /** Inline destructive/error block (form validation). */
-export const FORM_ERROR_BLOCK_CLASS = DESTRUCTIVE_INLINE_ACCENT_CLASS;
+/** Form/block error (left accent). Subtle fade-in when shown. */
+export const FORM_ERROR_BLOCK_CLASS =
+  `${DESTRUCTIVE_INLINE_ACCENT_CLASS} animate-in fade-in-0 duration-200`;
 
 // ─── Dialog form (Academic Year standard — sculpted popups) ───────────────────
 
