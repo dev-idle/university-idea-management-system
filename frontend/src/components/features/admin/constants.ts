@@ -442,8 +442,8 @@ export const TABLE_CELL_STATUS_CLASS = "px-6 py-4";
 
 // ─── Action buttons ──────────────────────────────────────────────────────────
 
-/** Base action icon button (shared size, shrink, refined transition). */
-const ACTION_BTN_BASE = "inline-flex size-8 shrink-0 items-center justify-center rounded-full p-2 transition-colors duration-200";
+/** Base action icon button (shared size, shrink, refined transition). Aligned with HOVER_TRANSITION_NAV. */
+const ACTION_BTN_BASE = "inline-flex size-8 shrink-0 items-center justify-center rounded-full p-2 transition-colors duration-200 ease-out";
 
 /** Edit action. Design: /80 at rest, /[0.08] hover. */
 export const ACTION_BUTTON_EDIT_CLASS =

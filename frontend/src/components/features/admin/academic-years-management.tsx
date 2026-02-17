@@ -386,7 +386,7 @@ export function AcademicYearsManagement() {
                                           size="icon-sm"
                                           className={cn(
                                             hasActiveSubmissionCycleInSystem
-                                              ? ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                              ? ACTION_BUTTON_DISABLED_BLUR_CLASS
                                               : ACTION_BUTTON_SUCCESS_CLASS
                                           )}
                                           disabled={
@@ -416,7 +416,7 @@ export function AcademicYearsManagement() {
                                           type="button"
                                           variant="ghost"
                                           size="icon-sm"
-                                          className={ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"}
+                                          className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
                                           disabled
                                           aria-label="Active (disabled)"
                                         >
@@ -437,8 +437,8 @@ export function AcademicYearsManagement() {
                                         variant="ghost"
                                         size="icon-sm"
                                         className={cn(
-                                          y.isActive
-                                            ? ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                            y.isActive
+                                            ? ACTION_BUTTON_DISABLED_BLUR_CLASS
                                             : ACTION_BUTTON_DESTRUCTIVE_CLASS
                                         )}
                                         disabled={

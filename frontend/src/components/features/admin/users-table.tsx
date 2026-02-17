@@ -30,7 +30,9 @@ import {
   DIALOG_OVERLAY_SCULPTED_CLASS,
   DIALOG_HEADER_SCULPTED_CLASS,
   DIALOG_TITLE_SCULPTED_CLASS,
+  ALERT_DIALOG_ERROR_CLASS,
 } from "./constants";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -247,6 +249,11 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                 <span className="font-medium text-foreground">{deactivateUser.email}</span>
               ) : null}
               . They can be reactivated at any time.
+              {updateMutation.isError && (
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
+                  {getErrorMessage(updateMutation.error, ERROR_FALLBACK_FORM.deactivate)}
+                </span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -254,8 +261,9 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
             <AlertDialogAction
               variant="warning"
               onClick={handleConfirmDeactivate}
+              disabled={updateMutation.isPending}
             >
-              Deactivate
+              {updateMutation.isPending ? "Deactivating…" : "Deactivate"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

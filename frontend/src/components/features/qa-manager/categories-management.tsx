@@ -343,7 +343,7 @@ export function CategoriesManagement() {
                                           className={cn(
                                             !categoryInUse(c)
                                               ? ACTION_BUTTON_DESTRUCTIVE_CLASS
-                                              : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                              : ACTION_BUTTON_DISABLED_BLUR_CLASS
                                           )}
                                           onClick={() => {
                                             if (categoryInUse(c)) return;

@@ -65,7 +65,13 @@ export function useCreateSubmissionCycleMutation() {
       });
       return res as SubmissionCycle;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
+      queryClient.setQueryData(
+        queryKeys.submissionCycles.list(),
+        (old: SubmissionCycle[] | undefined) => (old ? [created, ...old] : [created])
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });
@@ -82,7 +88,16 @@ export function useUpdateSubmissionCycleMutation() {
       });
       return res as SubmissionCycle;
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        queryKeys.submissionCycles.list(),
+        (old: SubmissionCycle[] | undefined) => {
+          if (!old) return old;
+          return old.map((c) => (c.id === updated.id ? updated : c));
+        }
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });
@@ -98,7 +113,32 @@ export function useActivateSubmissionCycleMutation() {
       });
       return res as SubmissionCycle;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.submissionCycles.list() });
+      const prev = queryClient.getQueryData<SubmissionCycle[]>(queryKeys.submissionCycles.list());
+      queryClient.setQueryData(queryKeys.submissionCycles.list(), (old: SubmissionCycle[] | undefined) => {
+        if (!old) return old;
+        return old.map((c) =>
+          c.id === id ? { ...c, status: "ACTIVE" as const } : c
+        );
+      });
+      return { prev };
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        queryKeys.submissionCycles.list(),
+        (old: SubmissionCycle[] | undefined) => {
+          if (!old) return old;
+          return old.map((c) => (c.id === updated.id ? updated : c));
+        }
+      );
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.submissionCycles.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });
@@ -114,7 +154,32 @@ export function useDeactivateSubmissionCycleMutation() {
       });
       return res as SubmissionCycle;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.submissionCycles.list() });
+      const prev = queryClient.getQueryData<SubmissionCycle[]>(queryKeys.submissionCycles.list());
+      queryClient.setQueryData(queryKeys.submissionCycles.list(), (old: SubmissionCycle[] | undefined) => {
+        if (!old) return old;
+        return old.map((c) =>
+          c.id === id ? { ...c, status: "DRAFT" as const } : c
+        );
+      });
+      return { prev };
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        queryKeys.submissionCycles.list(),
+        (old: SubmissionCycle[] | undefined) => {
+          if (!old) return old;
+          return old.map((c) => (c.id === updated.id ? updated : c));
+        }
+      );
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.submissionCycles.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });
@@ -130,7 +195,30 @@ export function useLockSubmissionCycleMutation() {
       });
       return res as SubmissionCycle;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.submissionCycles.list() });
+      const prev = queryClient.getQueryData<SubmissionCycle[]>(queryKeys.submissionCycles.list());
+      queryClient.setQueryData(queryKeys.submissionCycles.list(), (old: SubmissionCycle[] | undefined) => {
+        if (!old) return old;
+        return old.map((c) => (c.id === id ? { ...c, isLocked: true } : c));
+      });
+      return { prev };
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        queryKeys.submissionCycles.list(),
+        (old: SubmissionCycle[] | undefined) => {
+          if (!old) return old;
+          return old.map((c) => (c.id === updated.id ? updated : c));
+        }
+      );
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.submissionCycles.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });
@@ -146,7 +234,30 @@ export function useUnlockSubmissionCycleMutation() {
       });
       return res as SubmissionCycle;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.submissionCycles.list() });
+      const prev = queryClient.getQueryData<SubmissionCycle[]>(queryKeys.submissionCycles.list());
+      queryClient.setQueryData(queryKeys.submissionCycles.list(), (old: SubmissionCycle[] | undefined) => {
+        if (!old) return old;
+        return old.map((c) => (c.id === id ? { ...c, isLocked: false } : c));
+      });
+      return { prev };
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(
+        queryKeys.submissionCycles.list(),
+        (old: SubmissionCycle[] | undefined) => {
+          if (!old) return old;
+          return old.map((c) => (c.id === updated.id ? updated : c));
+        }
+      );
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.submissionCycles.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });
@@ -161,7 +272,21 @@ export function useDeleteSubmissionCycleMutation() {
         method: "DELETE",
       });
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.submissionCycles.list() });
+      const prev = queryClient.getQueryData<SubmissionCycle[]>(queryKeys.submissionCycles.list());
+      queryClient.setQueryData(queryKeys.submissionCycles.list(), (old: SubmissionCycle[] | undefined) => {
+        if (!old) return old;
+        return old.filter((c) => c.id !== id);
+      });
+      return { prev };
+    },
+    onError: (_err, id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.submissionCycles.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.submissionCycles.all });
     },
   });

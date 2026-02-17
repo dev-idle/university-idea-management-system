@@ -40,7 +40,12 @@ export function useCreateCategoryMutation() {
       });
       return res as Category;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
+      queryClient.setQueryData(queryKeys.categories.list(), (old: Category[] | undefined) =>
+        old ? [...old, created] : [created]
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
     },
   });
@@ -61,7 +66,13 @@ export function useUpdateCategoryMutation() {
       });
       return res as Category;
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.categories.list(), (old: Category[] | undefined) => {
+        if (!old) return old;
+        return old.map((c) => (c.id === updated.id ? updated : c));
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
     },
   });
@@ -77,7 +88,21 @@ export function useDeleteCategoryMutation() {
         method: "DELETE",
       });
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.categories.list() });
+      const prev = queryClient.getQueryData<Category[]>(queryKeys.categories.list());
+      queryClient.setQueryData(queryKeys.categories.list(), (old: Category[] | undefined) => {
+        if (!old) return old;
+        return old.filter((c) => c.id !== id);
+      });
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.categories.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
     },
   });

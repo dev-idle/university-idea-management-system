@@ -342,9 +342,9 @@ export function DepartmentsManagement() {
                                         variant="ghost"
                                         size="icon-sm"
                                         className={cn(
-                                          (d._count?.users ?? 0) === 0
+                                            (d._count?.users ?? 0) === 0
                                             ? ACTION_BUTTON_DESTRUCTIVE_CLASS
-                                            : ACTION_BUTTON_DISABLED_BLUR_CLASS + " size-8"
+                                            : ACTION_BUTTON_DISABLED_BLUR_CLASS
                                         )}
                                         onClick={() => {
                                           if ((d._count?.users ?? 0) > 0) return;

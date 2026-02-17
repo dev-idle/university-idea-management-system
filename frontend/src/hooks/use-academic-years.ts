@@ -41,7 +41,13 @@ export function useCreateAcademicYearMutation() {
       });
       return res as AcademicYear;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
+      queryClient.setQueryData(queryKeys.academicYears.list(), (old: AcademicYearsListWithContext | undefined) => {
+        if (!old) return { list: [created], hasActiveSubmissionCycleInSystem: false };
+        return { ...old, list: [created, ...old.list] };
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
     },
   });
@@ -62,7 +68,34 @@ export function useUpdateAcademicYearMutation() {
       });
       return res as AcademicYear;
     },
-    onSuccess: () => {
+    onMutate: async ({ id, body }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.academicYears.list() });
+      const prev = queryClient.getQueryData<AcademicYearsListWithContext>(queryKeys.academicYears.list());
+      if (prev?.list && body.isActive !== undefined) {
+        queryClient.setQueryData(queryKeys.academicYears.list(), {
+          ...prev,
+          list: prev.list.map((y) =>
+            y.id === id ? { ...y, isActive: body.isActive! } : body.isActive ? { ...y, isActive: false } : y
+          ),
+        });
+      }
+      return { prev };
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.academicYears.list(), (old: AcademicYearsListWithContext | undefined) => {
+        if (!old?.list) return old;
+        return {
+          ...old,
+          list: old.list.map((y) => (y.id === updated.id ? updated : y)),
+        };
+      });
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.academicYears.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
     },
   });
@@ -76,7 +109,23 @@ export function useDeleteAcademicYearMutation() {
     mutationFn: async (id: string) => {
       await fetchWithAuth(`academic-years/${id}`, { method: "DELETE" });
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.academicYears.list() });
+      const prev = queryClient.getQueryData<AcademicYearsListWithContext>(queryKeys.academicYears.list());
+      if (prev?.list) {
+        queryClient.setQueryData(queryKeys.academicYears.list(), {
+          ...prev,
+          list: prev.list.filter((y) => y.id !== id),
+        });
+      }
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.academicYears.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
     },
   });

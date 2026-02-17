@@ -42,7 +42,12 @@ export function useCreateDepartmentMutation() {
       });
       return res as Department;
     },
-    onSuccess: () => {
+    onSuccess: (created) => {
+      queryClient.setQueryData(queryKeys.departments.list(), (old: Department[] | undefined) =>
+        old ? [...old, created] : [created]
+      );
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
     },
   });
@@ -63,7 +68,13 @@ export function useUpdateDepartmentMutation() {
       });
       return res as Department;
     },
-    onSuccess: () => {
+    onSuccess: (updated) => {
+      queryClient.setQueryData(queryKeys.departments.list(), (old: Department[] | undefined) => {
+        if (!old) return old;
+        return old.map((d) => (d.id === updated.id ? updated : d));
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
     },
   });
@@ -79,7 +90,21 @@ export function useDeleteDepartmentMutation() {
         method: "DELETE",
       });
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.departments.list() });
+      const prev = queryClient.getQueryData<Department[]>(queryKeys.departments.list());
+      queryClient.setQueryData(queryKeys.departments.list(), (old: Department[] | undefined) => {
+        if (!old) return old;
+        return old.filter((d) => d.id !== id);
+      });
+      return { prev };
+    },
+    onError: (_err, _id, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.departments.list(), ctx.prev);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
     },
   });
