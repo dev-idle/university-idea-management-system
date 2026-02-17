@@ -47,7 +47,7 @@ function QaManagerModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-300 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
       <div className={ICON_BOX_PRIMARY_CLASS}>

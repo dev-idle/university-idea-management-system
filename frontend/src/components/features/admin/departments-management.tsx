@@ -269,7 +269,7 @@ export function DepartmentsManagement() {
         </Can>
 
         {status === "pending" && !departments ? (
-          <LoadingState message="Loading departments…" />
+          <LoadingState compact />
         ) : (
           <>
             <TooltipProvider delayDuration={300}>

@@ -1,44 +1,75 @@
 "use client";
 
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 import {
   LOADING_SPINNER_CLASS,
   LOADING_STATE_TEXT_CLASS,
   LOADING_STATE_WRAPPER_CLASS,
   LOADING_STATE_CONTENT_CLASS,
-  LOADING_WRAPPER_CLASS,
+  LOADING_INNER_CARD_CLASS,
+  LOADING_INLINE_CLASS,
+  ROOT_LOADING_FULLSCREEN_CLASS,
+  TR_PAGE_FADE,
 } from "@/config/design";
 
+/** Default loading label — refined, minimal. */
+const DEFAULT_LOADING_LABEL = "Loading";
+
 export interface LoadingStateProps {
-  /** Message below spinner. Omit for spinner-only (minimal). */
+  /** Label below spinner. Default: "Loading". Set null for spinner-only. */
   message?: string | null;
-  /** Full-page min height (40vh). Default: false. */
-  fullPage?: boolean;
+  /** Full-screen (root, layout). Same UI, centered on viewport. */
+  fullScreen?: boolean;
+  /** Inline: no card, minimal. For data fetch inside card — avoids double loading. */
+  compact?: boolean;
   className?: string;
 }
 
-/** Refined loading: smooth spinner + optional label. Design-scale colors, prefers-reduced-motion support. */
-export function LoadingState({
-  message = "Loading…",
-  fullPage = false,
+/** Unified loading UI: minimal spinner + optional label. Memoized for perf. */
+function LoadingStateInner({
+  message = DEFAULT_LOADING_LABEL,
+  fullScreen = false,
+  compact = false,
   className,
 }: LoadingStateProps) {
+  const wrapperClass = fullScreen
+    ? ROOT_LOADING_FULLSCREEN_CLASS
+    : compact
+      ? LOADING_INLINE_CLASS
+      : LOADING_STATE_WRAPPER_CLASS;
+
+  const showMessage = message != null && message !== "";
+
   return (
     <div
       className={cn(
-        fullPage ? LOADING_WRAPPER_CLASS : LOADING_STATE_WRAPPER_CLASS,
-        "animate-in fade-in-0 duration-200",
+        wrapperClass,
+        TR_PAGE_FADE,
         className
       )}
       aria-live="polite"
       aria-busy="true"
     >
-      <div className={LOADING_STATE_CONTENT_CLASS}>
-        <div className={LOADING_SPINNER_CLASS} aria-hidden />
-        {message ? (
-          <p className={LOADING_STATE_TEXT_CLASS}>{message}</p>
-        ) : null}
-      </div>
+      {compact ? (
+        <div className={cn(LOADING_STATE_CONTENT_CLASS, "text-center")}>
+          <div className={LOADING_SPINNER_CLASS} aria-hidden />
+          {showMessage && (
+            <span className={LOADING_STATE_TEXT_CLASS}>{message}</span>
+          )}
+        </div>
+      ) : (
+        <div className={LOADING_INNER_CARD_CLASS}>
+          <div className={cn(LOADING_STATE_CONTENT_CLASS, "text-center")}>
+            <div className={LOADING_SPINNER_CLASS} aria-hidden />
+            {showMessage && (
+              <span className={LOADING_STATE_TEXT_CLASS}>{message}</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export const LoadingState = memo(LoadingStateInner);

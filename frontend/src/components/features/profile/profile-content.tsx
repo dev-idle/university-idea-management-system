@@ -43,8 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { SKELETON_BG_SUBTLE, SKELETON_BG_MEDIUM, SKELETON_BG_STRONG } from "@/config/design";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   PROFILE_PAGE_CLASS,
   PROFILE_IDENTITY_CARD_CLASS,
@@ -84,47 +83,6 @@ const GENDER_OPTIONS = [
   { value: "Prefer not to say", label: "Prefer not to say" },
 ] as const;
 
-
-/** Profile loading skeleton: uses design-system skeleton tokens. */
-function ProfileSkeleton() {
-  return (
-    <div className={PROFILE_PAGE_CLASS}>
-      <section className={PROFILE_IDENTITY_CARD_CLASS} aria-hidden>
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
-          <Skeleton className={`size-20 sm:size-24 shrink-0 rounded-full ${SKELETON_BG_STRONG}`} />
-          <div className="min-w-0 flex-1 space-y-3">
-            <Skeleton className={`h-8 w-48 ${SKELETON_BG_STRONG}`} />
-            <Skeleton className={`h-4 w-64 ${SKELETON_BG_MEDIUM}`} />
-          </div>
-        </div>
-      </section>
-      <div className="grid gap-6 lg:grid-cols-[1fr_480px]">
-        <Card className={PROFILE_SECTION_CARD_CLASS}>
-          <CardHeader className={PROFILE_SECTION_HEADER_CLASS}>
-            <CardTitle className={PROFILE_SECTION_TITLE_CLASS}>
-              <User className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-              Personal information
-            </CardTitle>
-            <CardAction>
-              <Skeleton className={`h-9 w-24 rounded-lg ${SKELETON_BG_MEDIUM}`} />
-            </CardAction>
-          </CardHeader>
-          <CardContent className="px-8 py-6">
-            <div className={`grid ${PROFILE_FORM_FIELD_GAP} sm:grid-cols-2`}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className={i === 2 ? "sm:col-span-2" : ""}>
-                  <Skeleton className={`mb-2 h-4 w-24 ${SKELETON_BG_MEDIUM}`} />
-                  <Skeleton className={`h-11 w-full rounded-lg ${SKELETON_BG_SUBTLE}`} />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        <ChangePasswordForm />
-      </div>
-    </div>
-  );
-}
 
 interface EditableDisplayNameProps {
   displayName: string;
@@ -288,7 +246,7 @@ export function ProfileContent() {
     await updateProfileMutation.mutateAsync(body);
   }
 
-  if (isLoading) return <ProfileSkeleton />;
+  if (isLoading) return <LoadingState />;
   if (error || !profile) {
     return (
       <div className={`${PROFILE_ERROR_CLASS} px-6 py-5`} role="alert">

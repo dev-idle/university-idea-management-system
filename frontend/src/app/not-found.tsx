@@ -2,11 +2,12 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { BackButton } from "@/components/ui/back-button";
+import { TR_PAGE_FADE } from "@/config/design";
 
 export default function NotFound() {
   return (
     <div className="login-page-bg grid min-h-screen place-items-center px-4 font-sans">
-      <div className="animate-in fade-in-0 duration-300 flex w-full max-w-md flex-col items-center text-center">
+      <div className={`${TR_PAGE_FADE} flex w-full max-w-md flex-col items-center text-center`}>
         {/* Code — refined, weight-light */}
         <p className="text-[6rem] font-extralight tabular-nums leading-none tracking-tighter text-primary/20 sm:text-[7rem]">
           404

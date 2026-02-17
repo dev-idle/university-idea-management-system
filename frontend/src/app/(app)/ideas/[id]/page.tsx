@@ -160,7 +160,7 @@ export default function IdeaDetailPage() {
   if (status === "pending" || !idea) {
     return (
       <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <LoadingState message="Loading proposal…" fullPage />
+        <LoadingState />
       </div>
     );
   }

@@ -423,7 +423,7 @@ export function IdeasHubContent() {
       {isCommentsView ? (
         commentsStatus === "pending" ? (
           <div className="flex flex-col items-center py-28">
-            <LoadingState message="Loading comments…" />
+            <LoadingState compact />
           </div>
         ) : latestComments.length === 0 ? (
           <div className="flex flex-col items-center py-28 text-center">
@@ -453,7 +453,7 @@ export function IdeasHubContent() {
           {(ctxStatus === "pending" || ideasStatus === "pending") &&
           !listData ? (
             <div className="flex flex-col items-center py-28">
-              <LoadingState message="Loading proposals…" />
+              <LoadingState compact />
             </div>
           ) : !ideas.length ? (
             <div className="flex flex-col items-center py-28 text-center">

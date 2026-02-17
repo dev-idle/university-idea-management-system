@@ -45,7 +45,7 @@ export default function SubmitIdeaPage() {
   ) {
     return (
       <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <LoadingState message="Loading…" fullPage />
+        <LoadingState />
       </div>
     );
   }

@@ -274,7 +274,7 @@ export function CategoriesManagement() {
           </div>
         )}
         {status === "pending" && !categories ? (
-          <LoadingState message="Loading categories…" />
+          <LoadingState compact />
         ) : (
             <>
               <TooltipProvider delayDuration={300}>

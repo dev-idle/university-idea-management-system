@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function QaManagerDashboardPage() {
   return (
-    <div className={PAGE_CONTAINER_CLASS}>
+    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
       <QaManagerDashboardContent />
     </div>
   );

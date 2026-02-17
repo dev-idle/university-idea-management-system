@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { DepartmentsManagement } from "@/components/features/admin/departments-management";
-import { DepartmentsManagementSkeleton } from "@/components/features/admin/departments-management-skeleton";
 import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
@@ -12,9 +10,7 @@ export const metadata: Metadata = {
 export default function AdminDepartmentsPage() {
   return (
     <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
-      <Suspense fallback={<DepartmentsManagementSkeleton />}>
-        <DepartmentsManagement />
-      </Suspense>
+      <DepartmentsManagement />
     </div>
   );
 }

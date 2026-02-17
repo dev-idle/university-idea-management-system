@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import {
+  ERROR_VIEW_WRAPPER_CLASS,
+  ERROR_VIEW_TITLE_CLASS,
+  ERROR_VIEW_DESCRIPTION_CLASS,
+  ERROR_VIEW_ACTIONS_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  FORM_SUBMIT_BUTTON_CLASS,
+} from "@/config/design";
 import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface ErrorBoundaryViewProps {
   /** Short, clear title (e.g. "Something went wrong", "Unable to load users"). */
@@ -32,30 +40,28 @@ export function ErrorBoundaryView({
   className = "",
 }: ErrorBoundaryViewProps) {
   return (
-    <div
-      className={
-        className ||
-        "flex flex-col items-center justify-center gap-5 rounded-xl border border-border/90 bg-card px-6 py-12 shadow-sm"
-      }
-    >
-      <h1 className="text-center text-lg font-semibold tracking-tight text-foreground">
-        {title}
-      </h1>
+    <div className={cn(ERROR_VIEW_WRAPPER_CLASS, className)}>
+      <h1 className={ERROR_VIEW_TITLE_CLASS}>{title}</h1>
       {description && (
-        <p className="max-w-md text-center text-sm text-muted-foreground">
-          {description}
-        </p>
+        <p className={ERROR_VIEW_DESCRIPTION_CLASS}>{description}</p>
       )}
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className={ERROR_VIEW_ACTIONS_CLASS}>
         {onRetry != null && (
-          <Button variant="outline" onClick={onRetry} type="button">
+          <Button
+            onClick={onRetry}
+            type="button"
+            className={FORM_OUTLINE_BUTTON_CLASS}
+          >
             Try again
           </Button>
         )}
         {primaryLink && (
           <Link
             href={primaryLink.href}
-            className={buttonVariants({ variant: "default" })}
+            className={cn(
+              "inline-flex cursor-pointer items-center justify-center rounded-lg",
+              FORM_SUBMIT_BUTTON_CLASS
+            )}
           >
             {primaryLink.label}
           </Link>
@@ -63,7 +69,10 @@ export function ErrorBoundaryView({
         {secondaryLink && (
           <Link
             href={secondaryLink.href}
-            className={buttonVariants({ variant: "outline" })}
+            className={cn(
+              "inline-flex cursor-pointer items-center justify-center rounded-lg",
+              FORM_OUTLINE_BUTTON_CLASS
+            )}
           >
             {secondaryLink.label}
           </Link>

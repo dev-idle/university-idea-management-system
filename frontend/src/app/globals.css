@@ -352,12 +352,15 @@
   }
 }
 
+/* GPU layer for transform; only when spinning (not in reduced-motion). */
 .loading-spinner {
-  animation: loading-spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+  animation: loading-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .loading-spinner {
+    will-change: auto;
     animation: loading-pulse 1.2s ease-in-out infinite;
   }
 }

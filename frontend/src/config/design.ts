@@ -10,7 +10,7 @@
  * - Muted bg: /[0.03] toolbar, /[0.04] badge, /[0.05] header, /[0.06] hover light, /[0.10] row hover
  * - Primary: /[0.06] ghost hover, /[0.08] action ring, /[0.12] accent bar, /30 border hover, /80 focus
  * - Text: foreground/78 header, /88 secondary, /92–95 primary; muted-foreground/80 hint
- * - Transitions: duration-200 standard
+ * - Transitions: TR_* tokens (360ms modals, 260ms menus, no in-app nav fade)
  *
  * Typography scale (2026): Use tokens below — avoid ad-hoc text-[Npx].
  * - Caption: labels, metadata, overlines
@@ -89,6 +89,43 @@ export const BORDER_STRONG = "border-border/80";
 /** Standard divider / separator (vertical or horizontal). */
 export const DIVIDER_CLASS = "bg-border/40";
 
+// ─── Transitions (standardized, minimal) ────────────────────────────────────
+//
+// Strategy:
+// - In-app nav (sidebar menu): No transition — instant
+// - Standalone (login, 404, error): TR_PAGE_FADE — 360ms
+// - Route loading (skeleton/spinner): TR_LOADING_FRAME — 200ms
+// - Modals: 360ms | Menus: 260ms | Hover: 200–300ms
+
+/** Modal/Dialog: 360ms — fade only, no zoom. */
+export const TR_MODAL =
+  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-[360ms]";
+
+/** Modal overlay only. */
+export const TR_OVERLAY =
+  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-[360ms]";
+
+/** Sheet overlay: match modal. */
+export const TR_SHEET_OVERLAY = TR_OVERLAY;
+
+/** Sheet content: 380ms open, 280ms close — soft slide + fade. */
+export const TR_SHEET_BASE =
+  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:duration-[380ms] data-[state=closed]:duration-[280ms]";
+
+/** Popover/Dropdown/Select: 260ms — fade + whisper slide (1 unit). */
+export const TR_MENU =
+  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 duration-[260ms]";
+
+/** Combobox: same as TR_MENU, data-open/data-closed. */
+export const TR_MENU_OPEN_CLOSED =
+  "data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1 duration-[260ms]";
+
+/** Initial page fade — login, 404, loading spinner, error. NOT for in-app nav. */
+export const TR_PAGE_FADE = "animate-in fade-in-0 duration-[360ms]";
+
+/** Route loading frame (skeleton/spinner) — 200ms, snappy for in-app nav. */
+export const TR_LOADING_FRAME = "animate-in fade-in-0 duration-[200ms]";
+
 /** Page content container: bottom padding for scroll. */
 export const PAGE_CONTAINER_CLASS = "pb-24";
 
@@ -153,20 +190,9 @@ export const BACK_LINK_CLASS =
 /** Primary action button (height + rounding). */
 export const BUTTON_PRIMARY_CLASS = "h-9 gap-2 rounded-lg px-4";
 
-/** Loading state wrapper (centered, min height). */
-export const LOADING_WRAPPER_CLASS =
-  "flex min-h-[40vh] items-center justify-center";
-
-/** Loading / empty state text. */
-export const LOADING_TEXT_CLASS = TYPO_BODY_SM;
-
-/** Loading spinner — design scale primary/[0.08] track, full primary tip. Smooth ease-in-out via .loading-spinner. */
+/** Loading spinner — subtle, minimal. Track: primary/6. Tip: primary/60. */
 export const LOADING_SPINNER_CLASS =
-  "loading-spinner size-4 shrink-0 rounded-full border border-primary/[0.08] border-t-primary";
-
-/** Loading spinner large (root, full-page) — size-8. */
-export const LOADING_SPINNER_LG_CLASS =
-  "loading-spinner size-8 shrink-0 rounded-full border-2 border-primary/[0.08] border-t-primary";
+  "loading-spinner size-4 shrink-0 rounded-full border border-primary/[0.06] border-t-primary/60";
 
 /** Loading spinner on primary/dark bg (button) — use primary-foreground. */
 export const LOADING_SPINNER_ON_PRIMARY_CLASS =
@@ -176,17 +202,29 @@ export const LOADING_SPINNER_ON_PRIMARY_CLASS =
 export const LOADING_SPINNER_ON_PRIMARY_SM_CLASS =
   "loading-spinner size-3 shrink-0 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground";
 
-/** Loading state block (spinner + optional label). Tighter, minimal. */
+/** Root/full-screen loading wrapper (layout fallback, app/loading.tsx). */
+export const ROOT_LOADING_FULLSCREEN_CLASS =
+  "grid min-h-screen place-items-center bg-background";
+
+/** Loading state block — centered, airy. */
 export const LOADING_STATE_WRAPPER_CLASS =
-  "flex min-h-[8rem] items-center justify-center py-12";
+  "flex w-full min-h-[8rem] items-center justify-center px-4 py-10";
 
-/** Loading state content — compact vertical stack. */
-export const LOADING_STATE_CONTENT_CLASS =
-  "flex flex-col items-center gap-3";
+/** Loading inner card — soft, barely-there focal. */
+export const LOADING_INNER_CARD_CLASS =
+  "flex flex-col items-center justify-center gap-2 rounded-2xl border border-border/30 bg-muted/[0.015] px-5 py-6";
 
-/** Loading state label — design: muted-foreground/80 hint. */
+/** Loading state label — whisper-quiet. */
 export const LOADING_STATE_TEXT_CLASS =
-  "text-xs font-medium text-muted-foreground/80";
+  "text-[10px] font-normal tracking-wide text-muted-foreground/50";
+
+/** Loading state content — tight. */
+export const LOADING_STATE_CONTENT_CLASS =
+  "flex flex-col items-center gap-2";
+
+/** Loading inline (data fetch inside card). */
+export const LOADING_INLINE_CLASS =
+  "flex min-h-[4rem] flex-col items-center justify-center gap-1.5 py-5";
 
 // ─── Skeleton (unified color scale — muted, primary accent optional) ──────────
 
@@ -316,6 +354,26 @@ export const MGMT_BG_ROW_HOVER = "hover:bg-muted/[0.10]";
 
 /** Role Manager: divide-y between rows (skeleton, list). */
 export const MGMT_DIVIDE = "divide-border/40";
+
+/** Error / Try again view: card wrapper (centered, gentle fade-in). */
+export const ERROR_VIEW_WRAPPER_CLASS =
+  `flex flex-col items-center justify-center gap-5 rounded-xl border bg-card px-6 py-12 text-center shadow-[var(--shadow-card-subtle)] ${TR_PAGE_FADE} ${MGMT_BORDER_CARD}`;
+
+/** Error view title — clear, not alarming. */
+export const ERROR_VIEW_TITLE_CLASS =
+  "font-sans text-lg font-semibold tracking-tight text-foreground";
+
+/** Error view description. */
+export const ERROR_VIEW_DESCRIPTION_CLASS =
+  "max-w-md text-sm leading-relaxed text-muted-foreground";
+
+/** Error view actions (Try again + links) — centered flex. */
+export const ERROR_VIEW_ACTIONS_CLASS =
+  "flex flex-wrap items-center justify-center gap-3";
+
+/** Error page wrapper: centers ErrorBoundaryView in content area (use in error.tsx). */
+export const ERROR_PAGE_WRAPPER_CLASS =
+  "flex min-h-[32rem] w-full items-center justify-center px-4 py-10";
 
 /** Section label typography — caption, readable. */
 export const SIDEBAR_SECTION_LABEL_CLASS =

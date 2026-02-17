@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LoginForm } from "@/components/features/auth/login-form";
 import { LoginGate } from "@/components/features/auth/login-gate";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { TR_PAGE_FADE } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -14,7 +15,7 @@ const INTERNAL_NOTE = "For authorised University members only.";
 export default function LoginPage() {
   return (
     <main
-      className="login-page-bg flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:py-16"
+      className={`login-page-bg flex min-h-screen flex-col items-center justify-center px-4 py-12 sm:py-16 ${TR_PAGE_FADE}`}
       role="main"
     >
       <LoginGate>

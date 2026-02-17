@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { GeistSans } from "geist/font/sans";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Providers } from "./providers";
 import { SessionRestore } from "@/components/auth/session-restore";
 import "./globals.css";
@@ -27,13 +28,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${GeistSans.variable} font-sans antialiased`}>
         <Providers>
-          <Suspense
-            fallback={
-              <div className="grid min-h-screen place-items-center bg-background">
-                <p className="text-sm text-muted-foreground">Loading…</p>
-              </div>
-            }
-          >
+          <Suspense fallback={<LoadingState fullScreen />}>
             <SessionRestore>{children}</SessionRestore>
           </Suspense>
         </Providers>

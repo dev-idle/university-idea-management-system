@@ -299,7 +299,7 @@ export function AcademicYearsManagement() {
         </Can>
 
         {status === "pending" && !years ? (
-          <LoadingState message="Loading academic years…" />
+          <LoadingState compact />
         ) : (
           <>
             <TooltipProvider delayDuration={300}>

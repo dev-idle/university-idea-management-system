@@ -8,7 +8,7 @@
  * - Muted bg: /[0.03] toolbar, /[0.05] header, /[0.06] hover, /[0.10] row hover
  * - Primary: /[0.06] hover, /[0.08] ring, /30 border hover, /80 focus
  * - Text: muted-foreground/80 hint; foreground/78 header, /88 secondary
- * - Transitions: duration-200 standard
+ * - Transitions: duration-300 card hover, 360ms modals (design.ts)
  */
 import {
   CARD_CLASS,
@@ -29,23 +29,15 @@ import {
   MGMT_BG_TABLE_HEAD,
   MGMT_BG_ROW_HOVER,
   MGMT_DIVIDE,
-  LOADING_SPINNER_CLASS,
-  LOADING_STATE_WRAPPER_CLASS,
-  LOADING_STATE_CONTENT_CLASS,
-  LOADING_STATE_TEXT_CLASS,
   SKELETON_BG_SUBTLE,
   SKELETON_BG_MEDIUM,
   SKELETON_BG_STRONG,
   SKELETON_BG_INPUT,
 } from "@/config/design";
 
-/** Re-export from design for management forms and loading states. */
+/** Re-export from design for management forms. */
 export {
   FORM_OUTLINE_BUTTON_CLASS,
-  LOADING_SPINNER_CLASS,
-  LOADING_STATE_WRAPPER_CLASS,
-  LOADING_STATE_CONTENT_CLASS,
-  LOADING_STATE_TEXT_CLASS,
   SKELETON_BG_SUBTLE,
   SKELETON_BG_MEDIUM,
   SKELETON_BG_STRONG,
@@ -88,9 +80,9 @@ export const UNIFIED_CARD_TOOLBAR_CLASS =
 export const UNIFIED_SEARCH_INPUT_CLASS =
   "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-colors duration-200 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
 
-/** Sculpted modal overlay (depth, refined separation). */
+/** Sculpted modal overlay (matches TR_OVERLAY 360ms). */
 export const DIALOG_OVERLAY_SCULPTED_CLASS =
-  "!bg-overlay-modal backdrop-blur-md duration-300";
+  "!bg-overlay-modal backdrop-blur-md duration-[360ms]";
 
 /** Sculpted modal panel (elegant, academic). */
 export const DIALOG_CONTENT_SCULPTED_CLASS =
@@ -159,9 +151,6 @@ export const PAGINATION_FOOTER_CLASS =
 /** "Showing X–Y of Z" badge inside search input. Design: muted-foreground/80. */
 export const SHOWING_RANGE_BADGE_CLASS =
   `pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 select-none items-center rounded border bg-muted/[0.06] px-1.5 py-0.5 font-sans text-[10px] font-medium text-muted-foreground/80 sm:inline-flex ${MGMT_BORDER_CARD}`;
-
-/** Loading state text (table toolbar) — alias for LOADING_STATE_TEXT_CLASS. */
-export const LOADING_TABLE_TEXT_CLASS = LOADING_STATE_TEXT_CLASS;
 
 // ─── Editorial Page Header (Breadcrumb + Title + Actions) ─────────────────────
 

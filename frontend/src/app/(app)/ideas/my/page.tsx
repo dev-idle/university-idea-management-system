@@ -242,7 +242,7 @@ export default function MyIdeasPage() {
       {/* Feed */}
       {status === "pending" ? (
         <div className="flex flex-col items-center py-28">
-          <LoadingState message="Loading your proposals…" />
+          <LoadingState />
         </div>
       ) : !ideas.length ? (
         <div className="flex flex-col items-center py-28 text-center">

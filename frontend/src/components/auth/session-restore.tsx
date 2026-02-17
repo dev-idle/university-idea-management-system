@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { LoadingState } from "@/components/ui/loading-state";
 import { useAuthStore } from "@/stores/auth.store";
 import { refreshAction } from "@/actions/auth.actions";
 import { ROUTES, getEntryRouteForRoles } from "@/config/constants";
@@ -54,11 +55,7 @@ export function SessionRestore({ children }: { children: ReactNode }) {
   }, [accessToken, user, pathname, setAuth, router]);
 
   if (restoring) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      </div>
-    );
+    return <LoadingState fullScreen />;
   }
 
   return <>{children}</>;

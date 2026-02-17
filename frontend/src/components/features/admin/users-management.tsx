@@ -197,7 +197,7 @@ export function AdminUsersManagement() {
         </Can>
 
         {status === "pending" && !data ? (
-          <LoadingState message="Loading accounts…" />
+          <LoadingState compact />
         ) : (
           <>
             <UsersTable

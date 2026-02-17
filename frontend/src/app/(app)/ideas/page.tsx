@@ -25,13 +25,7 @@ export default function IdeasPage() {
         <div className={`mt-4 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
       </header>
 
-      <Suspense
-        fallback={
-          <div className="flex flex-col items-center py-28">
-            <LoadingState message="Loading…" />
-          </div>
-        }
-      >
+      <Suspense fallback={<LoadingState />}>
         <IdeasHubContent />
       </Suspense>
     </div>

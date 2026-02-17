@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { AdminUsersManagement } from "@/components/features/admin/users-management";
-import { AdminUsersTableSkeleton } from "@/components/features/admin/users-table-skeleton";
 import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
@@ -12,9 +10,7 @@ export const metadata: Metadata = {
 export default function AdminUsersPage() {
   return (
     <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
-      <Suspense fallback={<AdminUsersTableSkeleton />}>
-        <AdminUsersManagement />
-      </Suspense>
+      <AdminUsersManagement />
     </div>
   );
 }

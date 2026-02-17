@@ -438,7 +438,7 @@ export function SubmissionCyclesManagement() {
         )}
 
         {status === "pending" && !cycles ? (
-          <LoadingState message="Loading proposal cycles…" />
+          <LoadingState compact />
         ) : (
           <>
             <TooltipProvider delayDuration={300}>

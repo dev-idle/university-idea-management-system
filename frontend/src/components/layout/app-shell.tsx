@@ -46,6 +46,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LoadingState } from "@/components/ui/loading-state";
 import { cn, getAvatarInitial } from "@/lib/utils";
 import {
   LAYOUT_BORDER_MAIN,
@@ -452,11 +453,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   if (!isAuthenticated || !user) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      </div>
-    );
+    return <LoadingState fullScreen />;
   }
 
   const staffOnly = isStaffOnly(user.roles);
@@ -555,7 +552,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               sidebarCollapsed ? "max-w-screen-2xl" : "max-w-[90rem]"
             }`}
           >
-            {children}
+            <div>{children}</div>
           </div>
         </main>
       </div>
@@ -625,7 +622,7 @@ function StaffLayout({
       </header>
       <main className="scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-8 md:px-6 md:py-10 lg:px-10 lg:py-12">
         <div className="mx-auto w-full max-w-4xl">
-          {children}
+          <div>{children}</div>
         </div>
       </main>
     </div>
