@@ -5,7 +5,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { TR_MENU } from "@/config/design"
+import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MENU } from "@/config/design"
 
 function DropdownMenu({
   ...props
@@ -42,7 +42,7 @@ function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
-        className={cn(TR_MENU, "bg-popover text-popover-foreground z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto rounded-lg border border-border/50 p-1.5 shadow-[var(--shadow-dialog)]", className)}
+        className={cn(TR_MENU, POPUP_BG, "text-popover-foreground z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto p-1.5", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
@@ -227,7 +227,7 @@ function DropdownMenuSubContent({
   return (
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
-      className={cn(TR_MENU, "bg-popover text-popover-foreground z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-hidden rounded-md border p-1 shadow-lg", className)}
+      className={cn(TR_MENU, POPUP_BG, "text-popover-foreground z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-hidden p-1", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
       {...props}
     />
   )

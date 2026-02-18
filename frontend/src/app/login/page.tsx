@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LoginForm } from "@/components/features/auth/login-form";
 import { LoginGate } from "@/components/features/auth/login-gate";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { TR_PAGE_FADE } from "@/config/design";
+import { TR_PAGE_FADE, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MODAL } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -20,7 +20,7 @@ export default function LoginPage() {
     >
       <LoginGate>
         <article
-          className="relative w-full max-w-[28rem] overflow-hidden rounded-2xl border border-border/55 bg-card shadow-[var(--shadow-card-subtle)] sm:max-w-[32rem]"
+          className={`relative w-full max-w-[28rem] overflow-hidden sm:max-w-[32rem] ${POPUP_BG} ${POPUP_BORDER} ${POPUP_ROUNDED_MODAL} ${POPUP_SHADOW}`}
           role="region"
           aria-label="Sign in"
         >

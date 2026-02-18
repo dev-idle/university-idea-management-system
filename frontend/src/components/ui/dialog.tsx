@@ -5,7 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { TR_MODAL, TR_OVERLAY } from "@/config/design"
+import { TR_MODAL, TR_OVERLAY, POPUP_BORDER, POPUP_ROUNDED_MODAL, POPUP_SHADOW } from "@/config/design"
 import { Button } from "@/components/ui/button"
 
 function Dialog({
@@ -60,7 +60,7 @@ function DialogContent({
       <DialogOverlay className={overlayClassName} />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        className={cn(TR_MODAL, "bg-background fixed top-[50%] left-[50%] z-50 grid cursor-default w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg outline-none sm:max-w-lg", className)}
+        className={cn(TR_MODAL, "bg-background fixed top-[50%] left-[50%] z-50 grid cursor-default w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 p-6 outline-none sm:max-w-lg", POPUP_BORDER, POPUP_ROUNDED_MODAL, POPUP_SHADOW, className)}
         {...props}
       >
         {children}

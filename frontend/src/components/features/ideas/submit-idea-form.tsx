@@ -302,10 +302,10 @@ export function SubmitIdeaForm({
             value={categoryId}
             onValueChange={(v) => setValue("categoryId", v, { shouldValidate: true })}
           >
-            <SelectTrigger id="idea-category" className="h-11 rounded-lg border-border bg-background focus:ring-2 focus:ring-primary/20" aria-required>
+            <SelectTrigger id="idea-category" className="h-11 rounded-lg border-border bg-background focus:ring-2 focus:ring-primary/[0.08]" aria-required>
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
-            <SelectContent className="rounded-lg">
+            <SelectContent>
               {context.categories.map((c) => (
                 <SelectItem key={c.id} value={c.id} className="rounded-md">
                   {c.name}
@@ -332,7 +332,7 @@ export function SubmitIdeaForm({
             type="text"
             placeholder="A clear, descriptive title for your proposal"
             maxLength={500}
-            className="h-11 rounded-lg border-border bg-background text-base placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="h-11 rounded-lg border-border bg-background text-base placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/[0.08]"
             aria-invalid={!!errors.title}
             aria-required
             {...register("title")}
@@ -357,7 +357,7 @@ export function SubmitIdeaForm({
             maxLength={10000}
             rows={isFullPage ? 8 : 6}
             className={cn(
-              "min-h-[8rem] resize-y rounded-lg border-border bg-background py-3 text-base leading-relaxed placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/20",
+              "min-h-[8rem] resize-y rounded-lg border-border bg-background py-3 text-base leading-relaxed placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/[0.08]",
               isFullPage && "min-h-[12rem]",
             )}
             aria-invalid={!!errors.description}
@@ -537,7 +537,7 @@ export function SubmitIdeaForm({
                 View terms and conditions
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[85vh] max-w-lg flex flex-col gap-0 p-0 overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
+            <DialogContent className="max-h-[85vh] max-w-lg flex flex-col gap-0 p-0 overflow-hidden">
               <DialogHeader className="shrink-0 border-b border-border/40 bg-muted/[0.05] px-5 py-3.5 pr-10">
                 <DialogTitle className="font-sans text-base font-semibold tracking-tight text-foreground">
                   Terms and Conditions

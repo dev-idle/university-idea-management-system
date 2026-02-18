@@ -140,7 +140,7 @@ export function UserMenu({
           type="button"
           className={
             isPill
-              ? `group flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/[0.04] pl-1 pr-2.5 py-1 ${HOVER_TRANSITION_NAV} hover:border-border/60 hover:bg-muted/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:border-transparent`
+              ? `group flex items-center gap-2.5 rounded-full border border-border/55 bg-muted/[0.04] pl-1 pr-2.5 py-1 ${HOVER_TRANSITION_NAV} hover:border-border/60 hover:bg-muted/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:border-transparent`
               : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
           }
         >
@@ -167,7 +167,7 @@ export function UserMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={8}
-        className="w-64 overflow-hidden rounded-xl border border-border/55 bg-popover p-0 shadow-[var(--shadow-dialog)]"
+        className="w-64 overflow-hidden p-0"
       >
         <div className="border-b border-border/40 px-4 py-3.5">
           <div className="flex items-center gap-3">

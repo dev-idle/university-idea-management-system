@@ -353,7 +353,7 @@ function DatePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto overflow-hidden rounded-2xl border border-border/55 bg-popover p-0 shadow-[0_4px_16px_rgba(0,0,0,0.05)]"
+          className="w-auto overflow-hidden rounded-2xl p-0"
           align="start"
           sideOffset={8}
         >
@@ -630,7 +630,7 @@ function DateTimePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto overflow-hidden rounded-2xl border border-border/55 bg-popover p-0 shadow-[0_4px_16px_rgba(0,0,0,0.05)]"
+          className="w-auto overflow-hidden rounded-2xl p-0"
           align="start"
           sideOffset={8}
         >

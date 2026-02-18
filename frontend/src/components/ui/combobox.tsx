@@ -5,7 +5,7 @@ import { Combobox as ComboboxPrimitive } from "@base-ui/react"
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { TR_MENU_OPEN_CLOSED } from "@/config/design"
+import { TR_MENU_OPEN_CLOSED, POPUP_BG, POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW } from "@/config/design"
 import { Button } from "@/components/ui/button"
 import {
   InputGroup,
@@ -117,7 +117,12 @@ function ComboboxContent({
           data-slot="combobox-content"
           data-chips={!!anchor}
           className={cn(
-            cn(TR_MENU_OPEN_CLOSED, "bg-popover text-popover-foreground ring-foreground/10 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 group/combobox-content relative max-h-96 w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] origin-(--transform-origin) cursor-default overflow-hidden rounded-md shadow-md ring-1 data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none"),
+            TR_MENU_OPEN_CLOSED,
+            POPUP_BG,
+            "text-popover-foreground *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 group/combobox-content relative max-h-96 w-(--anchor-width) max-w-(--available-width) min-w-[calc(var(--anchor-width)+--spacing(7))] origin-(--transform-origin) cursor-default overflow-hidden data-[chips=true]:min-w-(--anchor-width) *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none",
+            POPUP_BORDER,
+            POPUP_ROUNDED_MENU,
+            POPUP_SHADOW,
             className
           )}
           {...props}

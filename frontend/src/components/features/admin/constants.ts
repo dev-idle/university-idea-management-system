@@ -8,7 +8,7 @@
  * - Muted bg: /[0.03] toolbar, /[0.05] header, /[0.06] hover, /[0.10] row hover
  * - Primary: /[0.06] hover, /[0.08] ring, /30 border hover, /80 focus
  * - Text: muted-foreground/80 hint; foreground/78 header, /88 secondary
- * - Transitions: duration-300 card hover, 360ms modals (design.ts)
+ * - Transitions: duration-300 card hover, 240ms modals (design.ts)
  */
 import {
   CARD_CLASS,
@@ -80,9 +80,9 @@ export const UNIFIED_CARD_TOOLBAR_CLASS =
 export const UNIFIED_SEARCH_INPUT_CLASS =
   "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-colors duration-200 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
 
-/** Sculpted modal overlay (matches TR_OVERLAY 360ms). */
+/** Sculpted modal overlay (matches TR_OVERLAY 240ms). */
 export const DIALOG_OVERLAY_SCULPTED_CLASS =
-  "!bg-overlay-modal backdrop-blur-md duration-[360ms]";
+  "!bg-overlay-modal backdrop-blur-md duration-[240ms]";
 
 /** Sculpted modal panel (elegant, academic). */
 export const DIALOG_CONTENT_SCULPTED_CLASS =

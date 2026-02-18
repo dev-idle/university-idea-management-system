@@ -74,7 +74,7 @@ function IdeaRow({
   const truncated = desc.length > PREVIEW_LEN;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+    <article className="group relative overflow-hidden rounded-2xl border border-border/55 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div className="relative px-6 py-5 sm:px-7 sm:py-6">
@@ -344,7 +344,7 @@ export default function MyIdeasPage() {
           if (!open) setDeleteTarget(null);
         }}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border-border/50">
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-sans text-lg font-semibold tracking-tight">
               Delete proposal

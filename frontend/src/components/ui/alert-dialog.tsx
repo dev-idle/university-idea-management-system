@@ -4,7 +4,7 @@ import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
-import { TR_MODAL, TR_OVERLAY } from "@/config/design"
+import { TR_MODAL, TR_OVERLAY, POPUP_BORDER, POPUP_ROUNDED_MODAL, POPUP_SHADOW } from "@/config/design"
 import { Button } from "@/components/ui/button"
 
 function AlertDialog({
@@ -55,7 +55,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         data-size={size}
-        className={cn(TR_MODAL, "bg-background group/alert-dialog-content fixed top-[50%] left-[50%] z-50 grid cursor-default w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-lg", className)}
+        className={cn(TR_MODAL, "bg-background group/alert-dialog-content fixed top-[50%] left-[50%] z-50 grid cursor-default w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 p-6 data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-lg", POPUP_BORDER, POPUP_ROUNDED_MODAL, POPUP_SHADOW, className)}
         {...props}
       />
     </AlertDialogPortal>

@@ -96,7 +96,7 @@ function IdeaCard({
   const long = (idea.description?.length ?? 0) > PREVIEW_LEN;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+    <article className="group relative overflow-hidden rounded-2xl border border-border/55 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
       {/* Subtle gradient wash on hover */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -260,7 +260,7 @@ function LatestCommentRow({ comment }: { comment: LatestComment }) {
       : comment.content;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
+    <article className="group relative overflow-hidden rounded-2xl border border-border/55 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div className="relative px-6 py-5 sm:px-7">

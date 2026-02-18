@@ -4,7 +4,7 @@ import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
-import { TR_MENU } from "@/config/design"
+import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MENU } from "@/config/design"
 
 function Popover({
   ...props
@@ -48,7 +48,7 @@ function PopoverContent({
         data-slot="popover-content"
         align={align}
         sideOffset={sideOffset}
-        className={cn(TR_MENU, "bg-popover text-popover-foreground z-50 outline-hidden", className)}
+        className={cn(TR_MENU, POPUP_BG, "text-popover-foreground z-50 outline-hidden", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
         {...props}
       />
     </PopoverPrimitive.Portal>

@@ -8,9 +8,9 @@
  * Color opacity scale (use consistently):
  * - Borders: /40 divider, /55 card/main, /80 input
  * - Muted bg: /[0.03] toolbar, /[0.04] badge, /[0.05] header, /[0.06] hover light, /[0.10] row hover
- * - Primary: /[0.06] ghost hover, /[0.08] action ring, /[0.12] accent bar, /30 border hover, /80 focus
+ * - Primary: /[0.06] hover, /[0.08] ring/focus, /[0.12] accent, /30 border, /55 card; ring unified to 0.08
  * - Text: foreground/78 header, /88 secondary, /92–95 primary; muted-foreground/80 hint
- * - Transitions: TR_* tokens (360ms modals, 260ms menus, no in-app nav fade)
+ * - Transitions: TR_* tokens (240ms modals, 260ms menus, no in-app nav fade)
  *
  * Typography scale (2026): Use tokens below — avoid ad-hoc text-[Npx].
  * - Caption: labels, metadata, overlines
@@ -95,15 +95,15 @@ export const DIVIDER_CLASS = "bg-border/40";
 // - In-app nav (sidebar menu): No transition — instant
 // - Standalone (login, 404, error): TR_PAGE_FADE — 360ms
 // - Route loading (skeleton/spinner): TR_LOADING_FRAME — 200ms
-// - Modals: 360ms | Menus: 260ms | Hover: 200–300ms
+// - Modals: 240ms | Menus: 260ms | Hover: 200–300ms
 
-/** Modal/Dialog: 360ms — fade only, no zoom. */
+/** Modal/Dialog: 240ms — snappier open, fade only, no zoom. */
 export const TR_MODAL =
-  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-[360ms]";
+  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-[240ms]";
 
 /** Modal overlay only. */
 export const TR_OVERLAY =
-  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-[360ms]";
+  "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-[240ms]";
 
 /** Sheet overlay: match modal. */
 export const TR_SHEET_OVERLAY = TR_OVERLAY;
@@ -126,6 +126,14 @@ export const TR_PAGE_FADE = "animate-in fade-in-0 duration-[360ms]";
 /** Route loading frame (skeleton/spinner) — 200ms, snappy for in-app nav. */
 export const TR_LOADING_FRAME = "animate-in fade-in-0 duration-[200ms]";
 
+/** Popup/Overlay UI — unified: User menu, Add dialogs, Action dialogs, Select, Tooltip. */
+export const POPUP_BG = "bg-popover";
+export const POPUP_BORDER = "border border-border/55";
+export const POPUP_SHADOW = "shadow-[var(--shadow-dialog)]";
+export const POPUP_ROUNDED_MENU = "rounded-xl";   /* Dropdown, Select, User menu */
+export const POPUP_ROUNDED_MODAL = "rounded-2xl";   /* Dialog, AlertDialog */
+export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers */
+
 /** Page content container: bottom padding for scroll. */
 export const PAGE_CONTAINER_CLASS = "pb-24";
 
@@ -138,13 +146,13 @@ export const STAFF_PAGE_SPACING = "space-y-12";
 /** Slightly wider page wrapper (Profile): centered, bottom padding. */
 export const PAGE_WRAPPER_PROFILE_CLASS = "mx-auto max-w-5xl pb-24";
 
-/** Card: rounded, border, background, subtle shadow. Use for content blocks. */
+/** Card: rounded, border/55, background, subtle shadow. Use for content blocks. */
 export const CARD_CLASS =
-  "rounded-xl border border-border bg-card shadow-sm";
+  "rounded-xl border border-border/55 bg-card shadow-sm";
 
 /** Card with primary left accent (for highlighted / main content blocks). */
 export const CARD_ACCENT_CLASS =
-  "rounded-xl border border-border bg-card shadow-sm overflow-hidden";
+  "rounded-xl border border-border/55 bg-card shadow-sm overflow-hidden";
 
 /** Left accent bar (use inside CARD_ACCENT_CLASS layout). */
 export const CARD_ACCENT_BAR_CLASS =
@@ -266,9 +274,9 @@ export const HOVER_TRANSITION_NAV = "transition-colors duration-200 ease-out";
 export const FOCUS_RING_CLASS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
-/** Primary-tinted focus ring for buttons and interactive elements. */
+/** Primary-tinted focus ring. Design scale: ring /[0.08]. */
 export const FOCUS_RING_PRIMARY_CLASS =
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2";
 
 // ─── Sidebar (collapsible menu) — aligned with color opacity scale ───────────
 
@@ -431,9 +439,9 @@ export const SIDEBAR_FOOTER_TEXT = "text-sidebar-foreground/78";
 export const SIDEBAR_TOOLTIP_CLASS =
   "text-[11px] font-normal text-muted-foreground tracking-wide border-border/40";
 
-/** Input/select focus (border + ring). Use with rounded-lg inputs. */
+/** Input/select focus (border + ring). Design scale: ring /[0.08]. */
 export const INPUT_FOCUS_RING_CLASS =
-  "focus-visible:ring-2 focus-visible:ring-primary/20 border-border";
+  "focus-visible:ring-2 focus-visible:ring-primary/[0.08] border-border";
 
 // ─── Semantic status badges (use design tokens, not raw colors) ───────────────
 

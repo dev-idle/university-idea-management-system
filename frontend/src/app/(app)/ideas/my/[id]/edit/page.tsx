@@ -399,11 +399,11 @@ export default function EditIdeaPage() {
             >
               <SelectTrigger
                 id="edit-category"
-                className="h-11 rounded-lg border-border bg-background focus:ring-2 focus:ring-primary/20"
+                className="h-11 rounded-lg border-border bg-background focus:ring-2 focus:ring-primary/[0.08]"
               >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent className="rounded-lg">
+              <SelectContent>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id} className="rounded-md">
                     {c.name}
@@ -432,7 +432,7 @@ export default function EditIdeaPage() {
               placeholder="A clear, descriptive title"
               maxLength={500}
               disabled={closed}
-              className="h-11 rounded-lg border-border bg-background text-base placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="h-11 rounded-lg border-border bg-background text-base placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/[0.08]"
               aria-invalid={!!errors.title}
               {...register("title")}
             />
@@ -460,7 +460,7 @@ export default function EditIdeaPage() {
               maxLength={10000}
               rows={8}
               disabled={closed}
-              className="min-h-[12rem] resize-y rounded-lg border-border bg-background py-3 text-base leading-relaxed placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/20"
+              className="min-h-[12rem] resize-y rounded-lg border-border bg-background py-3 text-base leading-relaxed placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/[0.08]"
               aria-invalid={!!errors.description}
               {...register("description")}
             />
@@ -645,7 +645,7 @@ export default function EditIdeaPage() {
           if (!open) setShowDeleteDialog(false);
         }}
       >
-        <AlertDialogContent className="max-w-md rounded-2xl border-border/50">
+        <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-sans text-lg font-semibold tracking-tight">
               Delete proposal

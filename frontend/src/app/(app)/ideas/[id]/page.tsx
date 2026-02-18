@@ -218,7 +218,7 @@ export default function IdeaDetailPage() {
 
       {/* ── Article ──────────────────────────────────────────────────── */}
       <article
-        className="overflow-hidden rounded-2xl border border-border/40 bg-card"
+        className="overflow-hidden rounded-2xl border border-border/55 bg-card"
         aria-labelledby="proposal-title"
       >
         {/* Byline */}
@@ -357,7 +357,7 @@ export default function IdeaDetailPage() {
 
       {/* ── Discussion ───────────────────────────────────────────────── */}
       <section
-        className="overflow-hidden rounded-2xl border border-border/40 bg-card"
+        className="overflow-hidden rounded-2xl border border-border/55 bg-card"
         aria-labelledby="discussion-heading"
       >
         {/* Header */}
@@ -389,7 +389,7 @@ export default function IdeaDetailPage() {
                 onChange={(e) => setCommentContent(e.target.value)}
                 placeholder="Write a comment…"
                 rows={2}
-                className="resize-none rounded-xl border-border/25 bg-transparent text-[14px] placeholder:text-muted-foreground/35 focus-visible:ring-1 focus-visible:ring-primary/20"
+                className="resize-none rounded-xl border-border/25 bg-transparent text-[14px] placeholder:text-muted-foreground/35 focus-visible:ring-1 focus-visible:ring-primary/[0.08]"
                 maxLength={2000}
               />
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">

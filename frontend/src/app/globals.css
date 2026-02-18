@@ -14,10 +14,11 @@
   --background: oklch(0.985 0.003 280); /* Slightly purple-tinted (premium, not pure white) */
   --foreground: oklch(0.15 0.02 280);
 
-  --card: oklch(1 0 0);
+  /* Card & popover match main background for Add/Edit dialogs consistency */
+  --card: oklch(0.985 0.003 280);
   --card-foreground: oklch(0.15 0.02 280);
 
-  --popover: oklch(1 0 0);
+  --popover: oklch(0.985 0.003 280);
   --popover-foreground: oklch(0.15 0.02 280);
 
   /* --- 2. Brand (Greenwich Identity) --- */
@@ -90,10 +91,11 @@
   --background: oklch(0.12 0.03 280);
   --foreground: oklch(0.95 0.01 280);
 
-  --card: oklch(0.16 0.03 280);
+  /* Card & popover match main background for Add/Edit dialogs consistency */
+  --card: oklch(0.12 0.03 280);
   --card-foreground: oklch(0.95 0.01 280);
 
-  --popover: oklch(0.16 0.03 280);
+  --popover: oklch(0.12 0.03 280);
   --popover-foreground: oklch(0.95 0.01 280);
 
   --primary: oklch(0.65 0.18 280);
