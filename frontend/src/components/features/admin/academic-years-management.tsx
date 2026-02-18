@@ -437,18 +437,20 @@ export function AcademicYearsManagement() {
                                         variant="ghost"
                                         size="icon-sm"
                                         className={cn(
-                                            y.isActive
+                                          y.isActive || (y.submissionCycleCount ?? 0) > 0
                                             ? ACTION_BUTTON_DISABLED_BLUR_CLASS
                                             : ACTION_BUTTON_DESTRUCTIVE_CLASS
                                         )}
                                         disabled={
-                                          y.isActive || deleteMutation.isPending
+                                          y.isActive ||
+                                          (y.submissionCycleCount ?? 0) > 0 ||
+                                          deleteMutation.isPending
                                         }
-                                        onClick={() =>
-                                          !y.isActive &&
-                                          (deleteMutation.reset(),
-                                            setYearToDelete(y))
-                                        }
+                                        onClick={() => {
+                                          if (y.isActive || (y.submissionCycleCount ?? 0) > 0) return;
+                                          deleteMutation.reset();
+                                          setYearToDelete(y);
+                                        }}
                                         aria-label="Delete academic year"
                                       >
                                         <Trash2 className="size-4" aria-hidden />
@@ -458,7 +460,9 @@ export function AcademicYearsManagement() {
                                   <TooltipContent side="top">
                                     {y.isActive
                                       ? "Deactivate first"
-                                      : "Delete"}
+                                      : (y.submissionCycleCount ?? 0) > 0
+                                        ? "Remove cycles in Proposal Cycles first"
+                                        : "Delete"}
                                   </TooltipContent>
                                 </Tooltip>
                               </div>

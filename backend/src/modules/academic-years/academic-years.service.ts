@@ -212,6 +212,7 @@ export class AcademicYearsService {
       endDate: Date | null;
       isActive: boolean;
       hasActiveSubmissionCycle: boolean;
+      submissionCycleCount: number;
     }>;
     hasActiveSubmissionCycleInSystem: boolean;
   }> {
@@ -223,6 +224,7 @@ export class AcademicYearsService {
           startDate: true,
           endDate: true,
           isActive: true,
+          _count: { select: { ideaSubmissionCycles: true } },
         },
         orderBy: { startDate: 'desc' },
       }),
@@ -235,8 +237,13 @@ export class AcademicYearsService {
       activeCycleYears.map((c) => c.academicYearId),
     );
     const listWithFlags = list.map((year) => ({
-      ...year,
+      id: year.id,
+      name: year.name,
+      startDate: year.startDate,
+      endDate: year.endDate,
+      isActive: year.isActive,
       hasActiveSubmissionCycle: yearIdsWithActiveCycle.has(year.id),
+      submissionCycleCount: year._count.ideaSubmissionCycles,
     }));
     return {
       list: listWithFlags,
