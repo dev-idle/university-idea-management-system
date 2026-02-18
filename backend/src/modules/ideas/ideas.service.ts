@@ -6,8 +6,10 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { EVENTS } from '../notification/constants';
 import type { CreateIdeaBody } from './dto/create-idea.dto';
 import type { VoteIdeaBody } from './dto/vote-idea.dto';
 import type { CreateCommentBody } from './dto/create-comment.dto';
@@ -22,6 +24,7 @@ export class IdeasService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly cloudinary: CloudinaryService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -470,8 +473,28 @@ export class IdeasService {
         isAnonymous: true,
         createdAt: true,
         user: { select: { id: true, fullName: true, email: true } },
+        idea: { select: { title: true, submittedById: true } },
       },
     });
+
+    // Emit event for multi-channel notifications (Email + In-app)
+    const recipientId = comment.idea.submittedById;
+    if (recipientId && recipientId !== userId) {
+      const isAnonymous = body.isAnonymous ?? false;
+      const commenterDisplayName = isAnonymous
+        ? 'Anonymous'
+        : (comment.user.fullName?.trim() || comment.user.email);
+      this.eventEmitter.emit(EVENTS.COMMENT_CREATED, {
+        type: 'comment.created',
+        ideaId,
+        ideaTitle: comment.idea.title,
+        commentId: comment.id,
+        recipientUserId: recipientId,
+        commenterDisplayName,
+        commenterEmail: isAnonymous ? undefined : comment.user.email,
+        isAnonymous,
+      });
+    }
 
     return {
       id: comment.id,
@@ -612,6 +635,38 @@ export class IdeasService {
         },
       },
     });
+
+    // Emit event for multi-channel notifications (Email + In-app)
+    const submitter = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        departmentId: true,
+        fullName: true,
+        email: true,
+        department: { select: { name: true } },
+      },
+    });
+    if (submitter?.departmentId) {
+      const isAnonymous = body.isAnonymous ?? true;
+      const submitterDisplayName = isAnonymous
+        ? 'Anonymous'
+        : (submitter.fullName?.trim() || submitter.email);
+      this.eventEmitter.emit(EVENTS.IDEA_CREATED, {
+        type: 'idea.created',
+        ideaId: idea.id,
+        ideaTitle: idea.title,
+        departmentId: submitter.departmentId,
+        departmentName: submitter.department?.name,
+        submitterDisplayName,
+        submitterEmail: isAnonymous ? undefined : submitter.email,
+        isAnonymous,
+        attachmentLinks: (idea.attachments ?? []).map((a) => ({
+          fileName: a.fileName,
+          secureUrl: a.secureUrl,
+        })),
+      });
+    }
+
     return idea;
   }
 

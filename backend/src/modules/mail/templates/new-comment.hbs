@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New comment on your idea</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;line-height:1.6;color:#334155;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+          <tr>
+            <td style="padding:28px 36px;background:#28224B;border-bottom:3px solid #3d3585;">
+              <h1 style="margin:0;color:#fff;font-size:20px;font-weight:600;letter-spacing:-0.02em;">New comment</h1>
+              <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Someone engaged with your idea</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 36px;">
+              {{#if isAnonymous}}
+              <p style="margin:0 0 20px;color:#475569;font-size:15px;"><strong>Anonymous</strong> commented on your idea:</p>
+              {{else}}
+              <p style="margin:0 0 20px;color:#475569;font-size:15px;"><strong>{{commenterDisplayName}}</strong>{{#if commenterEmail}} <span style="color:#64748b;">({{commenterEmail}})</span>{{/if}} commented on your idea:</p>
+              {{/if}}
+              <div style="background:#f8fafc;border-radius:10px;padding:20px 24px;margin:0 0 24px;border-left:4px solid #28224B;">
+                <p style="margin:0 0 6px;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Your idea</p>
+                <p style="margin:0;color:#0f172a;font-size:17px;font-weight:600;">{{ideaTitle}}</p>
+              </div>
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius:10px;background:#28224B;">
+                    <a href="{{ideaLink}}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;color:#fff!important;font-size:14px;font-weight:600;text-decoration:none;">View comment</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:18px 36px;background:#f8fafc;border-top:1px solid #e2e8f0;">
+              <p style="margin:0;color:#94a3b8;font-size:12px;">Greenwich University — Idea Management System</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

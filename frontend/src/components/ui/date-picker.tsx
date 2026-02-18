@@ -444,7 +444,7 @@ function timeFrom12h(hour: number, minute: number, ampm: "AM" | "PM"): string {
   return `${String(h).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
 }
 
-/** Time selector — stepper layout, tối giản, dễ dùng. */
+/** Time selector — stepper layout, minimal and easy to use. */
 function TimeSelect({
   value,
   onChange,

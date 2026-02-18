@@ -1,6 +1,7 @@
 import { Module, RequestMethod } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
@@ -15,6 +16,8 @@ import { IdeasModule } from './modules/ideas';
 import { MeModule } from './modules/me';
 import { UsersModule } from './modules/users';
 import { CloudinaryModule } from './modules/cloudinary';
+import { MailModule } from './modules/mail';
+import { NotificationModule } from './modules/notification';
 import { validateEnv } from './config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -49,6 +52,7 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
       }),
       inject: [ConfigService],
     }),
+    EventEmitterModule.forRoot(),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       global: true,
@@ -72,6 +76,8 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
     IdeasModule,
     UsersModule,
     CloudinaryModule,
+    MailModule,
+    NotificationModule,
   ],
   providers: [
     {

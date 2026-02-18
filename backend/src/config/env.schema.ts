@@ -24,6 +24,27 @@ export const envSchema = z
     CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
     CLOUDINARY_API_KEY: z.string().min(1).optional(),
     CLOUDINARY_API_SECRET: z.string().min(1).optional(),
+    /** Redis: BullMQ notification queue. e.g. redis://localhost:6379 */
+    REDIS_URL: z.string().min(1).optional(),
+    /** SMTP: for sending notification emails. When unset, email sending is skipped. */
+    SMTP_HOST: z.string().min(1).optional(),
+    SMTP_PORT: z.coerce.number().int().positive().optional(),
+    SMTP_SECURE: z
+      .string()
+      .optional()
+      .transform((v) => v === 'true' || v === '1'),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    SMTP_FROM: z.string().email().optional(),
+    /** Mail (MailerModule): alternative env keys for Mailtrap. */
+    MAIL_HOST: z.string().min(1).optional(),
+    MAIL_PORT: z.coerce.number().int().positive().optional(),
+    MAIL_USER: z.string().optional(),
+    MAIL_PASS: z.string().optional(),
+    /** Mailtrap inbox URL to view sent emails (e.g. https://mailtrap.io/inboxes/xxx/messages). */
+    MAILTRAP_INBOX_URL: z.string().url().optional(),
+    /** Frontend base URL for notification links. */
+    FRONTEND_URL: z.string().url().optional(),
   })
   .refine(
     (data) =>

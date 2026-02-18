@@ -363,21 +363,25 @@ export const MGMT_BG_ROW_HOVER = "hover:bg-muted/[0.10]";
 /** Role Manager: divide-y between rows (skeleton, list). */
 export const MGMT_DIVIDE = "divide-border/40";
 
-/** Error / Try again view: card wrapper (centered, gentle fade-in). */
+/** Error / Try again view: minimal card, gentle fade-in. Aligns with POPUP_* scale. */
 export const ERROR_VIEW_WRAPPER_CLASS =
-  `flex flex-col items-center justify-center gap-5 rounded-xl border bg-card px-6 py-12 text-center shadow-[var(--shadow-card-subtle)] ${TR_PAGE_FADE} ${MGMT_BORDER_CARD}`;
+  `flex flex-col items-center justify-center gap-5 max-w-sm rounded-2xl border border-border/55 bg-background px-6 py-10 text-center shadow-[var(--shadow-card-subtle)] ${TR_PAGE_FADE}`;
 
-/** Error view title — clear, not alarming. */
+/** Error view icon — minimal, subtle. */
+export const ERROR_VIEW_ICON_CLASS =
+  "flex size-10 items-center justify-center rounded-full bg-muted/[0.05] text-muted-foreground/60";
+
+/** Error view title — clear, not loud. */
 export const ERROR_VIEW_TITLE_CLASS =
   "font-sans text-lg font-semibold tracking-tight text-foreground";
 
-/** Error view description. */
+/** Error view description — minimal, readable. */
 export const ERROR_VIEW_DESCRIPTION_CLASS =
-  "max-w-md text-sm leading-relaxed text-muted-foreground";
+  "max-w-xs text-sm leading-relaxed text-muted-foreground/85";
 
-/** Error view actions (Try again + links) — centered flex. */
+/** Error view actions — minimal gap, aligned with form actions. */
 export const ERROR_VIEW_ACTIONS_CLASS =
-  "flex flex-wrap items-center justify-center gap-3";
+  "flex flex-wrap items-center justify-center gap-2.5";
 
 /** Error page wrapper: centers ErrorBoundaryView in content area (use in error.tsx). */
 export const ERROR_PAGE_WRAPPER_CLASS =

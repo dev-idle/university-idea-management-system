@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Lightbulb } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 import { getEntryRouteForRoles, ROUTES } from "@/config/constants";
 import { hasRole } from "@/lib/rbac";
 import { LAYOUT_BORDER_MAIN, LAYOUT_DIVIDER_LINE } from "@/config/design";
@@ -10,6 +10,7 @@ import {
   HeaderIconButton,
   UserMenu,
 } from "@/components/layout/header-parts";
+import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 
 /** Top app bar height — aligns with SidebarHeader. */
 const TOP_BAR_HEIGHT = "h-16";
@@ -54,7 +55,7 @@ export function NavbarHeader({
             isActive={pathname === ROUTES.IDEAS}
           />
         )}
-        <HeaderIconButton icon={Bell} label="Notifications" />
+        <NotificationDropdown variant="standalone" />
 
         <div className={`mx-2 hidden h-5 w-px md:block ${LAYOUT_DIVIDER_LINE}`} aria-hidden />
 

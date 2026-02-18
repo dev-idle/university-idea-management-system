@@ -38,6 +38,11 @@ export const queryKeys = {
     all: ["api", "me"] as const,
     me: () => [...queryKeys.profile.all, "me"] as const,
   },
+  notifications: {
+    all: ["api", "notifications"] as const,
+    list: (limit?: number) => [...queryKeys.notifications.all, "list", limit ?? 20] as const,
+    unreadCount: () => [...queryKeys.notifications.all, "unread-count"] as const,
+  },
   ideas: {
     all: ["api", "ideas"] as const,
     list: (params?: { page: number; limit: number; sort?: string }) =>

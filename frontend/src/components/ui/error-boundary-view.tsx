@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { AlertCircle } from "lucide-react";
 import {
   ERROR_VIEW_WRAPPER_CLASS,
+  ERROR_VIEW_ICON_CLASS,
   ERROR_VIEW_TITLE_CLASS,
   ERROR_VIEW_DESCRIPTION_CLASS,
   ERROR_VIEW_ACTIONS_CLASS,
-  FORM_OUTLINE_BUTTON_CLASS,
-  FORM_SUBMIT_BUTTON_CLASS,
 } from "@/config/design";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,11 +25,13 @@ export interface ErrorBoundaryViewProps {
   secondaryLink?: { href: string; label: string };
   /** Optional class for the wrapper (e.g. for full-screen centering). */
   className?: string;
+  /** Show icon above title. Default true. */
+  showIcon?: boolean;
 }
 
 /**
- * Shared error boundary content: consistent layout, typography (font-sans),
- * and actions. Use in error.tsx and not-found.tsx.
+ * Shared error boundary content: refined layout, typography, and actions.
+ * Use in error.tsx and not-found.tsx.
  */
 export function ErrorBoundaryView({
   title,
@@ -38,44 +40,42 @@ export function ErrorBoundaryView({
   primaryLink,
   secondaryLink,
   className = "",
+  showIcon = true,
 }: ErrorBoundaryViewProps) {
   return (
     <div className={cn(ERROR_VIEW_WRAPPER_CLASS, className)}>
+      {showIcon && (
+        <div className={ERROR_VIEW_ICON_CLASS} aria-hidden>
+          <AlertCircle className="size-5" />
+        </div>
+      )}
       <h1 className={ERROR_VIEW_TITLE_CLASS}>{title}</h1>
       {description && (
         <p className={ERROR_VIEW_DESCRIPTION_CLASS}>{description}</p>
       )}
       <div className={ERROR_VIEW_ACTIONS_CLASS}>
-        {onRetry != null && (
-          <Button
-            onClick={onRetry}
-            type="button"
-            className={FORM_OUTLINE_BUTTON_CLASS}
-          >
-            Try again
-          </Button>
-        )}
-        {primaryLink && (
-          <Link
-            href={primaryLink.href}
-            className={cn(
-              "inline-flex cursor-pointer items-center justify-center rounded-lg",
-              FORM_SUBMIT_BUTTON_CLASS
+        {onRetry != null ? (
+          <>
+            <Button size="default" onClick={onRetry} type="button">
+              Try again
+            </Button>
+            {primaryLink && (
+              <Button variant="outline" size="default" asChild>
+                <Link href={primaryLink.href}>{primaryLink.label}</Link>
+              </Button>
             )}
-          >
-            {primaryLink.label}
-          </Link>
+          </>
+        ) : (
+          primaryLink && (
+            <Button size="default" asChild>
+              <Link href={primaryLink.href}>{primaryLink.label}</Link>
+            </Button>
+          )
         )}
         {secondaryLink && (
-          <Link
-            href={secondaryLink.href}
-            className={cn(
-              "inline-flex cursor-pointer items-center justify-center rounded-lg",
-              FORM_OUTLINE_BUTTON_CLASS
-            )}
-          >
-            {secondaryLink.label}
-          </Link>
+          <Button variant="outline" size="default" asChild>
+            <Link href={secondaryLink.href}>{secondaryLink.label}</Link>
+          </Button>
         )}
       </div>
     </div>

@@ -15,7 +15,6 @@ import {
   Tags,
   Lightbulb,
   FolderPen,
-  Bell,
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
@@ -41,6 +40,7 @@ import { SiteBranding } from "@/components/layout/site-branding";
 import { SidebarHeader } from "@/components/layout/sidebar-header";
 import { NavbarHeader } from "@/components/layout/navbar-header";
 import { HeaderIconButton, UserMenu } from "@/components/layout/header-parts";
+import { NotificationDropdown } from "@/components/layout/notification-dropdown";
 import {
   Tooltip,
   TooltipContent,
@@ -608,7 +608,7 @@ function StaffLayout({
               href={ROUTES.MY_IDEAS}
               isActive={isMyIdeasPage}
             />
-            <HeaderIconButton icon={Bell} label="Notifications" />
+            <NotificationDropdown variant="pill" />
           </div>
           <div className={`mx-2 h-5 w-px ${LAYOUT_DIVIDER_LINE}`} aria-hidden />
           <UserMenu
