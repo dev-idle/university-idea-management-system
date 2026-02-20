@@ -22,6 +22,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
   BACK_LINK_CLASS,
+  IDEA_CARD_CLASS,
   STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import {
@@ -218,7 +219,7 @@ export default function IdeaDetailPage() {
 
       {/* ── Article ──────────────────────────────────────────────────── */}
       <article
-        className="overflow-hidden rounded-2xl border border-border/55 bg-card"
+        className={cn("overflow-hidden", IDEA_CARD_CLASS)}
         aria-labelledby="proposal-title"
       >
         {/* Byline */}
@@ -306,9 +307,9 @@ export default function IdeaDetailPage() {
             disabled={!open || voteMutation.isPending}
             onClick={() => handleVote("up")}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
+              "inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors duration-100 disabled:cursor-not-allowed",
               myVote === "up"
-                ? "bg-success/10 text-success"
+                ? "text-success"
                 : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
               (!open || voteMutation.isPending) &&
                 "pointer-events-none opacity-40",
@@ -324,9 +325,9 @@ export default function IdeaDetailPage() {
             disabled={!open || voteMutation.isPending}
             onClick={() => handleVote("down")}
             className={cn(
-              "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-200",
+              "inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors duration-100 disabled:cursor-not-allowed",
               myVote === "down"
-                ? "bg-destructive/10 text-destructive"
+                ? "text-destructive"
                 : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
               (!open || voteMutation.isPending) &&
                 "pointer-events-none opacity-40",
@@ -357,7 +358,7 @@ export default function IdeaDetailPage() {
 
       {/* ── Discussion ───────────────────────────────────────────────── */}
       <section
-        className="overflow-hidden rounded-2xl border border-border/55 bg-card"
+        className={cn("overflow-hidden", IDEA_CARD_CLASS)}
         aria-labelledby="discussion-heading"
       >
         {/* Header */}

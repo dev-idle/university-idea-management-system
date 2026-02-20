@@ -54,7 +54,7 @@ export class IdeasController {
   ) {}
 
   @Get('context')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'ADMIN', 'QA_MANAGER', 'QA_COORDINATOR')
   getContext(@CurrentUser() user: AccessTokenPayload) {
     return this.ideasService.getContext(user.sub);
   }
@@ -65,14 +65,21 @@ export class IdeasController {
     @CurrentUser() user: AccessTokenPayload,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Query('sort') sort?: 'latest' | 'mostPopular' | 'mostViewed',
+    @Query('sort') sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments',
+    @Query('categoryId') categoryId?: string,
+    @Query('cycleId') cycleId?: string,
   ) {
     const { page: pageNum, limit: limitNum } = parsePagination(page, limit);
-    const sortVal = sort === 'mostPopular' || sort === 'mostViewed' ? sort : 'latest';
+    const sortVal =
+      sort === 'mostPopular' || sort === 'mostViewed' || sort === 'latestComments'
+        ? sort
+        : 'latest';
     return this.ideasService.findAllForActiveYear({
       page: pageNum,
       limit: limitNum,
       sort: sortVal,
+      categoryId: categoryId || undefined,
+      cycleId: cycleId || undefined,
       userId: user.sub,
     });
   }

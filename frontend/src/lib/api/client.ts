@@ -90,11 +90,21 @@ export async function fetchWithAuthResponse(path: string, init?: RequestInit): P
     if (!headers.has("Content-Type") && !(body instanceof FormData)) {
       headers.set("Content-Type", "application/json");
     }
-    return fetch(url, {
-      ...init,
-      headers,
-      credentials: "include",
-    });
+    try {
+      return await fetch(url, {
+        ...init,
+        headers,
+        credentials: "include",
+      });
+    } catch (err) {
+      const msg =
+        err instanceof TypeError && err.message === "Failed to fetch"
+          ? `Cannot reach API at ${url}. Ensure the backend is running (e.g. \`cd backend && npm run start:dev\`) and NEXT_PUBLIC_API_BASE is correct.`
+          : err instanceof Error
+            ? err.message
+            : "Network error";
+      throw new Error(msg);
+    }
   };
 
   let res = await doFetch();

@@ -63,12 +63,20 @@ const activeAcademicYearRefSchema = z.object({
   name: z.string(),
 });
 
+const closedCycleForYearSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  categories: z.array(categoryRefSchema),
+});
+
 export const ideasContextSchema = z.object({
   canSubmit: z.boolean(),
   activeCycleId: z.string().uuid().nullable(),
+  activeCycleName: z.string().nullable().optional(),
   submissionClosesAt: z.coerce.date().nullable(),
   activeAcademicYear: activeAcademicYearRefSchema.nullable(),
   categories: z.array(categoryRefSchema),
+  closedCyclesForYear: z.array(closedCycleForYearSchema).optional().default([]),
 });
 
 export type IdeasContext = z.infer<typeof ideasContextSchema>;

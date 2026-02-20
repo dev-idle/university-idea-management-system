@@ -131,7 +131,7 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
       className={cn(
         HEADER_ICON_CLASS,
         HOVER_TRANSITION_NAV,
-        "relative text-muted-foreground/65 hover:text-foreground/90",
+        "relative text-muted-foreground/55 hover:text-foreground/80",
         open && "text-foreground/90"
       )}
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
@@ -159,8 +159,9 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
             <button
               type="button"
               className={cn(
+                "cursor-pointer",
                 variant === "pill" &&
-                  "flex items-center justify-center rounded-lg p-2"
+                  "flex size-8 shrink-0 items-center justify-center rounded-lg"
               )}
             >
               {triggerContent}

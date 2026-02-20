@@ -50,7 +50,7 @@ export const queryKeys = {
   },
   ideas: {
     all: ["api", "ideas"] as const,
-    list: (params?: { page: number; limit: number; sort?: string }) =>
+    list: (params?: { page: number; limit: number; sort?: string; categoryId?: string; cycleId?: string }) =>
       [...queryKeys.ideas.all, "list", params ?? {}] as const,
     detail: (id: string) => [...queryKeys.ideas.all, "detail", id] as const,
     context: () => [...queryKeys.ideas.all, "context"] as const,

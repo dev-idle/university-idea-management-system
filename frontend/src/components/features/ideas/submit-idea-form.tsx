@@ -606,7 +606,7 @@ export function SubmitIdeaForm({
     return (
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="overflow-hidden rounded-2xl border border-border/55 bg-card space-y-12 px-6 py-10 sm:px-8"
+        className={cn("overflow-hidden space-y-12 px-6 py-10 sm:px-8", CARD_CLASS)}
       >
         {formContent}
       </form>

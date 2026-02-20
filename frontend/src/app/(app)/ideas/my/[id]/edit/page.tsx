@@ -20,7 +20,12 @@ import { updateIdeaBodySchema } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { fetchWithAuthResponse } from "@/lib/api/client";
-import { FORM_SUBMIT_BUTTON_CLASS, FORM_OUTLINE_BUTTON_CLASS } from "@/config/design";
+import { cn } from "@/lib/utils";
+import {
+  FORM_SUBMIT_BUTTON_CLASS,
+  FORM_OUTLINE_BUTTON_CLASS,
+  IDEA_CARD_CLASS,
+} from "@/config/design";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -379,7 +384,7 @@ export default function EditIdeaPage() {
       {/* Form */}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="overflow-hidden rounded-2xl border border-border/55 bg-card"
+        className={cn("overflow-hidden", IDEA_CARD_CLASS)}
       >
         <div className="space-y-8 px-6 py-8 sm:px-8 sm:py-10">
           {/* Category */}

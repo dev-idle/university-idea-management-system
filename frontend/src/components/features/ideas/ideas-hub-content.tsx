@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { parseAsInteger, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import {
   useIdeasQuery,
   useIdeasContextQuery,
   useVoteIdeaMutation,
-  useLatestCommentsQuery,
 } from "@/hooks/use-ideas";
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
-import type { Idea, LatestComment } from "@/lib/schemas/ideas.schema";
+import type { Idea } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,8 +22,45 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getAvatarInitial, cn, timeAgo } from "@/lib/utils";
-import { ALERT_WARNING_CLASS } from "@/config/design";
+import {
+  ALERT_WARNING_CLASS,
+  IDEAS_HUB_CARD_PX,
+  IDEAS_HUB_BYLINE_META,
+  IDEAS_HUB_ENGAGEMENT_BORDER,
+  IDEAS_HUB_ARTICLE_CLASS,
+  IDEAS_HUB_AVATAR,
+  IDEAS_HUB_AUTHOR,
+  IDEAS_HUB_TITLE,
+  IDEAS_HUB_DESC,
+  IDEAS_HUB_ACTION_BASE,
+  IDEAS_HUB_ACTION_INACTIVE,
+  IDEAS_HUB_ACTION_UP,
+  IDEAS_HUB_ACTION_DOWN,
+  IDEAS_HUB_READ_MORE,
+  IDEAS_HUB_ATTACHMENT_CHIP,
+  IDEAS_HUB_TAB_BASE,
+  IDEAS_HUB_TAB_ACTIVE,
+  IDEAS_HUB_TAB_INACTIVE,
+  IDEAS_HUB_EMPTY_ICON,
+  IDEAS_HUB_CTA_CARD,
+  IDEAS_HUB_CTA_ICON,
+  IDEAS_HUB_FEED_GAP,
+  IDEAS_HUB_SPACING,
+  IDEAS_HUB_COUNT,
+  IDEAS_HUB_TOOLBAR,
+  IDEAS_HUB_SELECT_TRIGGER,
+  IDEAS_HUB_TOOLBAR_DIVIDER,
+  IDEAS_HUB_PAGINATION,
+  BORDER_SUBTLE,
+} from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
   ThumbsUp,
@@ -49,8 +86,8 @@ const VIEW_TABS: Array<{ value: ViewMode; label: string }> = [
   { value: "latestComments", label: "Latest Comments" },
 ];
 
-const LATEST_COMMENTS_LIMIT = 10;
-const COMMENT_PREVIEW_LEN = 160;
+const SORT_PARSER = parseAsStringLiteral(VIEW_TABS.map((t) => t.value)).withDefault("latest");
+
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -96,43 +133,35 @@ function IdeaCard({
   const long = (idea.description?.length ?? 0) > PREVIEW_LEN;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/55 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
-      {/* Subtle gradient wash on hover */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-      {/* ── Byline ───────────────────────────────────────────────────── */}
-      <div className="relative flex items-center gap-3 px-6 pt-6 sm:px-7">
-        <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
-          <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/5 text-[11px] font-semibold text-primary/60">
+    <article className={IDEAS_HUB_ARTICLE_CLASS}>
+      {/* Byline */}
+      <div className={cn("flex items-center gap-3", IDEAS_HUB_CARD_PX, "pt-5 pb-3")}>
+        <Avatar className={IDEAS_HUB_AVATAR}>
+          <AvatarFallback className="bg-primary/[0.06] text-[11px] font-semibold text-primary/75">
             {initial}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className="truncate text-[13px] font-medium text-foreground/90">
-              {author}
-            </span>
+            <span className={IDEAS_HUB_AUTHOR}>{author}</span>
             {idea.isAnonymous && (
               <Badge
                 variant="outline"
-                className="rounded-full border-border/40 px-2 py-0 text-[10px] font-normal italic text-muted-foreground/60"
+                className={cn("rounded-full px-2 py-0 font-normal italic", BORDER_SUBTLE, "text-[10px] text-muted-foreground/60")}
               >
                 Anonymous
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
+          <div className={cn("flex items-center gap-1.5 mt-0.5", IDEAS_HUB_BYLINE_META)}>
             <time dateTime={new Date(idea.createdAt).toISOString()}>
               {timeAgo(idea.createdAt)}
             </time>
             {idea.category?.name && (
               <>
-                <span aria-hidden>·</span>
-                <span className="inline-flex items-center gap-1">
-                  <span
-                    className="size-1 rounded-full bg-primary/40"
-                    aria-hidden
-                  />
+                <span aria-hidden className="opacity-50">·</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-primary/40" aria-hidden />
                   {idea.category.name}
                 </span>
               </>
@@ -141,22 +170,20 @@ function IdeaCard({
         </div>
       </div>
 
-      {/* ── Content ───────────────────────────────────────────────────── */}
-      <div className="relative px-6 pb-5 pt-4 sm:px-7">
+      {/* Content */}
+      <div className={cn(IDEAS_HUB_CARD_PX, "pb-5")}>
         <Link
           href={`${ROUTES.IDEAS}/${idea.id}`}
           className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <h2 className="font-sans text-xl font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-[22px]">
-            {idea.title}
-          </h2>
+          <h2 className={IDEAS_HUB_TITLE}>{idea.title}</h2>
         </Link>
 
         {idea.description && (
           <div className="mt-3">
             <p
               className={cn(
-                "text-[14px] leading-[1.75] text-foreground/55",
+                IDEAS_HUB_DESC,
                 isExpanded ? "whitespace-pre-wrap" : "line-clamp-3",
               )}
             >
@@ -165,7 +192,7 @@ function IdeaCard({
             {!isExpanded && long && (
               <button
                 type="button"
-                className="mt-1 text-[11px] font-medium text-primary/50 transition-colors hover:text-primary/80"
+                className={cn(IDEAS_HUB_READ_MORE, "cursor-pointer")}
                 onClick={() => onToggleExpand(idea.id)}
               >
                 Continue reading
@@ -175,16 +202,10 @@ function IdeaCard({
         )}
 
         {isExpanded && idea.attachments.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1.5">
+          <div className="mt-4 flex flex-wrap gap-2">
             {idea.attachments.map((att) => (
-              <span
-                key={att.id}
-                className="inline-flex items-center gap-1 rounded-lg border border-border/25 bg-muted/20 px-2 py-1 text-[11px] text-muted-foreground/60"
-              >
-                <FileText
-                  className="size-3 shrink-0 opacity-50"
-                  aria-hidden
-                />
+              <span key={att.id} className={IDEAS_HUB_ATTACHMENT_CHIP}>
+                <FileText className="size-3 shrink-0 opacity-55" aria-hidden />
                 <span className="max-w-[160px] truncate">{att.fileName}</span>
               </span>
             ))}
@@ -192,113 +213,58 @@ function IdeaCard({
         )}
       </div>
 
-      {/* ── Engagement ────────────────────────────────────────────────── */}
-      <div className="relative flex items-center gap-1.5 border-t border-border/20 px-6 py-3 sm:px-7">
+      {/* Engagement */}
+      <div
+        className={cn(
+          "flex items-center gap-1",
+          IDEAS_HUB_ENGAGEMENT_BORDER,
+          IDEAS_HUB_CARD_PX,
+          "py-2.5",
+        )}
+        role="toolbar"
+      >
         <button
           type="button"
           disabled={votePending}
           onClick={(e) => castVote(e, "up")}
           className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
-            myVote === "up"
-              ? "bg-success/10 text-success"
-              : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
+            IDEAS_HUB_ACTION_BASE,
+            "cursor-pointer",
+            myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
           )}
           aria-label="Support"
         >
-          <ThumbsUp className="size-3.5" aria-hidden />
-          <span className="tabular-nums">{votes.up}</span>
+          <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+          {votes.up}
         </button>
-
+        <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
         <button
           type="button"
           disabled={votePending}
           onClick={(e) => castVote(e, "down")}
           className={cn(
-            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200",
-            myVote === "down"
-              ? "bg-destructive/10 text-destructive"
-              : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
+            IDEAS_HUB_ACTION_BASE,
+            "cursor-pointer",
+            myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
           )}
           aria-label="Do not support"
         >
-          <ThumbsDown className="size-3.5" aria-hidden />
-          <span className="tabular-nums">{votes.down}</span>
+          <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+          {votes.down}
         </button>
-
-        <div className="flex-1" />
-
+        <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/40" aria-hidden />
         <Link
           href={`${ROUTES.IDEAS}/${idea.id}`}
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-muted-foreground/40 transition-colors hover:text-foreground/60"
+          className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")}
         >
-          <MessageSquare className="size-3.5" aria-hidden />
-          <span className="tabular-nums">{comments}</span>
+          <MessageSquare className="size-3.5 shrink-0" aria-hidden />
+          {comments}
         </Link>
-
-        <span className="inline-flex items-center gap-1 px-2 py-1 text-[11px] text-muted-foreground/30">
-          <Eye className="size-3.5" aria-hidden />
-          <span className="tabular-nums">{views}</span>
+        <div className="min-w-0 flex-1" aria-hidden />
+        <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_COUNT, "cursor-default")}>
+          <Eye className="size-3.5 shrink-0" aria-hidden />
+          {views}
         </span>
-      </div>
-    </article>
-  );
-}
-
-/* ─── LatestCommentRow ─────────────────────────────────────────────────────── */
-
-function LatestCommentRow({ comment }: { comment: LatestComment }) {
-  const name = comment.author
-    ? comment.author.fullName?.trim() || comment.author.email
-    : "Anonymous";
-  const initial = comment.author
-    ? getAvatarInitial(comment.author.fullName ?? null, comment.author.email)
-    : "?";
-  const preview =
-    comment.content.length > COMMENT_PREVIEW_LEN
-      ? comment.content.slice(0, COMMENT_PREVIEW_LEN) + "…"
-      : comment.content;
-
-  return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/55 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-      <div className="relative px-6 py-5 sm:px-7">
-        {/* Author + time */}
-        <div className="flex items-center gap-3">
-          <Avatar className="size-8 shrink-0 rounded-full ring-1 ring-border/30">
-            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/5 text-[10px] font-semibold text-primary/60">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <span className="truncate text-[13px] font-medium text-foreground/90">
-              {name}
-            </span>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50">
-              <time dateTime={new Date(comment.createdAt).toISOString()}>
-                {timeAgo(comment.createdAt)}
-              </time>
-              <span aria-hidden>·</span>
-              <span className="text-muted-foreground/40">commented on</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Idea title */}
-        <Link
-          href={`${ROUTES.IDEAS}/${comment.idea.id}`}
-          className="mt-3 block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <h3 className="font-sans text-[16px] font-semibold leading-[1.35] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary">
-            {comment.idea.title}
-          </h3>
-        </Link>
-
-        {/* Comment preview */}
-        <p className="mt-2.5 whitespace-pre-wrap text-[13.5px] leading-[1.7] text-foreground/55">
-          {preview}
-        </p>
       </div>
     </article>
   );
@@ -307,42 +273,46 @@ function LatestCommentRow({ comment }: { comment: LatestComment }) {
 /* ─── Hub ──────────────────────────────────────────────────────────────────── */
 
 export function IdeasHubContent() {
-  const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<ViewMode>("latest");
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [sort, setSort] = useQueryState("sort", SORT_PARSER);
+  const [categoryId, setCategoryId] = useQueryState("category", parseAsString.withDefault(""));
+  const [cycleId, setCycleId] = useQueryState("cycle", parseAsString.withDefault(""));
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const isCommentsView = sort === "latestComments";
-  const ideaSort = isCommentsView ? "latest" : sort;
 
   const {
     data: context,
     status: ctxStatus,
     error: ctxError,
   } = useIdeasContextQuery();
+  const hasActiveCycle = !!context?.activeCycleId;
+  const closedCycles = context?.closedCyclesForYear ?? [];
+  const categories =
+    hasActiveCycle
+      ? (context?.categories ?? [])
+      : (cycleId
+        ? (closedCycles.find((c) => c.id === cycleId)?.categories ?? [])
+        : []);
+  const effectiveCycleId = hasActiveCycle ? undefined : (cycleId || undefined);
+
   const {
     data: listData,
     status: ideasStatus,
     error: ideasError,
   } = useIdeasQuery(
-    { page, limit: PAGE_SIZE, sort: ideaSort },
-    { enabled: !isCommentsView },
+    {
+      page,
+      limit: PAGE_SIZE,
+      sort,
+      categoryId: categoryId || undefined,
+      cycleId: effectiveCycleId,
+    },
+    { enabled: true },
   );
-  const {
-    data: latestComments = [],
-    status: commentsStatus,
-    error: commentsError,
-  } = useLatestCommentsQuery({
-    enabled: isCommentsView,
-    limit: LATEST_COMMENTS_LIMIT,
-  });
   const voteMutation = useVoteIdeaMutation();
-  const { markViewedByAction } = useIdeaViewTracker(
-    isCommentsView ? null : expandedId,
-  );
+  const { markViewedByAction } = useIdeaViewTracker(expandedId);
 
   if (ctxStatus === "error") throw ctxError;
-  if (!isCommentsView && ideasStatus === "error") throw ideasError;
-  if (isCommentsView && commentsStatus === "error") throw commentsError;
+  if (ideasStatus === "error") throw ideasError;
 
   const canSubmit = context?.canSubmit ?? false;
   const closesAt = context?.submissionClosesAt;
@@ -351,130 +321,134 @@ export function IdeasHubContent() {
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="space-y-7">
-      {/* ── Alert ────────────────────────────────────────────────────── */}
+    <div className={IDEAS_HUB_SPACING}>
+      {/* ── Alert (compact) ───────────────────────────────────────────── */}
       {!canSubmit && (
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
-            Submission is currently closed. You may still browse proposals.
+            Submission is closed. Browsing remains available.
           </AlertDescription>
         </Alert>
       )}
 
-      {/* ── Compose CTA ──────────────────────────────────────────────── */}
+      {/* ── Compose CTA (prominent) ──────────────────────────────────── */}
       {canSubmit && (
         <Link href={ROUTES.IDEAS_NEW} className="group/cta block">
-          <div className="flex items-center gap-4 rounded-2xl border border-border/55 bg-card px-6 py-5 transition-all duration-300 hover:border-border/80 hover:shadow-md hover:shadow-black/[0.03] sm:px-7">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary/60 transition-colors duration-300 group-hover/cta:bg-primary/[0.10] group-hover/cta:text-primary/80">
-              <Lightbulb className="size-[22px]" aria-hidden />
+          <div className={IDEAS_HUB_CTA_CARD}>
+            <div className={cn(IDEAS_HUB_CTA_ICON, "transition-colors duration-200 group-hover/cta:bg-primary/[0.12] group-hover/cta:text-primary")}>
+              <Lightbulb className="size-[18px]" aria-hidden />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-medium text-foreground">
-                Share a proposal
-              </p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground/50">
-                {closesAt && <>Open until {fmtDate(closesAt)} · </>}
-                New ideas welcome
+              <p className="text-sm font-semibold text-foreground">Share a proposal</p>
+              <p className={cn("mt-0.5", IDEAS_HUB_BYLINE_META)}>
+                {closesAt ? <>Until {fmtDate(closesAt)}</> : "New ideas welcome"}
               </p>
             </div>
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm transition-transform duration-300 group-hover/cta:scale-105">
-              <Plus className="size-4" aria-hidden />
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/90 text-primary-foreground transition-colors duration-200 group-hover/cta:bg-primary">
+              <Plus className="size-3.5" aria-hidden />
             </div>
           </div>
         </Link>
       )}
 
-      {/* ── View tabs ────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1">
-          {VIEW_TABS.map((tab) => (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => {
-                setSort(tab.value);
+      {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
+      <div className={IDEAS_HUB_TOOLBAR}>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+          {!hasActiveCycle && closedCycles.length > 0 && (
+            <Select
+              value={cycleId || "all"}
+              onValueChange={(v) => {
+                setCycleId(v === "all" ? "" : v);
+                setCategoryId("");
                 setPage(1);
                 setExpandedId(null);
               }}
-              className={cn(
-                "rounded-full px-3 py-1 text-[12px] font-medium transition-all duration-200",
-                sort === tab.value
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground/50 hover:text-foreground/70",
-              )}
             >
-              {tab.label}
-            </button>
-          ))}
+              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                <SelectValue placeholder="Cycle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All cycles</SelectItem>
+                {closedCycles.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {categories.length > 0 && (
+            <Select
+              value={categoryId || "all"}
+              onValueChange={(v) => {
+                setCategoryId(v === "all" ? "" : v);
+                setPage(1);
+                setExpandedId(null);
+              }}
+            >
+              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {(closedCycles.length > 0 || categories.length > 0) && (
+            <div className={IDEAS_HUB_TOOLBAR_DIVIDER} aria-hidden />
+          )}
+          <nav className="flex items-center gap-1" aria-label="Sort by">
+            {VIEW_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => {
+                  setSort(tab.value);
+                  setPage(1);
+                  setExpandedId(null);
+                }}
+                className={cn(
+                  IDEAS_HUB_TAB_BASE,
+                  sort === tab.value ? IDEAS_HUB_TAB_ACTIVE : IDEAS_HUB_TAB_INACTIVE,
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
         </div>
-        {!isCommentsView && total > 0 && (
-          <p className="tabular-nums text-[11px] text-muted-foreground/40">
+        {total > 0 && (
+          <p className={cn("shrink-0 tabular-nums", IDEAS_HUB_COUNT)}>
             {total} proposal{total !== 1 ? "s" : ""}
-          </p>
-        )}
-        {isCommentsView && latestComments.length > 0 && (
-          <p className="tabular-nums text-[11px] text-muted-foreground/40">
-            {latestComments.length} comment{latestComments.length !== 1 ? "s" : ""}
           </p>
         )}
       </div>
 
-      {/* ── Latest Comments view ─────────────────────────────────────── */}
-      {isCommentsView ? (
-        commentsStatus === "pending" ? (
-          <div className="flex flex-col items-center py-28">
-            <LoadingState compact />
-          </div>
-        ) : latestComments.length === 0 ? (
-          <div className="flex flex-col items-center py-28 text-center">
-<div className="flex size-14 items-center justify-center rounded-2xl bg-muted/[0.08]">
-                <MessageSquare
-                  className="size-6 text-muted-foreground/40"
-                aria-hidden
-              />
-            </div>
-            <p className="mt-5 text-[14px] font-medium text-foreground/80">
-              No comments yet
-            </p>
-            <p className="mt-1 text-[12px] text-muted-foreground/50">
-              Be the first to start a discussion
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {latestComments.map((c) => (
-              <LatestCommentRow key={c.id} comment={c} />
-            ))}
-          </div>
-        )
-      ) : (
-        /* ── Ideas feed ─────────────────────────────────────────────── */
-        <>
-          {(ctxStatus === "pending" || ideasStatus === "pending") &&
-          !listData ? (
-            <div className="flex flex-col items-center py-28">
+      {/* ── Feed ──────────────────────────────────────────────────────── */}
+      {(ctxStatus === "pending" || ideasStatus === "pending") && !listData ? (
+            <div className="flex flex-col items-center py-20">
               <LoadingState compact />
             </div>
-          ) : !ideas.length ? (
-            <div className="flex flex-col items-center py-28 text-center">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/[0.08]">
-                <Lightbulb
-                  className="size-6 text-muted-foreground/40"
-                  aria-hidden
-                />
+      ) : !ideas.length ? (
+            <div className="flex flex-col items-center py-20 text-center">
+              <div className={cn(IDEAS_HUB_EMPTY_ICON, "rounded-xl")}>
+                <Lightbulb className="size-5 text-muted-foreground/50" aria-hidden />
               </div>
-              <p className="mt-5 text-[14px] font-medium text-foreground/80">
-                No proposals yet
-              </p>
-              <p className="mt-1 text-[12px] text-muted-foreground/50">
+              <p className="mt-3 text-sm font-medium text-foreground/80">No proposals yet</p>
+              <p className={cn("mt-0.5", IDEAS_HUB_BYLINE_META)}>
                 {canSubmit
                   ? "Be the first to share an idea"
                   : "Check back when a proposal cycle opens"}
               </p>
             </div>
-          ) : (
-            <>
-              <div className="space-y-5">
+      ) : (
+        <>
+          <div className={IDEAS_HUB_FEED_GAP}>
                 {ideas.map((idea) => (
                   <IdeaCard
                     key={idea.id}
@@ -492,8 +466,8 @@ export function IdeasHubContent() {
                 ))}
               </div>
 
-              {pages > 1 && (
-                <Pagination className="pt-6">
+          {pages > 1 && (
+                <Pagination className={IDEAS_HUB_PAGINATION}>
                   <PaginationContent className="gap-1">
                     <PaginationItem>
                       <PaginationPrevious
@@ -542,10 +516,8 @@ export function IdeasHubContent() {
                         }
                       />
                     </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              )}
-            </>
+                </PaginationContent>
+              </Pagination>
           )}
         </>
       )}

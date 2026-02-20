@@ -73,9 +73,9 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
   return items;
 }
 
-/** Shared icon button for top app bars — size-8, rounded-lg. */
+/** Shared icon button for top app bars — size-8, rounded-lg, cursor pointer. */
 const HEADER_ICON_CLASS =
-  `inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${HOVER_TRANSITION_NAV} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`;
+  `inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg ${HOVER_TRANSITION_NAV} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`;
 
 export function HeaderIconButton({
   icon: Icon,
@@ -83,14 +83,21 @@ export function HeaderIconButton({
   href,
   isActive,
   onClick,
+  pillGroup,
 }: {
   icon: LucideIcon;
   label: string;
   href?: string;
   isActive?: boolean;
   onClick?: () => void;
+  /** When true (Staff pill group): softer active state to match pill container. */
+  pillGroup?: boolean;
 }) {
-  const activeClass = isActive ? "bg-background/80 text-primary shadow-[var(--shadow-card-subtle)]" : "text-muted-foreground/65 hover:text-foreground/90";
+  const activeClass = isActive
+    ? pillGroup
+      ? "bg-primary/[0.05] text-primary"
+      : "bg-muted/[0.05] text-primary"
+    : "text-muted-foreground/55 hover:text-foreground/80";
   const content = (
     <span className={`flex items-center justify-center ${HEADER_ICON_CLASS} ${activeClass}`}>
       <Icon className="size-4" aria-hidden />
@@ -140,8 +147,8 @@ export function UserMenu({
           type="button"
           className={
             isPill
-              ? `group flex items-center gap-2.5 rounded-full border border-border/55 bg-muted/[0.04] pl-1 pr-2.5 py-1 ${HOVER_TRANSITION_NAV} hover:border-border/60 hover:bg-muted/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=open]:border-transparent`
-              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
+              ? `group flex cursor-pointer items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
+              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
           }
         >
           <Avatar className={isPill ? "size-7 shrink-0" : "shrink-0"}>
@@ -225,7 +232,7 @@ export function HeaderBreadcrumbs({
           <li>
             <Link
               href={getEntryRouteForRoles(user.roles)}
-              className={`rounded-sm py-0.5 text-muted-foreground/72 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
+              className={`cursor-pointer rounded-sm py-0.5 text-muted-foreground/72 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
             >
               Dashboard
             </Link>
@@ -248,7 +255,7 @@ export function HeaderBreadcrumbs({
               ) : i < breadcrumbs.length - 1 ? (
                 <Link
                   href={item.href}
-                  className={`truncate rounded-sm py-0.5 text-muted-foreground/75 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
+                  className={`cursor-pointer truncate rounded-sm py-0.5 text-muted-foreground/75 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
                 >
                   {item.label}
                 </Link>

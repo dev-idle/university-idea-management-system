@@ -134,25 +134,48 @@ export const POPUP_ROUNDED_MENU = "rounded-xl";   /* Dropdown, Select, User menu
 export const POPUP_ROUNDED_MODAL = "rounded-2xl";   /* Dialog, AlertDialog */
 export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers */
 
+// ─── Main content area (Staff + Role Manager) — refined, minimal ─────────────
+//
+// Clean background, subtle padding. Design scale: borders /45–/50, muted /[0.02]–/[0.06].
+
+/** Main scrollable area — clean bg. */
+export const MAIN_BG = "bg-background";
+
+/** Main horizontal padding — Management (sidebar layout). */
+export const MAIN_PX = "px-5 md:px-8 lg:px-10";
+
+/** Main vertical padding. */
+export const MAIN_PY = "py-8 md:py-10 lg:py-12";
+
+/** Main max-width — Management (sidebar expanded/collapsed). */
+export const MAIN_MAX_W = "max-w-[90rem]";
+export const MAIN_MAX_W_COLLAPSED = "max-w-screen-2xl";
+
 /** Page content container: bottom padding for scroll. */
-export const PAGE_CONTAINER_CLASS = "pb-24";
+export const PAGE_CONTAINER_CLASS = "pb-20";
 
 /** Narrow page wrapper (Ideas): centered, max-width, bottom padding. */
-export const PAGE_WRAPPER_NARROW_CLASS = "mx-auto max-w-4xl pb-24";
+export const PAGE_WRAPPER_NARROW_CLASS = "mx-auto max-w-4xl pb-20";
 
-/** Staff page vertical rhythm (Ideas Hub, idea detail, new proposal). Use with PAGE_WRAPPER_NARROW_CLASS. */
-export const STAFF_PAGE_SPACING = "space-y-12";
+/** Staff page vertical rhythm (Ideas Hub, idea detail, new proposal). */
+export const STAFF_PAGE_SPACING = "space-y-10";
 
 /** Slightly wider page wrapper (Profile): centered, bottom padding. */
-export const PAGE_WRAPPER_PROFILE_CLASS = "mx-auto max-w-5xl pb-24";
+export const PAGE_WRAPPER_PROFILE_CLASS = "mx-auto max-w-5xl pb-20";
 
-/** Card: rounded, border/55, background, subtle shadow. Use for content blocks. */
+/** Card: rounded, border/50, minimal. Design scale. */
 export const CARD_CLASS =
-  "rounded-xl border border-border/55 bg-card shadow-sm";
+  "rounded-xl border border-border/50 bg-card";
+
+/** Card hover — subtle border emphasis. */
+export const CARD_HOVER_CLASS = "transition-colors duration-200 hover:border-border/55";
+
+/** Idea/feed card — uses CARD_CLASS, minimal hover. */
+export const IDEA_CARD_CLASS = `${CARD_CLASS} ${CARD_HOVER_CLASS}`;
 
 /** Card with primary left accent (for highlighted / main content blocks). */
 export const CARD_ACCENT_CLASS =
-  "rounded-xl border border-border/55 bg-card shadow-sm overflow-hidden";
+  "rounded-xl border border-border/50 bg-card overflow-hidden";
 
 /** Left accent bar (use inside CARD_ACCENT_CLASS layout). */
 export const CARD_ACCENT_BAR_CLASS =
@@ -181,9 +204,9 @@ export const PAGE_DESCRIPTION_WIDE_CLASS =
 /** Uppercase section label (e.g. Description, Attachments). Also for form labels. */
 export const SECTION_LABEL_CLASS = TYPO_CAPTION_STRONG;
 
-/** Section card header (icon + title + description). */
+/** Section card header (icon + title + description). Design: border/40. */
 export const SECTION_CARD_HEADER_CLASS =
-  "border-b border-border px-6 pt-5 pb-2";
+  "border-b border-border/40 px-6 pt-5 pb-2";
 
 /** Section card title (h2/h3). */
 export const SECTION_CARD_TITLE_CLASS = TYPO_HEADING_SM;
@@ -218,9 +241,9 @@ export const ROOT_LOADING_FULLSCREEN_CLASS =
 export const LOADING_STATE_WRAPPER_CLASS =
   "flex w-full min-h-[8rem] items-center justify-center px-4 py-10";
 
-/** Loading inner card — soft, barely-there focal. */
+/** Loading inner card — soft, minimal. Design: border/40, muted/[0.02]. */
 export const LOADING_INNER_CARD_CLASS =
-  "flex flex-col items-center justify-center gap-2 rounded-2xl border border-border/30 bg-muted/[0.015] px-5 py-6";
+  "flex flex-col items-center justify-center gap-2 rounded-xl border border-border/40 bg-muted/[0.02] px-5 py-6";
 
 /** Loading state label — whisper-quiet. */
 export const LOADING_STATE_TEXT_CLASS =
@@ -260,6 +283,135 @@ export const STAFF_HEADER_ACCENT_CLASS =
 export const STAFF_DESCRIPTION_CLASS =
   "mt-2 max-w-md text-sm leading-relaxed text-muted-foreground/80";
 
+// ─── Ideas Hub (/ideas) — standardized, minimal ─────────────────────────────
+//
+// Cards, tabs, empty state. Design scale: border/40, muted/[0.04], typography tokens.
+
+/** Ideas Hub content spacing between sections. */
+export const IDEAS_HUB_SPACING = "space-y-8";
+
+/** Idea card horizontal padding (byline, content, engagement). */
+export const IDEAS_HUB_CARD_PX = "px-5 sm:px-6";
+
+/** Idea card byline metadata (time, category). Design: caption, muted/72. */
+export const IDEAS_HUB_BYLINE_META = TYPO_CAPTION + " text-muted-foreground/72";
+
+/** Idea card engagement row top border. */
+export const IDEAS_HUB_ENGAGEMENT_BORDER = "border-t border-border/40";
+
+/** Idea card — modern, refined. Subtle hover elevation. */
+export const IDEAS_HUB_ARTICLE_CLASS =
+  "group relative flex flex-col overflow-hidden rounded-xl border border-border/45 bg-card transition-all duration-200 hover:border-border/55 hover:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.06)]";
+
+/** Idea card author avatar. */
+export const IDEAS_HUB_AVATAR = "size-9 shrink-0 rounded-full ring-1 ring-border/35";
+
+/** Idea card author name. */
+export const IDEAS_HUB_AUTHOR = "truncate text-[13px] font-medium text-foreground/92";
+
+/** Idea card title — clean, scannable. */
+export const IDEAS_HUB_TITLE =
+  "font-sans text-base font-semibold leading-snug tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-[17px]";
+
+/** Idea card description — optimal readability. */
+export const IDEAS_HUB_DESC = "text-sm leading-[1.6] text-muted-foreground/80";
+
+/** Idea card engagement action — base layout (vote, comment, view). Minimal transition for snappy feel. */
+export const IDEAS_HUB_ACTION_BASE =
+  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium tabular-nums transition-colors duration-100";
+
+/** Idea card engagement action — inactive/neutral. */
+export const IDEAS_HUB_ACTION_INACTIVE =
+  "text-muted-foreground/55 hover:bg-muted/[0.05] hover:text-foreground/70 disabled:cursor-not-allowed";
+
+/** Idea card engagement action — vote up active. No background. */
+export const IDEAS_HUB_ACTION_UP = "text-success";
+
+/** Idea card engagement action — vote down active. No background. */
+export const IDEAS_HUB_ACTION_DOWN = "text-destructive";
+
+/** Idea card continue reading link. */
+export const IDEAS_HUB_READ_MORE =
+  "mt-1.5 inline-block text-xs font-medium text-muted-foreground/70 transition-colors hover:text-primary/80";
+
+/** Idea card attachment chip. Design: border/40, bg/[0.04]. */
+export const IDEAS_HUB_ATTACHMENT_CHIP =
+  "inline-flex items-center gap-1 rounded-lg border border-border/40 bg-muted/[0.04] px-2 py-1 " + TYPO_CAPTION + " text-muted-foreground/72";
+
+/** Ideas Hub view tab — base. */
+export const IDEAS_HUB_TAB_BASE =
+  "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors duration-200";
+
+/** Ideas Hub view tab — active. */
+export const IDEAS_HUB_TAB_ACTIVE = "bg-primary/10 text-primary";
+
+/** Ideas Hub view tab — inactive. */
+export const IDEAS_HUB_TAB_INACTIVE = "text-muted-foreground/45 hover:text-foreground/70 hover:bg-muted/[0.03]";
+
+/** Ideas Hub empty state icon container. */
+export const IDEAS_HUB_EMPTY_ICON = "flex size-12 items-center justify-center rounded-xl bg-muted/[0.04]";
+
+/** Ideas Hub CTA card — refined, inviting. Light bg, subtle primary accent. */
+export const IDEAS_HUB_CTA_CARD =
+  "flex items-center gap-4 rounded-xl border border-border/40 bg-primary/[0.03] px-5 py-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.05]";
+
+/** Ideas Hub CTA icon box — subtle primary accent. */
+export const IDEAS_HUB_CTA_ICON = "flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary/80";
+
+/** Ideas Hub feed gap between cards. */
+export const IDEAS_HUB_FEED_GAP = "space-y-6";
+
+/** Ideas Hub count label (proposals). */
+export const IDEAS_HUB_COUNT = "text-[11px] text-muted-foreground/45";
+
+/** Ideas Hub toolbar — refined bar. Design: border/30, subtle. Count aligned right. */
+export const IDEAS_HUB_TOOLBAR =
+  "flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-border/30";
+
+/** Ideas Hub filter/select trigger — clean, balanced. Icon fixed right, value truncates. */
+export const IDEAS_HUB_SELECT_TRIGGER =
+  "relative flex h-8 w-[9rem] min-w-[9rem] items-center rounded-lg border border-border/45 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-border/55 hover:bg-muted/[0.04] focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/20 [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
+
+/** Ideas Hub toolbar divider (vertical). */
+export const IDEAS_HUB_TOOLBAR_DIVIDER = "h-3 w-px shrink-0 bg-border/25";
+
+/** Ideas Hub pagination — minimal, compact. */
+export const IDEAS_HUB_PAGINATION = "pt-8";
+
+// ─── Navbar (Staff + Role Manager) — refined, minimal ───────────────────────
+//
+// Softer border/divider for a lighter, less noisy top bar. Same h-16 for both.
+
+/** Navbar bottom border — subtle, minimal (/45). */
+export const NAVBAR_BORDER = "border-border/45";
+
+/** Navbar vertical divider (between icon group and user). */
+export const NAVBAR_DIVIDER = "bg-border/45";
+
+/** Navbar background — clean, light. */
+export const NAVBAR_BG = "bg-background/95 backdrop-blur-sm";
+
+// ─── Staff layout (compact top bar, no sidebar) ───────────────────────────
+
+/** Staff header height — matches Manager Navbar (h-16). */
+export const STAFF_HEADER_HEIGHT = "h-16";
+
+/** Staff header: uses NAVBAR_* tokens. */
+export const STAFF_HEADER_BG = NAVBAR_BG;
+
+/** Staff header horizontal padding — synced with Manager rhythm. */
+export const STAFF_HEADER_PX = "px-5 md:px-6";
+
+/** Staff pill group — minimal: no border, subtle bg only. */
+export const STAFF_PILL_GROUP_CLASS =
+  "flex items-center gap-1 rounded-lg bg-muted/[0.02] p-1";
+
+/** Staff main max-width — narrow, ideas-focused. */
+export const STAFF_MAIN_MAX_W = "max-w-4xl";
+
+/** Staff context label (active year) — caption, muted. */
+export const STAFF_CONTEXT_LABEL_CLASS = TYPO_CAPTION + " text-muted-foreground/72";
+
 // ─── Page spacing (Staff + Role Manager) ───────────────────────────────────
 
 /** Role Manager page vertical rhythm (Admin, QA Manager, QA Coordinator). */
@@ -269,6 +421,10 @@ export const MANAGEMENT_PAGE_SPACING = "space-y-10";
 
 /** Standard hover transition for nav/menu items — consistent across sidebar, header, dropdown. */
 export const HOVER_TRANSITION_NAV = "transition-colors duration-200 ease-out";
+
+/** Cursor for interactive elements — pointer on hover, not-allowed when disabled. */
+export const CURSOR_POINTER = "cursor-pointer";
+export const CURSOR_DISABLED = "cursor-not-allowed";
 
 /** Standard focus ring (outline + ring). Use for links, cards, buttons. */
 export const FOCUS_RING_CLASS =
@@ -342,8 +498,8 @@ export const SIDEBAR_BORDER_INNER = "border-sidebar-border/65";
 /** Vertical/horizontal divider line (w-px, h-px). Synced with layout. */
 export const LAYOUT_DIVIDER_LINE = "bg-border/65";
 
-/** Role Manager: card/panel border. Matches layout scale. */
-export const MGMT_BORDER_CARD = "border-border/55";
+/** Role Manager: card/panel border. Design scale /50. */
+export const MGMT_BORDER_CARD = "border-border/50";
 
 /** Role Manager: divider (toolbar, table header, dialog header). */
 export const MGMT_BORDER_DIVIDER = "border-border/40";
@@ -365,7 +521,7 @@ export const MGMT_DIVIDE = "divide-border/40";
 
 /** Error / Try again view: minimal card, gentle fade-in. Aligns with POPUP_* scale. */
 export const ERROR_VIEW_WRAPPER_CLASS =
-  `flex flex-col items-center justify-center gap-5 max-w-sm rounded-2xl border border-border/55 bg-background px-6 py-10 text-center shadow-[var(--shadow-card-subtle)] ${TR_PAGE_FADE}`;
+  `flex flex-col items-center justify-center gap-5 max-w-sm rounded-xl border border-border/50 bg-background px-6 py-10 text-center ${TR_PAGE_FADE}`;
 
 /** Error view icon — minimal, subtle. */
 export const ERROR_VIEW_ICON_CLASS =

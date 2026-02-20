@@ -32,7 +32,7 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
       return (
         <Link
           href={entryHref}
-          className="flex items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex cursor-pointer items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {logo}
         </Link>
@@ -58,7 +58,7 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
     return (
       <Link
         href={entryHref}
-        className={`${wrapperClassName} rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring transition-[padding,opacity] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)]`}
+        className={`cursor-pointer ${wrapperClassName} rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring transition-[padding,opacity] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)]`}
         aria-label={collapsed ? `${UNIVERSITY_NAME}. Go to home.` : undefined}
       >
         {content}

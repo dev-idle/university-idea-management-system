@@ -50,8 +50,19 @@ import {
 import { LoadingState } from "@/components/ui/loading-state";
 import { cn, getAvatarInitial } from "@/lib/utils";
 import {
-  LAYOUT_BORDER_MAIN,
-  LAYOUT_DIVIDER_LINE,
+  MAIN_BG,
+  MAIN_MAX_W,
+  MAIN_MAX_W_COLLAPSED,
+  MAIN_PX,
+  MAIN_PY,
+  NAVBAR_BORDER,
+  NAVBAR_DIVIDER,
+  STAFF_HEADER_HEIGHT,
+  STAFF_HEADER_BG,
+  STAFF_HEADER_PX,
+  STAFF_PILL_GROUP_CLASS,
+  STAFF_MAIN_MAX_W,
+  STAFF_CONTEXT_LABEL_CLASS,
   SIDEBAR_LABELS_EXPAND_DELAY_MS,
   SIDEBAR_BORDER,
   SIDEBAR_BORDER_INNER,
@@ -557,11 +568,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           avatarInitial={avatarInitial}
           onLogout={handleLogout}
         />
-        <main className="scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-5 py-8 md:px-10 md:py-12 lg:px-12 lg:py-14">
+        <main
+          className={cn(
+            "scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto",
+            MAIN_BG,
+            MAIN_PX,
+            MAIN_PY
+          )}
+        >
           <div
-            className={`mx-auto w-full transition-[max-width] duration-300 ease-in-out ${
-              sidebarCollapsed ? "max-w-screen-2xl" : "max-w-[90rem]"
-            }`}
+            className={cn(
+              "mx-auto w-full transition-[max-width] duration-300 ease-in-out",
+              sidebarCollapsed ? MAIN_MAX_W_COLLAPSED : MAIN_MAX_W
+            )}
           >
             <div>{children}</div>
           </div>
@@ -587,41 +606,53 @@ function StaffLayout({
 }) {
   const pathname = usePathname();
   const { data: context } = useIdeasContextQuery({ enabled: true });
-  const activeYearName = context?.activeAcademicYear?.name ?? null;
+  const contextLabel =
+    context?.activeCycleName ??
+    context?.activeAcademicYear?.name ??
+    String(new Date().getFullYear());
   const isIdeasPage = pathname === ROUTES.IDEAS;
   const isMyIdeasPage = pathname.startsWith(ROUTES.MY_IDEAS);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <header className={`sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur-sm md:px-6 ${LAYOUT_BORDER_MAIN}`}>
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+      <header
+        className={cn(
+          "sticky top-0 z-50 flex shrink-0 items-center justify-between gap-4 border-b",
+          STAFF_HEADER_HEIGHT,
+          STAFF_HEADER_BG,
+          STAFF_HEADER_PX,
+          NAVBAR_BORDER
+        )}
+      >
+        <div className="flex min-w-0 flex-1 items-center gap-4">
           <SiteBranding variant="header" linkToEntry />
-          {activeYearName && (
-            <>
-              <div className={`h-4 w-px shrink-0 ${LAYOUT_DIVIDER_LINE}`} aria-hidden />
-              <span className="truncate text-sm text-muted-foreground/80" title={activeYearName}>
-                {activeYearName}
-              </span>
-            </>
-          )}
+          <div className={cn("h-4 w-px shrink-0", NAVBAR_DIVIDER)} aria-hidden />
+          <span
+            className={cn("truncate", STAFF_CONTEXT_LABEL_CLASS)}
+            title={contextLabel}
+          >
+            {contextLabel}
+          </span>
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <div className="flex items-center rounded-lg bg-muted/20 p-0.5">
+        <div className="flex shrink-0 items-center gap-2">
+          <div className={STAFF_PILL_GROUP_CLASS}>
             <HeaderIconButton
               icon={Lightbulb}
               label="Ideas Hub"
               href={ROUTES.IDEAS}
               isActive={isIdeasPage}
+              pillGroup
             />
             <HeaderIconButton
               icon={FolderPen}
               label="My Ideas"
               href={ROUTES.MY_IDEAS}
               isActive={isMyIdeasPage}
+              pillGroup
             />
             <NotificationDropdown variant="pill" />
           </div>
-          <div className={`mx-2 h-5 w-px ${LAYOUT_DIVIDER_LINE}`} aria-hidden />
+          <div className={cn("h-5 w-px shrink-0", NAVBAR_DIVIDER)} aria-hidden />
           <UserMenu
             user={user}
             displayName={displayName}
@@ -631,8 +662,15 @@ function StaffLayout({
           />
         </div>
       </header>
-      <main className="scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto bg-background px-4 py-8 md:px-6 md:py-10 lg:px-10 lg:py-12">
-        <div className="mx-auto w-full max-w-4xl">
+      <main
+        className={cn(
+          "scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto",
+          MAIN_BG,
+          MAIN_PX,
+          MAIN_PY
+        )}
+      >
+        <div className={cn("mx-auto w-full", STAFF_MAIN_MAX_W)}>
           <div>{children}</div>
         </div>
       </main>

@@ -6,7 +6,7 @@ import { useMyIdeasQuery, useDeleteMyIdeaMutation } from "@/hooks/use-ideas";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage } from "@/lib/errors";
-import { timeAgo } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,9 +30,11 @@ import {
 import {
   PAGE_WRAPPER_NARROW_CLASS,
   BACK_LINK_CLASS,
+  IDEA_CARD_CLASS,
   PAGE_TITLE_CLASS,
   STAFF_DESCRIPTION_CLASS,
   STAFF_HEADER_ACCENT_CLASS,
+  STAFF_PAGE_SPACING,
 } from "@/config/design";
 import {
   ArrowLeft,
@@ -74,8 +76,7 @@ function IdeaRow({
   const truncated = desc.length > PREVIEW_LEN;
 
   return (
-    <article className="group relative overflow-hidden rounded-2xl border border-border/55 bg-card transition-all duration-300 hover:border-border/60 hover:shadow-lg hover:shadow-black/[0.03]">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.015] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+    <article className={cn("group relative overflow-hidden", IDEA_CARD_CLASS)}>
 
       <div className="relative px-6 py-5 sm:px-7 sm:py-6">
         {/* Header row */}
@@ -217,7 +218,7 @@ export default function MyIdeasPage() {
   };
 
   return (
-    <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
+    <div className={`${STAFF_PAGE_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
       {/* Header */}
       <header className="space-y-4">
         <nav aria-label="Breadcrumb">

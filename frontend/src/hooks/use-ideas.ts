@@ -53,7 +53,9 @@ export function useIdeasContextQuery(options?: { enabled?: boolean }) {
 export type IdeasListParams = {
   page?: number;
   limit?: number;
-  sort?: "latest" | "mostPopular" | "mostViewed";
+  sort?: "latest" | "mostPopular" | "mostViewed" | "latestComments";
+  categoryId?: string;
+  cycleId?: string;
 };
 
 /** List ideas for the active academic year with pagination and sort. STAFF only. */
@@ -61,13 +63,17 @@ export function useIdeasQuery(params?: IdeasListParams, options?: { enabled?: bo
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 5;
   const sort = params?.sort ?? "latest";
+  const categoryId = params?.categoryId;
+  const cycleId = params?.cycleId;
   return useQuery({
-    queryKey: queryKeys.ideas.list({ page, limit, sort }),
+    queryKey: queryKeys.ideas.list({ page, limit, sort, categoryId, cycleId }),
     queryFn: async () => {
       const search = new URLSearchParams();
       search.set("page", String(page));
       search.set("limit", String(limit));
       if (sort !== "latest") search.set("sort", sort);
+      if (categoryId) search.set("categoryId", categoryId);
+      if (cycleId) search.set("cycleId", cycleId);
       const data = await fetchWithAuth<unknown>(`ideas?${search.toString()}`);
       return parseIdeasPaginated(data);
     },
@@ -178,7 +184,35 @@ export function useIdeaCommentsQuery(ideaId: string | null, options?: { enabled?
   });
 }
 
-/** Vote on an idea (up or down). One vote per user. STAFF only. */
+/** Compute optimistic vote state: same button = remove, else set. */
+function applyVote(
+  idea: Idea,
+  value: "up" | "down",
+): { voteCounts: { up: number; down: number }; myVote: "up" | "down" | null } {
+  const prev = idea.voteCounts ?? { up: 0, down: 0 };
+  const prevMy = idea.myVote ?? null;
+
+  if (prevMy === value) {
+    // Same button = remove vote
+    return {
+      voteCounts: {
+        up: value === "up" ? Math.max(0, prev.up - 1) : prev.up,
+        down: value === "down" ? Math.max(0, prev.down - 1) : prev.down,
+      },
+      myVote: null,
+    };
+  }
+  // Set/change vote
+  let up = prev.up;
+  let down = prev.down;
+  if (prevMy === "up") up = Math.max(0, up - 1);
+  else if (prevMy === "down") down = Math.max(0, down - 1);
+  if (value === "up") up += 1;
+  else down += 1;
+  return { voteCounts: { up, down }, myVote: value };
+}
+
+/** Vote on an idea (up or down). One vote per user. Optimistic update for realtime feel. */
 export function useVoteIdeaMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -195,9 +229,47 @@ export function useVoteIdeaMutation() {
       });
       return res as Idea;
     },
-    onSuccess: (data) => {
+    onMutate: async ({ ideaId, value }) => {
+      queryClient.cancelQueries({ queryKey: queryKeys.ideas.all });
+      const prevDetail = queryClient.getQueryData<Idea>(queryKeys.ideas.detail(ideaId));
+
+      queryClient.setQueriesData<Idea | IdeasPaginatedResponse>(
+        { queryKey: queryKeys.ideas.all, exact: false },
+        (old) => {
+          if (!old) return old;
+          let idea: Idea | null = null;
+          if ("items" in old) {
+            idea = (old as IdeasPaginatedResponse).items.find((i) => i.id === ideaId) ?? null;
+          } else if ((old as Idea).id === ideaId) {
+            idea = old as Idea;
+          }
+          if (!idea) return old;
+          const applied = applyVote(idea, value);
+          if ("items" in old) {
+            return {
+              ...old,
+              items: (old as IdeasPaginatedResponse).items.map((i) =>
+                i.id === ideaId ? { ...i, voteCounts: applied.voteCounts, myVote: applied.myVote } : i
+              ),
+            };
+          }
+          return { ...(old as Idea), voteCounts: applied.voteCounts, myVote: applied.myVote };
+        },
+      );
+
+      return { prevDetail };
+    },
+    onError: (_err, { ideaId }, ctx) => {
+      if (ctx?.prevDetail) {
+        queryClient.setQueryData(queryKeys.ideas.detail(ideaId), ctx.prevDetail);
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.detail(data.id) });
+    },
+    onSettled: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.ideas.detail(data.id) });
+      }
     },
   });
 }

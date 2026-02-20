@@ -16,6 +16,7 @@ import type { CreateCommentBody } from './dto/create-comment.dto';
 import type { UpdateIdeaBody, AddAttachmentBody } from './dto/update-idea.dto';
 
 const STATUS_ACTIVE = 'ACTIVE';
+const STATUS_CLOSED = 'CLOSED';
 const CLOUDINARY_UPLOAD_FOLDER = 'idea-attachments';
 
 @Injectable()
@@ -68,6 +69,7 @@ export class IdeasService {
           where: { status: STATUS_ACTIVE, academicYearId: activeYear.id },
           select: {
             id: true,
+            name: true,
             ideaSubmissionClosesAt: true,
             academicYearId: true,
           },
@@ -86,12 +88,38 @@ export class IdeasService {
       categories = cycleCategories.map((cc) => cc.category);
     }
 
+    let closedCyclesForYear: Array<{ id: string; name: string; categories: Array<{ id: string; name: string }> }> = [];
+    if (activeYear && !cycle) {
+      const closed = await this.prisma.ideaSubmissionCycle.findMany({
+        where: {
+          academicYearId: activeYear.id,
+          status: STATUS_CLOSED,
+          interactionClosesAt: { lte: now },
+        },
+        select: { id: true, name: true },
+        orderBy: { interactionClosesAt: 'desc' },
+      });
+      for (const c of closed) {
+        const cycleCategories = await this.prisma.cycleCategory.findMany({
+          where: { cycleId: c.id },
+          select: { category: { select: { id: true, name: true } } },
+        });
+        closedCyclesForYear.push({
+          id: c.id,
+          name: c.name ?? 'Unnamed',
+          categories: cycleCategories.map((cc) => cc.category),
+        });
+      }
+    }
+
     return {
       canSubmit,
       activeCycleId: cycle?.id ?? null,
+      activeCycleName: cycle?.name ?? null,
       submissionClosesAt: cycle?.ideaSubmissionClosesAt ?? null,
       activeAcademicYear: activeYear ? { id: activeYear.id, name: activeYear.name } : null,
       categories,
+      closedCyclesForYear,
     };
   }
 
@@ -159,13 +187,15 @@ export class IdeasService {
    * List ideas with pagination and sort.
    * - When there is an ACTIVE cycle: only ideas within that cycle.
    * - When there is no active cycle: all ideas for the active academic year (all cycles).
-   * Sort: latest (default), mostPopular, mostViewed (latter two currently same as latest until votes/views exist).
+   * Sort: latest (default), mostPopular, mostViewed, latestComments (by most recent comment).
    * Author is hidden when idea.isAnonymous. Optional userId for myVote.
    */
   async findAllForActiveYear(params: {
     page?: number;
     limit?: number;
-    sort?: 'latest' | 'mostPopular' | 'mostViewed';
+    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments';
+    categoryId?: string;
+    cycleId?: string;
     userId?: string;
   }) {
     const page = Math.max(1, params.page ?? 1);
@@ -178,23 +208,51 @@ export class IdeasService {
     });
     if (!activeYear) return { items: [], total: 0 };
 
-    const activeCycle = await this.prisma.ideaSubmissionCycle.findFirst({
-      where: { status: STATUS_ACTIVE, academicYearId: activeYear.id },
-      select: { id: true },
-    });
-
-    const cycleIds = activeCycle
-      ? [activeCycle.id]
-      : (
-          await this.prisma.ideaSubmissionCycle.findMany({
-            where: { academicYearId: activeYear.id },
-            select: { id: true },
-          })
-        ).map((c) => c.id);
+    let cycleIds: string[];
+    if (params.cycleId) {
+      const cycle = await this.prisma.ideaSubmissionCycle.findFirst({
+        where: {
+          id: params.cycleId,
+          academicYearId: activeYear.id,
+          OR: [
+            { status: STATUS_ACTIVE },
+            {
+              status: STATUS_CLOSED,
+              interactionClosesAt: { lte: new Date() },
+            },
+          ],
+        },
+        select: { id: true },
+      });
+      if (!cycle) return { items: [], total: 0 };
+      cycleIds = [cycle.id];
+    } else {
+      const activeCycle = await this.prisma.ideaSubmissionCycle.findFirst({
+        where: { status: STATUS_ACTIVE, academicYearId: activeYear.id },
+        select: { id: true },
+      });
+      if (activeCycle) {
+        cycleIds = [activeCycle.id];
+      } else {
+        const closed = await this.prisma.ideaSubmissionCycle.findMany({
+          where: {
+            academicYearId: activeYear.id,
+            status: STATUS_CLOSED,
+            interactionClosesAt: { lte: new Date() },
+          },
+          select: { id: true },
+          orderBy: { interactionClosesAt: 'desc' },
+        });
+        cycleIds = closed.map((c) => c.id);
+      }
+    }
     if (cycleIds.length === 0) return { items: [], total: 0 };
 
     const userId = params.userId;
-    const where = { cycleId: { in: cycleIds } };
+    const where = {
+      cycleId: { in: cycleIds },
+      ...(params.categoryId && { categoryId: params.categoryId }),
+    };
 
     const ideaSelect = {
       id: true as const,
@@ -259,6 +317,49 @@ export class IdeasService {
         (a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0),
       );
 
+      return {
+        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        total,
+      };
+    }
+
+    /* ── Latest Comments: sort by most recent comment per idea ─────────── */
+    if (sort === 'latestComments') {
+      const latestByIdea = await this.prisma.ideaComment.groupBy({
+        by: ['ideaId'],
+        _max: { createdAt: true },
+        where: { idea: { cycleId: { in: cycleIds } } },
+      });
+      const ideaToLastComment = new Map(
+        latestByIdea.map((r) => [r.ideaId, r._max.createdAt as Date]),
+      );
+      const [allIdeas, total] = await Promise.all([
+        this.prisma.idea.findMany({
+          where,
+          select: { id: true, createdAt: true },
+        }),
+        this.prisma.idea.count({ where }),
+      ]);
+      const scored = allIdeas.map((idea) => ({
+        id: idea.id,
+        lastCommentAt: ideaToLastComment.get(idea.id) ?? new Date(0),
+        createdAt: idea.createdAt,
+      }));
+      scored.sort(
+        (a, b) =>
+          b.lastCommentAt.getTime() - a.lastCommentAt.getTime() ||
+          b.createdAt.getTime() - a.createdAt.getTime(),
+      );
+      const pageIds = scored
+        .slice((page - 1) * limit, page * limit)
+        .map((s) => s.id);
+      if (pageIds.length === 0) return { items: [], total };
+      const ideas = await this.prisma.idea.findMany({
+        where: { id: { in: pageIds } },
+        select: ideaSelect,
+      });
+      const idOrder = new Map(pageIds.map((id, i) => [id, i]));
+      ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
       return {
         items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
         total,

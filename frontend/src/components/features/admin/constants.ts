@@ -391,9 +391,9 @@ export const PROFILE_INPUT_GROUP_HOVER_CLASS = "group-hover/field:border-primary
 export const FORM_CARD_SELECT_TRIGGER_CLASS =
   "!h-10 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
 
-/** Checkbox in Role Manager — refined focus/hover (sync with Academic input). */
+/** Checkbox in Role Manager — refined focus/hover, cursor pointer (sync with Academic input). */
 export const FORM_CHECKBOX_ACADEMIC_CLASS =
-  "transition-colors duration-200 hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2";
+  "cursor-pointer transition-colors duration-200 hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-2 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-2";
 
 /** ScrollArea for categories list (proposal cycles) — design: border-border/80. */
 export const FORM_CATEGORIES_SCROLL_AREA_CLASS =

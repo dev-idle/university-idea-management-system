@@ -14,6 +14,7 @@ import {
   PAGE_TITLE_CLASS,
   STAFF_DESCRIPTION_CLASS,
   STAFF_HEADER_ACCENT_CLASS,
+  STAFF_PAGE_SPACING,
 } from "@/config/design";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft } from "lucide-react";
@@ -63,7 +64,7 @@ export default function SubmitIdeaPage() {
   }
 
   return (
-    <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
+    <div className={`${STAFF_PAGE_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
       <header className="space-y-4">
         <nav aria-label="Breadcrumb">
           <Link

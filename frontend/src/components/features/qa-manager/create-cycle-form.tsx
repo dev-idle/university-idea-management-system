@@ -35,12 +35,14 @@ import {
   FORM_FIELD_ERROR_CLASS,
   FORM_BUTTON_CLASS,
   FORM_OUTLINE_BUTTON_CLASS,
+  FORM_CARD_CLASS,
   FORM_CARD_INPUT_CLASS,
   FORM_CARD_SELECT_TRIGGER_CLASS,
   DATE_PICKER_INPUT_CLASS,
   FORM_CHECKBOX_ACADEMIC_CLASS,
   FORM_CATEGORIES_SCROLL_AREA_CLASS,
 } from "@/components/features/admin/constants";
+import { SECTION_CARD_TITLE_CLASS, SECTION_CARD_DESCRIPTION_CLASS } from "@/config/design";
 import { useSubmissionCycleAcademicYearsQuery } from "@/hooks/use-submission-cycles";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 import { cn } from "@/lib/utils";
@@ -137,18 +139,12 @@ export function CreateCycleForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={
-        isDialog
-          ? FORM_DIALOG_FORM_CLASS
-          : "flex flex-col gap-6 rounded-xl border border-border/80 bg-card px-6 py-6 shadow-sm"
-      }
+      className={isDialog ? FORM_DIALOG_FORM_CLASS : FORM_CARD_CLASS}
     >
       {variant === "default" && (
-        <div>
-          <h2 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Add Proposal Cycle
-          </h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+        <div className="space-y-1">
+          <h2 className={SECTION_CARD_TITLE_CLASS}>Add Proposal Cycle</h2>
+          <p className={SECTION_CARD_DESCRIPTION_CLASS}>
             Create a proposal cycle (DRAFT). Link to an academic year and set closure dates.
           </p>
         </div>
@@ -293,7 +289,7 @@ export function CreateCycleForm({
           <button
             type="button"
             onClick={setInteractionDefault}
-            className="text-xs text-muted-foreground/80 transition-colors duration-200 hover:text-primary hover:bg-primary/[0.06] rounded-md px-2 py-1 -ml-2"
+            className="-ml-2 rounded-md px-2 py-1 text-xs text-muted-foreground/80 transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary"
           >
             +14 days from idea close
           </button>
