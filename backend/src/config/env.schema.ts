@@ -24,8 +24,16 @@ export const envSchema = z
     CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
     CLOUDINARY_API_KEY: z.string().min(1).optional(),
     CLOUDINARY_API_SECRET: z.string().min(1).optional(),
-    /** Redis: BullMQ notification queue. e.g. redis://localhost:6379 */
+    /** Redis: BullMQ notification + export queue. e.g. redis://localhost:6379 or Upstash URL */
     REDIS_URL: z.string().min(1).optional(),
+    /**
+     * Set to "true" or "1" to enable Redis (BullMQ email + export).
+     * Default: false — Redis features off to avoid Upstash command usage.
+     */
+    REDIS_ENABLED: z
+      .string()
+      .optional()
+      .transform((v) => v === 'true' || v === '1'),
     /** SMTP: for sending notification emails. When unset, email sending is skipped. */
     SMTP_HOST: z.string().min(1).optional(),
     SMTP_PORT: z.coerce.number().int().positive().optional(),

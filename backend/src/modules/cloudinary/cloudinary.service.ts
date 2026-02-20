@@ -10,11 +10,17 @@ import { v2 as cloudinary } from 'cloudinary';
 /** Folder for idea supporting documents (2026 standard). */
 export const CLOUDINARY_IDEA_FOLDER = 'idea-attachments';
 
+/** Folder for QA Manager export packages (CSV zip, documents zip). */
+export const CLOUDINARY_EXPORTS_FOLDER = 'idea-exports';
+
 /** Max public_ids per delete_resources call (Cloudinary limit). */
 const DELETE_BATCH_SIZE = 100;
 
 /** Max file size for proxy upload (10 MB). */
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+/** Max file size for export upload (100 MB). */
+const MAX_EXPORT_BYTES = 100 * 1024 * 1024;
 
 export interface UploadFileResult {
   cloudinaryPublicId: string;
@@ -121,6 +127,47 @@ export class CloudinaryService {
             fileName,
             mimeType: mimeType ?? undefined,
             sizeBytes: result.bytes ?? buffer.length,
+          });
+        },
+      );
+      Readable.from(buffer).pipe(stream);
+    });
+  }
+
+  /**
+   * Upload export file (ZIP) to Cloudinary. Used by QA Manager export.
+   * Stored in idea-exports folder. Returns secure URL for download.
+   */
+  async uploadExportFile(
+    buffer: Buffer,
+    publicId: string,
+  ): Promise<{ secureUrl: string; publicId: string }> {
+    this.ensureConfigured();
+    if (buffer.length > MAX_EXPORT_BYTES) {
+      throw new BadRequestException(
+        `Export file exceeds ${MAX_EXPORT_BYTES / 1024 / 1024} MB.`,
+      );
+    }
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: CLOUDINARY_EXPORTS_FOLDER,
+          resource_type: 'raw',
+          public_id: publicId,
+          overwrite: true,
+        },
+        (err, result) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          if (!result?.public_id || !result?.secure_url) {
+            reject(new Error('Invalid Cloudinary upload response'));
+            return;
+          }
+          resolve({
+            secureUrl: result.secure_url,
+            publicId: result.public_id,
           });
         },
       );

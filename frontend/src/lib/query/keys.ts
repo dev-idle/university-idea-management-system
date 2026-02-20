@@ -29,6 +29,11 @@ export const queryKeys = {
     list: () => [...queryKeys.categories.all, "list"] as const,
     detail: (id: string) => [...queryKeys.categories.all, "detail", id] as const,
   },
+  export: {
+    all: ["api", "export"] as const,
+    cycles: () => [...queryKeys.export.all, "cycles"] as const,
+    status: (jobId: string) => [...queryKeys.export.all, "status", jobId] as const,
+  },
   submissionCycles: {
     all: ["api", "submission-cycles"] as const,
     list: () => [...queryKeys.submissionCycles.all, "list"] as const,

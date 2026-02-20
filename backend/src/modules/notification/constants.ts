@@ -23,13 +23,13 @@ export const MAIL_SUBJECTS = {
  * BullMQ job options — self-cleaning, Redis-optimized (2026).
  * - removeOnComplete: true → delete job from Redis as soon as it completes.
  *   Keeps storage ~0 B; no retention of completed jobs.
- * - removeOnFail: 1000 → keep max 1000 failed jobs for debugging; older ones deleted.
+ * - removeOnFail: 100 → keep max 100 failed jobs for debugging; older ones deleted.
  */
 export const QUEUE_JOB_OPTIONS = {
   attempts: 3,
   backoff: { type: 'exponential' as const, delay: 1000 },
   removeOnComplete: true,
-  removeOnFail: 1000,
+  removeOnFail: 100,
 } as const;
 
 export const DEFAULT_FRONTEND_URL = 'http://localhost:3000';

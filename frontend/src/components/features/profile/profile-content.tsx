@@ -234,15 +234,15 @@ export function ProfileContent() {
   }
 
   async function onSubmitEditProfile(data: UpdateProfileFormValues) {
-    const body: Partial<UpdateProfileBody> = {
-      ...(data.fullName !== undefined && { fullName: data.fullName.trim() || undefined }),
-      ...(data.phone !== undefined && { phone: data.phone.trim() || undefined }),
-      ...(data.address !== undefined && { address: data.address.trim() || undefined }),
-      ...(data.gender !== undefined &&
-        data.gender !== GENDER_NONE && { gender: data.gender }),
-      ...(data.dateOfBirth !== undefined &&
-        data.dateOfBirth.trim() !== "" && { dateOfBirth: data.dateOfBirth.trim() }),
-    };
+    const body: Partial<UpdateProfileBody> = {};
+    // Send empty string for cleared fields so backend can set null (undefined would omit the field)
+    if (data.fullName !== undefined) body.fullName = data.fullName?.trim() ?? "";
+    if (data.phone !== undefined) body.phone = data.phone?.trim() ?? "";
+    if (data.address !== undefined) body.address = data.address?.trim() ?? "";
+    if (data.gender !== undefined)
+      body.gender = data.gender === GENDER_NONE ? "" : data.gender;
+    if (data.dateOfBirth !== undefined)
+      body.dateOfBirth = data.dateOfBirth?.trim() ?? "";
     await updateProfileMutation.mutateAsync(body);
   }
 

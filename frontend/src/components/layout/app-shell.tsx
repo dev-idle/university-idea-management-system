@@ -15,6 +15,7 @@ import {
   Tags,
   Lightbulb,
   FolderPen,
+  Download,
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
@@ -311,6 +312,16 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         label="Proposal Cycles"
         icon={CalendarRange}
         isActive={pathname === ROUTES.QA_MANAGER_PROPOSAL_CYCLES}
+        collapsed={collapsed}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.QA_MANAGER_EXPORT}
+        href={ROUTES.QA_MANAGER_EXPORT}
+        label="Export Data"
+        icon={Download}
+        isActive={pathname === ROUTES.QA_MANAGER_EXPORT}
         collapsed={collapsed}
       />
     );

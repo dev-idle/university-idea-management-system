@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarRange, ChevronRight, Tags } from "lucide-react";
+import { CalendarRange, ChevronRight, Tags, Download } from "lucide-react";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   SECTION_LABEL_CLASS,
@@ -30,6 +30,12 @@ const QA_MANAGER_FUNCTIONS = [
     title: "Proposal cycles",
     description: "Create and manage proposal cycles.",
     icon: CalendarRange,
+  },
+  {
+    href: ROUTES.QA_MANAGER_EXPORT,
+    title: "Export data",
+    description: "Export by proposal cycle (CSV + ZIP) after closure.",
+    icon: Download,
   },
 ] as const;
 

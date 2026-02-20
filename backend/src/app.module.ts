@@ -18,6 +18,7 @@ import { UsersModule } from './modules/users';
 import { CloudinaryModule } from './modules/cloudinary';
 import { MailModule } from './modules/mail';
 import { NotificationModule } from './modules/notification';
+import { ExportModule } from './modules/export';
 import { validateEnv } from './config';
 import { PrismaModule } from './core/prisma/prisma.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -77,7 +78,8 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
     UsersModule,
     CloudinaryModule,
     MailModule,
-    NotificationModule,
+    NotificationModule.forRoot(),
+    ExportModule.forRoot(),
   ],
   providers: [
     {

@@ -31,7 +31,7 @@ function parseNotification(data: unknown): Notification {
     id: obj.id,
     type: obj.type,
     message: obj.message,
-    link: typeof obj.link === "string" ? obj.link : obj.link ?? null,
+    link: typeof obj.link === "string" ? obj.link : null,
     isRead: obj.isRead,
     createdAt: obj.createdAt,
   };
