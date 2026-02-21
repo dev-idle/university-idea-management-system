@@ -190,7 +190,7 @@ export function SubmitIdeaForm({
     defaultValues: {
       title: "",
       description: "",
-      categoryId: context.categories[0]?.id ?? "",
+      categoryId: "",
       cycleId: context.activeCycleId ?? "",
       isAnonymous: false,
       termsAccepted: false,

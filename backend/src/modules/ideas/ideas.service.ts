@@ -940,33 +940,44 @@ export class IdeasService {
   /**
    * Record a view for an idea by the current user.
    *
-   * 20-minute session window: if this user already has a view record within
-   * the last 20 minutes, no new record is created. After 20 minutes a new
-   * session view is allowed. This prevents spam from refreshes, tab reopens,
-   * and rapid interactions while still counting genuinely new visits.
+   * Own-idea cap: viewing one's own proposal counts at most 1 view total,
+   * regardless of how many times they revisit. Prevents authors from inflating
+   * their view count.
    *
-   * The frontend also enforces this window via localStorage, but the backend
-   * is the authoritative guard (zero-trust).
+   * Other-idea window: 20-minute session cooldown. If this user already has
+   * a view record within the last 20 minutes, no new record is created.
+   * Prevents spam from refreshes and rapid interactions.
+   *
+   * The frontend also enforces the window via localStorage; backend is authoritative (zero-trust).
    */
   private static readonly VIEW_COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes
 
   async recordView(ideaId: string, userId: string): Promise<void> {
-    // Verify idea exists
     const idea = await this.prisma.idea.findUnique({
       where: { id: ideaId },
-      select: { id: true },
+      select: { id: true, submittedById: true },
     });
     if (!idea) throw new NotFoundException('Idea not found.');
 
-    // Check 20-minute cooldown
-    const cutoff = new Date(Date.now() - IdeasService.VIEW_COOLDOWN_MS);
-    const recentView = await this.prisma.ideaView.findFirst({
-      where: { ideaId, userId, createdAt: { gte: cutoff } },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true },
-    });
+    const isOwnIdea = idea.submittedById != null && idea.submittedById === userId;
 
-    if (recentView) return; // Still within the session window — no-op
+    if (isOwnIdea) {
+      // Own idea: at most 1 view ever
+      const existingView = await this.prisma.ideaView.findFirst({
+        where: { ideaId, userId },
+        select: { id: true },
+      });
+      if (existingView) return; // Already counted — no-op
+    } else {
+      // Others' ideas: 20-minute cooldown
+      const cutoff = new Date(Date.now() - IdeasService.VIEW_COOLDOWN_MS);
+      const recentView = await this.prisma.ideaView.findFirst({
+        where: { ideaId, userId, createdAt: { gte: cutoff } },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      });
+      if (recentView) return; // Still within session window — no-op
+    }
 
     await this.prisma.ideaView.create({
       data: { ideaId, userId },
