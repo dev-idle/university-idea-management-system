@@ -454,6 +454,25 @@ export const IDEAS_HUB_EMPTY_ICON = "flex size-12 items-center justify-center ro
 export const IDEAS_HUB_CTA_CARD =
   "flex items-center gap-3 rounded-2xl border border-border/50 bg-card px-4 py-4 sm:py-5 transition-all duration-200 hover:border-border/60 hover:shadow-[var(--shadow-card-hover)]";
 
+/** My proposals card — 3-dot actions trigger. Minimal, subtle. */
+export const IDEAS_MY_ACTIONS_TRIGGER =
+  "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground/45 transition-colors duration-200 hover:bg-muted/[0.04] hover:text-muted-foreground/75 data-[state=open]:bg-muted/[0.04] data-[state=open]:text-muted-foreground/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+
+/** My proposals card — actions menu. Refined spacing. */
+export const IDEAS_MY_ACTIONS_MENU = "min-w-[7.5rem] p-1.5";
+
+/** My proposals card — actions menu item. Edit: primary (indigo) on hover. */
+export const IDEAS_MY_ACTIONS_ITEM =
+  "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-foreground/75 transition-colors duration-150 focus:bg-primary/10 focus:text-primary data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:!text-current [&_svg]:transition-colors [&_svg]:duration-150 focus:[&_svg]:!text-primary data-[highlighted]:[&_svg]:!text-primary";
+
+/** My proposals card — top-right label: voting period (Comment & vote). Active state. */
+export const IDEAS_MY_STATUS_VOTING =
+  "inline-flex shrink-0 items-center gap-2 rounded-md px-2 py-1 text-[11px] font-medium text-primary/85";
+
+/** My proposals card — top-right: Closed (lock + red text). */
+export const IDEAS_MY_STATUS_CLOSED =
+  "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-destructive";
+
 /** Ideas Hub CTA icon — minimal. Hover: muted. */
 export const IDEAS_HUB_CTA_ICON =
   "flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground/65 transition-colors duration-200";

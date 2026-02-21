@@ -160,9 +160,11 @@ export const ownIdeaSchema = ideaSchema.extend({
 });
 export type OwnIdea = z.infer<typeof ownIdeaSchema>;
 
-/** Own ideas list item (idea + submissionClosesAt). */
+/** Own ideas list item (idea + submissionClosesAt + interactionClosesAt + cycleStatus). */
 export const ownIdeaListItemSchema = ideaSchema.extend({
   submissionClosesAt: z.coerce.date().nullable().optional(),
+  interactionClosesAt: z.coerce.date().nullable().optional(),
+  cycleStatus: z.string().nullable().optional(),
 });
 export type OwnIdeaListItem = z.infer<typeof ownIdeaListItemSchema>;
 

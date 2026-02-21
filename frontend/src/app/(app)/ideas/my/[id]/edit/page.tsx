@@ -375,8 +375,7 @@ export default function EditIdeaPage() {
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertTriangle className="size-4" />
           <AlertDescription>
-            The submission period has closed. You can no longer edit this
-            proposal or manage its documents, but you may still delete it.
+            The submission period has closed. This proposal is now read-only.
           </AlertDescription>
         </Alert>
       )}
@@ -630,16 +629,18 @@ export default function EditIdeaPage() {
               {closed ? "Back" : "Cancel"}
             </Button>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-9 gap-2 rounded-lg px-4 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={deleteMutation.isPending}
-          >
-            <Trash2 className="size-4" aria-hidden />
-            Delete
-          </Button>
+          {!closed && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-9 gap-2 rounded-lg px-4 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={deleteMutation.isPending}
+            >
+              <Trash2 className="size-4" aria-hidden />
+              Delete
+            </Button>
+          )}
         </div>
       </form>
 

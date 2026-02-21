@@ -3,14 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useMyIdeasQuery, useDeleteMyIdeaMutation, useIdeasContextQuery } from "@/hooks/use-ideas";
+import {
+  useMyIdeasQuery,
+  useDeleteMyIdeaMutation,
+  useVoteIdeaMutation,
+  useIdeasContextQuery,
+} from "@/hooks/use-ideas";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage } from "@/lib/errors";
 import { cn, timeAgo, getAvatarInitial } from "@/lib/utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +25,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Pagination,
   PaginationContent,
@@ -43,10 +53,17 @@ import {
   IDEAS_HUB_ENGAGEMENT_BORDER,
   IDEAS_HUB_ACTION_BASE,
   IDEAS_HUB_ACTION_INACTIVE,
+  IDEAS_HUB_ACTION_UP,
+  IDEAS_HUB_ACTION_DOWN,
   IDEAS_HUB_READ_MORE,
   IDEAS_HUB_ATTACHMENTS_LABEL,
   IDEAS_HUB_ATTACHMENTS_LIST,
   IDEAS_HUB_ATTACHMENT_ROW,
+  IDEAS_MY_ACTIONS_TRIGGER,
+  IDEAS_MY_ACTIONS_MENU,
+  IDEAS_MY_ACTIONS_ITEM,
+  IDEAS_MY_STATUS_VOTING,
+  IDEAS_MY_STATUS_CLOSED,
   IDEAS_HUB_FEED_GAP,
   IDEAS_HUB_PAGINATION,
   IDEAS_HUB_COUNT,
@@ -67,9 +84,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  FileText,
   Pencil,
   Trash2,
-  FileText,
   ThumbsUp,
   ThumbsDown,
   MessageSquare,
@@ -79,6 +96,9 @@ import {
   ChevronUp,
   Clock,
   Tag,
+  Eye,
+  Activity,
+  MoreVertical,
 } from "lucide-react";
 
 /* ─── Constants ───────────────────────────────────────────────────────────── */
@@ -93,6 +113,23 @@ function isEditable(idea: OwnIdeaListItem): boolean {
   return new Date() < new Date(idea.submissionClosesAt);
 }
 
+/** Top-right status: "editable" | "voting" | "closed".
+ * editable: before submission deadline → 3-dot menu (Edit/Delete)
+ * voting: past deadline, comment/vote still open → descriptive text
+ * closed: cycle closed → lock + red Closed */
+function getTopRightStatus(idea: OwnIdeaListItem): "editable" | "voting" | "closed" {
+  const now = new Date();
+  const subClosed = idea.submissionClosesAt ? now >= new Date(idea.submissionClosesAt) : true;
+
+  if (!subClosed) return "editable";
+  if (idea.cycleStatus !== "ACTIVE") return "closed";
+
+  const interactionOpen = idea.interactionClosesAt
+    ? now < new Date(idea.interactionClosesAt)
+    : false;
+  return interactionOpen ? "voting" : "closed";
+}
+
 /* ─── IdeaRow — same structure as IdeaCard for consistency ────────────────── */
 
 function IdeaRow({
@@ -100,15 +137,22 @@ function IdeaRow({
   isExpanded,
   onToggleExpand,
   onDelete,
+  onVote,
+  votePending,
 }: {
   idea: OwnIdeaListItem;
   isExpanded: boolean;
   onToggleExpand: (id: string) => void;
   onDelete: (idea: OwnIdeaListItem) => void;
+  onVote: (id: string, value: "up" | "down") => void;
+  votePending: boolean;
 }) {
-  const editable = isEditable(idea);
+  const topRightStatus = getTopRightStatus(idea);
   const votes = idea.voteCounts ?? { up: 0, down: 0 };
+  const myVote = idea.myVote ?? null;
+  const canVote = topRightStatus !== "closed";
   const comments = idea.commentCount ?? 0;
+  const views = idea.viewCount ?? 0;
   const desc = idea.description ?? "";
   const long = desc.length > PREVIEW_LEN;
   const authorLabel = idea.isAnonymous
@@ -124,65 +168,100 @@ function IdeaRow({
 
   return (
     <article className={IDEAS_HUB_ARTICLE_CLASS}>
-      {/* Byline */}
-      <div className={cn("flex items-start gap-3", IDEAS_HUB_CARD_PX, "pt-4 pb-3 sm:pt-5")}>
-        <Avatar className={IDEAS_HUB_AVATAR}>
-          <AvatarFallback className="bg-muted/50 text-[11px] font-semibold text-muted-foreground/70">
-            {avatarInitial}
-          </AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <span className={cn("block truncate", IDEAS_HUB_AUTHOR)}>
-            {authorLabel}
-          </span>
-          <div className={IDEAS_HUB_BYLINE_META}>
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="size-3 shrink-0 opacity-50" aria-hidden />
-              <time dateTime={new Date(idea.createdAt).toISOString()}>
-                {timeAgo(idea.createdAt)}
-              </time>
+      {/* Byline + actions (top right) */}
+      <div className={cn("flex items-start justify-between gap-3", IDEAS_HUB_CARD_PX, "pt-4 pb-3 sm:pt-5")}>
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <Avatar className={IDEAS_HUB_AVATAR}>
+            <AvatarFallback className="bg-muted/50 text-[11px] font-semibold text-muted-foreground/70">
+              {avatarInitial}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <span className={cn("block truncate", IDEAS_HUB_AUTHOR)}>
+              {authorLabel}
             </span>
-            {idea.category?.name && (
-              <>
-                <span className={BYLINE_META_SEP} aria-hidden />
-                <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
-                  <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
-                  {idea.category.name}
-                </span>
-              </>
-            )}
-            {idea.attachments.length > 0 && (
-              <>
-                <span className={BYLINE_META_SEP} aria-hidden />
-                <span className="inline-flex items-center gap-1.5">
-                  <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
-                  {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
-                </span>
-              </>
-            )}
+            <div className={IDEAS_HUB_BYLINE_META}>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="size-3 shrink-0 opacity-50" aria-hidden />
+                <time dateTime={new Date(idea.createdAt).toISOString()}>
+                  {timeAgo(idea.createdAt)}
+                </time>
+              </span>
+              {idea.category?.name && (
+                <>
+                  <span className={BYLINE_META_SEP} aria-hidden />
+                  <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
+                    <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
+                    {idea.category.name}
+                  </span>
+                </>
+              )}
+              {idea.attachments.length > 0 && (
+                <>
+                  <span className={BYLINE_META_SEP} aria-hidden />
+                  <span className="inline-flex items-center gap-1.5">
+                    <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
+                    {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
+        {topRightStatus === "editable" ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className={IDEAS_MY_ACTIONS_TRIGGER}
+                aria-label="Proposal options"
+              >
+                <MoreVertical className="size-3.5" aria-hidden />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={4} className={IDEAS_MY_ACTIONS_MENU}>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={`${ROUTES.MY_IDEAS}/${idea.id}/edit`}
+                  className={IDEAS_MY_ACTIONS_ITEM}
+                >
+                  <Pencil className="size-3" aria-hidden />
+                  Edit
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete(idea)}
+                className={cn(
+                  IDEAS_MY_ACTIONS_ITEM,
+                  "text-destructive/90 focus:bg-destructive/[0.06] focus:text-destructive data-[highlighted]:bg-destructive/[0.06] data-[highlighted]:text-destructive [&_svg]:!text-destructive/90 data-[highlighted]:[&_svg]:!text-destructive",
+                )}
+              >
+                <Trash2 className="size-3" aria-hidden />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : topRightStatus === "voting" ? (
+          <span className={IDEAS_MY_STATUS_VOTING} title="Cannot edit or delete, can still comment and vote">
+            <Activity className="size-3 shrink-0 opacity-70" aria-hidden />
+            Comment & vote
+          </span>
+        ) : (
+          <span className={IDEAS_MY_STATUS_CLOSED} title="Cycle closed">
+            <Lock className="size-3 shrink-0" aria-hidden />
+            Closed
+          </span>
+        )}
       </div>
 
-      {/* Title */}
+      {/* Title + status */}
       <div className={cn(IDEAS_HUB_CARD_PX, "pt-0")}>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <Link
-            href={`${ROUTES.IDEAS}/${idea.id}`}
-            className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <h2 className={IDEAS_HUB_TITLE}>{idea.title}</h2>
-          </Link>
-          {!editable && (
-            <Badge
-              variant="outline"
-              className="gap-1 rounded-full border-warning/30 bg-warning/10 px-2 py-0 text-[10px] font-normal text-warning"
-            >
-              <Lock className="size-2.5" aria-hidden />
-              Closed
-            </Badge>
-          )}
-        </div>
+        <Link
+          href={`${ROUTES.IDEAS}/${idea.id}`}
+          className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <h2 className={IDEAS_HUB_TITLE}>{idea.title}</h2>
+        </Link>
       </div>
 
       {/* Content */}
@@ -260,15 +339,57 @@ function IdeaRow({
         )}
         role="toolbar"
       >
-        <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
-          <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
-          {votes.up}
-        </span>
-        <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
-        <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
-          <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
-          {votes.down}
-        </span>
+        {canVote ? (
+          <>
+            <button
+              type="button"
+              disabled={votePending}
+              onClick={(e) => {
+                e.preventDefault();
+                onVote(idea.id, "up");
+              }}
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "cursor-pointer",
+                myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
+              )}
+              aria-label="Support"
+            >
+              <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+              {votes.up}
+            </button>
+            <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
+            <button
+              type="button"
+              disabled={votePending}
+              onClick={(e) => {
+                e.preventDefault();
+                onVote(idea.id, "down");
+              }}
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "cursor-pointer",
+                myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
+              )}
+              aria-label="Do not support"
+            >
+              <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+              {votes.down}
+            </button>
+          </>
+        ) : (
+          <>
+            <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
+              <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+              {votes.up}
+            </span>
+            <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
+            <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
+              <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+              {votes.down}
+            </span>
+          </>
+        )}
         <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/40" aria-hidden />
         <Link
           href={`${ROUTES.IDEAS}/${idea.id}`}
@@ -278,23 +399,10 @@ function IdeaRow({
           {comments}
         </Link>
         <div className="min-w-0 flex-1" aria-hidden />
-        {editable && (
-          <Link
-            href={`${ROUTES.MY_IDEAS}/${idea.id}/edit`}
-            className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")}
-            aria-label="Edit proposal"
-          >
-            <Pencil className="size-3.5 shrink-0" aria-hidden />
-          </Link>
-        )}
-        <button
-          type="button"
-          onClick={() => onDelete(idea)}
-          className={cn(IDEAS_HUB_ACTION_BASE, "cursor-pointer text-muted-foreground/50 hover:text-destructive")}
-          aria-label="Delete proposal"
-        >
-          <Trash2 className="size-3.5 shrink-0" aria-hidden />
-        </button>
+        <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_COUNT, "cursor-default")}>
+          <Eye className="size-3.5 shrink-0" aria-hidden />
+          {views}
+        </span>
       </div>
     </article>
   );
@@ -332,6 +440,7 @@ export default function MyIdeasPage() {
     { enabled: true },
   );
   const deleteMutation = useDeleteMyIdeaMutation();
+  const voteMutation = useVoteIdeaMutation();
 
   if (status === "error") throw error;
 
@@ -484,6 +593,8 @@ export default function MyIdeasPage() {
                   setExpandedId((prev) => (prev === id ? null : id))
                 }
                 onDelete={setDeleteTarget}
+                onVote={(id, value) => voteMutation.mutate({ ideaId: id, value })}
+                votePending={voteMutation.isPending}
               />
             ))}
           </div>

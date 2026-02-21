@@ -1051,7 +1051,13 @@ export class IdeasService {
           },
           votes: { select: { value: true, userId: true } },
           _count: { select: { comments: true, views: true } },
-          cycle: { select: { ideaSubmissionClosesAt: true } },
+          cycle: {
+            select: {
+              ideaSubmissionClosesAt: true,
+              interactionClosesAt: true,
+              status: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -1064,6 +1070,8 @@ export class IdeasService {
       items: items.map((idea) => ({
         ...this.mapIdeaToResponse(idea, userId),
         submissionClosesAt: idea.cycle?.ideaSubmissionClosesAt ?? null,
+        interactionClosesAt: idea.cycle?.interactionClosesAt ?? null,
+        cycleStatus: idea.cycle?.status ?? null,
       })),
       total,
     };
@@ -1178,12 +1186,18 @@ export class IdeasService {
   }
 
   /**
-   * Delete own idea. STAFF only, ownership verified. ALWAYS allowed regardless of
-   * closure date, even if the idea has comments or votes.
+   * Delete own idea. STAFF only, ownership verified.
+   * Blocked when the submission closure date has passed (same as edit).
    * Cascade: comments, votes, attachments are deleted via Prisma; Cloudinary cleaned up.
    */
   async deleteOwnIdea(ideaId: string, userId: string): Promise<void> {
     const idea = await this.ensureOwnIdea(ideaId, userId);
+
+    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+      throw new BadRequestException(
+        'Deletion is no longer available. The submission period has closed.',
+      );
+    }
 
     const publicIds = idea.attachments.map((a) => a.cloudinaryPublicId);
     if (publicIds.length > 0 && this.cloudinary.isConfigured()) {
