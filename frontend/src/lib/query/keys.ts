@@ -59,7 +59,7 @@ export const queryKeys = {
     latestComments: (limit: number) => [...queryKeys.ideas.all, "latest-comments", limit] as const,
     my: {
       all: ["api", "ideas", "my"] as const,
-      list: (params?: { page: number; limit: number }) =>
+      list: (params?: { page: number; limit: number; categoryId?: string; cycleId?: string; academicYearId?: string }) =>
         ["api", "ideas", "my", "list", params ?? {}] as const,
       detail: (id: string) => ["api", "ideas", "my", "detail", id] as const,
     },

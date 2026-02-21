@@ -353,17 +353,23 @@ function parseOwnIdea(data: unknown): OwnIdea {
 
 /** List the current user's own ideas with pagination. STAFF only. */
 export function useMyIdeasQuery(
-  params?: { page?: number; limit?: number },
+  params?: { page?: number; limit?: number; categoryId?: string; cycleId?: string; academicYearId?: string },
   options?: { enabled?: boolean },
 ) {
   const page = params?.page ?? 1;
   const limit = params?.limit ?? 5;
+  const categoryId = params?.categoryId;
+  const cycleId = params?.cycleId;
+  const academicYearId = params?.academicYearId;
   return useQuery({
-    queryKey: queryKeys.ideas.my.list({ page, limit }),
+    queryKey: queryKeys.ideas.my.list({ page, limit, categoryId, cycleId, academicYearId }),
     queryFn: async () => {
       const search = new URLSearchParams();
       search.set("page", String(page));
       search.set("limit", String(limit));
+      if (categoryId) search.set("categoryId", categoryId);
+      if (cycleId) search.set("cycleId", cycleId);
+      if (academicYearId) search.set("academicYearId", academicYearId);
       const data = await fetchWithAuth<unknown>(`ideas/my?${search.toString()}`);
       return parseOwnIdeasPaginated(data);
     },

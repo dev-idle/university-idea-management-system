@@ -21,17 +21,44 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
-  BACK_LINK_CLASS,
-  IDEA_CARD_CLASS,
+  IDEA_ARTICLE_CLASS,
+  IDEA_ARTICLE_BYLINE_CLASS,
+  IDEA_ARTICLE_BYLINE_AUTHOR,
+  IDEA_ARTICLE_BYLINE_META,
+  BYLINE_META_SEP,
+  IDEA_ARTICLE_BODY_CLASS,
+  IDEA_ARTICLE_TITLE_CLASS,
+  IDEA_ARTICLE_DESC_CLASS,
+  IDEA_ARTICLE_DIVIDER,
+  IDEA_ARTICLE_FOOTER_CLASS,
+  IDEA_DISCUSSION_CLASS,
+  IDEA_ARTICLE_PX,
+  IDEA_ARTICLE_SECTION_LABEL,
+  IDEA_DISCUSSION_HEADING,
+  IDEA_DISCUSSION_SUBTITLE,
+  IDEA_ATTACHMENT_ITEM,
+  IDEA_COMMENT_AVATAR,
+  IDEA_COMMENT_AVATAR_FALLBACK,
+  IDEA_COMMENT_HEADER,
+  IDEA_COMMENT_AUTHOR,
+  IDEA_COMMENT_TIME,
+  IDEA_COMMENT_BODY,
+  IDEA_ATTACHMENT_NAME,
   STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import {
+  BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_SEP_CLASS,
+} from "@/components/features/admin/constants";
+import {
   ThumbsUp,
   ThumbsDown,
-  ArrowLeft,
   Download,
   FileText,
   Paperclip,
+  Clock,
+  Tag,
+  Eye,
 } from "lucide-react";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
@@ -91,16 +118,13 @@ function AttachmentItem({ att }: { att: Attachment }) {
   };
 
   return (
-    <li className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/[0.06] px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
+    <li className={IDEA_ATTACHMENT_ITEM}>
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <FileText
           className="size-4 shrink-0 text-muted-foreground/40"
           aria-hidden
         />
-        <span
-          className="min-w-0 truncate text-[13px] text-foreground/80"
-          title={att.fileName}
-        >
+        <span className={IDEA_ATTACHMENT_NAME} title={att.fileName}>
           {att.fileName}
         </span>
       </div>
@@ -205,89 +229,87 @@ export default function IdeaDetailPage() {
 
   return (
     <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
-      {/* Back */}
-      <nav aria-label="Breadcrumb">
-        <Link
-          href={ROUTES.IDEAS}
-          className={BACK_LINK_CLASS}
-          aria-label="Return to Ideas Hub"
-        >
-          <ArrowLeft className="size-4 shrink-0" aria-hidden />
-          Ideas Hub
-        </Link>
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
+          <li>
+            <Link
+              href={ROUTES.IDEAS}
+              className="transition-colors duration-200 hover:text-foreground"
+            >
+              Ideas Hub
+            </Link>
+          </li>
+          <li className="flex items-center" aria-current="page">
+            <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+            Proposal
+          </li>
+        </ol>
       </nav>
 
       {/* ── Article ──────────────────────────────────────────────────── */}
       <article
-        className={cn("overflow-hidden", IDEA_CARD_CLASS)}
+        className={IDEA_ARTICLE_CLASS}
         aria-labelledby="proposal-title"
       >
         {/* Byline */}
-        <div className="flex items-center gap-3 px-6 py-5 sm:px-8">
-          <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
-            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/5 text-[11px] font-semibold text-primary/60">
+        <div className={IDEA_ARTICLE_BYLINE_CLASS}>
+          <Avatar className="size-10 shrink-0 rounded-full ring-1 ring-border/20">
+            <AvatarFallback className="bg-muted/50 text-xs font-semibold text-muted-foreground/70">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-medium text-foreground/90">
+            <p className={cn("truncate", IDEA_ARTICLE_BYLINE_AUTHOR)}>
               {idea.isAnonymous ? "Anonymous" : authorLabel}
             </p>
-            <div className="flex flex-wrap items-center gap-x-1.5 text-[11px] text-muted-foreground/50">
-              <span>{timeAgo(idea.createdAt)}</span>
+            <div className={IDEA_ARTICLE_BYLINE_META}>
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="size-3 shrink-0 opacity-50" aria-hidden />
+                <time dateTime={new Date(idea.createdAt).toISOString()}>
+                  {timeAgo(idea.createdAt)}
+                </time>
+              </span>
               {idea.category?.name && (
                 <>
-                  <span aria-hidden>·</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span
-                      className="size-1 rounded-full bg-primary/40"
-                      aria-hidden
-                    />
+                  <span className={cn(BYLINE_META_SEP)} aria-hidden />
+                  <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
+                    <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
                     {idea.category.name}
                   </span>
                 </>
               )}
               {views > 0 && (
                 <>
-                  <span aria-hidden>·</span>
-                  <span>
-                    {views} view{views !== 1 ? "s" : ""}
+                  <span className={cn(BYLINE_META_SEP)} aria-hidden />
+                  <span className="inline-flex items-center gap-1.5">
+                    <Eye className="size-3 shrink-0 opacity-50" aria-hidden />
+                    <span>{views} view{views !== 1 ? "s" : ""}</span>
                   </span>
                 </>
               )}
             </div>
           </div>
-          {idea.isAnonymous && (
-            <Badge
-              variant="outline"
-              className="rounded-full border-border/30 px-2 py-0 text-[10px] font-normal italic text-muted-foreground/50"
-            >
-              Anonymous
-            </Badge>
-          )}
         </div>
 
-        <div className="border-t border-border/10" />
+        <div className={IDEA_ARTICLE_DIVIDER} />
 
         {/* Body */}
-        <div className="px-6 py-10 sm:px-8 sm:py-12">
-          <h1
-            id="proposal-title"
-            className="font-sans text-[28px] font-bold leading-[1.2] tracking-tight text-foreground sm:text-[34px]"
-          >
+        <div className={IDEA_ARTICLE_BODY_CLASS}>
+          <h1 id="proposal-title" className={IDEA_ARTICLE_TITLE_CLASS}>
             {idea.title}
           </h1>
-          <div className={`mt-6 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
+          <div className={`mt-5 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
 
           {idea.description && (
-            <div className="mt-8 whitespace-pre-wrap text-[16px] leading-[1.9] text-foreground/70">
+            <div className={cn("mt-7 whitespace-pre-wrap", IDEA_ARTICLE_DESC_CLASS)}>
               {idea.description}
             </div>
           )}
 
           {idea.attachments.length > 0 && (
-            <div className="mt-10 border-t border-border/20 pt-7">
-              <h2 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/50">
+            <div className={cn("mt-9 pt-6", IDEA_ARTICLE_DIVIDER)}>
+              <h2 className={IDEA_ARTICLE_SECTION_LABEL}>
                 <Paperclip className="size-3.5 shrink-0" aria-hidden />
                 Attachments ({idea.attachments.length})
               </h2>
@@ -301,7 +323,7 @@ export default function IdeaDetailPage() {
         </div>
 
         {/* Reactions */}
-        <div className="flex flex-wrap items-center gap-2 border-t border-border/20 px-6 py-3.5 sm:px-8">
+        <div className={cn(IDEA_ARTICLE_DIVIDER, IDEA_ARTICLE_FOOTER_CLASS)}>
           <button
             type="button"
             disabled={!open || voteMutation.isPending}
@@ -358,31 +380,28 @@ export default function IdeaDetailPage() {
 
       {/* ── Discussion ───────────────────────────────────────────────── */}
       <section
-        className={cn("overflow-hidden", IDEA_CARD_CLASS)}
+        className={IDEA_DISCUSSION_CLASS}
         aria-labelledby="discussion-heading"
       >
         {/* Header */}
-        <div className="px-6 py-5 sm:px-8">
-          <h2
-            id="discussion-heading"
-            className="font-sans text-lg font-semibold tracking-tight text-foreground"
-          >
+        <div className={cn(IDEA_ARTICLE_PX, "py-4 sm:py-5")}>
+          <h2 id="discussion-heading" className={IDEA_DISCUSSION_HEADING}>
             Discussion
           </h2>
-          <p className="mt-0.5 text-[11px] text-muted-foreground/50">
+          <p className={IDEA_DISCUSSION_SUBTITLE}>
             {comments.length} comment{comments.length !== 1 ? "s" : ""}
             {!open && endsAt && " · Closed"}
           </p>
         </div>
 
-        <div className="border-t border-border/10" />
+        <div className={IDEA_ARTICLE_DIVIDER} />
 
-        <div className="px-6 py-6 sm:px-8">
+        <div className={cn(IDEA_ARTICLE_PX, "py-5 sm:py-6")}>
           {/* Comment form */}
           {open && (
             <form
               onSubmit={handleComment}
-              className="mb-7 border-b border-border/10 pb-7"
+              className="mb-6 border-b border-border/20 pb-6"
             >
               <Textarea
                 id="comment-content"
@@ -422,13 +441,13 @@ export default function IdeaDetailPage() {
           {commentsStatus === "pending" && (
             <div className="flex flex-col items-center py-12">
               <div className={cn("loading-spinner size-6 shrink-0 rounded-full border border-primary/[0.08] border-t-primary")} aria-hidden />
-              <p className="mt-4 text-[12px] text-muted-foreground/50">
+              <p className="mt-4 text-xs text-muted-foreground/50">
                 Loading comments…
               </p>
             </div>
           )}
           {commentsStatus === "success" && comments.length === 0 && (
-            <p className="py-12 text-center text-[13px] text-muted-foreground/40">
+            <p className="py-12 text-center text-sm text-muted-foreground/45">
               No comments yet.{" "}
               {open && "Be the first to share your thoughts."}
             </p>
@@ -447,28 +466,28 @@ export default function IdeaDetailPage() {
                     key={c.id}
                     className={cn(
                       "flex gap-3 py-5",
-                      i > 0 && "border-t border-border/10",
+                      i > 0 && IDEA_ARTICLE_DIVIDER,
                     )}
                   >
-                    <Avatar className="size-7 shrink-0 rounded-full ring-1 ring-border/20">
-                      <AvatarFallback className="bg-gradient-to-br from-muted/60 to-muted/20 text-[9px] font-semibold text-muted-foreground/60">
+                    <Avatar className={IDEA_COMMENT_AVATAR}>
+                      <AvatarFallback className={IDEA_COMMENT_AVATAR_FALLBACK}>
                         {init}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                        <span className="text-[13px] font-medium text-foreground/85">
+                      <div className={IDEA_COMMENT_HEADER}>
+                        <span className={IDEA_COMMENT_AUTHOR}>
                           {name ?? (
                             <span className="italic text-muted-foreground/50">
                               Anonymous
                             </span>
                           )}
                         </span>
-                        <time className="text-[11px] text-muted-foreground/40">
+                        <time className={IDEA_COMMENT_TIME}>
                           {timeAgo(c.createdAt)}
                         </time>
                       </div>
-                      <p className="mt-1 whitespace-pre-wrap text-[13.5px] leading-[1.75] text-foreground/65">
+                      <p className={IDEA_COMMENT_BODY}>
                         {c.content}
                       </p>
                     </div>

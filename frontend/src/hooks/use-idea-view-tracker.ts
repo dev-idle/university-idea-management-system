@@ -1,32 +1,36 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
+import { useAuthStore } from "@/stores/auth.store";
 import { useRecordViewMutation } from "./use-ideas";
 
 /* ── Constants ──────────────────────────────────────────────────────────────── */
 
-const DWELL_MS = 10_000; // 10-second dwell before timer path fires
+const DWELL_MS = 5_000; // 5-second dwell before timer path fires
 const SESSION_WINDOW_MS = 20 * 60 * 1000; // 20-minute cooldown between session views
-const STORAGE_KEY = "idea-view-timestamps"; // localStorage key
+const STORAGE_KEY_PREFIX = "idea-view-ts"; // localStorage key prefix (scoped by userId)
 
 /* ── localStorage helpers ───────────────────────────────────────────────────── */
 
-/** Read the { ideaId → timestamp } map from localStorage (with auto-cleanup). */
-function getTimestamps(): Record<string, number> {
+function storageKey(userId: string | null): string {
+  return userId ? `${STORAGE_KEY_PREFIX}-${userId}` : STORAGE_KEY_PREFIX;
+}
+
+/** Read the { ideaId → timestamp } map from localStorage (with auto-cleanup). Scoped per user. */
+function getTimestamps(userId: string | null): Record<string, number> {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(userId));
     if (!raw) return {};
     const map: Record<string, number> = JSON.parse(raw);
     const now = Date.now();
     let dirty = false;
-    // Prune entries older than 20 minutes to keep storage lean
     for (const id of Object.keys(map)) {
       if (now - map[id] > SESSION_WINDOW_MS) {
         delete map[id];
         dirty = true;
       }
     }
-    if (dirty) localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    if (dirty) localStorage.setItem(storageKey(userId), JSON.stringify(map));
     return map;
   } catch {
     return {};
@@ -34,19 +38,19 @@ function getTimestamps(): Record<string, number> {
 }
 
 /** Write a new timestamp for a given idea. */
-function setTimestamp(ideaId: string): void {
+function setTimestamp(ideaId: string, userId: string | null): void {
   try {
-    const map = getTimestamps();
+    const map = getTimestamps(userId);
     map[ideaId] = Date.now();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    localStorage.setItem(storageKey(userId), JSON.stringify(map));
   } catch {
     /* localStorage unavailable — graceful degradation */
   }
 }
 
 /** Check whether the idea is still inside the 20-minute cooldown window. */
-function isInCooldown(ideaId: string): boolean {
-  const ts = getTimestamps()[ideaId];
+function isInCooldown(ideaId: string, userId: string | null): boolean {
+  const ts = getTimestamps(userId)[ideaId];
   if (!ts) return false;
   return Date.now() - ts < SESSION_WINDOW_MS;
 }
@@ -56,9 +60,9 @@ function isInCooldown(ideaId: string): boolean {
 /**
  * Tracks idea views with two paths and a 20-minute session window.
  *
- * **Timer path (dwell 10 s):**
+ * **Timer path (dwell 5 s):**
  * When `activeIdeaId` is set (expanded card in Hub or detail page) and the
- * user stays for 10 visible seconds, a view is recorded.
+ * user stays for 5 visible seconds, a view is recorded.
  *
  * **Action path (vote / comment):**
  * `markViewedByAction(ideaId)` records a view immediately — proving the user
@@ -77,6 +81,7 @@ function isInCooldown(ideaId: string): boolean {
  * when the tab becomes visible again.
  */
 export function useIdeaViewTracker(activeIdeaId: string | null) {
+  const userId = useAuthStore((s) => s.user?.id ?? null);
   const recordView = useRecordViewMutation();
 
   // In-memory guard for the current page load — avoids redundant localStorage
@@ -102,16 +107,16 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
   const record = useCallback(
     (ideaId: string) => {
       if (recordedThisLoad.current.has(ideaId)) return;
-      if (isInCooldown(ideaId)) {
+      if (isInCooldown(ideaId, userId)) {
         // Already within a 20-min window — mark in-memory to skip future checks
         recordedThisLoad.current.add(ideaId);
         return;
       }
       recordedThisLoad.current.add(ideaId);
-      setTimestamp(ideaId);
+      setTimestamp(ideaId, userId);
       recordView.mutate(ideaId);
     },
-    [recordView],
+    [recordView, userId],
   );
 
   /* ── timer path ─────────────────────────────────────────────────────────── */
@@ -138,14 +143,14 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
 
   const resumeTimer = useCallback(() => {
     const id = activeIdRef.current;
-    if (!id || recordedThisLoad.current.has(id) || isInCooldown(id)) return;
+    if (!id || recordedThisLoad.current.has(id) || isInCooldown(id, userId)) return;
     const remaining = DWELL_MS - elapsedRef.current;
     if (remaining <= 0) {
       record(id);
     } else {
       startTimer(remaining);
     }
-  }, [record, startTimer]);
+  }, [record, startTimer, userId]);
 
   /* ── visibilitychange ───────────────────────────────────────────────────── */
 
@@ -161,7 +166,7 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [pauseTimer, resumeTimer]);
+  }, [pauseTimer, resumeTimer, userId]);
 
   /* ── react to activeIdeaId changes ──────────────────────────────────────── */
 
@@ -173,10 +178,10 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
     if (
       !activeIdeaId ||
       recordedThisLoad.current.has(activeIdeaId) ||
-      isInCooldown(activeIdeaId)
+      isInCooldown(activeIdeaId, userId)
     ) {
       // Already in cooldown — add to in-memory set so we skip future checks
-      if (activeIdeaId && isInCooldown(activeIdeaId)) {
+      if (activeIdeaId && isInCooldown(activeIdeaId, userId)) {
         recordedThisLoad.current.add(activeIdeaId);
       }
       return;
@@ -191,7 +196,7 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
       clearTimer();
       elapsedRef.current = 0;
     };
-  }, [activeIdeaId, clearTimer, startTimer]);
+  }, [activeIdeaId, userId, clearTimer, startTimer]);
 
   /* ── action path (vote / comment) ───────────────────────────────────────── */
 

@@ -670,7 +670,12 @@ function StaffLayout({
           MAIN_PY
         )}
       >
-        <div className={cn("mx-auto w-full", STAFF_MAIN_MAX_W)}>
+        <div
+          className={cn(
+            "mx-auto w-full transition-[max-width] duration-300 ease-in-out",
+            pathname === ROUTES.PROFILE ? MAIN_MAX_W : STAFF_MAIN_MAX_W
+          )}
+        >
           <div>{children}</div>
         </div>
       </main>

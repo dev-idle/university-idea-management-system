@@ -338,7 +338,7 @@ function DatePicker({
             disabled={disabled}
             id={id}
             className={cn(
-              "h-10 w-full cursor-pointer justify-between gap-2 rounded-xl border border-border/80 bg-background text-left font-normal text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10 [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center",
+              "h-10 w-full cursor-pointer justify-between gap-2 rounded-xl border border-border/80 bg-background text-left font-normal text-foreground shadow-xs transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10 [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center",
               !displayValue && "text-muted-foreground",
               className
             )}
@@ -598,7 +598,7 @@ function DateTimePicker({
             disabled={disabled}
             id={id}
             className={cn(
-              "h-10 w-full cursor-pointer justify-between gap-2 rounded-xl border border-border/80 bg-background text-left font-normal transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10 [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center",
+              "h-10 w-full cursor-pointer justify-between gap-2 rounded-xl border border-border/80 bg-background text-left font-normal shadow-xs transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10 [&>span]:line-clamp-1 [&>span]:flex [&>span]:items-center",
               !displayParsed && "text-muted-foreground",
               className
             )}

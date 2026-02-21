@@ -9,15 +9,15 @@ import { ROUTES } from "@/config/constants";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
-  BACK_LINK_CLASS,
   ALERT_WARNING_CLASS,
-  PAGE_TITLE_CLASS,
-  STAFF_DESCRIPTION_CLASS,
-  STAFF_HEADER_ACCENT_CLASS,
-  STAFF_PAGE_SPACING,
+  IDEAS_HUB_SPACING,
 } from "@/config/design";
+import {
+  BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_SEP_CLASS,
+} from "@/components/features/admin/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function SubmitIdeaPage() {
   const router = useRouter();
@@ -40,6 +40,13 @@ export default function SubmitIdeaPage() {
     }
   }, [contextStatus, canSubmit, router]);
 
+  useEffect(() => {
+    document.title = "New proposal | Greenwich University";
+    return () => {
+      document.title = "Greenwich University — Idea Management";
+    };
+  }, []);
+
   if (
     contextStatus === "pending" ||
     (contextStatus === "success" && !context)
@@ -53,7 +60,7 @@ export default function SubmitIdeaPage() {
 
   if (contextStatus === "success" && !canSubmit) {
     return (
-      <div className={`space-y-8 ${PAGE_WRAPPER_NARROW_CLASS}`}>
+      <div className={cn("space-y-8", PAGE_WRAPPER_NARROW_CLASS)}>
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
             Submission is currently closed. Redirecting to Ideas Hub…
@@ -64,28 +71,24 @@ export default function SubmitIdeaPage() {
   }
 
   return (
-    <div className={`${STAFF_PAGE_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
-      <header className="space-y-4">
-        <nav aria-label="Breadcrumb">
-          <Link
-            href={ROUTES.IDEAS}
-            className={BACK_LINK_CLASS}
-            aria-label="Return to Ideas Hub"
-          >
-            <ArrowLeft className="size-4 shrink-0" aria-hidden />
-            Ideas Hub
-          </Link>
-        </nav>
-        <div>
-          <h1 className={PAGE_TITLE_CLASS}>New proposal</h1>
-          <p className={STAFF_DESCRIPTION_CLASS}>
-            Share your idea with the community. Be clear, constructive, and
-            evidence-based.
-          </p>
-          <div className={`mt-4 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
-        </div>
-      </header>
-
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
+          <li>
+            <Link
+              href={ROUTES.IDEAS}
+              className="transition-colors duration-200 hover:text-foreground"
+            >
+              Ideas Hub
+            </Link>
+          </li>
+          <li className="flex items-center" aria-current="page">
+            <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+            New proposal
+          </li>
+        </ol>
+      </nav>
+      <h1 className="sr-only">New proposal</h1>
       {context && (
         <SubmitIdeaForm
           context={context}

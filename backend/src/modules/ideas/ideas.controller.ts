@@ -196,11 +196,17 @@ export class IdeasController {
     @CurrentUser() user: AccessTokenPayload,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('cycleId') cycleId?: string,
+    @Query('academicYearId') academicYearId?: string,
   ) {
     const { page: pageNum, limit: limitNum } = parsePagination(page, limit, { limit: 5 });
     return this.ideasService.findOwnIdeas(user.sub, {
       page: pageNum,
       limit: limitNum,
+      categoryId: categoryId || undefined,
+      cycleId: cycleId || undefined,
+      academicYearId: academicYearId || undefined,
     });
   }
 

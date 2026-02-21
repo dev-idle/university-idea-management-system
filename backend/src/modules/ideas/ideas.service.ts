@@ -112,6 +112,54 @@ export class IdeasService {
       }
     }
 
+    const ideasWithCycles = await this.prisma.idea.findMany({
+      where: { submittedById: userId, cycleId: { not: null } },
+      select: { cycleId: true, cycle: { select: { academicYearId: true } } },
+      distinct: ['cycleId'],
+    });
+    const yearIds = [...new Set(
+      ideasWithCycles
+        .map((i) => i.cycle?.academicYearId)
+        .filter((id): id is string => !!id),
+    )];
+    const allAcademicYearsForFilter = yearIds.length > 0
+      ? await this.prisma.academicYear.findMany({
+          where: { id: { in: yearIds } },
+          select: { id: true, name: true },
+          orderBy: { name: 'desc' },
+        })
+      : [];
+
+    type CycleForFilter = { id: string; name: string; academicYearId: string; categories: Array<{ id: string; name: string }> };
+    const allCyclesForFilter: CycleForFilter[] = [];
+    const cycleIdsWithUserIdeas = await this.prisma.idea.findMany({
+      where: { submittedById: userId, cycleId: { not: null } },
+      select: { cycleId: true },
+      distinct: ['cycleId'],
+    });
+    const userCycleIds = cycleIdsWithUserIdeas
+      .map((i) => i.cycleId)
+      .filter((id): id is string => !!id);
+    const allCycles = userCycleIds.length > 0
+      ? await this.prisma.ideaSubmissionCycle.findMany({
+          where: { id: { in: userCycleIds } },
+          select: { id: true, name: true, academicYearId: true },
+          orderBy: { interactionClosesAt: 'desc' },
+        })
+      : [];
+    for (const c of allCycles) {
+      const cycleCategories = await this.prisma.cycleCategory.findMany({
+        where: { cycleId: c.id },
+        select: { category: { select: { id: true, name: true } } },
+      });
+      allCyclesForFilter.push({
+        id: c.id,
+        name: c.name ?? 'Unnamed',
+        academicYearId: c.academicYearId,
+        categories: cycleCategories.map((cc) => cc.category),
+      });
+    }
+
     return {
       canSubmit,
       activeCycleId: cycle?.id ?? null,
@@ -120,6 +168,8 @@ export class IdeasService {
       activeAcademicYear: activeYear ? { id: activeYear.id, name: activeYear.name } : null,
       categories,
       closedCyclesForYear,
+      allCyclesForFilter,
+      allAcademicYearsForFilter,
     };
   }
 
@@ -950,11 +1000,20 @@ export class IdeasService {
    * List the current user's own ideas with pagination (across all cycles / years).
    * Sorted newest‑first. Returns submissionClosesAt per idea so the frontend
    * can determine whether editing is still allowed.
+   * Optional filters: categoryId, cycleId.
    */
-  async findOwnIdeas(userId: string, params: { page?: number; limit?: number }) {
+  async findOwnIdeas(
+    userId: string,
+    params: { page?: number; limit?: number; categoryId?: string; cycleId?: string; academicYearId?: string },
+  ) {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(50, Math.max(1, params.limit ?? 5));
-    const where = { submittedById: userId };
+    const where = {
+      submittedById: userId,
+      ...(params.categoryId && { categoryId: params.categoryId }),
+      ...(params.cycleId && { cycleId: params.cycleId }),
+      ...(params.academicYearId && !params.cycleId && { cycle: { academicYearId: params.academicYearId } }),
+    };
 
     const [items, total] = await Promise.all([
       this.prisma.idea.findMany({

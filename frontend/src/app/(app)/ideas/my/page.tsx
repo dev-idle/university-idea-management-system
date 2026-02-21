@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useMyIdeasQuery, useDeleteMyIdeaMutation } from "@/hooks/use-ideas";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
+import { useMyIdeasQuery, useDeleteMyIdeaMutation, useIdeasContextQuery } from "@/hooks/use-ideas";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage } from "@/lib/errors";
@@ -29,15 +30,33 @@ import {
 } from "@/components/ui/pagination";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
-  BACK_LINK_CLASS,
-  IDEA_CARD_CLASS,
-  PAGE_TITLE_CLASS,
-  STAFF_DESCRIPTION_CLASS,
-  STAFF_HEADER_ACCENT_CLASS,
-  STAFF_PAGE_SPACING,
+  IDEAS_HUB_SPACING,
+  IDEAS_HUB_ARTICLE_CLASS,
+  IDEAS_HUB_CARD_PX,
+  IDEAS_HUB_TITLE,
+  IDEAS_HUB_BYLINE_META,
+  IDEAS_HUB_DESC,
+  IDEAS_HUB_ENGAGEMENT_BORDER,
+  IDEAS_HUB_FEED_GAP,
+  IDEAS_HUB_PAGINATION,
+  IDEAS_HUB_COUNT,
+  IDEAS_HUB_EMPTY_ICON,
+  IDEAS_HUB_TOOLBAR,
+  IDEAS_HUB_SELECT_TRIGGER,
+  IDEAS_HUB_TOOLBAR_DIVIDER,
 } from "@/config/design";
 import {
-  ArrowLeft,
+  BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_SEP_CLASS,
+} from "@/components/features/admin/constants";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Pencil,
   Trash2,
   FileText,
@@ -76,9 +95,8 @@ function IdeaRow({
   const truncated = desc.length > PREVIEW_LEN;
 
   return (
-    <article className={cn("group relative overflow-hidden", IDEA_CARD_CLASS)}>
-
-      <div className="relative px-6 py-5 sm:px-7 sm:py-6">
+    <article className={cn("group relative overflow-hidden", IDEAS_HUB_ARTICLE_CLASS)}>
+      <div className={cn("relative", IDEAS_HUB_CARD_PX, "pt-4 pb-4 sm:pt-5 sm:pb-5")}>
         {/* Header row */}
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -87,9 +105,7 @@ function IdeaRow({
                 href={`${ROUTES.IDEAS}/${idea.id}`}
                 className="rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <h2 className="font-sans text-lg font-bold leading-[1.3] tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary sm:text-xl">
-                  {idea.title}
-                </h2>
+                <h2 className={IDEAS_HUB_TITLE}>{idea.title}</h2>
               </Link>
               {!editable && (
                 <Badge
@@ -102,7 +118,7 @@ function IdeaRow({
               )}
             </div>
 
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground/50">
+            <div className={cn("mt-1.5 flex flex-wrap items-center gap-x-2", IDEAS_HUB_BYLINE_META)}>
               <time dateTime={new Date(idea.createdAt).toISOString()}>
                 {timeAgo(idea.createdAt)}
               </time>
@@ -161,13 +177,19 @@ function IdeaRow({
 
         {/* Description preview */}
         {desc && (
-          <p className="mt-3 text-[13px] leading-[1.7] text-foreground/50 line-clamp-2">
+          <p className={cn("mt-3 line-clamp-2", IDEAS_HUB_DESC)}>
             {truncated ? desc.slice(0, PREVIEW_LEN) + "…" : desc}
           </p>
         )}
 
         {/* Stats */}
-        <div className="mt-4 flex items-center gap-3 text-[11px] text-muted-foreground/40">
+        <div
+          className={cn(
+            "mt-4 flex items-center gap-3 pt-4",
+            IDEAS_HUB_ENGAGEMENT_BORDER,
+            "text-[11px] text-muted-foreground/55",
+          )}
+        >
           <span className="inline-flex items-center gap-1">
             <ThumbsUp className="size-3" aria-hidden />
             <span className="tabular-nums">{votes.up}</span>
@@ -189,12 +211,31 @@ function IdeaRow({
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 
 export default function MyIdeasPage() {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [categoryId, setCategoryId] = useQueryState("category", parseAsString.withDefault(""));
+  const [cycleId, setCycleId] = useQueryState("cycle", parseAsString.withDefault(""));
+  const [academicYearId, setAcademicYearId] = useQueryState("year", parseAsString.withDefault(""));
   const [deleteTarget, setDeleteTarget] = useState<OwnIdeaListItem | null>(
     null,
   );
+
+  const { data: context } = useIdeasContextQuery({ enabled: true });
+  const allAcademicYears = context?.allAcademicYearsForFilter ?? [];
+  const allCycles = context?.allCyclesForFilter ?? [];
+  const cyclesForYear = academicYearId
+    ? allCycles.filter((c) => c.academicYearId === academicYearId)
+    : allCycles;
+  const selectedCycle = cycleId ? allCycles.find((c) => c.id === cycleId) : null;
+  const categories = selectedCycle?.categories ?? [];
+
   const { data, status, error } = useMyIdeasQuery(
-    { page, limit: PAGE_SIZE },
+    {
+      page,
+      limit: PAGE_SIZE,
+      categoryId: categoryId || undefined,
+      cycleId: cycleId || undefined,
+      academicYearId: academicYearId || undefined,
+    },
     { enabled: true },
   );
   const deleteMutation = useDeleteMyIdeaMutation();
@@ -218,63 +259,126 @@ export default function MyIdeasPage() {
   };
 
   return (
-    <div className={`${STAFF_PAGE_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
-      {/* Header */}
-      <header className="space-y-4">
-        <nav aria-label="Breadcrumb">
-          <Link
-            href={ROUTES.IDEAS}
-            className={BACK_LINK_CLASS}
-            aria-label="Return to Ideas Hub"
-          >
-            <ArrowLeft className="size-4 shrink-0" aria-hidden />
-            Ideas Hub
-          </Link>
-        </nav>
-        <div>
-          <h1 className={PAGE_TITLE_CLASS}>My Ideas</h1>
-          <p className={STAFF_DESCRIPTION_CLASS}>
-            View and manage proposals you have submitted.
-          </p>
-          <div className={`mt-4 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
-        </div>
-      </header>
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
+          <li>
+            <Link
+              href={ROUTES.IDEAS}
+              className="transition-colors duration-200 hover:text-foreground"
+            >
+              Ideas Hub
+            </Link>
+          </li>
+          <li className="flex items-center" aria-current="page">
+            <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+            My proposals
+          </li>
+        </ol>
+      </nav>
 
-      {/* Feed */}
       {status === "pending" ? (
-        <div className="flex flex-col items-center py-28">
-          <LoadingState />
+        <div className="flex flex-col items-center py-20">
+          <LoadingState compact />
         </div>
       ) : !ideas.length ? (
-        <div className="flex flex-col items-center py-28 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/[0.08]">
-            <Lightbulb
-              className="size-6 text-muted-foreground/40"
-              aria-hidden
-            />
+        <div className="flex flex-col items-center py-20 text-center">
+          <div className={cn(IDEAS_HUB_EMPTY_ICON, "rounded-xl")}>
+            <Lightbulb className="size-5 text-muted-foreground/50" aria-hidden />
           </div>
-          <p className="mt-5 text-[14px] font-medium text-foreground/80">
+          <p className="mt-3 text-sm font-medium text-foreground/80">
             You haven&apos;t submitted any proposals yet
           </p>
-          <p className="mt-1 text-[12px] text-muted-foreground/50">
+          <p className={cn("mt-0.5", IDEAS_HUB_BYLINE_META)}>
             Head to the Ideas Hub to share your first idea
           </p>
           <Link
             href={ROUTES.IDEAS}
-            className="mt-5 inline-flex h-9 items-center gap-2 rounded-full bg-primary px-5 text-[13px] font-medium text-primary-foreground shadow-sm transition-transform hover:scale-[1.02]"
+            className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-[var(--shadow-card-subtle)] transition-colors duration-200 hover:bg-primary/95"
           >
             Go to Ideas Hub
           </Link>
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between">
-            <p className="tabular-nums text-[11px] text-muted-foreground/40">
+          <div className={IDEAS_HUB_TOOLBAR}>
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+              {allAcademicYears.length > 0 && (
+                <Select
+                  value={academicYearId || "all"}
+                  onValueChange={(v) => {
+                    setAcademicYearId(v === "all" ? "" : v);
+                    setCycleId("");
+                    setCategoryId("");
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All years</SelectItem>
+                    {allAcademicYears.map((y) => (
+                      <SelectItem key={y.id} value={y.id}>
+                        {y.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {cyclesForYear.length > 0 && (
+                <Select
+                  value={cycleId || "all"}
+                  onValueChange={(v) => {
+                    setCycleId(v === "all" ? "" : v);
+                    setCategoryId("");
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                    <SelectValue placeholder="Cycle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All cycles</SelectItem>
+                    {cyclesForYear.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {categories.length > 0 && (
+                <Select
+                  value={categoryId || "all"}
+                  onValueChange={(v) => {
+                    setCategoryId(v === "all" ? "" : v);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All categories</SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {(allAcademicYears.length > 0 || cyclesForYear.length > 0 || categories.length > 0) && (
+                <div className={IDEAS_HUB_TOOLBAR_DIVIDER} aria-hidden />
+              )}
+            </div>
+            <p className={cn("shrink-0 tabular-nums", IDEAS_HUB_COUNT)}>
               {total} proposal{total !== 1 ? "s" : ""}
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className={IDEAS_HUB_FEED_GAP}>
             {ideas.map((idea) => (
               <IdeaRow
                 key={idea.id}
@@ -285,7 +389,7 @@ export default function MyIdeasPage() {
           </div>
 
           {pages > 1 && (
-            <Pagination className="pt-6">
+            <Pagination className={IDEAS_HUB_PAGINATION}>
               <PaginationContent className="gap-1">
                 <PaginationItem>
                   <PaginationPrevious

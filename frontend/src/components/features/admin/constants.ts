@@ -344,6 +344,10 @@ export const FORM_DIALOG_INPUT_CLASS =
 export const FORM_CARD_INPUT_CLASS =
   "h-10 w-full rounded-xl border border-border/80 bg-background text-foreground placeholder:text-muted-foreground/80 text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
 
+/** Dialog textarea — min-h, same focus/hover as input. */
+export const FORM_DIALOG_TEXTAREA_CLASS =
+  "min-h-[11rem] w-full resize-y rounded-xl border border-border/80 bg-background py-3 text-foreground placeholder:text-muted-foreground/80 text-sm leading-relaxed transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
+
 /** DatePicker/DateTimePicker trigger — matches proposal-cycles. Use for academic-years, profile. Design: h-11, border/80. */
 export const DATE_PICKER_INPUT_CLASS =
   "h-11 w-full rounded-xl border border-border/80 bg-background text-foreground text-sm transition-colors duration-200 hover:border-primary/30 focus:border-primary/80 focus:ring-1 focus:ring-primary/[0.08] focus:bg-background aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";

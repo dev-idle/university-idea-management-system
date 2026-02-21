@@ -1,19 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   useIdeasQuery,
   useIdeasContextQuery,
   useVoteIdeaMutation,
 } from "@/hooks/use-ideas";
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
+import { useDwellInView } from "@/hooks/use-dwell-in-view";
 import type { Idea } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   Pagination,
   PaginationContent,
@@ -34,6 +35,7 @@ import {
   ALERT_WARNING_CLASS,
   IDEAS_HUB_CARD_PX,
   IDEAS_HUB_BYLINE_META,
+  BYLINE_META_SEP,
   IDEAS_HUB_ENGAGEMENT_BORDER,
   IDEAS_HUB_ARTICLE_CLASS,
   IDEAS_HUB_AVATAR,
@@ -45,13 +47,17 @@ import {
   IDEAS_HUB_ACTION_UP,
   IDEAS_HUB_ACTION_DOWN,
   IDEAS_HUB_READ_MORE,
-  IDEAS_HUB_ATTACHMENT_CHIP,
+  IDEAS_HUB_ATTACHMENTS_LABEL,
+  IDEAS_HUB_ATTACHMENTS_LIST,
+  IDEAS_HUB_ATTACHMENT_ROW,
   IDEAS_HUB_TAB_BASE,
   IDEAS_HUB_TAB_ACTIVE,
   IDEAS_HUB_TAB_INACTIVE,
   IDEAS_HUB_EMPTY_ICON,
   IDEAS_HUB_CTA_CARD,
   IDEAS_HUB_CTA_ICON,
+  IDEAS_HUB_CTA_TITLE,
+  IDEAS_HUB_CTA_SUBTITLE,
   IDEAS_HUB_FEED_GAP,
   IDEAS_HUB_SPACING,
   IDEAS_HUB_COUNT,
@@ -59,7 +65,6 @@ import {
   IDEAS_HUB_SELECT_TRIGGER,
   IDEAS_HUB_TOOLBAR_DIVIDER,
   IDEAS_HUB_PAGINATION,
-  BORDER_SUBTLE,
 } from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
@@ -70,6 +75,8 @@ import {
   Plus,
   Lightbulb,
   FileText,
+  Clock,
+  Tag,
 } from "lucide-react";
 
 /* ─── Constants ───────────────────────────────────────────────────────────── */
@@ -98,6 +105,109 @@ function fmtDate(d: Date | string): string {
   );
 }
 
+function fmtDateTime(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+const COUNTDOWN_THRESHOLD_DAYS = 3;
+
+/** Returns days remaining (0 = same day, 1 = tomorrow). */
+function getDaysLeft(end: Date, now: Date): number {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  return Math.max(0, Math.ceil((endDay.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)));
+}
+
+/** Format ms to "Xd Xh Xm" or "Xh Xm Xs" (realtime). */
+function formatCountdown(ms: number): string {
+  if (ms <= 0) return "0s";
+  const s = Math.floor(ms / 1000) % 60;
+  const m = Math.floor(ms / (60 * 1000)) % 60;
+  const h = Math.floor(ms / (60 * 60 * 1000)) % 24;
+  const d = Math.floor(ms / (24 * 60 * 60 * 1000));
+  const parts: string[] = [];
+  if (d > 0) parts.push(`${d}d`);
+  if (h > 0) parts.push(`${h}h`);
+  parts.push(`${m}m`);
+  if (d === 0 && h < 1) parts.push(`${s}s`);
+  return parts.join(" ");
+}
+
+/** CTA deadline: always show deadline date/time; when ≤3 days add realtime countdown. */
+function useCtaDeadline(closesAt: string | Date | null) {
+  const [now, setNow] = useState(() => new Date());
+  const end = closesAt ? new Date(closesAt) : null;
+
+  useEffect(() => {
+    if (!end) return;
+    const days = getDaysLeft(end, now);
+    if (days > COUNTDOWN_THRESHOLD_DAYS || end <= now) return;
+    const id = setInterval(() => {
+      const t = new Date();
+      if (end <= t) {
+        clearInterval(id);
+        setNow(t);
+        return;
+      }
+      setNow(t);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [closesAt]);
+
+  if (!end) return { deadline: "New ideas welcome", countdown: null };
+  if (end <= now) return { deadline: "Submission closed", countdown: null };
+
+  const days = getDaysLeft(end, now);
+  const deadlineText = days <= COUNTDOWN_THRESHOLD_DAYS
+    ? fmtDateTime(end)
+    : `Until ${fmtDate(end)}`;
+  let countdownText: string | null = null;
+
+  if (days <= COUNTDOWN_THRESHOLD_DAYS) {
+    const ms = end.getTime() - now.getTime();
+    countdownText = formatCountdown(ms);
+  }
+
+  return { deadline: deadlineText, countdown: countdownText };
+}
+
+function CtaCompose({ closesAt }: { closesAt: string | Date | null }) {
+  const { deadline, countdown } = useCtaDeadline(closesAt);
+  return (
+    <Link href={ROUTES.IDEAS_NEW} className="group/cta block">
+      <div className={IDEAS_HUB_CTA_CARD}>
+        <div className={cn(IDEAS_HUB_CTA_ICON, "group-hover/cta:bg-primary/[0.08] group-hover/cta:text-primary")}>
+          <Lightbulb className="size-4" aria-hidden />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className={cn(IDEAS_HUB_CTA_TITLE, "transition-colors duration-200 group-hover/cta:text-primary")}>Share a proposal</p>
+          <p className={cn(IDEAS_HUB_CTA_SUBTITLE, "flex flex-wrap items-center gap-x-0 gap-y-0 sm:gap-x-0")}>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3 shrink-0 opacity-55" aria-hidden />
+              <span>{deadline}</span>
+            </span>
+            {countdown && (
+              <>
+                <span className={BYLINE_META_SEP} aria-hidden />
+                <span className="tabular-nums">{countdown} left</span>
+              </>
+            )}
+          </p>
+        </div>
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors duration-200 hover:bg-primary/90">
+          <Plus className="size-4" aria-hidden />
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 /* ─── IdeaCard ────────────────────────────────────────────────────────────── */
 
 function IdeaCard({
@@ -105,12 +215,14 @@ function IdeaCard({
   isExpanded,
   onToggleExpand,
   onVote,
+  onDwellComplete,
   votePending,
 }: {
   idea: Idea;
   isExpanded: boolean;
   onToggleExpand: (id: string) => void;
   onVote: (id: string, v: "up" | "down") => void;
+  onDwellComplete: (id: string) => void;
   votePending: boolean;
 }) {
   const votes = idea.voteCounts ?? { up: 0, down: 0 };
@@ -131,38 +243,51 @@ function IdeaCard({
   };
 
   const long = (idea.description?.length ?? 0) > PREVIEW_LEN;
+  const fullContentVisible = isExpanded || !long;
+  const headerRef = useRef<HTMLDivElement>(null);
+  const dwellRef = useDwellInView(
+    fullContentVisible,
+    useCallback(() => onDwellComplete(idea.id), [idea.id, onDwellComplete]),
+    { headerRef },
+  );
 
   return (
-    <article className={IDEAS_HUB_ARTICLE_CLASS}>
-      {/* Byline */}
-      <div className={cn("flex items-center gap-3", IDEAS_HUB_CARD_PX, "pt-5 pb-3")}>
+    <article ref={dwellRef} className={IDEAS_HUB_ARTICLE_CLASS}>
+      {/* Header (byline + title): when card overflows viewport, dwell observes this section */}
+      <div ref={headerRef}>
+        {/* Byline */}
+        <div className={cn("flex items-start gap-3", IDEAS_HUB_CARD_PX, "pt-4 pb-3 sm:pt-5")}>
         <Avatar className={IDEAS_HUB_AVATAR}>
-          <AvatarFallback className="bg-primary/[0.06] text-[11px] font-semibold text-primary/75">
+          <AvatarFallback className="bg-muted/50 text-[11px] font-semibold text-muted-foreground/70">
             {initial}
           </AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className={IDEAS_HUB_AUTHOR}>{author}</span>
-            {idea.isAnonymous && (
-              <Badge
-                variant="outline"
-                className={cn("rounded-full px-2 py-0 font-normal italic", BORDER_SUBTLE, "text-[10px] text-muted-foreground/60")}
-              >
-                Anonymous
-              </Badge>
-            )}
-          </div>
-          <div className={cn("flex items-center gap-1.5 mt-0.5", IDEAS_HUB_BYLINE_META)}>
-            <time dateTime={new Date(idea.createdAt).toISOString()}>
-              {timeAgo(idea.createdAt)}
-            </time>
+          <span className={cn("block truncate", IDEAS_HUB_AUTHOR)}>
+            {author}
+          </span>
+          <div className={IDEAS_HUB_BYLINE_META}>
+            <span className="inline-flex items-center gap-1.5">
+              <Clock className="size-3 shrink-0 opacity-50" aria-hidden />
+              <time dateTime={new Date(idea.createdAt).toISOString()}>
+                {timeAgo(idea.createdAt)}
+              </time>
+            </span>
             {idea.category?.name && (
               <>
-                <span aria-hidden className="opacity-50">·</span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-primary/40" aria-hidden />
+                <span className={BYLINE_META_SEP} aria-hidden />
+                <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
+                  <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
                   {idea.category.name}
+                </span>
+              </>
+            )}
+            {idea.attachments.length > 0 && (
+              <>
+                <span className={BYLINE_META_SEP} aria-hidden />
+                <span className="inline-flex items-center gap-1.5">
+                  <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
+                  {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
                 </span>
               </>
             )}
@@ -170,15 +295,19 @@ function IdeaCard({
         </div>
       </div>
 
-      {/* Content */}
-      <div className={cn(IDEAS_HUB_CARD_PX, "pb-5")}>
-        <Link
-          href={`${ROUTES.IDEAS}/${idea.id}`}
-          className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        >
-          <h2 className={IDEAS_HUB_TITLE}>{idea.title}</h2>
-        </Link>
+        {/* Title */}
+        <div className={cn(IDEAS_HUB_CARD_PX, "pt-0")}>
+          <Link
+            href={`${ROUTES.IDEAS}/${idea.id}`}
+            className="block rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <h2 className={IDEAS_HUB_TITLE}>{idea.title}</h2>
+          </Link>
+        </div>
+      </div>
 
+      {/* Content */}
+      <div className={cn(IDEAS_HUB_CARD_PX, "pb-4 sm:pb-5")}>
         {idea.description && (
           <div className="mt-3">
             <p
@@ -189,27 +318,56 @@ function IdeaCard({
             >
               {idea.description}
             </p>
-            {!isExpanded && long && (
+            {long && !isExpanded && (
               <button
                 type="button"
                 className={cn(IDEAS_HUB_READ_MORE, "cursor-pointer")}
                 onClick={() => onToggleExpand(idea.id)}
+                aria-expanded={false}
+                aria-label="Expand to read full description"
               >
-                Continue reading
+                <ChevronDown className="size-3 shrink-0" aria-hidden />
+                Read more
               </button>
             )}
           </div>
         )}
 
+        {/* Attachments: below description when expanded */}
         {isExpanded && idea.attachments.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {idea.attachments.map((att) => (
-              <span key={att.id} className={IDEAS_HUB_ATTACHMENT_CHIP}>
-                <FileText className="size-3 shrink-0 opacity-55" aria-hidden />
-                <span className="max-w-[160px] truncate">{att.fileName}</span>
-              </span>
-            ))}
+          <div className="mt-4">
+            <p className={IDEAS_HUB_ATTACHMENTS_LABEL}>Attached files</p>
+            <div className={IDEAS_HUB_ATTACHMENTS_LIST}>
+              {idea.attachments.map((att, i) => (
+                <div
+                  key={att.id}
+                  className={cn(
+                    IDEAS_HUB_ATTACHMENT_ROW,
+                    i > 0 && "border-t border-border/20",
+                  )}
+                >
+                  <FileText className="size-3 shrink-0 text-muted-foreground/45" aria-hidden />
+                  <span className="min-w-0 truncate" title={att.fileName}>
+                    {att.fileName}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Show less: at bottom when expanded */}
+        {long && isExpanded && (
+          <button
+            type="button"
+            className={cn(IDEAS_HUB_READ_MORE, "cursor-pointer mt-3")}
+            onClick={() => onToggleExpand(idea.id)}
+            aria-expanded={true}
+            aria-label="Collapse description"
+          >
+            <ChevronUp className="size-3 shrink-0" aria-hidden />
+            Show less
+          </button>
         )}
       </div>
 
@@ -219,7 +377,7 @@ function IdeaCard({
           "flex items-center gap-1",
           IDEAS_HUB_ENGAGEMENT_BORDER,
           IDEAS_HUB_CARD_PX,
-          "py-2.5",
+          "py-2.5 sm:py-3",
         )}
         role="toolbar"
       >
@@ -309,7 +467,7 @@ export function IdeasHubContent() {
     { enabled: true },
   );
   const voteMutation = useVoteIdeaMutation();
-  const { markViewedByAction } = useIdeaViewTracker(expandedId);
+  const { markViewedByAction } = useIdeaViewTracker(null);
 
   if (ctxStatus === "error") throw ctxError;
   if (ideasStatus === "error") throw ideasError;
@@ -331,24 +489,9 @@ export function IdeasHubContent() {
         </Alert>
       )}
 
-      {/* ── Compose CTA (prominent) ──────────────────────────────────── */}
+      {/* ── Compose CTA (subtle) ─────────────────────────────────────── */}
       {canSubmit && (
-        <Link href={ROUTES.IDEAS_NEW} className="group/cta block">
-          <div className={IDEAS_HUB_CTA_CARD}>
-            <div className={cn(IDEAS_HUB_CTA_ICON, "transition-colors duration-200 group-hover/cta:bg-primary/[0.12] group-hover/cta:text-primary")}>
-              <Lightbulb className="size-[18px]" aria-hidden />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-foreground">Share a proposal</p>
-              <p className={cn("mt-0.5", IDEAS_HUB_BYLINE_META)}>
-                {closesAt ? <>Until {fmtDate(closesAt)}</> : "New ideas welcome"}
-              </p>
-            </div>
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/90 text-primary-foreground transition-colors duration-200 group-hover/cta:bg-primary">
-              <Plus className="size-3.5" aria-hidden />
-            </div>
-          </div>
-        </Link>
+        <CtaCompose closesAt={closesAt ?? null} />
       )}
 
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
@@ -461,6 +604,7 @@ export function IdeasHubContent() {
                       markViewedByAction(id);
                       voteMutation.mutate({ ideaId: id, value: v });
                     }}
+                    onDwellComplete={markViewedByAction}
                     votePending={voteMutation.isPending}
                   />
                 ))}

@@ -283,6 +283,92 @@ export const STAFF_HEADER_ACCENT_CLASS =
 export const STAFF_DESCRIPTION_CLASS =
   "mt-2 max-w-md text-sm leading-relaxed text-muted-foreground/80";
 
+/** Idea detail article — modern, editorial layout. */
+export const IDEA_ARTICLE_CLASS =
+  "overflow-hidden rounded-2xl border border-border/55 bg-card shadow-[var(--shadow-card-subtle)]";
+
+/** Idea article byline — editorial, clear hierarchy. */
+export const IDEA_ARTICLE_BYLINE_CLASS =
+  "flex items-start gap-4 px-6 py-5 sm:px-8 sm:py-6";
+
+/** Idea article byline — author name row. */
+export const IDEA_ARTICLE_BYLINE_AUTHOR =
+  "text-[14px] font-semibold leading-snug text-foreground/92";
+
+/** Idea article byline — meta row (time, category, views). Subtle, refined. */
+export const IDEA_ARTICLE_BYLINE_META =
+  "mt-1 flex flex-wrap items-center gap-x-0 gap-y-1 text-[12px] text-muted-foreground/60";
+
+/** Byline/meta vertical separator — consistent across CTA, article, hub cards. */
+export const BYLINE_META_SEP =
+  "mx-2.5 h-3 w-px shrink-0 bg-border/50";
+
+/** Idea article body — comfortable reading. */
+export const IDEA_ARTICLE_BODY_CLASS =
+  "px-6 py-8 sm:px-8 sm:py-10";
+
+/** Idea article title — editorial, clear hierarchy. */
+export const IDEA_ARTICLE_TITLE_CLASS =
+  "font-sans text-[26px] font-bold leading-[1.25] tracking-tight text-foreground sm:text-[32px]";
+
+/** Idea article description — readable line-height. */
+export const IDEA_ARTICLE_DESC_CLASS =
+  "text-[15px] leading-[1.8] text-foreground/75 sm:text-[16px]";
+
+/** Idea article divider — subtle. */
+export const IDEA_ARTICLE_DIVIDER = "border-t border-border/20";
+
+/** Idea article footer (reactions) — minimal. */
+export const IDEA_ARTICLE_FOOTER_CLASS =
+  "flex flex-wrap items-center gap-3 px-6 py-3.5 sm:px-8";
+
+/** Discussion section — aligned with article. */
+export const IDEA_DISCUSSION_CLASS =
+  "overflow-hidden rounded-2xl border border-border/55 bg-card shadow-[var(--shadow-card-subtle)]";
+
+/** Article/Discussion section horizontal padding. */
+export const IDEA_ARTICLE_PX = "px-6 sm:px-8";
+
+/** Article section label (attachments, overlines). */
+export const IDEA_ARTICLE_SECTION_LABEL =
+  "flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/55";
+
+/** Discussion heading. */
+export const IDEA_DISCUSSION_HEADING =
+  "font-sans text-lg font-semibold tracking-tight text-foreground";
+
+/** Discussion subtitle (count, status). */
+export const IDEA_DISCUSSION_SUBTITLE = "mt-0.5 text-[11px] text-muted-foreground/50";
+
+/** Attachment list item — minimal, scannable. */
+export const IDEA_ATTACHMENT_ITEM =
+  "flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]";
+
+/** Comment avatar — subtle, aligned with byline. */
+export const IDEA_COMMENT_AVATAR =
+  "size-7 shrink-0 rounded-full ring-1 ring-border/20";
+
+/** Comment avatar fallback. */
+export const IDEA_COMMENT_AVATAR_FALLBACK =
+  "bg-muted/50 text-[9px] font-semibold text-muted-foreground/60";
+
+/** Comment author + time row. */
+export const IDEA_COMMENT_HEADER =
+  "flex flex-wrap items-baseline gap-x-2 gap-y-0.5";
+
+/** Comment author name. */
+export const IDEA_COMMENT_AUTHOR = "text-[13px] font-medium text-foreground/85";
+
+/** Comment timestamp. */
+export const IDEA_COMMENT_TIME = "text-[11px] text-muted-foreground/40";
+
+/** Comment body text. */
+export const IDEA_COMMENT_BODY =
+  "mt-1 whitespace-pre-wrap text-sm leading-[1.7] text-foreground/70";
+
+/** Attachment file name — compact, truncatable. */
+export const IDEA_ATTACHMENT_NAME = "min-w-0 truncate text-[13px] text-foreground/80";
+
 // ─── Ideas Hub (/ideas) — standardized, minimal ─────────────────────────────
 //
 // Cards, tabs, empty state. Design scale: border/40, muted/[0.04], typography tokens.
@@ -293,15 +379,16 @@ export const IDEAS_HUB_SPACING = "space-y-8";
 /** Idea card horizontal padding (byline, content, engagement). */
 export const IDEAS_HUB_CARD_PX = "px-5 sm:px-6";
 
-/** Idea card byline metadata (time, category). Design: caption, muted/72. */
-export const IDEAS_HUB_BYLINE_META = TYPO_CAPTION + " text-muted-foreground/72";
+/** Idea card byline — meta row (time, category). Subtle, aligned with article. */
+export const IDEAS_HUB_BYLINE_META =
+  "mt-1 flex flex-wrap items-center gap-x-0 gap-y-1 text-[11px] text-muted-foreground/55";
 
 /** Idea card engagement row top border. */
 export const IDEAS_HUB_ENGAGEMENT_BORDER = "border-t border-border/40";
 
-/** Idea card — modern, refined. Subtle hover elevation. */
+/** Idea card — modern, refined. Soft corners, subtle hover. */
 export const IDEAS_HUB_ARTICLE_CLASS =
-  "group relative flex flex-col overflow-hidden rounded-xl border border-border/45 bg-card transition-all duration-200 hover:border-border/55 hover:shadow-[0_2px_12px_-2px_rgba(0,0,0,0.06)]";
+  "group relative flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-200 hover:border-border/60 hover:shadow-[var(--shadow-card-hover)]";
 
 /** Idea card author avatar. */
 export const IDEAS_HUB_AVATAR = "size-9 shrink-0 rounded-full ring-1 ring-border/35";
@@ -330,13 +417,25 @@ export const IDEAS_HUB_ACTION_UP = "text-success";
 /** Idea card engagement action — vote down active. No background. */
 export const IDEAS_HUB_ACTION_DOWN = "text-destructive";
 
-/** Idea card continue reading link. */
+/** Idea card expand/collapse (continue reading / show less). Minimal, subtle. */
 export const IDEAS_HUB_READ_MORE =
-  "mt-1.5 inline-block text-xs font-medium text-muted-foreground/70 transition-colors hover:text-primary/80";
+  "mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground/60 transition-colors hover:text-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm";
 
-/** Idea card attachment chip. Design: border/40, bg/[0.04]. */
+/** Idea card attachment chip (single). Design: border/40, bg/[0.04]. */
 export const IDEAS_HUB_ATTACHMENT_CHIP =
   "inline-flex items-center gap-1 rounded-lg border border-border/40 bg-muted/[0.04] px-2 py-1 " + TYPO_CAPTION + " text-muted-foreground/72";
+
+/** Idea card attachments label (muted caption). */
+export const IDEAS_HUB_ATTACHMENTS_LABEL =
+  "text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50";
+
+/** Idea card attachments list container. Design: subtle, minimal. */
+export const IDEAS_HUB_ATTACHMENTS_LIST =
+  "mt-2 flex flex-col overflow-hidden rounded-lg border border-border/25 bg-muted/[0.02]";
+
+/** Idea card attachment row (inside list). */
+export const IDEAS_HUB_ATTACHMENT_ROW =
+  "flex min-w-0 items-center gap-2.5 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground/65";
 
 /** Ideas Hub view tab — base. */
 export const IDEAS_HUB_TAB_BASE =
@@ -351,12 +450,20 @@ export const IDEAS_HUB_TAB_INACTIVE = "text-muted-foreground/45 hover:text-foreg
 /** Ideas Hub empty state icon container. */
 export const IDEAS_HUB_EMPTY_ICON = "flex size-12 items-center justify-center rounded-xl bg-muted/[0.04]";
 
-/** Ideas Hub CTA card — refined, inviting. Light bg, subtle primary accent. */
+/** Ideas Hub CTA card — minimal, subtle. Hover: aligned with idea cards below. */
 export const IDEAS_HUB_CTA_CARD =
-  "flex items-center gap-4 rounded-xl border border-border/40 bg-primary/[0.03] px-5 py-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.05]";
+  "flex items-center gap-3 rounded-2xl border border-border/50 bg-card px-4 py-4 sm:py-5 transition-all duration-200 hover:border-border/60 hover:shadow-[var(--shadow-card-hover)]";
 
-/** Ideas Hub CTA icon box — subtle primary accent. */
-export const IDEAS_HUB_CTA_ICON = "flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary/80";
+/** Ideas Hub CTA icon — minimal. Hover: muted. */
+export const IDEAS_HUB_CTA_ICON =
+  "flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/40 text-muted-foreground/65 transition-colors duration-200";
+
+/** Ideas Hub CTA title — prominent. */
+export const IDEAS_HUB_CTA_TITLE = "text-[15px] font-semibold text-foreground sm:text-base";
+
+/** Ideas Hub CTA subtitle (deadline · countdown inline). */
+export const IDEAS_HUB_CTA_SUBTITLE =
+  "mt-0.5 text-[11px] text-muted-foreground/55";
 
 /** Ideas Hub feed gap between cards. */
 export const IDEAS_HUB_FEED_GAP = "space-y-6";
@@ -368,15 +475,55 @@ export const IDEAS_HUB_COUNT = "text-[11px] text-muted-foreground/45";
 export const IDEAS_HUB_TOOLBAR =
   "flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-border/30";
 
-/** Ideas Hub filter/select trigger — clean, balanced. Icon fixed right, value truncates. */
+/** Ideas Hub filter/select trigger — clean, balanced. Unified focus. */
 export const IDEAS_HUB_SELECT_TRIGGER =
-  "relative flex h-8 w-[9rem] min-w-[9rem] items-center rounded-lg border border-border/45 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-border/55 hover:bg-muted/[0.04] focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/20 [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
+  "relative flex h-8 w-[9rem] min-w-[9rem] items-center rounded-lg border border-border/80 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
 
 /** Ideas Hub toolbar divider (vertical). */
 export const IDEAS_HUB_TOOLBAR_DIVIDER = "h-3 w-px shrink-0 bg-border/25";
 
 /** Ideas Hub pagination — minimal, compact. */
 export const IDEAS_HUB_PAGINATION = "pt-8";
+
+// ─── New Proposal (/ideas/new) — aligned with Ideas Hub ─────────────────────
+//
+// Form card = idea card structure. Same padding (IDEAS_HUB_CARD_PX), border scale.
+
+/** New proposal form card — matches idea cards. */
+export const IDEAS_NEW_CARD_CLASS =
+  "overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[var(--shadow-card-subtle)]";
+
+/** New proposal form padding — same as idea cards. */
+export const IDEAS_NEW_FORM_PX = IDEAS_HUB_CARD_PX;
+
+/** New proposal form content padding. */
+export const IDEAS_NEW_FORM_PY = "py-6 sm:py-8";
+
+/** New proposal overline (Optional, Terms) — subtle. */
+export const IDEAS_NEW_OVERLINE =
+  "text-[11px] font-medium uppercase tracking-wider text-muted-foreground/55";
+
+/** New proposal label — aligned with form inputs. */
+export const IDEAS_NEW_LABEL = "text-[13px] font-medium text-foreground/92";
+
+/** New proposal hint — muted, compact. */
+export const IDEAS_NEW_HINT = "mt-1 text-[11px] leading-relaxed text-muted-foreground/55";
+
+/** New proposal input — h-11, unified focus (border/70, ring/08). */
+export const IDEAS_NEW_INPUT =
+  "h-11 w-full rounded-xl border border-border/80 bg-background text-sm transition-colors duration-200 placeholder:text-muted-foreground/80 hover:border-primary/30 focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
+
+/** New proposal select trigger — matches input. */
+export const IDEAS_NEW_SELECT_TRIGGER =
+  "!h-11 w-full min-w-0 rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground/80 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:truncate";
+
+/** New proposal textarea — same scale. */
+export const IDEAS_NEW_TEXTAREA =
+  "min-h-[11rem] w-full resize-y rounded-xl border border-border/80 bg-background py-3 text-sm leading-relaxed transition-colors duration-200 placeholder:text-muted-foreground/80 hover:border-primary/30 focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none aria-[invalid=true]:border-destructive/80 aria-[invalid=true]:ring-destructive/10";
+
+/** New proposal actions row — matches engagement border. */
+export const IDEAS_NEW_ACTIONS =
+  "flex flex-wrap items-center gap-3 border-t border-border/40 pt-6";
 
 // ─── Navbar (Staff + Role Manager) — refined, minimal ───────────────────────
 //
