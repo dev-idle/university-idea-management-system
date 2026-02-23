@@ -42,10 +42,7 @@ export const updateAcademicYearBodySchema = z
     if (!name) return;
     const m = name.match(/^(\d{4})-(\d{4})$/);
     if (!m) return;
-    const [startYear, endYear] = [
-      parseInt(m[1], 10),
-      parseInt(m[2], 10),
-    ];
+    const [startYear, endYear] = [parseInt(m[1], 10), parseInt(m[2], 10)];
     if (data.startDate && data.startDate.getFullYear() !== startYear) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -53,7 +50,11 @@ export const updateAcademicYearBodySchema = z
         path: ['startDate'],
       });
     }
-    if (data.endDate && data.endDate !== null && data.endDate.getFullYear() !== endYear) {
+    if (
+      data.endDate &&
+      data.endDate !== null &&
+      data.endDate.getFullYear() !== endYear
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: `End date must be in ${endYear}.`,

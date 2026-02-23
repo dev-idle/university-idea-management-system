@@ -12,9 +12,7 @@ import type { UpdateAcademicYearBody } from './dto/update-academic-year.dto';
 export class AcademicYearsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    body: CreateAcademicYearBody,
-  ): Promise<{
+  async create(body: CreateAcademicYearBody): Promise<{
     id: string;
     name: string;
     startDate: Date;
@@ -58,19 +56,12 @@ export class AcademicYearsService {
   ): void {
     const m = name.trim().match(/^(\d{4})-(\d{4})$/);
     if (!m) return;
-    const [startYear, endYear] = [
-      parseInt(m[1], 10),
-      parseInt(m[2], 10),
-    ];
+    const [startYear, endYear] = [parseInt(m[1], 10), parseInt(m[2], 10)];
     if (startDate && startDate.getFullYear() !== startYear) {
-      throw new BadRequestException(
-        `Start date must be in ${startYear}.`,
-      );
+      throw new BadRequestException(`Start date must be in ${startYear}.`);
     }
     if (endDate && endDate.getFullYear() !== endYear) {
-      throw new BadRequestException(
-        `End date must be in ${endYear}.`,
-      );
+      throw new BadRequestException(`End date must be in ${endYear}.`);
     }
   }
 
@@ -106,9 +97,7 @@ export class AcademicYearsService {
           ? body.startDate
           : existing.startDate;
       const effectiveEnd =
-        body.endDate !== undefined
-          ? body.endDate
-          : existing.endDate;
+        body.endDate !== undefined ? body.endDate : existing.endDate;
       this.validateDatesWithinAcademicYear(
         effectiveName,
         effectiveStart,

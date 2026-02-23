@@ -24,6 +24,23 @@ export function timeAgo(d: Date | string): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+/** Display info for a comment. Respects isAnonymous — never exposes author when anonymous. */
+export function getCommentDisplayInfo(
+  comment: { isAnonymous: boolean; author?: { fullName?: string | null; email: string } | null },
+) {
+  if (comment.isAnonymous || !comment.author) {
+    return { displayName: "Anonymous" as const, avatarInitial: "?" as const };
+  }
+  return {
+    displayName:
+      comment.author.fullName?.trim() || comment.author.email,
+    avatarInitial: getAvatarInitial(
+      comment.author.fullName ?? null,
+      comment.author.email,
+    ),
+  };
+}
+
 /**
  * Avatar initial: first character of full name if available, otherwise first letter of email.
  * Keeps Profile and navbar avatar in sync.

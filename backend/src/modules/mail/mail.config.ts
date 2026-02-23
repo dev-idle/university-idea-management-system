@@ -10,10 +10,14 @@ const DEFAULT_FROM = '"UIMS System" <noreply@gre.ac.uk>';
  * - Supports MAIL_* (Mailtrap) and SMTP_* env vars.
  */
 export function getMailerOptions(config: ConfigService) {
-  const host = config.get<string>('MAIL_HOST') ?? config.get<string>('SMTP_HOST');
-  const port = config.get<number>('MAIL_PORT') ?? config.get<number>('SMTP_PORT');
-  const user = config.get<string>('MAIL_USER') ?? config.get<string>('SMTP_USER');
-  const pass = config.get<string>('MAIL_PASS') ?? config.get<string>('SMTP_PASS');
+  const host =
+    config.get<string>('MAIL_HOST') ?? config.get<string>('SMTP_HOST');
+  const port =
+    config.get<number>('MAIL_PORT') ?? config.get<number>('SMTP_PORT');
+  const user =
+    config.get<string>('MAIL_USER') ?? config.get<string>('SMTP_USER');
+  const pass =
+    config.get<string>('MAIL_PASS') ?? config.get<string>('SMTP_PASS');
 
   const transport =
     host && port != null && user && pass

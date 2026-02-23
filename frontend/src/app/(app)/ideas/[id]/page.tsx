@@ -12,39 +12,31 @@ import {
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
 import { ROUTES } from "@/config/constants";
 import { fetchWithAuthResponse } from "@/lib/api/client";
-import { getAvatarInitial, cn, timeAgo } from "@/lib/utils";
+import { getAvatarInitial, getCommentDisplayInfo, cn, timeAgo } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
+  IDEAS_HUB_SPACING,
+  IDEAS_HUB_ENGAGEMENT_BORDER,
+  IDEAS_HUB_ACTION_BASE,
+  IDEAS_HUB_ACTION_INACTIVE,
+  IDEAS_HUB_ACTION_UP,
+  IDEAS_HUB_ACTION_DOWN,
+  IDEAS_HUB_COUNT,
   IDEA_ARTICLE_CLASS,
-  IDEA_ARTICLE_BYLINE_CLASS,
-  IDEA_ARTICLE_BYLINE_AUTHOR,
-  IDEA_ARTICLE_BYLINE_META,
-  BYLINE_META_SEP,
   IDEA_ARTICLE_BODY_CLASS,
   IDEA_ARTICLE_TITLE_CLASS,
   IDEA_ARTICLE_DESC_CLASS,
   IDEA_ARTICLE_DIVIDER,
-  IDEA_ARTICLE_FOOTER_CLASS,
-  IDEA_DISCUSSION_CLASS,
+  IDEA_DISCUSSION_DIVIDER,
   IDEA_ARTICLE_PX,
   IDEA_ARTICLE_SECTION_LABEL,
-  IDEA_DISCUSSION_HEADING,
-  IDEA_DISCUSSION_SUBTITLE,
   IDEA_ATTACHMENT_ITEM,
-  IDEA_COMMENT_AVATAR,
-  IDEA_COMMENT_AVATAR_FALLBACK,
-  IDEA_COMMENT_HEADER,
-  IDEA_COMMENT_AUTHOR,
-  IDEA_COMMENT_TIME,
-  IDEA_COMMENT_BODY,
   IDEA_ATTACHMENT_NAME,
-  STAFF_HEADER_ACCENT_CLASS,
 } from "@/config/design";
 import {
   BREADCRUMB_GHOST_CLASS,
@@ -53,11 +45,10 @@ import {
 import {
   ThumbsUp,
   ThumbsDown,
+  MessageSquare,
   Download,
   FileText,
   Paperclip,
-  Clock,
-  Tag,
   Eye,
 } from "lucide-react";
 
@@ -119,9 +110,9 @@ function AttachmentItem({ att }: { att: Attachment }) {
 
   return (
     <li className={IDEA_ATTACHMENT_ITEM}>
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
         <FileText
-          className="size-4 shrink-0 text-muted-foreground/40"
+          className="size-3.5 shrink-0 text-muted-foreground/50"
           aria-hidden
         />
         <span className={IDEA_ATTACHMENT_NAME} title={att.fileName}>
@@ -133,7 +124,7 @@ function AttachmentItem({ att }: { att: Attachment }) {
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
+          className="h-7 gap-1 px-2 text-[11px] text-muted-foreground/55 hover:text-foreground/80"
           onClick={() => handle("view")}
           disabled={!!loading}
         >
@@ -143,11 +134,11 @@ function AttachmentItem({ att }: { att: Attachment }) {
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
+          className="h-7 gap-1 px-2 text-[11px] text-muted-foreground/55 hover:text-foreground/80"
           onClick={() => handle("download")}
           disabled={!!loading}
         >
-          <Download className="size-4 shrink-0" aria-hidden />
+          <Download className="size-3 shrink-0" aria-hidden />
           {loading === "download" ? "…" : "Save"}
         </Button>
       </div>
@@ -228,7 +219,7 @@ export default function IdeaDetailPage() {
   };
 
   return (
-    <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
@@ -247,48 +238,37 @@ export default function IdeaDetailPage() {
         </ol>
       </nav>
 
-      {/* ── Article ──────────────────────────────────────────────────── */}
+      {/* ── Article + Discussion (single card) ───────────────────────── */}
       <article
         className={IDEA_ARTICLE_CLASS}
         aria-labelledby="proposal-title"
       >
-        {/* Byline */}
-        <div className={IDEA_ARTICLE_BYLINE_CLASS}>
-          <Avatar className="size-10 shrink-0 rounded-full ring-1 ring-border/20">
-            <AvatarFallback className="bg-muted/50 text-xs font-semibold text-muted-foreground/70">
+        {/* Byline — compact, Facebook-style (avatar + name + meta inline) */}
+        <div className={cn(IDEA_ARTICLE_PX, "flex items-center gap-3 pt-4 pb-3 sm:pt-5 sm:pb-4")}>
+          <Avatar className="size-9 shrink-0 rounded-full ring-1 ring-border/30">
+            <AvatarFallback className="bg-muted/50 text-[11px] font-semibold text-muted-foreground/65">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className={cn("truncate", IDEA_ARTICLE_BYLINE_AUTHOR)}>
+            <p className={cn("truncate text-[13px] font-semibold text-foreground/95", idea.isAnonymous && "italic")}>
               {idea.isAnonymous ? "Anonymous" : authorLabel}
             </p>
-            <div className={IDEA_ARTICLE_BYLINE_META}>
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="size-3 shrink-0 opacity-50" aria-hidden />
-                <time dateTime={new Date(idea.createdAt).toISOString()}>
-                  {timeAgo(idea.createdAt)}
-                </time>
-              </span>
+            <p className={cn("mt-0.5 text-[11px] text-muted-foreground/55 truncate")}>
+              <time dateTime={new Date(idea.createdAt).toISOString()}>{timeAgo(idea.createdAt)}</time>
               {idea.category?.name && (
                 <>
-                  <span className={cn(BYLINE_META_SEP)} aria-hidden />
-                  <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
-                    <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
-                    {idea.category.name}
-                  </span>
+                  <span className="mx-1.5" aria-hidden>·</span>
+                  <span className="font-medium text-primary/75">{idea.category.name}</span>
                 </>
               )}
               {views > 0 && (
                 <>
-                  <span className={cn(BYLINE_META_SEP)} aria-hidden />
-                  <span className="inline-flex items-center gap-1.5">
-                    <Eye className="size-3 shrink-0 opacity-50" aria-hidden />
-                    <span>{views} view{views !== 1 ? "s" : ""}</span>
-                  </span>
+                  <span className="mx-1.5" aria-hidden>·</span>
+                  <span>{views} view{views !== 1 ? "s" : ""}</span>
                 </>
               )}
-            </div>
+            </p>
           </div>
         </div>
 
@@ -299,16 +279,15 @@ export default function IdeaDetailPage() {
           <h1 id="proposal-title" className={IDEA_ARTICLE_TITLE_CLASS}>
             {idea.title}
           </h1>
-          <div className={`mt-5 ${STAFF_HEADER_ACCENT_CLASS}`} aria-hidden />
 
           {idea.description && (
-            <div className={cn("mt-7 whitespace-pre-wrap", IDEA_ARTICLE_DESC_CLASS)}>
+            <div className={cn("whitespace-pre-wrap", IDEA_ARTICLE_DESC_CLASS)}>
               {idea.description}
             </div>
           )}
 
           {idea.attachments.length > 0 && (
-            <div className={cn("mt-9 pt-6", IDEA_ARTICLE_DIVIDER)}>
+            <div className={cn("mt-6 pt-5", IDEA_ARTICLE_DIVIDER)}>
               <h2 className={IDEA_ARTICLE_SECTION_LABEL}>
                 <Paperclip className="size-3.5 shrink-0" aria-hidden />
                 Attachments ({idea.attachments.length})
@@ -322,182 +301,157 @@ export default function IdeaDetailPage() {
           )}
         </div>
 
-        {/* Reactions */}
-        <div className={cn(IDEA_ARTICLE_DIVIDER, IDEA_ARTICLE_FOOTER_CLASS)}>
+        {/* Action bar — Facebook-style: Support | Don't support | Comment | Views */}
+        <div className={cn(IDEAS_HUB_ENGAGEMENT_BORDER, "flex items-center gap-1 px-5 py-2.5 sm:px-6 sm:py-3")}>
           <button
             type="button"
             disabled={!open || voteMutation.isPending}
             onClick={() => handleVote("up")}
             className={cn(
-              "inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors duration-100 disabled:cursor-not-allowed",
-              myVote === "up"
-                ? "text-success"
-                : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
-              (!open || voteMutation.isPending) &&
-                "pointer-events-none opacity-40",
+              IDEAS_HUB_ACTION_BASE,
+              "cursor-pointer",
+              myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
+              (!open || voteMutation.isPending) && "pointer-events-none opacity-50",
             )}
             aria-label="Support"
           >
-            <ThumbsUp className="size-3.5" aria-hidden />
-            <span className="tabular-nums">{votes.up}</span>
+            <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+            {votes.up}
           </button>
-
+          <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
           <button
             type="button"
             disabled={!open || voteMutation.isPending}
             onClick={() => handleVote("down")}
             className={cn(
-              "inline-flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors duration-100 disabled:cursor-not-allowed",
-              myVote === "down"
-                ? "text-destructive"
-                : "text-muted-foreground/50 hover:bg-muted/[0.06] hover:text-foreground/70",
-              (!open || voteMutation.isPending) &&
-                "pointer-events-none opacity-40",
+              IDEAS_HUB_ACTION_BASE,
+              "cursor-pointer",
+              myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
+              (!open || voteMutation.isPending) && "pointer-events-none opacity-50",
             )}
             aria-label="Do not support"
           >
-            <ThumbsDown className="size-3.5" aria-hidden />
-            <span className="tabular-nums">{votes.down}</span>
+            <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+            {votes.down}
           </button>
-
-          <span className="text-[11px] tabular-nums text-muted-foreground/30">
-            {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+          <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
+          <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
+            <MessageSquare className="size-3.5 shrink-0" aria-hidden />
+            {comments.length}
           </span>
-
-          <div className="flex-1" />
-
+          <div className="min-w-0 flex-1" aria-hidden />
+          <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_COUNT, "cursor-default")}>
+            <Eye className="size-3.5 shrink-0" aria-hidden />
+            {views}
+          </span>
           {endsAt && (
-            <p className="text-[11px] text-muted-foreground/40">
-              {open ? (
-                <>Open until {formatDate(endsAt)}</>
-              ) : (
-                <>Closed {formatDate(endsAt)}</>
-              )}
-            </p>
+            <span className={cn("ml-1 shrink-0 text-[11px]", IDEAS_HUB_COUNT)}>
+              {open ? <>· Open {formatDate(endsAt)}</> : <>· Closed</>}
+            </span>
           )}
+        </div>
+
+        {/* Comment input — Facebook-style, right after actions */}
+        <div className={IDEA_DISCUSSION_DIVIDER}>
+          <div className={cn(IDEA_ARTICLE_PX, "pt-4 pb-3 sm:pt-5 sm:pb-4")}>
+            {open ? (
+              <form onSubmit={handleComment} className="flex gap-3">
+                <Avatar className="size-8 shrink-0 rounded-full ring-1 ring-border/25">
+                  <AvatarFallback className="bg-muted/50 text-[10px] font-semibold text-muted-foreground/60">
+                    ?
+                  </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Textarea
+                    id="comment-content"
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                    placeholder="Write a comment…"
+                    rows={2}
+                    className="min-h-[72px] resize-none rounded-2xl border border-border/40 bg-muted/[0.04] px-3.5 py-2.5 text-[13px] placeholder:text-muted-foreground/50 focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/[0.08]"
+                    maxLength={2000}
+                  />
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground/60 hover:text-muted-foreground/80">
+                      <Checkbox
+                        checked={commentAnonymous}
+                        onCheckedChange={(v) => setCommentAnonymous(v === true)}
+                        aria-label="Submit anonymously"
+                        className="h-3.5 w-3.5 rounded border-border/40"
+                      />
+                      Submit anonymously
+                    </label>
+                    <Button
+                      type="submit"
+                      size="sm"
+                      className="h-7 rounded-full px-3 text-[11px] font-medium"
+                      disabled={!commentContent.trim() || createCommentMutation.isPending}
+                    >
+                      {createCommentMutation.isPending ? "Posting…" : "Post"}
+                    </Button>
+                  </div>
+                </div>
+              </form>
+            ) : (
+              <p className="text-[12px] text-muted-foreground/50">
+                {comments.length} comment{comments.length !== 1 ? "s" : ""}
+                {endsAt && " · Closed"}
+              </p>
+            )}
+          </div>
+
+          {/* Comments list — compact, Facebook-style */}
+          <div className={cn(IDEA_ARTICLE_PX, "pb-5 sm:pb-6")}>
+            {commentsStatus === "pending" && (
+              <div className="flex flex-col items-center py-8">
+                <div className={cn("loading-spinner size-5 shrink-0 rounded-full border border-primary/[0.08] border-t-primary")} aria-hidden />
+                <p className="mt-3 text-[11px] text-muted-foreground/50">Loading comments…</p>
+              </div>
+            )}
+            {commentsStatus === "success" && comments.length === 0 && (
+              <p className="py-6 text-center text-[12px] text-muted-foreground/45">
+                No comments yet.{open && " Be the first to share your thoughts."}
+              </p>
+            )}
+            {comments.length > 0 && (
+              <ul className="space-y-0" role="list">
+                {comments.map((c, i) => {
+                  const { displayName, avatarInitial } = getCommentDisplayInfo(c);
+                  return (
+                    <li
+                      key={c.id}
+                      className={cn("flex gap-2.5 py-3", i > 0 && "border-t border-border/15")}
+                    >
+                      <Avatar className="size-7 shrink-0 rounded-full ring-1 ring-border/20">
+                        <AvatarFallback className="bg-muted/50 text-[9px] font-semibold text-muted-foreground/60">
+                          {avatarInitial}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[12px] leading-snug">
+                          <span
+                            className={cn(
+                              "font-semibold text-foreground/95",
+                              displayName === "Anonymous" && "italic text-muted-foreground/55",
+                            )}
+                          >
+                            {displayName}
+                          </span>
+                          <span className="text-muted-foreground/45"> · </span>
+                          <time className="text-muted-foreground/50">{timeAgo(c.createdAt)}</time>
+                        </p>
+                        <p className="mt-0.5 whitespace-pre-wrap text-[13px] leading-[1.5] text-foreground/85">
+                          {c.content}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
       </article>
-
-      {/* ── Discussion ───────────────────────────────────────────────── */}
-      <section
-        className={IDEA_DISCUSSION_CLASS}
-        aria-labelledby="discussion-heading"
-      >
-        {/* Header */}
-        <div className={cn(IDEA_ARTICLE_PX, "py-4 sm:py-5")}>
-          <h2 id="discussion-heading" className={IDEA_DISCUSSION_HEADING}>
-            Discussion
-          </h2>
-          <p className={IDEA_DISCUSSION_SUBTITLE}>
-            {comments.length} comment{comments.length !== 1 ? "s" : ""}
-            {!open && endsAt && " · Closed"}
-          </p>
-        </div>
-
-        <div className={IDEA_ARTICLE_DIVIDER} />
-
-        <div className={cn(IDEA_ARTICLE_PX, "py-5 sm:py-6")}>
-          {/* Comment form */}
-          {open && (
-            <form
-              onSubmit={handleComment}
-              className="mb-6 border-b border-border/20 pb-6"
-            >
-              <Textarea
-                id="comment-content"
-                value={commentContent}
-                onChange={(e) => setCommentContent(e.target.value)}
-                placeholder="Write a comment…"
-                rows={2}
-                className="resize-none rounded-xl border-border/25 bg-transparent text-[14px] placeholder:text-muted-foreground/35 focus-visible:ring-1 focus-visible:ring-primary/[0.08]"
-                maxLength={2000}
-              />
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <label className="flex cursor-pointer items-center gap-2 text-[12px] text-muted-foreground/50">
-                  <Checkbox
-                    checked={commentAnonymous}
-                    onCheckedChange={(v) => setCommentAnonymous(v === true)}
-                    aria-label="Submit anonymously"
-                    className="rounded border-border/40"
-                  />
-                  Anonymous
-                </label>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-8 rounded-full px-4 text-[11px] font-medium"
-                  disabled={
-                    !commentContent.trim() ||
-                    createCommentMutation.isPending
-                  }
-                >
-                  {createCommentMutation.isPending ? "Posting…" : "Post"}
-                </Button>
-              </div>
-            </form>
-          )}
-
-          {/* Comments */}
-          {commentsStatus === "pending" && (
-            <div className="flex flex-col items-center py-12">
-              <div className={cn("loading-spinner size-6 shrink-0 rounded-full border border-primary/[0.08] border-t-primary")} aria-hidden />
-              <p className="mt-4 text-xs text-muted-foreground/50">
-                Loading comments…
-              </p>
-            </div>
-          )}
-          {commentsStatus === "success" && comments.length === 0 && (
-            <p className="py-12 text-center text-sm text-muted-foreground/45">
-              No comments yet.{" "}
-              {open && "Be the first to share your thoughts."}
-            </p>
-          )}
-          {comments.length > 0 && (
-            <ul className="space-y-0" role="list">
-              {comments.map((c, i) => {
-                const name = c.author
-                  ? c.author.fullName?.trim() || c.author.email
-                  : null;
-                const init = c.author
-                  ? getAvatarInitial(c.author.fullName ?? null, c.author.email)
-                  : "?";
-                return (
-                  <li
-                    key={c.id}
-                    className={cn(
-                      "flex gap-3 py-5",
-                      i > 0 && IDEA_ARTICLE_DIVIDER,
-                    )}
-                  >
-                    <Avatar className={IDEA_COMMENT_AVATAR}>
-                      <AvatarFallback className={IDEA_COMMENT_AVATAR_FALLBACK}>
-                        {init}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className={IDEA_COMMENT_HEADER}>
-                        <span className={IDEA_COMMENT_AUTHOR}>
-                          {name ?? (
-                            <span className="italic text-muted-foreground/50">
-                              Anonymous
-                            </span>
-                          )}
-                        </span>
-                        <time className={IDEA_COMMENT_TIME}>
-                          {timeAgo(c.createdAt)}
-                        </time>
-                      </div>
-                      <p className={IDEA_COMMENT_BODY}>
-                        {c.content}
-                      </p>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </section>
     </div>
   );
 }

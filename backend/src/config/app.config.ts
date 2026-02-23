@@ -34,7 +34,10 @@ export function configureApp(
 
   const corsOrigins = config.get<string>('CORS_ORIGINS');
   const origin = corsOrigins
-    ? corsOrigins.split(',').map((s) => s.trim()).filter(Boolean)
+    ? corsOrigins
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
     : true;
   app.enableCors({
     origin,

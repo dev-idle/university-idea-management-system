@@ -47,9 +47,7 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
           level:
             config.get<string>('NODE_ENV') !== 'production' ? 'debug' : 'info',
         },
-        forRoutes: [
-          { path: '*path', method: RequestMethod.ALL },
-        ],
+        forRoutes: [{ path: '*path', method: RequestMethod.ALL }],
       }),
       inject: [ConfigService],
     }),

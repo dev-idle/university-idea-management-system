@@ -8,7 +8,8 @@ import { isRole } from '../constants/roles';
 @Injectable()
 export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(config: ConfigService) {
-    const secret = config.get<string>('JWT_SECRET') ?? 'change-me-in-production';
+    const secret =
+      config.get<string>('JWT_SECRET') ?? 'change-me-in-production';
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,

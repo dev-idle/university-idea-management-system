@@ -30,8 +30,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest<Request>();
     const res = ctx.getResponse<Response>();
-    const isProduction =
-      this.config.get<string>('NODE_ENV') === 'production';
+    const isProduction = this.config.get<string>('NODE_ENV') === 'production';
 
     const status =
       exception instanceof HttpException
@@ -47,8 +46,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       statusCode: status,
       error:
         exception instanceof HttpException
-          ? (exception.getResponse() as { error?: string })?.error ??
-            'Error'
+          ? ((exception.getResponse() as { error?: string })?.error ?? 'Error')
           : 'Internal Server Error',
       message: Array.isArray(message) ? message : [message],
     };

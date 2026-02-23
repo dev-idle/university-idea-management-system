@@ -65,7 +65,8 @@ export class SubmissionCyclesService {
 
   async create(body: CreateCycleBody) {
     const interactionClosesAt =
-      body.interactionClosesAt ?? defaultInteractionClosesAt(body.ideaSubmissionClosesAt);
+      body.interactionClosesAt ??
+      defaultInteractionClosesAt(body.ideaSubmissionClosesAt);
     if (interactionClosesAt <= body.ideaSubmissionClosesAt) {
       throw new BadRequestException(
         'Comments & votes close must be after idea submission closure',
@@ -89,7 +90,9 @@ export class SubmissionCyclesService {
       select: { id: true },
     });
     if (existingByName) {
-      throw new ConflictException('A proposal cycle with this name already exists.');
+      throw new ConflictException(
+        'A proposal cycle with this name already exists.',
+      );
     }
     const cycle = await this.prisma.ideaSubmissionCycle.create({
       data: {
@@ -140,10 +143,7 @@ export class SubmissionCyclesService {
       throw new NotFoundException('Proposal cycle not found');
     }
     const now = new Date();
-    if (
-      cycle.status === STATUS_ACTIVE &&
-      cycle.interactionClosesAt <= now
-    ) {
+    if (cycle.status === STATUS_ACTIVE && cycle.interactionClosesAt <= now) {
       const updated = await this.prisma.ideaSubmissionCycle.update({
         where: { id },
         data: { status: STATUS_CLOSED, wasEverClosed: true },
@@ -171,15 +171,29 @@ export class SubmissionCyclesService {
       throw new NotFoundException('Proposal cycle not found');
     }
     const hasIdeas = (existing._count?.ideas ?? 0) >= 1;
-    const isClosedDisplay = existing.status === STATUS_CLOSED || (existing.status === STATUS_DRAFT && hasIdeas);
-    if (existing.status !== STATUS_DRAFT && existing.status !== STATUS_ACTIVE && existing.status !== STATUS_CLOSED) {
+    const isClosedDisplay =
+      existing.status === STATUS_CLOSED ||
+      (existing.status === STATUS_DRAFT && hasIdeas);
+    if (
+      existing.status !== STATUS_DRAFT &&
+      existing.status !== STATUS_ACTIVE &&
+      existing.status !== STATUS_CLOSED
+    ) {
       throw new BadRequestException('Proposal cycle cannot be updated');
     }
     if (existing.status === STATUS_CLOSED && existing.isLocked) {
-      throw new BadRequestException('Locked proposal cycles cannot be edited. Unlock first.');
+      throw new BadRequestException(
+        'Locked proposal cycles cannot be edited. Unlock first.',
+      );
     }
-    if (isClosedDisplay && existing.status === STATUS_DRAFT && existing.isLocked) {
-      throw new BadRequestException('Locked proposal cycles cannot be edited. Unlock first.');
+    if (
+      isClosedDisplay &&
+      existing.status === STATUS_DRAFT &&
+      existing.isLocked
+    ) {
+      throw new BadRequestException(
+        'Locked proposal cycles cannot be edited. Unlock first.',
+      );
     }
     if (body.name !== undefined) {
       const duplicateByName = await this.prisma.ideaSubmissionCycle.findFirst({
@@ -187,7 +201,9 @@ export class SubmissionCyclesService {
         select: { id: true },
       });
       if (duplicateByName) {
-        throw new ConflictException('A proposal cycle with this name already exists.');
+        throw new ConflictException(
+          'A proposal cycle with this name already exists.',
+        );
       }
     }
     const ideaSubmissionClosesAt =
@@ -197,7 +213,10 @@ export class SubmissionCyclesService {
       (body.ideaSubmissionClosesAt
         ? defaultInteractionClosesAt(body.ideaSubmissionClosesAt)
         : existing.interactionClosesAt);
-    if (body.ideaSubmissionClosesAt != null || body.interactionClosesAt != null) {
+    if (
+      body.ideaSubmissionClosesAt != null ||
+      body.interactionClosesAt != null
+    ) {
       const ay = existing.academicYear;
       assertDatesWithinAcademicYear(
         ideaSubmissionClosesAt,
@@ -250,14 +269,20 @@ export class SubmissionCyclesService {
       throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status !== STATUS_DRAFT && cycle.status !== STATUS_CLOSED) {
-      throw new BadRequestException('Only DRAFT or CLOSED proposal cycles can be activated');
+      throw new BadRequestException(
+        'Only DRAFT or CLOSED proposal cycles can be activated',
+      );
     }
     if (cycle.status === STATUS_CLOSED && cycle.isLocked) {
-      throw new BadRequestException('Locked proposal cycles cannot be activated. Unlock first.');
+      throw new BadRequestException(
+        'Locked proposal cycles cannot be activated. Unlock first.',
+      );
     }
     const hasIdeas = (cycle._count?.ideas ?? 0) >= 1;
     if (cycle.status === STATUS_DRAFT && hasIdeas && cycle.isLocked) {
-      throw new BadRequestException('Locked proposal cycles cannot be activated. Unlock first.');
+      throw new BadRequestException(
+        'Locked proposal cycles cannot be activated. Unlock first.',
+      );
     }
     const now = new Date();
     if (cycle.interactionClosesAt <= now) {
@@ -280,7 +305,9 @@ export class SubmissionCyclesService {
       );
     }
     // When reactivating from CLOSED, ensure wasEverClosed=true so UI shows Edit+Lock correctly.
-    const data: { status: string; wasEverClosed?: boolean } = { status: STATUS_ACTIVE };
+    const data: { status: string; wasEverClosed?: boolean } = {
+      status: STATUS_ACTIVE,
+    };
     if (cycle.status === STATUS_CLOSED) {
       data.wasEverClosed = true;
     }
@@ -301,7 +328,9 @@ export class SubmissionCyclesService {
       throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status !== STATUS_ACTIVE) {
-      throw new BadRequestException('Only active proposal cycles can be closed');
+      throw new BadRequestException(
+        'Only active proposal cycles can be closed',
+      );
     }
     if (cycle.interactionClosesAt > new Date()) {
       throw new BadRequestException(
@@ -326,7 +355,9 @@ export class SubmissionCyclesService {
       throw new NotFoundException('Proposal cycle not found');
     }
     if (cycle.status !== STATUS_ACTIVE) {
-      throw new BadRequestException('Only active proposal cycles can be deactivated');
+      throw new BadRequestException(
+        'Only active proposal cycles can be deactivated',
+      );
     }
     const updated = await this.prisma.ideaSubmissionCycle.update({
       where: { id },
@@ -369,7 +400,13 @@ export class SubmissionCyclesService {
       updatedAt: true,
       _count: { select: { ideas: true } },
       academicYear: {
-        select: { id: true, name: true, startDate: true, endDate: true, isActive: true },
+        select: {
+          id: true,
+          name: true,
+          startDate: true,
+          endDate: true,
+          isActive: true,
+        },
       },
       cycleCategories: {
         select: {
@@ -380,26 +417,30 @@ export class SubmissionCyclesService {
     };
   }
 
-  private mapCycle(
-    row: {
+  private mapCycle(row: {
+    id: string;
+    academicYearId: string;
+    name: string | null;
+    ideaSubmissionClosesAt: Date;
+    interactionClosesAt: Date;
+    status: string;
+    isLocked: boolean;
+    wasEverClosed: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    _count: { ideas: number };
+    academicYear: {
       id: string;
-      academicYearId: string;
-      name: string | null;
-      ideaSubmissionClosesAt: Date;
-      interactionClosesAt: Date;
-      status: string;
-      isLocked: boolean;
-      wasEverClosed: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-      _count: { ideas: number };
-      academicYear: { id: string; name: string; startDate: Date; endDate: Date | null; isActive: boolean };
-      cycleCategories: Array<{
-        categoryId: string;
-        category: { id: string; name: string };
-      }>;
-    },
-  ) {
+      name: string;
+      startDate: Date;
+      endDate: Date | null;
+      isActive: boolean;
+    };
+    cycleCategories: Array<{
+      categoryId: string;
+      category: { id: string; name: string };
+    }>;
+  }) {
     return {
       id: row.id,
       academicYearId: row.academicYearId,
@@ -421,7 +462,12 @@ export class SubmissionCyclesService {
   async lock(id: string) {
     const cycle = await this.prisma.ideaSubmissionCycle.findUnique({
       where: { id },
-      select: { id: true, status: true, wasEverClosed: true, _count: { select: { ideas: true } } },
+      select: {
+        id: true,
+        status: true,
+        wasEverClosed: true,
+        _count: { select: { ideas: true } },
+      },
     });
     if (!cycle) {
       throw new NotFoundException('Proposal cycle not found');

@@ -17,7 +17,10 @@ export async function hashPassword(password: string): Promise<string> {
 /**
  * Verify password against stored hash. Timing-safe.
  */
-export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  stored: string,
+): Promise<boolean> {
   const [saltHex, keyHex] = stored.split(':');
   if (!saltHex || !keyHex) return false;
   const salt = Buffer.from(saltHex, 'hex');

@@ -283,61 +283,66 @@ export const STAFF_HEADER_ACCENT_CLASS =
 export const STAFF_DESCRIPTION_CLASS =
   "mt-2 max-w-md text-sm leading-relaxed text-muted-foreground/80";
 
-/** Idea detail article — modern, editorial layout. */
+/** Idea detail article — aligned with Ideas Hub (border/50, same radius). */
 export const IDEA_ARTICLE_CLASS =
-  "overflow-hidden rounded-2xl border border-border/55 bg-card shadow-[var(--shadow-card-subtle)]";
+  "overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[var(--shadow-card-subtle)]";
 
-/** Idea article byline — editorial, clear hierarchy. */
+/** Idea article byline — matches hub card structure. */
 export const IDEA_ARTICLE_BYLINE_CLASS =
-  "flex items-start gap-4 px-6 py-5 sm:px-8 sm:py-6";
+  "flex items-start gap-3 pt-5 pb-3 sm:pt-6 sm:pb-4 px-5 sm:px-6";
 
-/** Idea article byline — author name row. */
+/** Idea article byline — author (hub style). */
 export const IDEA_ARTICLE_BYLINE_AUTHOR =
-  "text-[14px] font-semibold leading-snug text-foreground/92";
+  "truncate text-[13px] font-medium text-foreground/92";
 
-/** Idea article byline — meta row (time, category, views). Subtle, refined. */
+/** Idea article byline — meta row (hub BYLINE_META). */
 export const IDEA_ARTICLE_BYLINE_META =
-  "mt-1 flex flex-wrap items-center gap-x-0 gap-y-1 text-[12px] text-muted-foreground/60";
+  "mt-1 flex flex-wrap items-center gap-x-0 gap-y-1 text-[11px] text-muted-foreground/55";
 
 /** Byline/meta vertical separator — consistent across CTA, article, hub cards. */
 export const BYLINE_META_SEP =
   "mx-2.5 h-3 w-px shrink-0 bg-border/50";
 
-/** Idea article body — comfortable reading. */
+/** Idea article body — hub card padding. */
 export const IDEA_ARTICLE_BODY_CLASS =
-  "px-6 py-8 sm:px-8 sm:py-10";
+  "pt-0 pb-6 sm:pb-8 px-5 sm:px-6";
 
-/** Idea article title — editorial, clear hierarchy. */
+/** Idea article title — hub typography scale. */
 export const IDEA_ARTICLE_TITLE_CLASS =
-  "font-sans text-[26px] font-bold leading-[1.25] tracking-tight text-foreground sm:text-[32px]";
+  "font-sans text-[22px] font-bold leading-[1.3] tracking-tight text-foreground sm:text-[28px]";
 
-/** Idea article description — readable line-height. */
+/** Idea article description — hub desc scale. */
 export const IDEA_ARTICLE_DESC_CLASS =
-  "text-[15px] leading-[1.8] text-foreground/75 sm:text-[16px]";
+  "mt-4 text-sm leading-[1.65] text-muted-foreground/85 sm:text-[15px]";
 
-/** Idea article divider — subtle. */
-export const IDEA_ARTICLE_DIVIDER = "border-t border-border/20";
+/** Idea article divider — hub engagement border. */
+export const IDEA_ARTICLE_DIVIDER = "border-t border-border/40";
 
-/** Idea article footer (reactions) — minimal. */
+/** Idea article footer (reactions) — hub engagement row. */
 export const IDEA_ARTICLE_FOOTER_CLASS =
-  "flex flex-wrap items-center gap-3 px-6 py-3.5 sm:px-8";
+  "flex flex-wrap items-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5";
 
-/** Discussion section — aligned with article. */
-export const IDEA_DISCUSSION_CLASS =
-  "overflow-hidden rounded-2xl border border-border/55 bg-card shadow-[var(--shadow-card-subtle)]";
+/** Discussion divider — softer than article divider, in-card flow. */
+export const IDEA_DISCUSSION_DIVIDER = "border-t border-border/25";
 
-/** Article/Discussion section horizontal padding. */
-export const IDEA_ARTICLE_PX = "px-6 sm:px-8";
+/** Discussion header — compact, integrated. */
+export const IDEA_DISCUSSION_HEADER_CLASS = "pt-5 pb-3 sm:pt-6 sm:pb-4";
+
+/** Discussion content — comment form + list. */
+export const IDEA_DISCUSSION_CONTENT_CLASS = "pb-5 sm:pb-6";
+
+/** Article/Discussion section horizontal padding — matches hub. */
+export const IDEA_ARTICLE_PX = "px-5 sm:px-6";
 
 /** Article section label (attachments, overlines). */
 export const IDEA_ARTICLE_SECTION_LABEL =
   "flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/55";
 
-/** Discussion heading. */
+/** Discussion heading — subtle, integrated. */
 export const IDEA_DISCUSSION_HEADING =
-  "font-sans text-lg font-semibold tracking-tight text-foreground";
+  "font-sans text-[15px] font-semibold tracking-tight text-foreground/95";
 
-/** Discussion subtitle (count, status). */
+/** Discussion subtitle — muted, compact. */
 export const IDEA_DISCUSSION_SUBTITLE = "mt-0.5 text-[11px] text-muted-foreground/50";
 
 /** Attachment list item — minimal, scannable. */

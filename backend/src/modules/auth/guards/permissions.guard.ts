@@ -36,9 +36,7 @@ export class PermissionsGuard implements CanActivate {
     const hasAnyPermission = requiredPermissions.some((permission) => {
       const allowedRoles = getRolesWithPermission(permission);
       return user.roles.some((r) =>
-        allowedRoles.some(
-          (role) => r.toUpperCase() === role,
-        ),
+        allowedRoles.some((role) => r.toUpperCase() === role),
       );
     });
 

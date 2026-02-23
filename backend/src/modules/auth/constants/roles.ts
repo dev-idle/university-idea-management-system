@@ -31,14 +31,18 @@ export type Permission = (typeof PERMISSIONS)[number];
  * Role → Permission table. Authoritative; enforce exactly.
  * ADMIN: system configuration, users, departments, academic years.
  */
-export const ROLE_PERMISSION_TABLE: Readonly<Record<Role, readonly Permission[]>> = {
+export const ROLE_PERMISSION_TABLE: Readonly<
+  Record<Role, readonly Permission[]>
+> = {
   ADMIN: ['SYSTEM_CONFIG', 'USERS', 'DEPARTMENTS', 'ACADEMIC_YEARS'],
   QA_MANAGER: [],
   QA_COORDINATOR: [],
   STAFF: [],
 };
 
-export function getRolesWithPermission(permission: Permission): readonly Role[] {
+export function getRolesWithPermission(
+  permission: Permission,
+): readonly Role[] {
   return (ROLES as readonly Role[]).filter((role) =>
     ROLE_PERMISSION_TABLE[role].includes(permission),
   );

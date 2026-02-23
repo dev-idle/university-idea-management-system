@@ -46,7 +46,8 @@ export class ExportController {
    */
   @Post('trigger')
   async trigger(
-    @Body(new ZodValidationPipe(triggerExportBodySchema)) body: TriggerExportBody,
+    @Body(new ZodValidationPipe(triggerExportBodySchema))
+    body: TriggerExportBody,
     @CurrentUser() user: AccessTokenPayload,
   ) {
     const sub = user.sub;
@@ -84,7 +85,8 @@ export class ExportController {
     if (!sub) {
       throw new Error('User ID missing');
     }
-    const { cloudinaryUrl, fileName } = await this.exportService.getExportResult(params.id, sub);
+    const { cloudinaryUrl, fileName } =
+      await this.exportService.getExportResult(params.id, sub);
     const fetchRes = await fetch(cloudinaryUrl);
     if (!fetchRes.ok) {
       throw new Error('Export file unavailable');

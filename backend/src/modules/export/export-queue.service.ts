@@ -17,11 +17,13 @@ export interface ExportJobResult {
 
 @Injectable()
 export class ExportQueueService {
-  constructor(
-    @InjectQueue(EXPORT_QUEUE) private readonly queue: Queue,
-  ) {}
+  constructor(@InjectQueue(EXPORT_QUEUE) private readonly queue: Queue) {}
 
-  async addExportJob(userId: string, cycleId: string, type: 'csv' | 'documents'): Promise<Job<ExportJobData, ExportJobResult>> {
+  async addExportJob(
+    userId: string,
+    cycleId: string,
+    type: 'csv' | 'documents',
+  ): Promise<Job<ExportJobData, ExportJobResult>> {
     const jobId = `export-${crypto.randomUUID()}`;
     const job = await this.queue.add(
       type === 'csv' ? 'cycle-csv' : 'cycle-docs',
@@ -34,7 +36,9 @@ export class ExportQueueService {
     return job as Job<ExportJobData, ExportJobResult>;
   }
 
-  async getJob(jobId: string): Promise<Job<ExportJobData, ExportJobResult> | null> {
+  async getJob(
+    jobId: string,
+  ): Promise<Job<ExportJobData, ExportJobResult> | null> {
     const job = await this.queue.getJob(jobId);
     return job ?? null;
   }

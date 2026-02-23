@@ -15,13 +15,15 @@ export class ExportService {
   ) {}
 
   /** List cycles past interactionClosesAt (exportable). Any status: CLOSED, ACTIVE, or DRAFT. */
-  async listExportableCycles(): Promise<Array<{
-    id: string;
-    name: string | null;
-    academicYearName: string;
-    interactionClosesAt: Date;
-    ideaCount: number;
-  }>> {
+  async listExportableCycles(): Promise<
+    Array<{
+      id: string;
+      name: string | null;
+      academicYearName: string;
+      interactionClosesAt: Date;
+      ideaCount: number;
+    }>
+  > {
     const now = new Date();
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
       where: {
@@ -82,7 +84,11 @@ export class ExportService {
     if (!job) {
       throw new NotFoundException('Export job not found or expired.');
     }
-    const data = job.data as { userId: string; cycleId?: string; type?: string };
+    const data = job.data as {
+      userId: string;
+      cycleId?: string;
+      type?: string;
+    };
     if (data.userId !== userId) {
       throw new ForbiddenException('Access denied.');
     }
@@ -125,7 +131,9 @@ export class ExportService {
         `Export not ready. Current status: ${state}.`,
       );
     }
-    const result = job.returnvalue as { cloudinaryUrl: string; fileName: string } | undefined;
+    const result = job.returnvalue as
+      | { cloudinaryUrl: string; fileName: string }
+      | undefined;
     if (!result?.cloudinaryUrl || !result?.fileName) {
       throw new NotFoundException('Export file not found.');
     }

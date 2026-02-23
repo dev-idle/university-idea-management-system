@@ -23,9 +23,7 @@ const userSelect = {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(
-    body: CreateUserBody,
-  ): Promise<{
+  async create(body: CreateUserBody): Promise<{
     id: string;
     email: string;
     fullName: string | null;
@@ -123,7 +121,11 @@ export class UsersService {
 
     const currentUser = await this.prisma.user.findUnique({
       where: { id },
-      select: { roleId: true, role: { select: { name: true } }, departmentId: true },
+      select: {
+        roleId: true,
+        role: { select: { name: true } },
+        departmentId: true,
+      },
     });
     if (!currentUser) throw new NotFoundException('User not found');
 
@@ -210,9 +212,7 @@ export class UsersService {
     }
   }
 
-  async findAll(
-    query: ListUsersQuery,
-  ): Promise<{
+  async findAll(query: ListUsersQuery): Promise<{
     data: Array<{
       id: string;
       email: string;

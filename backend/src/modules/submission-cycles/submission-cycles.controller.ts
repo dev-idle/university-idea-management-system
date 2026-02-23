@@ -15,7 +15,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { SubmissionCyclesService } from './submission-cycles.service';
-import { createCycleBodySchema, type CreateCycleBody } from './dto/create-cycle.dto';
+import {
+  createCycleBodySchema,
+  type CreateCycleBody,
+} from './dto/create-cycle.dto';
 import {
   updateCycleBodySchema,
   cycleIdParamSchema,

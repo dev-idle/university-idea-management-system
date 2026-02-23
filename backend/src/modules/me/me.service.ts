@@ -5,7 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { verifyPassword, hashPassword } from '../../common/crypto/password.util';
+import {
+  verifyPassword,
+  hashPassword,
+} from '../../common/crypto/password.util';
 
 /** Safe profile shape: no password, no internal IDs beyond required. */
 export interface MeProfile {
@@ -108,9 +111,7 @@ export class MeService {
     if (body.address !== undefined) data.address = body.address;
     if (body.gender !== undefined) data.gender = body.gender;
     if (body.dateOfBirth !== undefined) {
-      data.dateOfBirth = body.dateOfBirth
-        ? new Date(body.dateOfBirth)
-        : null;
+      data.dateOfBirth = body.dateOfBirth ? new Date(body.dateOfBirth) : null;
     }
     await this.prisma.user.update({
       where: { id: userId },

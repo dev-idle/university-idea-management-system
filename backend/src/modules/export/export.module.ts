@@ -37,11 +37,7 @@ export class ExportModule {
       module: ExportModule,
       imports: [PrismaModule, CloudinaryModule, ...redisImports],
       controllers: [ExportController],
-      providers: [
-        ExportService,
-        queueProvider,
-        ...processorProvider,
-      ],
+      providers: [ExportService, queueProvider, ...processorProvider],
     };
   }
 }

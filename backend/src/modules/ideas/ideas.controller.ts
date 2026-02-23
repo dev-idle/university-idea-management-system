@@ -65,13 +65,16 @@ export class IdeasController {
     @CurrentUser() user: AccessTokenPayload,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Query('sort') sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments',
+    @Query('sort')
+    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments',
     @Query('categoryId') categoryId?: string,
     @Query('cycleId') cycleId?: string,
   ) {
     const { page: pageNum, limit: limitNum } = parsePagination(page, limit);
     const sortVal =
-      sort === 'mostPopular' || sort === 'mostViewed' || sort === 'latestComments'
+      sort === 'mostPopular' ||
+      sort === 'mostViewed' ||
+      sort === 'latestComments'
         ? sort
         : 'latest';
     return this.ideasService.findAllForActiveYear({
@@ -99,7 +102,10 @@ export class IdeasController {
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   async uploadFile(
-    @UploadedFile() file: { buffer: Buffer; originalname?: string; mimetype?: string } | undefined,
+    @UploadedFile()
+    file:
+      | { buffer: Buffer; originalname?: string; mimetype?: string }
+      | undefined,
   ) {
     if (!file?.buffer) {
       throw new BadRequestException('No file provided.');
@@ -118,7 +124,8 @@ export class IdeasController {
   @Post('attachments/preview')
   @Roles('STAFF', 'ADMIN')
   async previewAttachment(
-    @Body(new ZodValidationPipe(previewAttachmentBodySchema)) body: PreviewAttachmentBody,
+    @Body(new ZodValidationPipe(previewAttachmentBodySchema))
+    body: PreviewAttachmentBody,
   ): Promise<StreamableFile> {
     if (!this.cloudinary.isOurSecureUrl(body.secureUrl)) {
       throw new BadRequestException('Invalid attachment URL.');
@@ -141,7 +148,9 @@ export class IdeasController {
    */
   @Get('attachments/:attachmentId/view')
   @Roles('STAFF', 'ADMIN')
-  async viewAttachment(@Param('attachmentId', ParseUUIDPipe) attachmentId: string): Promise<StreamableFile> {
+  async viewAttachment(
+    @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
+  ): Promise<StreamableFile> {
     const { secureUrl, fileName, mimeType } =
       await this.ideasService.getAttachmentForStream(attachmentId);
     const res = await fetch(secureUrl);
@@ -162,7 +171,9 @@ export class IdeasController {
    */
   @Get('attachments/:attachmentId/download')
   @Roles('STAFF', 'ADMIN')
-  async downloadAttachment(@Param('attachmentId', ParseUUIDPipe) attachmentId: string): Promise<StreamableFile> {
+  async downloadAttachment(
+    @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
+  ): Promise<StreamableFile> {
     const { secureUrl, fileName, mimeType } =
       await this.ideasService.getAttachmentForStream(attachmentId);
     const res = await fetch(secureUrl);
@@ -200,7 +211,9 @@ export class IdeasController {
     @Query('cycleId') cycleId?: string,
     @Query('academicYearId') academicYearId?: string,
   ) {
-    const { page: pageNum, limit: limitNum } = parsePagination(page, limit, { limit: 5 });
+    const { page: pageNum, limit: limitNum } = parsePagination(page, limit, {
+      limit: 5,
+    });
     return this.ideasService.findOwnIdeas(user.sub, {
       page: pageNum,
       limit: limitNum,
@@ -249,7 +262,8 @@ export class IdeasController {
   addAttachmentToMyIdea(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(new ZodValidationPipe(addAttachmentBodySchema)) body: AddAttachmentBody,
+    @Body(new ZodValidationPipe(addAttachmentBodySchema))
+    body: AddAttachmentBody,
   ) {
     return this.ideasService.addAttachmentToOwnIdea(id, user.sub, body);
   }
@@ -304,14 +318,18 @@ export class IdeasController {
   createComment(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(new ZodValidationPipe(createCommentBodySchema)) body: CreateCommentBody,
+    @Body(new ZodValidationPipe(createCommentBodySchema))
+    body: CreateCommentBody,
   ) {
     return this.ideasService.createComment(id, user.sub, body);
   }
 
   @Get(':id')
   @Roles('STAFF', 'ADMIN')
-  findOne(@CurrentUser() user: AccessTokenPayload, @Param('id', ParseUUIDPipe) id: string) {
+  findOne(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
     return this.ideasService.findOne(id, user.sub);
   }
 

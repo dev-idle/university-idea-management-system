@@ -31,7 +31,9 @@ export class CategoriesController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ZodValidationPipe(createCategoryBodySchema))
-    body: { name: string },
+    body: {
+      name: string;
+    },
   ) {
     return this.categoriesService.create(body);
   }

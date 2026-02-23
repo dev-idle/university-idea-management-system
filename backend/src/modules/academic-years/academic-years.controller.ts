@@ -25,15 +25,17 @@ import {
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 @RequirePermission('ACADEMIC_YEARS')
 export class AcademicYearsController {
-  constructor(
-    private readonly academicYearsService: AcademicYearsService,
-  ) {}
+  constructor(private readonly academicYearsService: AcademicYearsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ZodValidationPipe(createAcademicYearBodySchema))
-    body: { name: string; startDate: Date; endDate?: Date },
+    body: {
+      name: string;
+      startDate: Date;
+      endDate?: Date;
+    },
   ) {
     return this.academicYearsService.create(body);
   }
@@ -63,7 +65,9 @@ export class AcademicYearsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param(new ZodValidationPipe(academicYearIdParamSchema))
-    params: { id: string },
+    params: {
+      id: string;
+    },
   ) {
     await this.academicYearsService.remove(params.id);
   }

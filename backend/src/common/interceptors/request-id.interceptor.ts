@@ -17,15 +17,11 @@ const REQUEST_ID_HEADER = 'x-request-id';
  */
 @Injectable()
 export class RequestIdInterceptor implements NestInterceptor {
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<unknown> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const ctx = context.switchToHttp();
     const req = ctx.getRequest<Request>();
     const res = ctx.getResponse();
-    const id =
-      (req.headers[REQUEST_ID_HEADER] as string) ?? randomUUID();
+    const id = (req.headers[REQUEST_ID_HEADER] as string) ?? randomUUID();
     (req as Request & { id: string }).id = id;
     res.setHeader(REQUEST_ID_HEADER, id);
     return next.handle().pipe(tap());

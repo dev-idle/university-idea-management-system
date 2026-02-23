@@ -31,7 +31,9 @@ export class DepartmentsController {
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body(new ZodValidationPipe(createDepartmentBodySchema))
-    body: { name: string },
+    body: {
+      name: string;
+    },
   ) {
     return this.departmentsService.create(body);
   }
@@ -39,7 +41,8 @@ export class DepartmentsController {
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(
-    @Param(new ZodValidationPipe(departmentIdParamSchema)) params: { id: string },
+    @Param(new ZodValidationPipe(departmentIdParamSchema))
+    params: { id: string },
     @Body(new ZodValidationPipe(updateDepartmentBodySchema))
     body: { name?: string },
   ) {
@@ -54,7 +57,10 @@ export class DepartmentsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
-    @Param(new ZodValidationPipe(departmentIdParamSchema)) params: { id: string },
+    @Param(new ZodValidationPipe(departmentIdParamSchema))
+    params: {
+      id: string;
+    },
   ) {
     await this.departmentsService.remove(params.id);
   }

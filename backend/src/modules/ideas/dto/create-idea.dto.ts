@@ -9,7 +9,11 @@ const attachmentRefSchema = z.object({
 });
 
 export const createIdeaBodySchema = z.object({
-  title: z.string().min(1, 'Title is required').max(500).transform((s) => s.trim()),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(500)
+    .transform((s) => s.trim()),
   description: z
     .string()
     .min(1, 'Content is required.')
@@ -19,7 +23,9 @@ export const createIdeaBodySchema = z.object({
   cycleId: z.string().uuid(),
   isAnonymous: z.boolean(),
   termsAccepted: z.literal(true, {
-    errorMap: () => ({ message: 'You must accept the Terms and Conditions to submit.' }),
+    errorMap: () => ({
+      message: 'You must accept the Terms and Conditions to submit.',
+    }),
   }),
   attachments: z.array(attachmentRefSchema).max(10).optional().default([]),
 });

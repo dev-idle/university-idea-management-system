@@ -139,7 +139,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
     if (tokenRecord.expiresAt < new Date()) {
-      await this.prisma.refreshToken.delete({ where: { tokenId: payload.jti } }).catch(() => {});
+      await this.prisma.refreshToken
+        .delete({ where: { tokenId: payload.jti } })
+        .catch(() => {});
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
     const user = tokenRecord.user;

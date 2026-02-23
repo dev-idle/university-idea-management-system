@@ -1,10 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
-import {
-  Processor,
-  WorkerHost,
-} from '@nestjs/bullmq';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -25,14 +22,20 @@ export class ExportProcessor extends WorkerHost {
     super();
   }
 
-  async process(job: Job<ExportJobData, ExportJobResult>): Promise<ExportJobResult> {
+  async process(
+    job: Job<ExportJobData, ExportJobResult>,
+  ): Promise<ExportJobResult> {
     const { cycleId, type } = job.data;
     const cycle = await this.prisma.ideaSubmissionCycle.findUnique({
       where: { id: cycleId },
       include: { academicYear: { select: { name: true } } },
     });
-    const yearSlug = cycle?.academicYear?.name?.replace(/[^a-zA-Z0-9]/g, '-') ?? 'unknown';
-    const cycleSlug = (cycle?.name ?? cycleId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '-');
+    const yearSlug =
+      cycle?.academicYear?.name?.replace(/[^a-zA-Z0-9]/g, '-') ?? 'unknown';
+    const cycleSlug = (cycle?.name ?? cycleId.slice(0, 8)).replace(
+      /[^a-zA-Z0-9]/g,
+      '-',
+    );
     const dateStr = new Date().toISOString().slice(0, 10);
 
     const tmpDir = os.tmpdir();
@@ -64,7 +67,10 @@ export class ExportProcessor extends WorkerHost {
       fs.unlinkSync(zipPath);
 
       const publicId = `export_${cycleId.replace(/-/g, '')}_${type}_${Date.now()}`;
-      const { secureUrl } = await this.cloudinary.uploadExportFile(buffer, publicId);
+      const { secureUrl } = await this.cloudinary.uploadExportFile(
+        buffer,
+        publicId,
+      );
 
       const fileName =
         type === 'csv'
@@ -89,14 +95,19 @@ export class ExportProcessor extends WorkerHost {
     }
   }
 
-  private async addCsvFiles(archive: archiver.Archiver, cycleId: string): Promise<void> {
+  private async addCsvFiles(
+    archive: archiver.Archiver,
+    cycleId: string,
+  ): Promise<void> {
     const csvData = await this.buildCycleCsvData(cycleId);
     for (const [fileName, content] of Object.entries(csvData)) {
       archive.append(content, { name: `csv/${fileName}` });
     }
   }
 
-  private async buildCycleCsvData(cycleId: string): Promise<Record<string, string>> {
+  private async buildCycleCsvData(
+    cycleId: string,
+  ): Promise<Record<string, string>> {
     const result: Record<string, string> = {};
 
     const ideas = await this.prisma.idea.findMany({
@@ -111,7 +122,19 @@ export class ExportProcessor extends WorkerHost {
     const ideaIds = ideas.map((i) => i.id);
 
     result['ideas.csv'] = this.toCsv(
-      ['id', 'title', 'description', 'categoryName', 'cycleName', 'submitterEmail', 'submitterFullName', 'isAnonymous', 'termsAcceptedAt', 'createdAt', 'updatedAt'],
+      [
+        'id',
+        'title',
+        'description',
+        'categoryName',
+        'cycleName',
+        'submitterEmail',
+        'submitterFullName',
+        'isAnonymous',
+        'termsAcceptedAt',
+        'createdAt',
+        'updatedAt',
+      ],
       ideas.map((r) => [
         r.id,
         r.title,
@@ -135,7 +158,16 @@ export class ExportProcessor extends WorkerHost {
         })
       : [];
     result['idea_comments.csv'] = this.toCsv(
-      ['id', 'ideaId', 'userId', 'userEmail', 'userFullName', 'content', 'isAnonymous', 'createdAt'],
+      [
+        'id',
+        'ideaId',
+        'userId',
+        'userEmail',
+        'userFullName',
+        'content',
+        'isAnonymous',
+        'createdAt',
+      ],
       comments.map((r) => [
         r.id,
         r.ideaId,
@@ -185,7 +217,15 @@ export class ExportProcessor extends WorkerHost {
         })
       : [];
     result['idea_attachments.csv'] = this.toCsv(
-      ['id', 'ideaId', 'fileName', 'secureUrl', 'mimeType', 'sizeBytes', 'createdAt'],
+      [
+        'id',
+        'ideaId',
+        'fileName',
+        'secureUrl',
+        'mimeType',
+        'sizeBytes',
+        'createdAt',
+      ],
       attachments.map((r) => [
         r.id,
         r.ideaId,
@@ -213,7 +253,16 @@ export class ExportProcessor extends WorkerHost {
         })
       : [];
     result['users.csv'] = this.toCsv(
-      ['id', 'email', 'fullName', 'role', 'departmentName', 'isActive', 'createdAt', 'updatedAt'],
+      [
+        'id',
+        'email',
+        'fullName',
+        'role',
+        'departmentName',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
       users.map((r) => [
         r.id,
         r.email,
@@ -226,7 +275,9 @@ export class ExportProcessor extends WorkerHost {
       ]),
     );
 
-    const deptIds = [...new Set(users.map((u) => u.departmentId).filter(Boolean))] as string[];
+    const deptIds = [
+      ...new Set(users.map((u) => u.departmentId).filter(Boolean)),
+    ] as string[];
     const depts = deptIds.length
       ? await this.prisma.department.findMany({
           where: { id: { in: deptIds } },
@@ -235,7 +286,12 @@ export class ExportProcessor extends WorkerHost {
       : [];
     result['departments.csv'] = this.toCsv(
       ['id', 'name', 'createdAt', 'updatedAt'],
-      depts.map((r) => [r.id, r.name, r.createdAt.toISOString(), r.updatedAt.toISOString()]),
+      depts.map((r) => [
+        r.id,
+        r.name,
+        r.createdAt.toISOString(),
+        r.updatedAt.toISOString(),
+      ]),
     );
 
     const cycleCategories = await this.prisma.cycleCategory.findMany({
@@ -246,7 +302,12 @@ export class ExportProcessor extends WorkerHost {
     const cats = cycleCategories.map((cc) => cc.category);
     result['categories.csv'] = this.toCsv(
       ['id', 'name', 'createdAt', 'updatedAt'],
-      cats.map((r) => [r.id, r.name, r.createdAt.toISOString(), r.updatedAt.toISOString()]),
+      cats.map((r) => [
+        r.id,
+        r.name,
+        r.createdAt.toISOString(),
+        r.updatedAt.toISOString(),
+      ]),
     );
 
     const cycle = await this.prisma.ideaSubmissionCycle.findUnique({
@@ -255,7 +316,15 @@ export class ExportProcessor extends WorkerHost {
     });
     const years = cycle?.academicYear ? [cycle.academicYear] : [];
     result['academic_years.csv'] = this.toCsv(
-      ['id', 'name', 'startDate', 'endDate', 'isActive', 'createdAt', 'updatedAt'],
+      [
+        'id',
+        'name',
+        'startDate',
+        'endDate',
+        'isActive',
+        'createdAt',
+        'updatedAt',
+      ],
       years.map((r) => [
         r.id,
         r.name,
@@ -269,7 +338,17 @@ export class ExportProcessor extends WorkerHost {
 
     const cycles = cycle ? [cycle] : [];
     result['submission_cycles.csv'] = this.toCsv(
-      ['id', 'academicYearId', 'academicYearName', 'name', 'ideaSubmissionClosesAt', 'interactionClosesAt', 'status', 'createdAt', 'updatedAt'],
+      [
+        'id',
+        'academicYearId',
+        'academicYearName',
+        'name',
+        'ideaSubmissionClosesAt',
+        'interactionClosesAt',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
       cycles.map((r) => [
         r.id,
         r.academicYearId,
@@ -317,15 +396,21 @@ export class ExportProcessor extends WorkerHost {
       try {
         const res = await fetch(att.secureUrl);
         if (!res.ok) {
-          this.logger.warn(`Failed to fetch attachment ${att.id}: ${res.status}`);
+          this.logger.warn(
+            `Failed to fetch attachment ${att.id}: ${res.status}`,
+          );
           done++;
           continue;
         }
         const buf = Buffer.from(await res.arrayBuffer());
         const safeName = att.fileName.replace(/[^\w.-]/g, '_');
-        archive.append(buf, { name: `attachments/${att.ideaId}/${att.id}_${safeName}` });
+        archive.append(buf, {
+          name: `attachments/${att.ideaId}/${att.id}_${safeName}`,
+        });
       } catch (err) {
-        this.logger.warn(`Skip attachment ${att.id}: ${err instanceof Error ? err.message : String(err)}`);
+        this.logger.warn(
+          `Skip attachment ${att.id}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
       done++;
       if (total > 0 && done % 10 === 0) {

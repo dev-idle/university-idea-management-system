@@ -35,7 +35,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
-    @Body(new ZodValidationPipe(loginBodySchema)) body: { email: string; password: string },
+    @Body(new ZodValidationPipe(loginBodySchema))
+    body: { email: string; password: string },
     @Res({ passthrough: true }) res: express.Response,
   ): Promise<{ accessToken: string; user: AuthUser }> {
     const result = await this.authService.login(body.email, body.password);
@@ -45,7 +46,10 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: express.Request, @Res({ passthrough: true }) res: express.Response) {
+  async refresh(
+    @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
+  ) {
     const token = req.cookies?.[this.authService.cookieName];
     const result = await this.authService.refresh(token ?? '');
     if (result.refreshToken != null) {
@@ -56,7 +60,10 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Req() req: express.Request, @Res({ passthrough: true }) res: express.Response): Promise<void> {
+  async logout(
+    @Req() req: express.Request,
+    @Res({ passthrough: true }) res: express.Response,
+  ): Promise<void> {
     const token = req.cookies?.[this.authService.cookieName];
     await this.authService.logout(token);
     this.clearRefreshCookie(res);

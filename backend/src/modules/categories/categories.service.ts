@@ -12,7 +12,9 @@ import type { UpdateCategoryBody } from './dto/update-category.dto';
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(body: CreateCategoryBody): Promise<{ id: string; name: string }> {
+  async create(
+    body: CreateCategoryBody,
+  ): Promise<{ id: string; name: string }> {
     const existing = await this.prisma.category.findFirst({
       where: { name: { equals: body.name, mode: 'insensitive' } },
       select: { id: true },
@@ -61,7 +63,11 @@ export class CategoriesService {
   }
 
   async findAll(): Promise<
-    Array<{ id: string; name: string; _count: { ideas: number; cycleCategories: number } }>
+    Array<{
+      id: string;
+      name: string;
+      _count: { ideas: number; cycleCategories: number };
+    }>
   > {
     const list = await this.prisma.category.findMany({
       select: {
@@ -77,7 +83,10 @@ export class CategoriesService {
   async remove(id: string): Promise<void> {
     const category = await this.prisma.category.findUnique({
       where: { id },
-      select: { id: true, _count: { select: { ideas: true, cycleCategories: true } } },
+      select: {
+        id: true,
+        _count: { select: { ideas: true, cycleCategories: true } },
+      },
     });
     if (!category) {
       throw new NotFoundException('Category not found');

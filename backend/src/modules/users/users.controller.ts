@@ -62,7 +62,11 @@ export class UsersController {
   @Get()
   async findAll(
     @Query(new ZodValidationPipe(listUsersQuerySchema))
-    query: { page: number; limit: number; search?: string },
+    query: {
+      page: number;
+      limit: number;
+      search?: string;
+    },
   ) {
     return this.usersService.findAll(query);
   }

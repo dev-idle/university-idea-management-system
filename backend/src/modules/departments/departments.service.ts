@@ -13,7 +13,9 @@ import type { UpdateDepartmentBody } from './dto/update-department.dto';
 export class DepartmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(body: CreateDepartmentBody): Promise<{ id: string; name: string }> {
+  async create(
+    body: CreateDepartmentBody,
+  ): Promise<{ id: string; name: string }> {
     const existing = await this.prisma.department.findFirst({
       where: { name: { equals: body.name, mode: 'insensitive' } },
       select: { id: true },

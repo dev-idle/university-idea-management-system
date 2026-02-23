@@ -22,13 +22,23 @@ export function parsePagination(
   limit?: string,
   defaults: PaginationDefaults = {},
 ): ParsedPagination {
-  const { page: defaultPage = 1, limit: defaultLimit = 10, maxLimit = 50 } = defaults;
+  const {
+    page: defaultPage = 1,
+    limit: defaultLimit = 10,
+    maxLimit = 50,
+  } = defaults;
 
   const parsedPage = page ? parseInt(page, 10) : defaultPage;
   const parsedLimit = limit ? parseInt(limit, 10) : defaultLimit;
 
   return {
     page: Math.max(1, Number.isFinite(parsedPage) ? parsedPage : defaultPage),
-    limit: Math.max(1, Math.min(maxLimit, Number.isFinite(parsedLimit) ? parsedLimit : defaultLimit)),
+    limit: Math.max(
+      1,
+      Math.min(
+        maxLimit,
+        Number.isFinite(parsedLimit) ? parsedLimit : defaultLimit,
+      ),
+    ),
   };
 }

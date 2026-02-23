@@ -187,10 +187,7 @@ export class CloudinaryService {
   }): Promise<ListResourcesResult> {
     this.ensureConfigured();
     const prefix = options?.prefix ?? CLOUDINARY_IDEA_FOLDER;
-    const maxResults = Math.min(
-      Math.max(1, options?.maxResults ?? 100),
-      500,
-    );
+    const maxResults = Math.min(Math.max(1, options?.maxResults ?? 100), 500);
     const resourceType = options?.resourceType ?? 'raw';
 
     const result = await cloudinary.api.resources({

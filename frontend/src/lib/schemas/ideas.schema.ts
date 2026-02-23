@@ -114,14 +114,19 @@ export const createIdeaBodySchema = z.object({
 
 export type CreateIdeaBody = z.infer<typeof createIdeaBodySchema>;
 
-/** Comment on an idea. Author hidden when isAnonymous. */
-export const ideaCommentSchema = z.object({
-  id: z.string().uuid(),
-  content: z.string(),
-  isAnonymous: z.boolean(),
-  createdAt: z.coerce.date(),
-  author: authorRefSchema.nullable(),
-});
+/** Comment on an idea. When isAnonymous, author MUST be null (enforced by backend + refinement). */
+export const ideaCommentSchema = z
+  .object({
+    id: z.string().uuid(),
+    content: z.string(),
+    isAnonymous: z.boolean(),
+    createdAt: z.coerce.date(),
+    author: authorRefSchema.nullable(),
+  })
+  .refine((c) => !c.isAnonymous || c.author === null, {
+    message: "Anonymous comments must have author=null",
+    path: ["author"],
+  });
 export type IdeaComment = z.infer<typeof ideaCommentSchema>;
 
 export const ideaCommentsResponseSchema = z.array(ideaCommentSchema);

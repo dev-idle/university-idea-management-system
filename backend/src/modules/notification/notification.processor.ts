@@ -29,8 +29,7 @@ export class NotificationProcessor extends WorkerHost {
     private readonly config: ConfigService,
   ) {
     super();
-    this.isProduction =
-      this.config.get<string>('NODE_ENV') === 'production';
+    this.isProduction = this.config.get<string>('NODE_ENV') === 'production';
   }
 
   async process(job: Job<unknown>): Promise<void> {
@@ -108,7 +107,11 @@ export class NotificationProcessor extends WorkerHost {
       ),
     );
 
-    this.logResults(results, qaCoordinators.map((c) => c.email), 'idea');
+    this.logResults(
+      results,
+      qaCoordinators.map((c) => c.email),
+      'idea',
+    );
   }
 
   private async handleCommentCreated(
@@ -160,7 +163,9 @@ export class NotificationProcessor extends WorkerHost {
     }
   }
 
-  private async sendEmailAndCreateNotification<T extends Record<string, unknown>>(params: {
+  private async sendEmailAndCreateNotification<
+    T extends Record<string, unknown>,
+  >(params: {
     to: string;
     userId: string;
     subject: string;
@@ -235,8 +240,6 @@ export class NotificationProcessor extends WorkerHost {
 
     const url =
       this.config.get<string>('MAILTRAP_INBOX_URL') ?? DEFAULT_MAILTRAP_URL;
-    this.logger.log(
-      `[Mail] ${label} → ${to} | View at: ${url}`,
-    );
+    this.logger.log(`[Mail] ${label} → ${to} | View at: ${url}`);
   }
 }

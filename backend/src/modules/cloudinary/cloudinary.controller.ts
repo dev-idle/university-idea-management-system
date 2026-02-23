@@ -70,9 +70,6 @@ export class CloudinaryController {
         'Cloudinary is not configured. Set CLOUDINARY_* env vars.',
       );
     }
-    return this.cloudinary.deleteResources(
-      body.publicIds,
-      body.resource_type,
-    );
+    return this.cloudinary.deleteResources(body.publicIds, body.resource_type);
   }
 }
