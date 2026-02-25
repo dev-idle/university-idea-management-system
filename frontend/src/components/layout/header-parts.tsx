@@ -147,8 +147,8 @@ export function UserMenu({
           type="button"
           className={
             isPill
-              ? `group flex cursor-pointer items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
-              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`
+              ? `group flex cursor-pointer items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.05] focus-visible:outline-none focus-visible:ring-0`
+              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:ring-0`
           }
         >
           <Avatar className={isPill ? "size-7 shrink-0" : "shrink-0"}>
@@ -191,9 +191,9 @@ export function UserMenu({
             </div>
           </div>
         </div>
-        <div className="p-1">
+        <div className="p-1.5">
           <DropdownMenuItem asChild>
-            <Link href={ROUTES.PROFILE} className={`flex items-center gap-2 rounded-md px-3 py-2 ${TYPO_NAV}`}>
+            <Link href={ROUTES.PROFILE} className={`flex items-center gap-2 rounded-md px-2.5 py-2 ${TYPO_NAV}`}>
               <Settings className="size-4 text-muted-foreground/80" aria-hidden />
               Account settings
             </Link>
@@ -202,7 +202,7 @@ export function UserMenu({
           <DropdownMenuItem
             variant="destructive"
             onClick={onLogout}
-            className={`rounded-md px-3 py-2 ${TYPO_NAV}`}
+            className={`rounded-md px-2.5 py-2 ${TYPO_NAV}`}
           >
             <LogOut className="size-4" aria-hidden />
             Sign out

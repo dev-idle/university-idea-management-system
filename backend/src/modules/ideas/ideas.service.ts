@@ -13,11 +13,53 @@ import { EVENTS } from '../notification/constants';
 import type { CreateIdeaBody } from './dto/create-idea.dto';
 import type { VoteIdeaBody } from './dto/vote-idea.dto';
 import type { CreateCommentBody } from './dto/create-comment.dto';
+import type { UpdateCommentBody } from './dto/update-comment.dto';
+import type { LikeCommentBody } from './dto/like-comment.dto';
 import type { UpdateIdeaBody, AddAttachmentBody } from './dto/update-idea.dto';
 
 const STATUS_ACTIVE = 'ACTIVE';
-const STATUS_CLOSED = 'CLOSED';
 const CLOUDINARY_UPLOAD_FOLDER = 'idea-attachments';
+
+/**
+ * All cycles in the active year (for browse mode when no active cycle).
+ * Used for both getContext (closedCyclesForYear) and resolveCycleIdsForIdeas.
+ */
+function allCyclesInYearWhere(activeYearId: string) {
+  return { academicYearId: activeYearId };
+}
+
+/**
+ * Resolve cycle IDs for listing ideas.
+ * - ACTIVE cycle with interaction open: use only that cycle.
+ * - Otherwise: all cycles in the active year (user can browse past cycles).
+ */
+async function resolveCycleIdsForIdeas(
+  prisma: PrismaService,
+  activeYearId: string,
+  cycleId?: string,
+): Promise<string[]> {
+  const now = new Date();
+  const activeCycle = await prisma.ideaSubmissionCycle.findFirst({
+    where: { status: STATUS_ACTIVE, academicYearId: activeYearId },
+    select: { id: true, interactionClosesAt: true },
+  });
+  const interactionOpen = activeCycle && activeCycle.interactionClosesAt > now;
+  if (interactionOpen) return [activeCycle!.id];
+
+  if (cycleId) {
+    const cycle = await prisma.ideaSubmissionCycle.findFirst({
+      where: { id: cycleId, ...allCyclesInYearWhere(activeYearId) },
+      select: { id: true },
+    });
+    return cycle ? [cycle.id] : [];
+  }
+  const all = await prisma.ideaSubmissionCycle.findMany({
+    where: allCyclesInYearWhere(activeYearId),
+    select: { id: true },
+    orderBy: { interactionClosesAt: 'desc' },
+  });
+  return all.map((c) => c.id);
+}
 
 @Injectable()
 export class IdeasService {
@@ -71,20 +113,33 @@ export class IdeasService {
             id: true,
             name: true,
             ideaSubmissionClosesAt: true,
+            interactionClosesAt: true,
             academicYearId: true,
           },
         })
       : null;
     const now = new Date();
     const canSubmit = !!cycle && cycle.ideaSubmissionClosesAt > now;
+    const interactionOpen =
+      !!cycle?.interactionClosesAt && new Date(cycle.interactionClosesAt) > now;
+    const hasActiveCycle = !!cycle && interactionOpen;
 
     let categories: Array<{ id: string; name: string }> = [];
-    if (cycle) {
+    if (cycle && hasActiveCycle) {
       const cycleCategories = await this.prisma.cycleCategory.findMany({
         where: { cycleId: cycle.id },
         select: { category: { select: { id: true, name: true } } },
       });
-      categories = cycleCategories.map((cc) => cc.category);
+      const categoryIdsWithIdeas = await this.prisma.idea.groupBy({
+        by: ['categoryId'],
+        where: { cycleId: cycle.id, categoryId: { not: null } },
+      });
+      const nonEmptyCategoryIds = new Set(
+        categoryIdsWithIdeas.map((g) => g.categoryId!).filter(Boolean),
+      );
+      categories = cycleCategories
+        .map((cc) => cc.category)
+        .filter((cat) => nonEmptyCategoryIds.has(cat.id));
     }
 
     let closedCyclesForYear: Array<{
@@ -92,29 +147,73 @@ export class IdeasService {
       name: string;
       categories: Array<{ id: string; name: string }>;
     }> = [];
-    if (activeYear && !cycle) {
-      const closed = await this.prisma.ideaSubmissionCycle.findMany({
-        where: {
-          academicYearId: activeYear.id,
-          status: STATUS_CLOSED,
-          interactionClosesAt: { lte: now },
-        },
+    if (activeYear && !hasActiveCycle) {
+      const allCycles = await this.prisma.ideaSubmissionCycle.findMany({
+        where: allCyclesInYearWhere(activeYear.id),
         select: { id: true, name: true },
         orderBy: { interactionClosesAt: 'desc' },
       });
-      for (const c of closed) {
+      const cycleIdsWithIdeas = await this.prisma.idea.groupBy({
+        by: ['cycleId'],
+        where: {
+          cycleId: { in: allCycles.map((c) => c.id) },
+        },
+        _count: { id: true },
+      });
+      const nonEmptyCycleIds = new Set(
+        cycleIdsWithIdeas.filter((g) => g._count.id > 0).map((g) => g.cycleId!),
+      );
+      for (const c of allCycles) {
+        if (!nonEmptyCycleIds.has(c.id)) continue;
         const cycleCategories = await this.prisma.cycleCategory.findMany({
           where: { cycleId: c.id },
           select: { category: { select: { id: true, name: true } } },
         });
+        const categoryIdsWithIdeas = await this.prisma.idea.groupBy({
+          by: ['categoryId'],
+          where: { cycleId: c.id, categoryId: { not: null } },
+        });
+        const nonEmptyCategoryIds = new Set(
+          categoryIdsWithIdeas.map((g) => g.categoryId!).filter(Boolean),
+        );
+        const cycleCategoriesWithIdeas = cycleCategories
+          .map((cc) => cc.category)
+          .filter((cat) => nonEmptyCategoryIds.has(cat.id));
         closedCyclesForYear.push({
           id: c.id,
           name: c.name ?? 'Unnamed',
-          categories: cycleCategories.map((cc) => cc.category),
+          categories: cycleCategoriesWithIdeas,
         });
       }
     }
 
+    const { allAcademicYearsForFilter, allCyclesForFilter } =
+      await this.buildMyIdeasFilterOptions(userId);
+
+    return {
+      canSubmit,
+      activeCycleId: hasActiveCycle ? cycle!.id : null,
+      activeCycleName: cycle?.name ?? null,
+      submissionClosesAt: cycle?.ideaSubmissionClosesAt ?? null,
+      interactionClosesAt: cycle?.interactionClosesAt ?? null,
+      activeAcademicYear: activeYear
+        ? { id: activeYear.id, name: activeYear.name }
+        : null,
+      categories,
+      closedCyclesForYear,
+      allCyclesForFilter,
+      allAcademicYearsForFilter,
+    };
+  }
+
+  /**
+   * Filter options for My Ideas page: only years, cycles, and categories where the user has submitted ideas.
+   */
+  getMyIdeasFilters(userId: string) {
+    return this.buildMyIdeasFilterOptions(userId);
+  }
+
+  private async buildMyIdeasFilterOptions(userId: string) {
     const ideasWithCycles = await this.prisma.idea.findMany({
       where: { submittedById: userId, cycleId: { not: null } },
       select: { cycleId: true, cycle: { select: { academicYearId: true } } },
@@ -136,19 +235,7 @@ export class IdeasService {
           })
         : [];
 
-    type CycleForFilter = {
-      id: string;
-      name: string;
-      academicYearId: string;
-      categories: Array<{ id: string; name: string }>;
-    };
-    const allCyclesForFilter: CycleForFilter[] = [];
-    const cycleIdsWithUserIdeas = await this.prisma.idea.findMany({
-      where: { submittedById: userId, cycleId: { not: null } },
-      select: { cycleId: true },
-      distinct: ['cycleId'],
-    });
-    const userCycleIds = cycleIdsWithUserIdeas
+    const userCycleIds = ideasWithCycles
       .map((i) => i.cycleId)
       .filter((id): id is string => !!id);
     const allCycles =
@@ -159,32 +246,41 @@ export class IdeasService {
             orderBy: { interactionClosesAt: 'desc' },
           })
         : [];
+
+    const allCyclesForFilter: Array<{
+      id: string;
+      name: string;
+      academicYearId: string;
+      categories: Array<{ id: string; name: string }>;
+    }> = [];
     for (const c of allCycles) {
-      const cycleCategories = await this.prisma.cycleCategory.findMany({
-        where: { cycleId: c.id },
-        select: { category: { select: { id: true, name: true } } },
+      const userCategoryIds = await this.prisma.idea.findMany({
+        where: {
+          submittedById: userId,
+          cycleId: c.id,
+          categoryId: { not: null },
+        },
+        select: { categoryId: true },
+        distinct: ['categoryId'],
       });
+      const ids = userCategoryIds
+        .map((i) => i.categoryId)
+        .filter((id): id is string => !!id);
+      const categories =
+        ids.length > 0
+          ? await this.prisma.category.findMany({
+              where: { id: { in: ids } },
+              select: { id: true, name: true },
+            })
+          : [];
       allCyclesForFilter.push({
         id: c.id,
         name: c.name ?? 'Unnamed',
         academicYearId: c.academicYearId,
-        categories: cycleCategories.map((cc) => cc.category),
+        categories,
       });
     }
-
-    return {
-      canSubmit,
-      activeCycleId: cycle?.id ?? null,
-      activeCycleName: cycle?.name ?? null,
-      submissionClosesAt: cycle?.ideaSubmissionClosesAt ?? null,
-      activeAcademicYear: activeYear
-        ? { id: activeYear.id, name: activeYear.name }
-        : null,
-      categories,
-      closedCyclesForYear,
-      allCyclesForFilter,
-      allAcademicYearsForFilter,
-    };
+    return { allAcademicYearsForFilter, allCyclesForFilter };
   }
 
   /** Map DB idea to API shape (author hidden when anonymous). Includes voteCounts, myVote, commentCount when provided. */
@@ -254,7 +350,7 @@ export class IdeasService {
   /**
    * List ideas with pagination and sort.
    * - When there is an ACTIVE cycle: only ideas within that cycle.
-   * - When there is no active cycle: all ideas for the active academic year (all cycles).
+   * - When there is no ACTIVE cycle: ideas from all CLOSED cycles in the active academic year.
    * Sort: latest (default), mostPopular, mostViewed, latestComments (by most recent comment).
    * Author is hidden when idea.isAnonymous. Optional userId for myVote.
    */
@@ -276,44 +372,11 @@ export class IdeasService {
     });
     if (!activeYear) return { items: [], total: 0 };
 
-    let cycleIds: string[];
-    if (params.cycleId) {
-      const cycle = await this.prisma.ideaSubmissionCycle.findFirst({
-        where: {
-          id: params.cycleId,
-          academicYearId: activeYear.id,
-          OR: [
-            { status: STATUS_ACTIVE },
-            {
-              status: STATUS_CLOSED,
-              interactionClosesAt: { lte: new Date() },
-            },
-          ],
-        },
-        select: { id: true },
-      });
-      if (!cycle) return { items: [], total: 0 };
-      cycleIds = [cycle.id];
-    } else {
-      const activeCycle = await this.prisma.ideaSubmissionCycle.findFirst({
-        where: { status: STATUS_ACTIVE, academicYearId: activeYear.id },
-        select: { id: true },
-      });
-      if (activeCycle) {
-        cycleIds = [activeCycle.id];
-      } else {
-        const closed = await this.prisma.ideaSubmissionCycle.findMany({
-          where: {
-            academicYearId: activeYear.id,
-            status: STATUS_CLOSED,
-            interactionClosesAt: { lte: new Date() },
-          },
-          select: { id: true },
-          orderBy: { interactionClosesAt: 'desc' },
-        });
-        cycleIds = closed.map((c) => c.id);
-      }
-    }
+    const cycleIds = await resolveCycleIdsForIdeas(
+      this.prisma,
+      activeYear.id,
+      params.cycleId,
+    );
     if (cycleIds.length === 0) return { items: [], total: 0 };
 
     const userId = params.userId;
@@ -346,7 +409,7 @@ export class IdeasService {
       _count: { select: { comments: true, views: true } },
     };
 
-    /* ── Most Popular: sort by (upvotes − downvotes) ──────────────────── */
+    /* ── Most Popular: sort by (upvotes − downvotes), tie-break: comments + 0.01×views ─ */
     if (sort === 'mostPopular') {
       const [allIdeas, total] = await Promise.all([
         this.prisma.idea.findMany({
@@ -355,6 +418,7 @@ export class IdeasService {
             id: true,
             createdAt: true,
             votes: { select: { value: true } },
+            _count: { select: { comments: true, views: true } },
           },
         }),
         this.prisma.idea.count({ where }),
@@ -363,11 +427,14 @@ export class IdeasService {
       const scored = allIdeas.map((idea) => {
         let net = 0;
         for (const v of idea.votes) net += v.value === 'up' ? 1 : -1;
-        return { id: idea.id, createdAt: idea.createdAt, net };
+        const tieBreak = idea._count.comments + 0.01 * idea._count.views;
+        return { id: idea.id, createdAt: idea.createdAt, net, tieBreak };
       });
       scored.sort(
         (a, b) =>
-          b.net - a.net || b.createdAt.getTime() - a.createdAt.getTime(),
+          b.net - a.net ||
+          b.tieBreak - a.tieBreak ||
+          b.createdAt.getTime() - a.createdAt.getTime(),
       );
 
       const pageIds = scored
@@ -498,20 +565,22 @@ export class IdeasService {
         },
         votes: { select: { value: true, userId: true } },
         _count: { select: { comments: true, views: true } },
-        cycle: { select: { interactionClosesAt: true } },
+        cycle: { select: { status: true, ideaSubmissionClosesAt: true, interactionClosesAt: true } },
       },
     });
     if (!idea) throw new NotFoundException('Idea not found.');
     const mapped = this.mapIdeaToResponse(idea, userId);
     return {
       ...mapped,
+      cycleStatus: idea.cycle?.status ?? null,
+      submissionClosesAt: idea.cycle?.ideaSubmissionClosesAt ?? null,
       interactionClosesAt: idea.cycle?.interactionClosesAt ?? null,
     };
   }
 
   /**
-   * Ensure idea exists in active academic year and return its cycle's interactionClosesAt.
-   * Throws NotFoundException if idea not found; BadRequestException if interaction window is closed.
+   * Ensure idea exists in active academic year, cycle is ACTIVE, and interaction window is open.
+   * Throws NotFoundException if idea not found; BadRequestException if cycle closed or interaction window closed.
    */
   private async ensureIdeaInActiveYearAndInteractionOpen(
     ideaId: string,
@@ -522,19 +591,20 @@ export class IdeasService {
     });
     if (!activeYear) throw new NotFoundException('Idea not found.');
 
-    const cycleIds = (
-      await this.prisma.ideaSubmissionCycle.findMany({
-        where: { academicYearId: activeYear.id },
-        select: { id: true },
-      })
-    ).map((c) => c.id);
-    if (cycleIds.length === 0) throw new NotFoundException('Idea not found.');
-
     const idea = await this.prisma.idea.findFirst({
-      where: { id: ideaId, cycleId: { in: cycleIds } },
-      select: { id: true, cycle: { select: { interactionClosesAt: true } } },
+      where: {
+        id: ideaId,
+        cycle: { academicYearId: activeYear.id },
+      },
+      select: { id: true, cycle: { select: { status: true, interactionClosesAt: true } } },
     });
     if (!idea?.cycle) throw new NotFoundException('Idea not found.');
+
+    if (idea.cycle.status !== STATUS_ACTIVE) {
+      throw new BadRequestException(
+        'Voting and commenting are only available during an active proposal cycle.',
+      );
+    }
 
     const interactionClosesAt = idea.cycle.interactionClosesAt;
     if (new Date() >= interactionClosesAt) {
@@ -576,26 +646,50 @@ export class IdeasService {
   }
 
   /** Map DB comment to API shape. Enforces author=null when isAnonymous (never leak identity). */
-  private mapCommentToApi(c: {
-    id: string;
-    content: string;
-    isAnonymous: boolean;
-    createdAt: Date;
-    user?: { id: string; fullName: string | null; email: string };
-  }) {
+  private mapCommentToApi(
+    c: {
+      id: string;
+      content: string;
+      isAnonymous: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      userId: string;
+      parentCommentId: string | null;
+      user?: { id: string; fullName: string | null; email: string };
+      likes?: { userId: string; value: string }[];
+    },
+    currentUserId?: string,
+  ) {
+    const upCount = c.likes?.filter((l) => l.value === 'up').length ?? 0;
+    const downCount = c.likes?.filter((l) => l.value === 'down').length ?? 0;
+    const myReaction = currentUserId
+      ? (c.likes?.find((l) => l.userId === currentUserId)?.value as 'up' | 'down' | undefined) ?? null
+      : null;
+    const isOwn = currentUserId && c.userId === currentUserId;
     return {
       id: c.id,
       content: c.content,
       isAnonymous: c.isAnonymous,
       createdAt: c.createdAt,
-      author: c.isAnonymous ? null : (c.user ? { id: c.user.id, fullName: c.user.fullName, email: c.user.email } : null),
+      updatedAt: c.updatedAt,
+      parentCommentId: c.parentCommentId,
+      likeCount: upCount,
+      dislikeCount: downCount,
+      myReaction,
+      isOwn: !!isOwn,
+      author: c.isAnonymous
+        ? null
+        : c.user
+          ? { id: c.user.id, fullName: c.user.fullName, email: c.user.email }
+          : null,
     };
   }
 
   /**
-   * List comments for an idea. Idea must be in active academic year. Author shown only when !isAnonymous.
+   * List comments for an idea. Idea must be in active academic year.
+   * Returns top-level comments with nested replies. Includes likeCount, myLike, isOwn.
    */
-  async getComments(ideaId: string) {
+  async getComments(ideaId: string, userId: string) {
     const activeYear = await this.prisma.academicYear.findFirst({
       where: { isActive: true },
       select: { id: true },
@@ -624,19 +718,55 @@ export class IdeasService {
         content: true,
         isAnonymous: true,
         createdAt: true,
+        updatedAt: true,
+        userId: true,
+        parentCommentId: true,
         user: { select: { id: true, fullName: true, email: true } },
+        likes: { select: { userId: true, value: true } },
       },
     });
 
-    return comments.map((c) => this.mapCommentToApi(c));
+    const mapped = comments.map((c) =>
+      this.mapCommentToApi(
+        { ...c, likes: c.likes as { userId: string; value: string }[] },
+        userId,
+      ),
+    );
+
+    type CommentNode = (typeof mapped)[0] & { replies: CommentNode[] };
+    const byId = new Map<string, CommentNode>(
+      mapped.map((m) => [m.id, { ...m, replies: [] }]),
+    );
+    const roots: CommentNode[] = [];
+    for (const m of mapped) {
+      const node = byId.get(m.id)!;
+      if (!m.parentCommentId) {
+        roots.push(node);
+      } else {
+        const parent = byId.get(m.parentCommentId);
+        if (parent) parent.replies.push(node);
+        else roots.push(node);
+      }
+    }
+    return roots;
   }
 
   /**
    * Create a comment on an idea. Author is stored in DB; display is anonymous when isAnonymous is true.
    * Idea must be in active academic year and interaction window must be open.
+   * If parentCommentId provided, creates a reply; parent must belong to same idea.
    */
   async createComment(ideaId: string, userId: string, body: CreateCommentBody) {
     await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
+
+    if (body.parentCommentId) {
+      const parent = await this.prisma.ideaComment.findFirst({
+        where: { id: body.parentCommentId, ideaId },
+        select: { id: true, parentCommentId: true },
+      });
+      if (!parent)
+        throw new BadRequestException('Parent comment not found or does not belong to this idea.');
+    }
 
     const comment = await this.prisma.ideaComment.create({
       data: {
@@ -644,20 +774,25 @@ export class IdeasService {
         userId,
         content: body.content,
         isAnonymous: body.isAnonymous ?? false,
+        parentCommentId: body.parentCommentId ?? null,
       },
       select: {
         id: true,
         content: true,
         isAnonymous: true,
         createdAt: true,
+        updatedAt: true,
+        userId: true,
+        parentCommentId: true,
         user: { select: { id: true, fullName: true, email: true } },
         idea: { select: { title: true, submittedById: true } },
+        likes: { select: { userId: true, value: true } },
       },
     });
 
-    // Emit event for multi-channel notifications (Email + In-app)
+    // Emit event for multi-channel notifications (Email + In-app) — only for top-level comments to idea author
     const recipientId = comment.idea.submittedById;
-    if (recipientId && recipientId !== userId) {
+    if (recipientId && recipientId !== userId && !body.parentCommentId) {
       const isAnonymous = body.isAnonymous ?? false;
       const commenterDisplayName = isAnonymous
         ? 'Anonymous'
@@ -674,7 +809,122 @@ export class IdeasService {
       });
     }
 
-    return this.mapCommentToApi(comment);
+    return this.mapCommentToApi(
+      { ...comment, likes: (comment.likes ?? []) as { userId: string; value: string }[] },
+      userId,
+    );
+  }
+
+  /**
+   * Update own comment. Idea must be in active academic year and interaction window must be open.
+   */
+  async updateComment(
+    ideaId: string,
+    commentId: string,
+    userId: string,
+    body: UpdateCommentBody,
+  ) {
+    await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
+
+    const comment = await this.prisma.ideaComment.findFirst({
+      where: { id: commentId, ideaId },
+      select: { id: true, userId: true },
+    });
+    if (!comment) throw new NotFoundException('Comment not found.');
+    if (comment.userId !== userId)
+      throw new BadRequestException('You can only edit your own comments.');
+
+    const updated = await this.prisma.ideaComment.update({
+      where: { id: commentId },
+      data: { content: body.content },
+      select: {
+        id: true,
+        content: true,
+        isAnonymous: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        parentCommentId: true,
+        user: { select: { id: true, fullName: true, email: true } },
+        likes: { select: { userId: true, value: true } },
+      },
+    });
+    return this.mapCommentToApi(
+      { ...updated, likes: updated.likes as { userId: string; value: string }[] },
+      userId,
+    );
+  }
+
+  /**
+   * Delete own comment. Idea must be in active academic year and interaction window must be open.
+   */
+  async deleteComment(ideaId: string, commentId: string, userId: string): Promise<void> {
+    await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
+
+    const comment = await this.prisma.ideaComment.findFirst({
+      where: { id: commentId, ideaId },
+      select: { userId: true },
+    });
+    if (!comment) throw new NotFoundException('Comment not found.');
+    if (comment.userId !== userId)
+      throw new BadRequestException('You can only delete your own comments.');
+
+    await this.prisma.ideaComment.delete({ where: { id: commentId } });
+  }
+
+  /**
+   * Set or toggle like/dislike on a comment. Idea must be in active academic year and interaction window must be open.
+   * value: 'up' = like, 'down' = dislike. Clicking same value removes; clicking opposite switches.
+   */
+  async likeComment(ideaId: string, commentId: string, userId: string, body: LikeCommentBody) {
+    await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
+
+    const comment = await this.prisma.ideaComment.findFirst({
+      where: { id: commentId, ideaId },
+      select: { id: true },
+    });
+    if (!comment) throw new NotFoundException('Comment not found.');
+
+    const existing = await this.prisma.ideaCommentLike.findUnique({
+      where: { commentId_userId: { commentId, userId } },
+    });
+
+    if (existing) {
+      if (existing.value === body.value) {
+        await this.prisma.ideaCommentLike.delete({
+          where: { commentId_userId: { commentId, userId } },
+        });
+      } else {
+        await this.prisma.ideaCommentLike.update({
+          where: { commentId_userId: { commentId, userId } },
+          data: { value: body.value },
+        });
+      }
+    } else {
+      await this.prisma.ideaCommentLike.create({
+        data: { commentId, userId, value: body.value },
+      });
+    }
+
+    const updated = await this.prisma.ideaComment.findUnique({
+      where: { id: commentId },
+      select: {
+        id: true,
+        content: true,
+        isAnonymous: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        parentCommentId: true,
+        user: { select: { id: true, fullName: true, email: true } },
+        likes: { select: { userId: true, value: true } },
+      },
+    });
+    if (!updated) throw new NotFoundException('Comment not found.');
+    return this.mapCommentToApi(
+      { ...updated, likes: updated.likes as { userId: string; value: string }[] },
+      userId,
+    );
   }
 
   /**
@@ -1016,7 +1266,12 @@ export class IdeasService {
       select: {
         id: true,
         cycleId: true,
-        cycle: { select: { ideaSubmissionClosesAt: true } },
+        cycle: {
+          select: {
+            status: true,
+            ideaSubmissionClosesAt: true,
+          },
+        },
         attachments: { select: { cloudinaryPublicId: true } },
       },
     });
@@ -1028,7 +1283,8 @@ export class IdeasService {
    * List the current user's own ideas with pagination (across all cycles / years).
    * Sorted newest‑first. Returns submissionClosesAt per idea so the frontend
    * can determine whether editing is still allowed.
-   * Optional filters: categoryId, cycleId.
+   * Optional filters: categoryId, cycleId, academicYearId.
+   * cycleId and academicYearId are restricted to cycles/years where the user has ideas.
    */
   async findOwnIdeas(
     userId: string,
@@ -1042,14 +1298,46 @@ export class IdeasService {
   ) {
     const page = Math.max(1, params.page ?? 1);
     const limit = Math.min(50, Math.max(1, params.limit ?? 5));
+
+    const userCyclesData = await this.prisma.idea.findMany({
+      where: { submittedById: userId, cycleId: { not: null } },
+      select: {
+        cycleId: true,
+        cycle: { select: { academicYearId: true } },
+      },
+      distinct: ['cycleId'],
+    });
+    const allowedCycleIds = userCyclesData
+      .map((i) => i.cycleId)
+      .filter((id): id is string => !!id);
+    const allowedYearIds = [
+      ...new Set(
+        userCyclesData
+          .map((i) => i.cycle?.academicYearId)
+          .filter((id): id is string => !!id),
+      ),
+    ];
+
+    const cycleIdFilter =
+      params.cycleId && allowedCycleIds.includes(params.cycleId)
+        ? params.cycleId
+        : undefined;
+    const yearIdFilter =
+      params.academicYearId &&
+      allowedYearIds.includes(params.academicYearId) &&
+      !cycleIdFilter
+        ? params.academicYearId
+        : undefined;
+
     const where = {
       submittedById: userId,
+      ...(cycleIdFilter
+        ? { cycleId: cycleIdFilter }
+        : { cycleId: { in: allowedCycleIds } }),
       ...(params.categoryId && { categoryId: params.categoryId }),
-      ...(params.cycleId && { cycleId: params.cycleId }),
-      ...(params.academicYearId &&
-        !params.cycleId && {
-          cycle: { academicYearId: params.academicYearId },
-        }),
+      ...(yearIdFilter && {
+        cycle: { academicYearId: yearIdFilter },
+      }),
     };
 
     const [items, total] = await Promise.all([
@@ -1134,6 +1422,7 @@ export class IdeasService {
         _count: { select: { comments: true, views: true } },
         cycle: {
           select: {
+            status: true,
             ideaSubmissionClosesAt: true,
             interactionClosesAt: true,
             cycleCategories: {
@@ -1148,6 +1437,7 @@ export class IdeasService {
     const mapped = this.mapIdeaToResponse(idea, userId);
     return {
       ...mapped,
+      cycleStatus: idea.cycle?.status ?? null,
       submissionClosesAt: idea.cycle?.ideaSubmissionClosesAt ?? null,
       interactionClosesAt: idea.cycle?.interactionClosesAt ?? null,
       categories: idea.cycle?.cycleCategories.map((cc) => cc.category) ?? [],
@@ -1156,12 +1446,22 @@ export class IdeasService {
 
   /**
    * Update own idea text fields. STAFF only, ownership verified.
-   * Blocked when the submission closure date has passed.
+   * Blocked when cycle is not ACTIVE or submission closure date has passed.
    */
   async updateOwnIdea(ideaId: string, userId: string, body: UpdateIdeaBody) {
     const idea = await this.ensureOwnIdea(ideaId, userId);
 
-    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+    if (!idea.cycle) {
+      throw new BadRequestException(
+        'Editing is no longer available. The proposal cycle no longer exists.',
+      );
+    }
+    if (idea.cycle.status !== STATUS_ACTIVE) {
+      throw new BadRequestException(
+        'Editing is no longer available. The proposal cycle has closed.',
+      );
+    }
+    if (new Date() >= idea.cycle.ideaSubmissionClosesAt) {
       throw new BadRequestException(
         'Editing is no longer available. The submission period has closed.',
       );
@@ -1213,13 +1513,23 @@ export class IdeasService {
 
   /**
    * Delete own idea. STAFF only, ownership verified.
-   * Blocked when the submission closure date has passed (same as edit).
+   * Blocked when cycle is not ACTIVE or submission closure date has passed (same as edit).
    * Cascade: comments, votes, attachments are deleted via Prisma; Cloudinary cleaned up.
    */
   async deleteOwnIdea(ideaId: string, userId: string): Promise<void> {
     const idea = await this.ensureOwnIdea(ideaId, userId);
 
-    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+    if (!idea.cycle) {
+      throw new BadRequestException(
+        'Deletion is no longer available. The proposal cycle no longer exists.',
+      );
+    }
+    if (idea.cycle.status !== STATUS_ACTIVE) {
+      throw new BadRequestException(
+        'Deletion is no longer available. The proposal cycle has closed.',
+      );
+    }
+    if (new Date() >= idea.cycle.ideaSubmissionClosesAt) {
       throw new BadRequestException(
         'Deletion is no longer available. The submission period has closed.',
       );
@@ -1239,7 +1549,7 @@ export class IdeasService {
 
   /**
    * Add an attachment to own idea. STAFF only, ownership verified.
-   * Blocked after submission closure. Max 10 attachments per idea.
+   * Blocked when cycle is not ACTIVE or submission closure has passed. Max 10 attachments per idea.
    */
   async addAttachmentToOwnIdea(
     ideaId: string,
@@ -1248,7 +1558,17 @@ export class IdeasService {
   ) {
     const idea = await this.ensureOwnIdea(ideaId, userId);
 
-    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+    if (!idea.cycle) {
+      throw new BadRequestException(
+        'Document management is no longer available. The proposal cycle no longer exists.',
+      );
+    }
+    if (idea.cycle.status !== STATUS_ACTIVE) {
+      throw new BadRequestException(
+        'Document management is no longer available. The proposal cycle has closed.',
+      );
+    }
+    if (new Date() >= idea.cycle.ideaSubmissionClosesAt) {
       throw new BadRequestException(
         'Document management is no longer available. The submission period has closed.',
       );
@@ -1275,7 +1595,7 @@ export class IdeasService {
 
   /**
    * Remove an attachment from own idea. STAFF only, ownership verified.
-   * Blocked after submission closure. Cleans up Cloudinary resource.
+   * Blocked when cycle is not ACTIVE or submission closure has passed. Cleans up Cloudinary resource.
    */
   async removeAttachmentFromOwnIdea(
     ideaId: string,
@@ -1284,7 +1604,17 @@ export class IdeasService {
   ) {
     const idea = await this.ensureOwnIdea(ideaId, userId);
 
-    if (!idea.cycle || new Date() >= idea.cycle.ideaSubmissionClosesAt) {
+    if (!idea.cycle) {
+      throw new BadRequestException(
+        'Document management is no longer available. The proposal cycle no longer exists.',
+      );
+    }
+    if (idea.cycle.status !== STATUS_ACTIVE) {
+      throw new BadRequestException(
+        'Document management is no longer available. The proposal cycle has closed.',
+      );
+    }
+    if (new Date() >= idea.cycle.ideaSubmissionClosesAt) {
       throw new BadRequestException(
         'Document management is no longer available. The submission period has closed.',
       );

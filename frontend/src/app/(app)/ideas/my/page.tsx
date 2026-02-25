@@ -7,11 +7,11 @@ import {
   useMyIdeasQuery,
   useDeleteMyIdeaMutation,
   useVoteIdeaMutation,
-  useIdeasContextQuery,
+  useMyIdeasFiltersQuery,
 } from "@/hooks/use-ideas";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { cn, timeAgo, getAvatarInitial } from "@/lib/utils";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ALERT_DIALOG_ERROR_CLASS } from "@/components/features/admin/constants";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,9 +60,10 @@ import {
   IDEAS_HUB_ATTACHMENTS_LABEL,
   IDEAS_HUB_ATTACHMENTS_LIST,
   IDEAS_HUB_ATTACHMENT_ROW,
-  IDEAS_MY_ACTIONS_TRIGGER,
-  IDEAS_MY_ACTIONS_MENU,
-  IDEAS_MY_ACTIONS_ITEM,
+  IDEAS_ACTIONS_TRIGGER,
+  IDEAS_ACTIONS_MENU,
+  IDEAS_ACTIONS_ITEM,
+  IDEAS_ACTIONS_ITEM_DESTRUCTIVE,
   IDEAS_MY_STATUS_VOTING,
   IDEAS_MY_STATUS_CLOSED,
   IDEAS_HUB_FEED_GAP,
@@ -71,6 +73,7 @@ import {
   IDEAS_HUB_TOOLBAR,
   IDEAS_HUB_SELECT_TRIGGER,
   IDEAS_HUB_TOOLBAR_DIVIDER,
+  IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
 import {
   BREADCRUMB_GHOST_CLASS,
@@ -108,21 +111,17 @@ const PREVIEW_LEN = 200;
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
-function isEditable(idea: OwnIdeaListItem): boolean {
-  if (!idea.submissionClosesAt) return false;
-  return new Date() < new Date(idea.submissionClosesAt);
-}
-
 /** Top-right status: "editable" | "voting" | "closed".
- * editable: before submission deadline → 3-dot menu (Edit/Delete)
- * voting: past deadline, comment/vote still open → descriptive text
- * closed: cycle closed → lock + red Closed */
+ * editable: cycle ACTIVE + before submission deadline → 3-dot menu (Edit/Delete)
+ * voting: cycle ACTIVE + past deadline, comment/vote still open → descriptive text
+ * closed: cycle not ACTIVE or interaction ended → lock + red Closed */
 function getTopRightStatus(idea: OwnIdeaListItem): "editable" | "voting" | "closed" {
   const now = new Date();
-  const subClosed = idea.submissionClosesAt ? now >= new Date(idea.submissionClosesAt) : true;
 
-  if (!subClosed) return "editable";
   if (idea.cycleStatus !== "ACTIVE") return "closed";
+
+  const subClosed = idea.submissionClosesAt ? now >= new Date(idea.submissionClosesAt) : true;
+  if (!subClosed) return "editable";
 
   const interactionOpen = idea.interactionClosesAt
     ? now < new Date(idea.interactionClosesAt)
@@ -190,8 +189,8 @@ function IdeaRow({
               {idea.category?.name && (
                 <>
                   <span className={BYLINE_META_SEP} aria-hidden />
-                  <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
-                    <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
+                  <span className={IDEA_DETAIL_CATEGORY_PILL}>
+                    <Tag className="size-3 shrink-0 opacity-65" aria-hidden />
                     {idea.category.name}
                   </span>
                 </>
@@ -213,30 +212,27 @@ function IdeaRow({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className={IDEAS_MY_ACTIONS_TRIGGER}
+                className={IDEAS_ACTIONS_TRIGGER}
                 aria-label="Proposal options"
               >
                 <MoreVertical className="size-3.5" aria-hidden />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={4} className={IDEAS_MY_ACTIONS_MENU}>
+            <DropdownMenuContent align="end" sideOffset={4} className={IDEAS_ACTIONS_MENU}>
               <DropdownMenuItem asChild>
                 <Link
                   href={`${ROUTES.MY_IDEAS}/${idea.id}/edit`}
-                  className={IDEAS_MY_ACTIONS_ITEM}
+                  className={IDEAS_ACTIONS_ITEM}
                 >
-                  <Pencil className="size-3" aria-hidden />
+                  <Pencil aria-hidden />
                   Edit
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete(idea)}
-                className={cn(
-                  IDEAS_MY_ACTIONS_ITEM,
-                  "text-destructive/90 focus:bg-destructive/[0.06] focus:text-destructive data-[highlighted]:bg-destructive/[0.06] data-[highlighted]:text-destructive [&_svg]:!text-destructive/90 data-[highlighted]:[&_svg]:!text-destructive",
-                )}
+                className={IDEAS_ACTIONS_ITEM_DESTRUCTIVE}
               >
-                <Trash2 className="size-3" aria-hidden />
+                <Trash2 aria-hidden />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -379,12 +375,22 @@ function IdeaRow({
           </>
         ) : (
           <>
-            <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
+            <span
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
+              )}
+            >
               <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
               {votes.up}
             </span>
             <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
-            <span className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-default")}>
+            <span
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
+              )}
+            >
               <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
               {votes.down}
             </span>
@@ -392,8 +398,14 @@ function IdeaRow({
         )}
         <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/40" aria-hidden />
         <Link
-          href={`${ROUTES.IDEAS}/${idea.id}`}
-          className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")}
+          href={`${ROUTES.IDEAS}/${idea.id}#comments`}
+          className={cn(
+            IDEAS_HUB_ACTION_BASE,
+            canVote
+              ? cn(IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")
+              : "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
+          )}
+          aria-label="View proposal and comments"
         >
           <MessageSquare className="size-3.5 shrink-0" aria-hidden />
           {comments}
@@ -420,9 +432,9 @@ export default function MyIdeasPage() {
     null,
   );
 
-  const { data: context } = useIdeasContextQuery({ enabled: true });
-  const allAcademicYears = context?.allAcademicYearsForFilter ?? [];
-  const allCycles = context?.allCyclesForFilter ?? [];
+  const { data: filters } = useMyIdeasFiltersQuery({ enabled: true });
+  const allAcademicYears = filters?.allAcademicYearsForFilter ?? [];
+  const allCycles = filters?.allCyclesForFilter ?? [];
   const cyclesForYear = academicYearId
     ? allCycles.filter((c) => c.academicYearId === academicYearId)
     : allCycles;
@@ -657,40 +669,31 @@ export default function MyIdeasPage() {
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
+          if (!open) {
+            setDeleteTarget(null);
+            deleteMutation.reset();
+          }
         }}
       >
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-sans text-lg font-semibold tracking-tight">
-              Delete proposal
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-[13px] leading-relaxed text-muted-foreground">
-              This will permanently delete{" "}
-              <span className="font-medium text-foreground">
-                &ldquo;{deleteTarget?.title}&rdquo;
-              </span>{" "}
-              along with all its comments, votes, and attachments. This action
-              cannot be undone.
+            <AlertDialogTitle>Delete proposal?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.title}
+              {" — "}
+              Permanently removes the proposal and all its comments, votes, and
+              attachments. This action cannot be undone.
+              {deleteMutation.isError && (
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
+                  {getErrorMessage(deleteMutation.error, ERROR_FALLBACK_FORM.delete)}
+                </span>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {deleteMutation.error && (
-            <p className="text-[13px] text-destructive" role="alert">
-              {getErrorMessage(
-                deleteMutation.error,
-                "Could not delete the proposal.",
-              )}
-            </p>
-          )}
           <AlertDialogFooter>
-            <AlertDialogCancel
-              className="rounded-lg"
-              disabled={deleteMutation.isPending}
-            >
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              variant="destructive"
               onClick={(e) => {
                 e.preventDefault();
                 handleDelete();

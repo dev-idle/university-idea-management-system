@@ -43,10 +43,7 @@ import {
   IDEAS_NEW_SELECT_TRIGGER,
   IDEAS_NEW_TEXTAREA,
 } from "@/config/design";
-import {
-  FORM_FIELD_ERROR_CLASS,
-  FORM_ERROR_BLOCK_CLASS,
-} from "@/components/features/admin/constants";
+import { FORM_FIELD_ERROR_CLASS } from "@/components/features/admin/constants";
 import { Paperclip, X, FileText } from "lucide-react";
 
 /** Form values: attachments required (array), termsAccepted boolean for initial false. */
@@ -165,7 +162,7 @@ interface SubmitIdeaFormProps {
   onCancel?: () => void;
   isPending: boolean;
   mutateAsync: (body: CreateIdeaBody) => Promise<unknown>;
-  error: Error | null;
+  error?: Error | null;
   variant?: "default" | "card" | "fullPage";
 }
 
@@ -175,7 +172,6 @@ export function SubmitIdeaForm({
   onCancel,
   isPending,
   mutateAsync,
-  error,
   variant = "default",
 }: SubmitIdeaFormProps) {
   const {
@@ -512,12 +508,6 @@ export function SubmitIdeaForm({
             <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.termsAccepted.message}
             </p>
-          )}
-
-          {(error || errors.root) && (
-            <div className={FORM_ERROR_BLOCK_CLASS} role="alert">
-              {getErrorMessage(error ?? errors.root?.message, ERROR_FALLBACK_FORM.submitIdea)}
-            </div>
           )}
 
           <div className={cn(isFullPage ? IDEAS_NEW_ACTIONS : "flex flex-wrap items-center gap-3 border-t border-border/40 pt-6")}>

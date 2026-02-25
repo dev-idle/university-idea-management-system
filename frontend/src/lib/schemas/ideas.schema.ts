@@ -42,6 +42,8 @@ export const ideaSchema = z.object({
   attachments: z.array(attachmentRefSchema),
   voteCounts: voteCountsSchema.optional().default({ up: 0, down: 0 }),
   myVote: z.enum(["up", "down"]).nullable().optional().default(null),
+  cycleStatus: z.string().nullable().optional(),
+  submissionClosesAt: z.coerce.date().nullable().optional(),
   interactionClosesAt: z.coerce.date().nullable().optional(),
   commentCount: z.number().int().min(0).optional().default(0),
   viewCount: z.number().int().min(0).optional().default(0),
@@ -78,6 +80,7 @@ export const ideasContextSchema = z.object({
   activeCycleId: z.string().uuid().nullable(),
   activeCycleName: z.string().nullable().optional(),
   submissionClosesAt: z.coerce.date().nullable(),
+  interactionClosesAt: z.coerce.date().nullable().optional(),
   activeAcademicYear: activeAcademicYearRefSchema.nullable(),
   categories: z.array(categoryRefSchema),
   closedCyclesForYear: z.array(closedCycleForYearSchema).optional().default([]),
@@ -86,6 +89,13 @@ export const ideasContextSchema = z.object({
 });
 
 export type IdeasContext = z.infer<typeof ideasContextSchema>;
+
+/** My Ideas filter options: years, cycles, categories (only those user has submitted in). */
+export const myIdeasFiltersSchema = z.object({
+  allAcademicYearsForFilter: z.array(activeAcademicYearRefSchema),
+  allCyclesForFilter: z.array(cycleForFilterSchema),
+});
+export type MyIdeasFilters = z.infer<typeof myIdeasFiltersSchema>;
 
 /** Attachment ref sent when creating an idea (after Cloudinary upload). */
 export const createIdeaAttachmentRefSchema = z.object({
@@ -121,7 +131,14 @@ export const ideaCommentSchema = z
     content: z.string(),
     isAnonymous: z.boolean(),
     createdAt: z.coerce.date(),
+    updatedAt: z.coerce.date().optional(),
+    parentCommentId: z.string().uuid().nullable().optional(),
+    likeCount: z.number().int().min(0).optional().default(0),
+    dislikeCount: z.number().int().min(0).optional().default(0),
+    myReaction: z.enum(["up", "down"]).nullable().optional(),
+    isOwn: z.boolean().optional().default(false),
     author: authorRefSchema.nullable(),
+    replies: z.lazy(() => z.array(ideaCommentSchema)).optional().default([]),
   })
   .refine((c) => !c.isAnonymous || c.author === null, {
     message: "Anonymous comments must have author=null",
@@ -129,12 +146,14 @@ export const ideaCommentSchema = z
   });
 export type IdeaComment = z.infer<typeof ideaCommentSchema>;
 
+/** Comments response: top-level comments with nested replies. */
 export const ideaCommentsResponseSchema = z.array(ideaCommentSchema);
 export type IdeaCommentsResponse = z.infer<typeof ideaCommentsResponseSchema>;
 
 export const createCommentBodySchema = z.object({
   content: z.string().min(1, "Content is required.").max(2000).transform((s) => s.trim()),
   isAnonymous: z.boolean().default(false),
+  parentCommentId: z.string().uuid().optional(),
 });
 export type CreateCommentBody = z.infer<typeof createCommentBodySchema>;
 

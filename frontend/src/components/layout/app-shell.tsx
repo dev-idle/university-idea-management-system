@@ -570,7 +570,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         />
         <main
           className={cn(
-            "scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto",
+            "scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
             MAIN_BG,
             MAIN_PX,
             MAIN_PY
@@ -664,7 +664,7 @@ function StaffLayout({
       </header>
       <main
         className={cn(
-          "scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-y-auto",
+          "scrollbar-hide-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
           MAIN_BG,
           MAIN_PX,
           MAIN_PY

@@ -65,6 +65,7 @@ import {
   IDEAS_HUB_SELECT_TRIGGER,
   IDEAS_HUB_TOOLBAR_DIVIDER,
   IDEAS_HUB_PAGINATION,
+  IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
@@ -217,6 +218,7 @@ function IdeaCard({
   onVote,
   onDwellComplete,
   votePending,
+  voteDisabled,
 }: {
   idea: Idea;
   isExpanded: boolean;
@@ -224,6 +226,7 @@ function IdeaCard({
   onVote: (id: string, v: "up" | "down") => void;
   onDwellComplete: (id: string) => void;
   votePending: boolean;
+  voteDisabled?: boolean;
 }) {
   const votes = idea.voteCounts ?? { up: 0, down: 0 };
   const myVote = idea.myVote ?? null;
@@ -239,6 +242,7 @@ function IdeaCard({
   const castVote = (e: React.MouseEvent, v: "up" | "down") => {
     e.preventDefault();
     e.stopPropagation();
+    if (voteDisabled || votePending) return;
     onVote(idea.id, v);
   };
 
@@ -276,8 +280,8 @@ function IdeaCard({
             {idea.category?.name && (
               <>
                 <span className={BYLINE_META_SEP} aria-hidden />
-                <span className="inline-flex items-center gap-1.5 font-medium text-primary/80">
-                  <Tag className="size-3 shrink-0 opacity-75" aria-hidden />
+                <span className={IDEA_DETAIL_CATEGORY_PILL}>
+                  <Tag className="size-3 shrink-0 opacity-65" aria-hidden />
                   {idea.category.name}
                 </span>
               </>
@@ -383,7 +387,7 @@ function IdeaCard({
       >
         <button
           type="button"
-          disabled={votePending}
+          disabled={votePending || voteDisabled}
           onClick={(e) => castVote(e, "up")}
           className={cn(
             IDEAS_HUB_ACTION_BASE,
@@ -398,7 +402,7 @@ function IdeaCard({
         <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
         <button
           type="button"
-          disabled={votePending}
+          disabled={votePending || voteDisabled}
           onClick={(e) => castVote(e, "down")}
           className={cn(
             IDEAS_HUB_ACTION_BASE,
@@ -412,8 +416,9 @@ function IdeaCard({
         </button>
         <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/40" aria-hidden />
         <Link
-          href={`${ROUTES.IDEAS}/${idea.id}`}
+          href={`${ROUTES.IDEAS}/${idea.id}#comments`}
           className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")}
+          aria-label="View proposal and comments"
         >
           <MessageSquare className="size-3.5 shrink-0" aria-hidden />
           {comments}
@@ -474,6 +479,11 @@ export function IdeasHubContent() {
 
   const canSubmit = context?.canSubmit ?? false;
   const closesAt = context?.submissionClosesAt;
+  const interactionClosesAt = context?.interactionClosesAt;
+  const interactionOpen =
+    hasActiveCycle &&
+    !!interactionClosesAt &&
+    new Date() < new Date(interactionClosesAt);
   const ideas = listData?.items ?? [];
   const total = listData?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -484,7 +494,9 @@ export function IdeasHubContent() {
       {!canSubmit && (
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
-            Submission is closed. Browsing remains available.
+            {interactionOpen
+              ? "Submissions are closed. You can still view, vote, and comment on ideas."
+              : "Submissions are closed. Browse ideas (read-only)."}
           </AlertDescription>
         </Alert>
       )}
@@ -497,7 +509,7 @@ export function IdeasHubContent() {
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
       <div className={IDEAS_HUB_TOOLBAR}>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-          {!hasActiveCycle && closedCycles.length > 0 && (
+          {!hasActiveCycle && (
             <Select
               value={cycleId || "all"}
               onValueChange={(v) => {
@@ -586,7 +598,11 @@ export function IdeasHubContent() {
               <p className={cn("mt-0.5", IDEAS_HUB_BYLINE_META)}>
                 {canSubmit
                   ? "Be the first to share an idea"
-                  : "Check back when a proposal cycle opens"}
+                  : hasActiveCycle
+                    ? "No proposals were submitted in this cycle"
+                    : closedCycles.length > 0
+                      ? "Select a cycle above to browse past proposals"
+                      : "Check back when a proposal cycle opens"}
               </p>
             </div>
       ) : (
@@ -606,6 +622,7 @@ export function IdeasHubContent() {
                     }}
                     onDwellComplete={markViewedByAction}
                     votePending={voteMutation.isPending}
+                    voteDisabled={!interactionOpen}
                   />
                 ))}
               </div>

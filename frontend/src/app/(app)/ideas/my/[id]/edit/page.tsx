@@ -9,13 +9,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   useMyIdeaQuery,
   useUpdateMyIdeaMutation,
-  useDeleteMyIdeaMutation,
   useAddAttachmentMutation,
   useRemoveAttachmentMutation,
   useUploadParamsQuery,
   uploadFileViaBackend,
 } from "@/hooks/use-ideas";
-import type { UpdateIdeaBody } from "@/lib/schemas/ideas.schema";
+import type { UpdateIdeaBody, OwnIdea } from "@/lib/schemas/ideas.schema";
 import { updateIdeaBodySchema } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
@@ -24,7 +23,15 @@ import { cn } from "@/lib/utils";
 import {
   FORM_SUBMIT_BUTTON_CLASS,
   FORM_OUTLINE_BUTTON_CLASS,
-  IDEA_CARD_CLASS,
+  IDEAS_NEW_CARD_CLASS,
+  IDEAS_NEW_FORM_PX,
+  IDEAS_NEW_FORM_PY,
+  IDEAS_NEW_OVERLINE,
+  IDEAS_NEW_INPUT,
+  IDEAS_NEW_SELECT_TRIGGER,
+  IDEAS_NEW_TEXTAREA,
+  IDEAS_NEW_ACTIONS,
+  IDEAS_HUB_SPACING,
 } from "@/config/design";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,31 +47,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   PAGE_WRAPPER_NARROW_CLASS,
-  BACK_LINK_CLASS,
   ALERT_WARNING_CLASS,
   LOADING_SPINNER_CLASS,
 } from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
-  ArrowLeft,
   Paperclip,
   X,
   FileText,
   Download,
-  Trash2,
   AlertTriangle,
 } from "lucide-react";
+import {
+  BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_SEP_CLASS,
+  FORM_FIELD_ERROR_CLASS,
+} from "@/components/features/admin/constants";
 
 /* ─── Constants ───────────────────────────────────────────────────────────── */
 
@@ -129,11 +128,11 @@ function AttachmentRow({
   };
 
   return (
-    <li className="flex flex-col gap-1">
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/40 bg-muted/[0.06] px-4 py-2.5 transition-colors hover:bg-muted/[0.10]">
+    <li className="flex flex-col gap-1 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]">
+      <div className="flex min-w-0 items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <FileText
-            className="size-4 shrink-0 text-muted-foreground/40"
+            className="size-4 shrink-0 text-muted-foreground/65"
             aria-hidden
           />
           <span
@@ -147,29 +146,34 @@ function AttachmentRow({
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="h-8 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
+            size="icon-sm"
+            className="rounded-lg text-muted-foreground hover:bg-muted/[0.06] hover:text-foreground"
+            aria-label={viewLoading ? "Opening…" : `View ${att.fileName}`}
             onClick={handleView}
             disabled={viewLoading}
           >
-            {viewLoading ? "Opening…" : "Open"}
+            {viewLoading ? (
+              <span className={LOADING_SPINNER_CLASS} aria-hidden />
+            ) : (
+              <FileText className="size-4" aria-hidden />
+            )}
           </Button>
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground/50 hover:text-foreground/70"
+            size="icon-sm"
+            className="rounded-lg text-muted-foreground hover:bg-muted/[0.06] hover:text-foreground"
+            aria-label={`Download ${att.fileName}`}
             onClick={handleDownload}
           >
-            <Download className="size-4 shrink-0" aria-hidden />
-            Save
+            <Download className="size-4" aria-hidden />
           </Button>
           {!disabled && (
             <Button
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="rounded-lg text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive"
+              className="rounded-lg text-muted-foreground hover:bg-destructive/[0.08] hover:text-destructive"
               aria-label={`Remove ${att.fileName}`}
               onClick={onRemove}
               disabled={removing}
@@ -184,7 +188,7 @@ function AttachmentRow({
         </div>
       </div>
       {viewError && (
-        <span className="px-1 text-xs leading-relaxed text-destructive/90" role="alert">
+        <span className={FORM_FIELD_ERROR_CLASS} role="alert">
           {viewError}
         </span>
       )}
@@ -192,22 +196,27 @@ function AttachmentRow({
   );
 }
 
-/* ─── Page ────────────────────────────────────────────────────────────────── */
+/* ─── Edit form (mounts only when idea is loaded, so defaultValues are correct) ─ */
 
-export default function EditIdeaPage() {
-  const params = useParams();
+function EditIdeaForm({
+  idea,
+  closed,
+}: {
+  idea: OwnIdea;
+  closed: boolean;
+}) {
   const router = useRouter();
-  const id = typeof params.id === "string" ? params.id : null;
+  const id = idea.id;
+  const categories = idea.categories ?? [];
+  const resolvedCategoryId =
+    idea.categoryId ?? idea.category?.id ?? categories[0]?.id ?? "";
 
-  const { data: idea, status, error } = useMyIdeaQuery(id);
   const { data: uploadParams, status: uploadParamsStatus } =
     useUploadParamsQuery({ enabled: true });
   const updateMutation = useUpdateMyIdeaMutation();
-  const deleteMutation = useDeleteMyIdeaMutation();
   const addAttachmentMutation = useAddAttachmentMutation();
   const removeAttachmentMutation = useRemoveAttachmentMutation();
 
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -218,58 +227,24 @@ export default function EditIdeaPage() {
     setValue,
     setError,
     watch,
-    reset,
     formState: { errors, isDirty },
   } = useForm<EditIdeaFormValues>({
     resolver: zodResolver(updateIdeaBodySchema) as Resolver<EditIdeaFormValues>,
     defaultValues: {
-      title: "",
-      description: "",
-      categoryId: "",
-      isAnonymous: false,
+      title: idea.title,
+      description: idea.description ?? "",
+      categoryId: resolvedCategoryId,
+      isAnonymous: idea.isAnonymous,
     },
   });
 
   const categoryId = watch("categoryId");
   const isAnonymous = watch("isAnonymous");
-
-  // Populate form only on initial load (not when idea updates due to attachment changes)
-  const [formInitialized, setFormInitialized] = useState(false);
-  useEffect(() => {
-    if (idea && !formInitialized) {
-      reset({
-        title: idea.title,
-        description: idea.description ?? "",
-        categoryId: idea.categoryId ?? "",
-        isAnonymous: idea.isAnonymous,
-      });
-      setFormInitialized(true);
-    }
-  }, [idea, formInitialized, reset]);
-
-  useEffect(() => {
-    if (!id) router.replace(ROUTES.MY_IDEAS);
-  }, [id, router]);
-
-  if (!id) return null;
-  if (status === "error") throw error;
-  if (status === "pending" || !idea) {
-    return (
-      <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <LoadingState />
-      </div>
-    );
-  }
-
-  const closed = idea.submissionClosesAt
-    ? new Date() >= new Date(idea.submissionClosesAt)
-    : true;
-  const categories = idea.categories ?? [];
   const attachments = idea.attachments ?? [];
 
   async function onSubmit(data: EditIdeaFormValues) {
     try {
-      await updateMutation.mutateAsync({ id: id!, body: data });
+      await updateMutation.mutateAsync({ id, body: data });
       router.push(ROUTES.MY_IDEAS);
     } catch (err) {
       const message = getErrorMessage(err, ERROR_FALLBACK_FORM.updateIdea);
@@ -304,7 +279,7 @@ export default function EditIdeaPage() {
           continue;
         }
         const ref = await uploadFileViaBackend(file);
-        await addAttachmentMutation.mutateAsync({ ideaId: id!, body: ref });
+        await addAttachmentMutation.mutateAsync({ ideaId: id, body: ref });
         if (attachments.length + i + 1 >= MAX_ATTACHMENTS) break;
       }
     } catch (err) {
@@ -324,7 +299,7 @@ export default function EditIdeaPage() {
   async function handleRemoveAttachment(attachmentId: string) {
     try {
       await removeAttachmentMutation.mutateAsync({
-        ideaId: id!,
+        ideaId: id,
         attachmentId,
       });
     } catch {
@@ -332,151 +307,115 @@ export default function EditIdeaPage() {
     }
   }
 
-  async function handleDelete() {
-    try {
-      await deleteMutation.mutateAsync(id!);
-      setShowDeleteDialog(false);
-      router.push(ROUTES.MY_IDEAS);
-    } catch {
-      // error shown in dialog
-    }
-  }
-
   return (
-    <div className={`space-y-10 ${PAGE_WRAPPER_NARROW_CLASS}`}>
-      {/* Back */}
-      <nav aria-label="Breadcrumb">
-        <Link
-          href={ROUTES.MY_IDEAS}
-          className={BACK_LINK_CLASS}
-          aria-label="Return to My Ideas"
-        >
-          <ArrowLeft className="size-4 shrink-0" aria-hidden />
-          My Ideas
-        </Link>
-      </nav>
-
-      {/* Header */}
-      <header>
-        <h1 className="font-sans text-3xl font-bold tracking-tight text-foreground">
-          Edit Proposal
-        </h1>
-        <p className="mt-2 max-w-md text-[15px] leading-relaxed text-muted-foreground/70">
-          Update your idea details and manage supporting documents.
-        </p>
-        <div
-          className="mt-4 h-px w-10 bg-gradient-to-r from-primary/80 to-transparent"
-          aria-hidden
-        />
-      </header>
-
-      {/* Closed alert */}
-      {closed && (
-        <Alert className={ALERT_WARNING_CLASS}>
-          <AlertTriangle className="size-4" />
-          <AlertDescription>
-            The submission period has closed. This proposal is now read-only.
-          </AlertDescription>
-        </Alert>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={cn(
+        IDEAS_NEW_CARD_CLASS,
+        "overflow-hidden space-y-8",
+        IDEAS_NEW_FORM_PX,
+        IDEAS_NEW_FORM_PY,
       )}
-
-      {/* Form */}
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className={cn("overflow-hidden", IDEA_CARD_CLASS)}
-      >
-        <div className="space-y-8 px-6 py-8 sm:px-8 sm:py-10">
-          {/* Category */}
-          <div className="space-y-3">
-            <Label
-              htmlFor="edit-category"
-              className="cursor-pointer text-sm font-medium text-foreground"
+    >
+      {/* Core fields */}
+      <div className="space-y-6">
+        {/* Category */}
+        <div className="group space-y-2 min-w-0">
+          <Label
+            htmlFor="edit-category"
+            className="cursor-pointer text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 transition-colors duration-200 group-focus-within:text-primary"
+          >
+            Category
+          </Label>
+          <Select
+            value={categoryId}
+            onValueChange={(v) =>
+              setValue("categoryId", v, { shouldValidate: true, shouldDirty: true })
+            }
+            disabled={closed}
+          >
+            <SelectTrigger
+              id="edit-category"
+              className={IDEAS_NEW_SELECT_TRIGGER}
             >
-              Category
-            </Label>
-            <Select
-              value={categoryId}
-              onValueChange={(v) =>
-                setValue("categoryId", v, { shouldValidate: true })
-              }
-              disabled={closed}
-            >
-              <SelectTrigger
-                id="edit-category"
-                className="h-11 rounded-lg border-border bg-background focus:ring-2 focus:ring-primary/[0.08]"
-              >
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id} className="rounded-md">
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.categoryId && (
-              <p className="text-xs leading-relaxed text-destructive/90" role="alert">
-                {errors.categoryId.message}
-              </p>
-            )}
-          </div>
-
-          {/* Title */}
-          <div className="space-y-3">
-            <Label
-              htmlFor="edit-title"
-              className="cursor-pointer text-sm font-medium text-foreground"
-            >
-              Title
-            </Label>
-            <Input
-              id="edit-title"
-              type="text"
-              placeholder="A clear, descriptive title"
-              maxLength={500}
-              disabled={closed}
-              className="h-11 rounded-lg border-border bg-background text-base placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/[0.08]"
-              aria-invalid={!!errors.title}
-              {...register("title")}
-            />
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Titles must be unique within the proposal cycle.
+              <SelectValue placeholder="Select a category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id} className="rounded-md">
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.categoryId && (
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
+              {errors.categoryId.message}
             </p>
-            {errors.title && (
-              <p className="text-xs leading-relaxed text-destructive/90" role="alert">
-                {errors.title.message}
-              </p>
-            )}
-          </div>
+          )}
+        </div>
 
-          {/* Content */}
-          <div className="space-y-3">
-            <Label
-              htmlFor="edit-content"
-              className="cursor-pointer text-sm font-medium text-foreground"
-            >
-              Content
-            </Label>
-            <Textarea
-              id="edit-content"
-              placeholder="Describe the proposal…"
-              maxLength={10000}
-              rows={8}
-              disabled={closed}
-              className="min-h-[12rem] resize-y rounded-lg border-border bg-background py-3 text-base leading-relaxed placeholder:text-muted-foreground/60 focus-visible:ring-2 focus-visible:ring-primary/[0.08]"
-              aria-invalid={!!errors.description}
-              {...register("description")}
-            />
-            {errors.description && (
-              <p className="text-xs leading-relaxed text-destructive/90" role="alert">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
+        {/* Title */}
+        <div className="group space-y-2 min-w-0">
+          <Label
+            htmlFor="edit-title"
+            className="cursor-pointer text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 transition-colors duration-200 group-focus-within:text-primary"
+          >
+            Title
+          </Label>
+          <Input
+            id="edit-title"
+            type="text"
+            placeholder="A clear, descriptive title"
+            maxLength={500}
+            disabled={closed}
+            className={IDEAS_NEW_INPUT}
+            aria-invalid={!!errors.title}
+            {...register("title")}
+          />
+          <p className="text-xs leading-relaxed text-muted-foreground/80">
+            Titles must be unique within the proposal cycle.
+          </p>
+          {errors.title && (
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
+              {errors.title.message}
+            </p>
+          )}
+        </div>
 
-          {/* Anonymous */}
-          <div className="flex items-start gap-3">
+        {/* Content */}
+        <div className="group space-y-2 min-w-0">
+          <Label
+            htmlFor="edit-content"
+            className="cursor-pointer text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 transition-colors duration-200 group-focus-within:text-primary"
+          >
+            Content
+          </Label>
+          <Textarea
+            id="edit-content"
+            placeholder="Context, recommendation, and expected benefits."
+            maxLength={10000}
+            rows={8}
+            disabled={closed}
+            className={IDEAS_NEW_TEXTAREA}
+            aria-invalid={!!errors.description}
+            {...register("description")}
+          />
+          {errors.description && (
+            <p className={FORM_FIELD_ERROR_CLASS} role="alert">
+              {errors.description.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Optional: Anonymous + Attachments */}
+      <section className="space-y-6" aria-labelledby="edit-optional-heading">
+        <p id="edit-optional-heading" className={IDEAS_NEW_OVERLINE}>
+          Optional
+        </p>
+        <div className="space-y-6">
+          <div className="group flex items-start gap-3">
             <Checkbox
               id="edit-anonymous"
               checked={isAnonymous}
@@ -489,210 +428,225 @@ export default function EditIdeaPage() {
             <div className="grid gap-0.5">
               <Label
                 htmlFor="edit-anonymous"
-                className="text-sm font-medium cursor-pointer text-foreground"
+                className="cursor-pointer text-[13px] font-medium text-foreground/92"
               >
                 Submit anonymously
               </Label>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                Your identity will be hidden from other users.
+              <p className="text-xs leading-relaxed text-muted-foreground/80">
+                Withheld from publication, retained for governance and compliance.
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Attachments section */}
-        <div className="border-t border-border/15 px-6 py-8 sm:px-8">
-          <h2 className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Paperclip className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-            Supporting documents
-          </h2>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            PDF, Word, or images. Maximum {MAX_ATTACHMENTS} files,{" "}
-            {MAX_FILE_SIZE_MB} MB per file.
-          </p>
-
-          {attachments.length > 0 && (
-            <ul className="mt-4 space-y-1.5">
-              {attachments.map((att) => (
-                <AttachmentRow
-                  key={att.id}
-                  att={att}
-                  onRemove={() => handleRemoveAttachment(att.id)}
-                  removing={
-                    removeAttachmentMutation.isPending &&
-                    removeAttachmentMutation.variables?.attachmentId === att.id
+          {/* Attachments */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="edit-attachments-trigger"
+              className="flex cursor-pointer items-center gap-2 text-[13px] font-medium text-foreground/92"
+            >
+              <FileText className="size-4 shrink-0 text-muted-foreground/65" aria-hidden />
+              Supporting documents
+            </Label>
+            <p className="text-xs leading-relaxed text-muted-foreground/80">
+              PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
+            </p>
+            {uploadParamsStatus === "error" && (
+              <p className="text-[11px] text-warning/90" role="alert">
+                Upload currently unavailable.
+              </p>
+            )}
+            {uploadParamsStatus === "success" && uploadParams && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_TYPES}
+                  multiple
+                  className="hidden"
+                  aria-label="Choose files"
+                  onChange={handleFileSelect}
+                  disabled={
+                    uploading || attachments.length >= MAX_ATTACHMENTS || closed
                   }
-                  disabled={closed}
                 />
-              ))}
-            </ul>
-          )}
-
-          {!closed && (
-            <div className="mt-4">
-              {uploadParamsStatus === "error" && (
-                <p
-                  className="text-sm text-warning"
-                  role="alert"
-                >
-                  Document upload is currently unavailable.
-                </p>
-              )}
-              {uploadParamsStatus === "success" && uploadParams && (
-                <>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPTED_TYPES}
-                    multiple
-                    className="hidden"
-                    aria-label="Choose files to upload"
-                    onChange={handleFileSelect}
-                    disabled={
-                      uploading || attachments.length >= MAX_ATTACHMENTS
-                    }
-                  />
+                {!closed && (
                   <Button
+                    id="edit-attachments-trigger"
                     type="button"
                     variant="outline"
                     size="default"
-                    className="h-9 gap-2 rounded-lg border border-border font-medium transition-colors hover:bg-muted/[0.06]"
+                    className="h-10 gap-2 rounded-xl border border-border/80 font-medium transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={
                       uploading || attachments.length >= MAX_ATTACHMENTS
                     }
                   >
                     {uploading ? (
-                      <span
-                        className={LOADING_SPINNER_CLASS}
-                        aria-hidden
-                      />
+                      <span className={LOADING_SPINNER_CLASS} aria-hidden />
                     ) : (
                       <Paperclip className="size-4" aria-hidden />
                     )}
-                    {uploading ? "Uploading…" : "Add Document"}
+                    {uploading ? "Uploading…" : "Add document"}
                   </Button>
-                </>
-              )}
-              {uploadError && (
-                <p className="mt-2 text-sm text-destructive" role="alert">
-                  {uploadError}
-                </p>
-              )}
-            </div>
-          )}
-
-          {removeAttachmentMutation.error && (
-            <p className="mt-2 text-sm text-destructive" role="alert">
-              {getErrorMessage(
-                removeAttachmentMutation.error,
-                "Could not remove the document.",
-              )}
-            </p>
-          )}
-        </div>
-
-        {/* Root error */}
-        {(updateMutation.error || errors.root) && (
-          <div className="mx-6 mb-6 sm:mx-8">
-            <div
-              className="rounded-lg border border-destructive/15 bg-destructive/[0.03] px-3 py-2 text-xs leading-relaxed text-destructive/90"
-              role="alert"
-            >
-              {getErrorMessage(
-                updateMutation.error ?? errors.root?.message,
-                ERROR_FALLBACK_FORM.updateIdea,
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/15 px-6 py-5 sm:px-8">
-          <div className="flex flex-wrap items-center gap-3">
-            {!closed && (
-              <Button
-                type="submit"
-                disabled={updateMutation.isPending || !isDirty}
-                className={FORM_SUBMIT_BUTTON_CLASS}
-              >
-                {updateMutation.isPending ? "Saving…" : "Save changes"}
-              </Button>
+                )}
+                {uploadError && (
+                  <p className={FORM_FIELD_ERROR_CLASS} role="alert">
+                    {uploadError}
+                  </p>
+                )}
+              </>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push(ROUTES.MY_IDEAS)}
-              disabled={updateMutation.isPending}
-              className={FORM_OUTLINE_BUTTON_CLASS}
-            >
-              {closed ? "Back" : "Cancel"}
-            </Button>
+            {attachments.length > 0 && (
+              <ul className="mt-3 space-y-1.5">
+                {attachments.map((att) => (
+                  <AttachmentRow
+                    key={att.id}
+                    att={att}
+                    onRemove={() => handleRemoveAttachment(att.id)}
+                    removing={
+                      removeAttachmentMutation.isPending &&
+                      removeAttachmentMutation.variables?.attachmentId === att.id
+                    }
+                    disabled={closed}
+                  />
+                ))}
+              </ul>
+            )}
+            {removeAttachmentMutation.error && (
+              <p className={FORM_FIELD_ERROR_CLASS} role="alert">
+                {getErrorMessage(
+                  removeAttachmentMutation.error,
+                  "Could not remove the document.",
+                )}
+              </p>
+            )}
           </div>
+        </div>
+      </section>
+
+      {/* Actions */}
+      <div className={cn(IDEAS_NEW_ACTIONS, "flex-wrap justify-between")}>
+        <div className="flex flex-wrap items-center gap-3">
           {!closed && (
             <Button
-              type="button"
-              variant="ghost"
-              className="h-9 gap-2 rounded-lg px-4 text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => setShowDeleteDialog(true)}
-              disabled={deleteMutation.isPending}
+              type="submit"
+              disabled={updateMutation.isPending || !isDirty}
+              className={FORM_SUBMIT_BUTTON_CLASS}
             >
-              <Trash2 className="size-4" aria-hidden />
-              Delete
+              {updateMutation.isPending ? "Saving…" : "Save changes"}
             </Button>
           )}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push(ROUTES.MY_IDEAS)}
+            disabled={updateMutation.isPending}
+            className={FORM_OUTLINE_BUTTON_CLASS}
+          >
+            {closed ? "Back" : "Cancel"}
+          </Button>
         </div>
-      </form>
+      </div>
+    </form>
+  );
+}
 
-      {/* Delete confirmation */}
-      <AlertDialog
-        open={showDeleteDialog}
-        onOpenChange={(open) => {
-          if (!open) setShowDeleteDialog(false);
-        }}
-      >
-        <AlertDialogContent className="max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="font-sans text-lg font-semibold tracking-tight">
-              Delete proposal
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-[13px] leading-relaxed text-muted-foreground">
-              This will permanently delete{" "}
-              <span className="font-medium text-foreground">
-                &ldquo;{idea.title}&rdquo;
-              </span>{" "}
-              along with all its comments, votes, and attachments. This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {deleteMutation.error && (
-            <p className="text-xs leading-relaxed text-destructive/90" role="alert">
-              {getErrorMessage(
-                deleteMutation.error,
-                "Could not delete the proposal.",
-              )}
-            </p>
-          )}
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              className="rounded-lg"
-              disabled={deleteMutation.isPending}
+/* ─── Page ────────────────────────────────────────────────────────────────── */
+
+export default function EditIdeaPage() {
+  const params = useParams();
+  const router = useRouter();
+  const id = typeof params.id === "string" ? params.id : null;
+
+  const { data: idea, status, error } = useMyIdeaQuery(id);
+  useEffect(() => {
+    if (!id) router.replace(ROUTES.MY_IDEAS);
+  }, [id, router]);
+
+  if (!id) return null;
+  if (status === "error") throw error;
+  if (status === "pending" || !idea) {
+    return (
+      <div className={PAGE_WRAPPER_NARROW_CLASS}>
+        <LoadingState />
+      </div>
+    );
+  }
+
+  const categories = idea.categories ?? [];
+  const resolvedCategoryId =
+    idea.categoryId ?? idea.category?.id ?? categories[0]?.id ?? "";
+
+  const cycleActive = idea.cycleStatus === "ACTIVE";
+  const submissionClosed = idea.submissionClosesAt
+    ? new Date() >= new Date(idea.submissionClosesAt)
+    : true;
+  const closed = !cycleActive || submissionClosed;
+
+  return (
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+      {/* Breadcrumb — aligned with /ideas/new */}
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
+          <li>
+            <Link
+              href={ROUTES.IDEAS}
+              className="transition-colors duration-200 hover:text-foreground"
             >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={(e) => {
-                e.preventDefault();
-                handleDelete();
-              }}
-              disabled={deleteMutation.isPending}
+              Ideas Hub
+            </Link>
+          </li>
+          <li className="flex items-center">
+            <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+            <Link
+              href={ROUTES.MY_IDEAS}
+              className="transition-colors duration-200 hover:text-foreground"
             >
-              {deleteMutation.isPending ? "Deleting…" : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              My Ideas
+            </Link>
+          </li>
+          <li className="flex items-center" aria-current="page">
+            <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+            Edit proposal
+          </li>
+        </ol>
+      </nav>
+
+      <h1 className="sr-only">Edit proposal</h1>
+
+      {/* Closed alert */}
+      {closed && (
+        <Alert className={ALERT_WARNING_CLASS}>
+          <AlertTriangle className="size-4" />
+          <AlertDescription>
+            {!cycleActive
+              ? "The proposal cycle has closed. This proposal is now read-only."
+              : "The submission period has closed. This proposal is now read-only."}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Form — mounts only when idea is loaded; no category = show error */}
+      {!resolvedCategoryId ? (
+        <div className="space-y-4">
+          <Alert variant="destructive">
+            <AlertTriangle className="size-4" />
+            <AlertDescription>
+              This proposal has no category assigned. Please contact support if you need to edit it.
+            </AlertDescription>
+          </Alert>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push(ROUTES.MY_IDEAS)}
+            className={FORM_OUTLINE_BUTTON_CLASS}
+          >
+            Back
+          </Button>
+        </div>
+      ) : (
+        <EditIdeaForm idea={idea} closed={closed} key={idea.id} />
+      )}
     </div>
   );
 }

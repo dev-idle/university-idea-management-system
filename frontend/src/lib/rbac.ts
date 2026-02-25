@@ -39,6 +39,16 @@ export function hasRole(roles: string[] | undefined, role: Role): boolean {
   return roles?.includes(role) ?? false;
 }
 
+/** True when user has only STAFF (no Admin/QA Manager/QA Coordinator). Used for Staff-specific UI (e.g. Profile layout). */
+export function isStaffOnly(roles: string[] | undefined): boolean {
+  if (!roles?.length) return false;
+  const upper = roles.map((r) => String(r).trim().toUpperCase());
+  const hasStaff = upper.includes("STAFF");
+  const hasManagement =
+    upper.includes("ADMIN") || upper.includes("QA_MANAGER") || upper.includes("QA_COORDINATOR");
+  return hasStaff && !hasManagement;
+}
+
 /** Human-readable role labels for header/sidebar (UX only). */
 export const ROLE_LABELS: Readonly<Record<Role, string>> = {
   ADMIN: "Admin",

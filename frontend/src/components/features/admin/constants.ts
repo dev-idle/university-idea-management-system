@@ -197,8 +197,28 @@ export const SECTION_HEADER_BAR_CLASS =
 
 // ─── Profile (aligned with Academic Year, User — shared color scale) ──────────
 
-/** Profile page container — generous whitespace. */
+/** Profile page container — generous whitespace (Management layout). */
 export const PROFILE_PAGE_CLASS = "space-y-12";
+
+/** Staff Profile: page container — matches IDEAS_HUB_SPACING (space-y-8). */
+export const PROFILE_STAFF_PAGE_CLASS = "space-y-8";
+
+/** Staff Profile: identity + section cards — rounded-2xl, matches Ideas cards. */
+export const PROFILE_STAFF_CARD_CLASS =
+  "overflow-hidden rounded-2xl border border-border/50 bg-card shadow-[var(--shadow-card-subtle)] transition-shadow duration-200";
+
+/** Staff Profile: identity card. */
+export const PROFILE_STAFF_IDENTITY_CARD_CLASS =
+  `${PROFILE_STAFF_CARD_CLASS} px-8 py-10`;
+
+/** Staff Profile: section card. */
+export const PROFILE_STAFF_SECTION_CARD_CLASS = `${PROFILE_STAFF_CARD_CLASS} py-0`;
+
+/** Staff Profile: inline buttons (Edit modal) — h-9, aligned with Ideas form. */
+export const PROFILE_STAFF_SM_OUTLINE_CLASS =
+  "h-9 rounded-xl border border-border/80 px-4 text-sm font-medium transition-colors duration-200 hover:bg-muted/[0.06] hover:border-primary/30";
+export const PROFILE_STAFF_SM_PRIMARY_CLASS =
+  "h-9 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors duration-200 hover:bg-primary/95";
 
 /** Profile identity section — matches UNIFIED_CARD. */
 export const PROFILE_IDENTITY_CARD_CLASS =

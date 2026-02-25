@@ -35,7 +35,8 @@ model User {
   refreshTokens RefreshToken[]
   ideas         Idea[]
   ideaVotes     IdeaVote[]
-  ideaComments  IdeaComment[]
+  ideaComments     IdeaComment[]
+  ideaCommentLikes IdeaCommentLike[]
   ideaViews     IdeaView[]
   notifications Notification[]
   createdAt     DateTime       @default(now())
@@ -135,16 +136,36 @@ model IdeaVote {
 }
 
 model IdeaComment {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ideaId      String   @db.Uuid
-  idea        Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  content     String   @db.Text
-  isAnonymous Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ideaId           String            @db.Uuid
+  idea             Idea              @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId           String            @db.Uuid
+  user             User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parentCommentId  String?           @db.Uuid
+  parentComment    IdeaComment?      @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies         IdeaComment[]      @relation("CommentReplies")
+  content         String            @db.Text
+  isAnonymous     Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  likes           IdeaCommentLike[]
 
   @@index([ideaId])
+  @@index([userId])
+  @@index([parentCommentId])
+}
+
+model IdeaCommentLike {
+  id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  commentId String      @db.Uuid
+  comment   IdeaComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String      @db.Uuid
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value     String      @default("up") @db.VarChar(10)
+  createdAt DateTime    @default(now())
+
+  @@unique([commentId, userId])
+  @@index([commentId])
   @@index([userId])
 }
 

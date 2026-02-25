@@ -551,9 +551,15 @@ export function SubmissionCyclesManagement() {
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="max-w-xs">
-                                {c.categories.length === 0
-                                  ? "None assigned"
-                                  : c.categories.map((cat) => cat.name).join(", ")}
+                                {c.categories.length === 0 ? (
+                                  "None assigned"
+                                ) : (
+                                  <ul className="list-none space-y-0.5 py-0 pl-0">
+                                    {c.categories.map((cat) => (
+                                      <li key={cat.id}>{cat.name}</li>
+                                    ))}
+                                  </ul>
+                                )}
                               </TooltipContent>
                             </Tooltip>
                           </td>

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Put,
   Delete,
   Body,
@@ -43,6 +44,11 @@ import {
   createCommentBodySchema,
   type CreateCommentBody,
 } from './dto/create-comment.dto';
+import {
+  updateCommentBodySchema,
+  type UpdateCommentBody,
+} from './dto/update-comment.dto';
+import { likeCommentBodySchema, type LikeCommentBody } from './dto/like-comment.dto';
 
 @Controller('ideas')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -200,6 +206,13 @@ export class IdeasController {
 
   /* ── Own‑idea management (STAFF only) ────────────────────────────────────── */
 
+  /** Filter options for My Ideas: years, cycles, categories (only those user has written in). */
+  @Get('my/filters')
+  @Roles('STAFF')
+  getMyIdeasFilters(@CurrentUser() user: AccessTokenPayload) {
+    return this.ideasService.getMyIdeasFilters(user.sub);
+  }
+
   /** List own ideas with pagination. STAFF only. */
   @Get('my')
   @Roles('STAFF')
@@ -287,8 +300,11 @@ export class IdeasController {
 
   @Get(':id/comments')
   @Roles('STAFF', 'ADMIN')
-  getComments(@Param('id', ParseUUIDPipe) id: string) {
-    return this.ideasService.getComments(id);
+  getComments(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.ideasService.getComments(id, user.sub);
   }
 
   /** Record a view for an idea. Idempotent: at most one view per user per idea. */
@@ -313,7 +329,7 @@ export class IdeasController {
   }
 
   @Post(':id/comments')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF')
   @HttpCode(HttpStatus.CREATED)
   createComment(
     @CurrentUser() user: AccessTokenPayload,
@@ -322,6 +338,40 @@ export class IdeasController {
     body: CreateCommentBody,
   ) {
     return this.ideasService.createComment(id, user.sub, body);
+  }
+
+  @Patch(':id/comments/:commentId')
+  @Roles('STAFF')
+  updateComment(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Body(new ZodValidationPipe(updateCommentBodySchema))
+    body: UpdateCommentBody,
+  ) {
+    return this.ideasService.updateComment(id, commentId, user.sub, body);
+  }
+
+  @Delete(':id/comments/:commentId')
+  @Roles('STAFF')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteComment(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+  ): Promise<void> {
+    await this.ideasService.deleteComment(id, commentId, user.sub);
+  }
+
+  @Post(':id/comments/:commentId/like')
+  @Roles('STAFF')
+  likeComment(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Body(new ZodValidationPipe(likeCommentBodySchema)) body: LikeCommentBody,
+  ) {
+    return this.ideasService.likeComment(id, commentId, user.sub, body);
   }
 
   @Get(':id')

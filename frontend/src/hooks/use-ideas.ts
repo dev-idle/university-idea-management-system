@@ -6,6 +6,7 @@ import { queryKeys } from "@/lib/query/keys";
 import type {
   Idea,
   IdeasContext,
+  MyIdeasFilters,
   CreateIdeaBody,
   IdeasPaginatedResponse,
   IdeaComment,
@@ -20,6 +21,7 @@ import {
   ideaSchema,
   ideasPaginatedResponseSchema,
   ideasContextSchema,
+  myIdeasFiltersSchema,
   ideaCommentsResponseSchema,
   latestCommentsResponseSchema,
   ownIdeaSchema,
@@ -162,6 +164,7 @@ export function useCreateIdeaMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.filters() });
     },
   });
 }
@@ -298,6 +301,67 @@ export function useCreateCommentMutation() {
   });
 }
 
+/** Update own comment. STAFF only. */
+export function useUpdateCommentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ideaId,
+      commentId,
+      content,
+    }: { ideaId: string; commentId: string; content: string }): Promise<IdeaComment> => {
+      const res = await fetchWithAuth<IdeaComment>(
+        `ideas/${ideaId}/comments/${commentId}`,
+        { method: "PATCH", body: JSON.stringify({ content }) },
+      );
+      return res;
+    },
+    onSuccess: (_, { ideaId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
+    },
+  });
+}
+
+/** Delete own comment. STAFF only. */
+export function useDeleteCommentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ideaId,
+      commentId,
+    }: { ideaId: string; commentId: string }): Promise<void> => {
+      await fetchWithAuth(`ideas/${ideaId}/comments/${commentId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: (_, { ideaId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.detail(ideaId) });
+    },
+  });
+}
+
+/** Toggle like on a comment. STAFF only. */
+export function useLikeCommentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      ideaId,
+      commentId,
+      value,
+    }: { ideaId: string; commentId: string; value: "up" | "down" }): Promise<IdeaComment> => {
+      const res = await fetchWithAuth<IdeaComment>(
+        `ideas/${ideaId}/comments/${commentId}/like`,
+        { method: "POST", body: JSON.stringify({ value }) },
+      );
+      return res;
+    },
+    onSuccess: (_, { ideaId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
+    },
+  });
+}
+
 /* ── Latest comments (cross‑idea) ────────────────────────────────────────── */
 
 function parseLatestComments(data: unknown): LatestCommentsResponse {
@@ -351,6 +415,20 @@ function parseOwnIdea(data: unknown): OwnIdea {
   return parsed.data;
 }
 
+/** Filter options for My Ideas: years, cycles, categories (only those user has submitted in). STAFF only. */
+export function useMyIdeasFiltersQuery(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: queryKeys.ideas.my.filters(),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>("ideas/my/filters");
+      const parsed = myIdeasFiltersSchema.safeParse(data);
+      if (!parsed.success) throw new Error("Invalid my ideas filters response");
+      return parsed.data;
+    },
+    enabled: options?.enabled !== false,
+  });
+}
+
 /** List the current user's own ideas with pagination. STAFF only. */
 export function useMyIdeasQuery(
   params?: { page?: number; limit?: number; categoryId?: string; cycleId?: string; academicYearId?: string },
@@ -402,6 +480,7 @@ export function useUpdateMyIdeaMutation() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.filters() });
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
       queryClient.setQueryData(queryKeys.ideas.my.detail(data.id), data);
     },
@@ -417,6 +496,7 @@ export function useDeleteMyIdeaMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.my.filters() });
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
     },
   });

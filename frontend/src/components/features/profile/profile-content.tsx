@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Pencil, Check, X, User } from "lucide-react";
 import { useProfileQuery } from "@/hooks/use-profile";
+import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,7 +17,7 @@ import {
   type UpdateProfileBody,
   type UpdateProfileFormValues,
 } from "@/lib/schemas/profile.schema";
-import { ROLE_LABELS } from "@/lib/rbac";
+import { ROLE_LABELS, isStaffOnly } from "@/lib/rbac";
 import { ChangePasswordForm } from "./change-password-form";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -67,11 +69,22 @@ import {
   PROFILE_SM_OUTLINE_CLASS,
   PROFILE_SM_PRIMARY_CLASS,
   PROFILE_EDIT_BUTTON_CLASS,
+  PROFILE_STAFF_PAGE_CLASS,
+  PROFILE_STAFF_IDENTITY_CARD_CLASS,
+  PROFILE_STAFF_SECTION_CARD_CLASS,
+  PROFILE_STAFF_SM_OUTLINE_CLASS,
+  PROFILE_STAFF_SM_PRIMARY_CLASS,
+  BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_SEP_CLASS,
 } from "@/components/features/admin/constants";
 import {
   LOADING_SPINNER_ON_PRIMARY_CLASS,
   LOADING_SPINNER_ON_PRIMARY_SM_CLASS,
+  IDEAS_HUB_SPACING,
+  PAGE_WRAPPER_PROFILE_CLASS,
+  PAGE_CONTAINER_CLASS,
 } from "@/config/design";
+import { ROUTES } from "@/config/constants";
 import { getAvatarInitial } from "@/lib/utils";
 
 const GENDER_NONE = "__none__";
@@ -88,12 +101,16 @@ interface EditableDisplayNameProps {
   displayName: string;
   onSave: (value: string) => Promise<void>;
   isSaving: boolean;
+  outlineClass?: string;
+  primaryClass?: string;
 }
 
 function EditableDisplayName({
   displayName,
   onSave,
   isSaving,
+  outlineClass = PROFILE_SM_OUTLINE_CLASS,
+  primaryClass = PROFILE_SM_PRIMARY_CLASS,
 }: EditableDisplayNameProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(displayName);
@@ -142,7 +159,7 @@ function EditableDisplayName({
             variant="outline"
             onClick={handleCancel}
             disabled={isSaving}
-            className={PROFILE_SM_OUTLINE_CLASS}
+            className={outlineClass}
           >
             <X className="size-4 shrink-0" aria-hidden />
             Cancel
@@ -152,7 +169,7 @@ function EditableDisplayName({
             size="sm"
             onClick={() => void handleSave()}
             disabled={isSaving || value.trim() === displayName}
-            className={PROFILE_SM_PRIMARY_CLASS}
+            className={primaryClass}
           >
             {isSaving ? (
               <span className={LOADING_SPINNER_ON_PRIMARY_CLASS} aria-hidden />
@@ -257,16 +274,44 @@ export function ProfileContent() {
     );
   }
 
+  const { user } = useAuth();
+  const staffLayout = isStaffOnly(user?.roles);
+
   const roleLabel =
     ROLE_LABELS[profile.role as keyof typeof ROLE_LABELS] ?? profile.role;
   const displayName = profile.fullName?.trim() || profile.email;
   const initials = getAvatarInitial(profile.fullName, profile.email);
   const apiError = updateProfileMutation.error as Error | undefined;
 
+  const identityCardClass = staffLayout ? PROFILE_STAFF_IDENTITY_CARD_CLASS : PROFILE_IDENTITY_CARD_CLASS;
+  const sectionCardClass = staffLayout ? PROFILE_STAFF_SECTION_CARD_CLASS : PROFILE_SECTION_CARD_CLASS;
+  const pageWrapperClass = staffLayout
+    ? `${IDEAS_HUB_SPACING} ${PAGE_WRAPPER_PROFILE_CLASS}`
+    : `${PROFILE_PAGE_CLASS} ${PAGE_CONTAINER_CLASS}`;
+
   return (
-    <div className={PROFILE_PAGE_CLASS}>
+    <div className={pageWrapperClass}>
+      {staffLayout && (
+        <nav aria-label="Breadcrumb" className="mb-4">
+          <ol className={`flex flex-wrap items-center ${BREADCRUMB_GHOST_CLASS}`}>
+            <li>
+              <Link
+                href={ROUTES.IDEAS}
+                className="transition-colors duration-200 hover:text-foreground"
+              >
+                Ideas Hub
+              </Link>
+            </li>
+            <li className="flex items-center" aria-current="page">
+              <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+              Profile
+            </li>
+          </ol>
+        </nav>
+      )}
+      <h1 className="sr-only">Profile</h1>
       <section
-        className={PROFILE_IDENTITY_CARD_CLASS}
+        className={identityCardClass}
         aria-label="Profile identity"
       >
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-10">
@@ -280,6 +325,8 @@ export function ProfileContent() {
               displayName={displayName}
               onSave={handleSaveFullName}
               isSaving={updateProfileMutation.isPending}
+              outlineClass={staffLayout ? PROFILE_STAFF_SM_OUTLINE_CLASS : undefined}
+              primaryClass={staffLayout ? PROFILE_STAFF_SM_PRIMARY_CLASS : undefined}
             />
             <p className={PROFILE_METADATA_CLASS}>{profile.email}</p>
             <p className={PROFILE_METADATA_CLASS}>
@@ -295,8 +342,8 @@ export function ProfileContent() {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_480px]">
-        <Card className={PROFILE_SECTION_CARD_CLASS}>
+      <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+        <Card className={sectionCardClass}>
           <CardHeader className={PROFILE_SECTION_HEADER_CLASS}>
             <CardTitle className={PROFILE_SECTION_TITLE_CLASS}>
               <User className="size-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -465,7 +512,7 @@ export function ProfileContent() {
             </Form>
           </CardContent>
         </Card>
-        <ChangePasswordForm />
+        <ChangePasswordForm staffLayout={staffLayout} />
       </div>
     </div>
   );

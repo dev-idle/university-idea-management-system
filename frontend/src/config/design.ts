@@ -349,6 +349,14 @@ export const IDEA_DISCUSSION_SUBTITLE = "mt-0.5 text-[11px] text-muted-foregroun
 export const IDEA_ATTACHMENT_ITEM =
   "flex items-center justify-between gap-3 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]";
 
+/** Engagement action buttons — shared by idea card and comment actions. Defined early to avoid TDZ. */
+export const IDEAS_HUB_ACTION_BASE =
+  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium tabular-nums transition-colors duration-100";
+export const IDEAS_HUB_ACTION_INACTIVE =
+  "text-muted-foreground/55 hover:bg-muted/[0.05] hover:text-foreground/70 disabled:cursor-not-allowed";
+export const IDEAS_HUB_ACTION_UP = "text-success";
+export const IDEAS_HUB_ACTION_DOWN = "text-destructive";
+
 /** Comment avatar — subtle, aligned with byline. */
 export const IDEA_COMMENT_AVATAR =
   "size-7 shrink-0 rounded-full ring-1 ring-border/20";
@@ -371,8 +379,132 @@ export const IDEA_COMMENT_TIME = "text-[11px] text-muted-foreground/40";
 export const IDEA_COMMENT_BODY =
   "mt-1 whitespace-pre-wrap text-sm leading-[1.7] text-foreground/70";
 
+/** Idea detail: comments section — overflow-visible to avoid clipping rounded corners on nested replies. */
+export const IDEA_DETAIL_COMMENTS_WRAP = "pt-1 pb-5 sm:pb-6 overflow-visible";
+
+/** Idea detail: comment row — py-3 uniform (12px) so all gaps = 12+12+12 = 36px. */
+export const IDEA_DETAIL_COMMENT_ROW_ROOT = "flex items-start gap-3 py-3";
+export const IDEA_DETAIL_COMMENT_ROW_ROOT_NOT_FIRST = "flex items-start gap-3 py-3";
+export const IDEA_DETAIL_COMMENT_ROW_REPLY = "flex items-start gap-3 py-3";
+export const IDEA_DETAIL_COMMENT_ROW_REPLY_NOT_FIRST = "flex items-start gap-3 py-3";
+
+/** Idea detail: reply indent — uniform for depth 2+ (avatar 36px + gap 12px = 48px). */
+export const IDEA_DETAIL_REPLY_INDENT_PX = 48;
+
+/** Light highlight border — apply when comment is targeted (state-driven, not :target). */
+export const IDEA_DETAIL_COMMENT_HIGHLIGHT =
+  "ring-1 ring-primary/25 ring-inset rounded-xl transition-[box-shadow] duration-300";
+
+/** Idea detail: vertical thread line — small gap below avatar, then down through replies. */
+export const IDEA_DETAIL_THREAD_LINE =
+  "absolute left-[17px] top-[54px] bottom-0 w-px bg-border/25 pointer-events-none";
+
+/** Idea detail: avatar — root & reply. */
+export const IDEA_DETAIL_COMMENT_AVATAR = "size-9 shrink-0 rounded-full";
+
+/** Idea detail: comment bubble — header + body only. overflow-visible so rounded corners aren't clipped. */
+export const IDEA_DETAIL_COMMENT_BUBBLE =
+  "rounded-2xl bg-muted/30 dark:bg-muted/20 px-3 py-2 w-fit max-w-full text-sm overflow-visible";
+
+/** Idea detail: author + time row. */
+export const IDEA_DETAIL_COMMENT_HEADER_ROW =
+  "flex flex-nowrap items-center gap-2 text-[13px]";
+
+/** Idea detail: "edited" label for comments modified after creation. */
+export const IDEA_DETAIL_EDITED_LABEL = "text-[12px] text-muted-foreground/50 italic";
+
+/** Idea detail: comment content text. */
+export const IDEA_DETAIL_COMMENT_BODY =
+  "mt-2 whitespace-pre-wrap leading-snug text-foreground/90";
+
+/** Idea detail: action row (Like, Dislike, Reply) — outside bubble, single line. */
+export const IDEA_DETAIL_COMMENT_ACTIONS_ROW =
+  "mt-2 flex flex-nowrap items-center gap-x-1 text-[12px]";
+
+/** Comment action buttons — match engagement bar. */
+export const IDEA_DETAIL_COMMENT_ACTION_BASE = IDEAS_HUB_ACTION_BASE;
+
+/** Like — inactive: muted + hover bg; active: success. Stroke only, no fill (match engagement). */
+export const IDEA_DETAIL_COMMENT_LIKE_INACTIVE =
+  "text-muted-foreground/55 hover:bg-muted/[0.05] hover:text-foreground/70 disabled:cursor-not-allowed";
+export const IDEA_DETAIL_COMMENT_LIKE_ACTIVE = "text-success";
+
+/** Dislike — inactive: muted + hover bg; active: destructive. Stroke only, no fill (match engagement). */
+export const IDEA_DETAIL_COMMENT_DISLIKE_INACTIVE =
+  "text-muted-foreground/55 hover:bg-muted/[0.05] hover:text-foreground/70 disabled:cursor-not-allowed";
+export const IDEA_DETAIL_COMMENT_DISLIKE_ACTIVE = "text-destructive";
+
+/** Reply — primary on hover. No background. */
+export const IDEA_DETAIL_COMMENT_REPLY =
+  "text-muted-foreground/55 hover:text-primary font-medium";
+
+/** ─── Comment & Reply forms (unified, standard layout) ──────────────────────── */
+//
+// Layout: Textarea full width → Footer row (Anonymous left, Send right).
+// Matches YouTube / GitHub / Linear comment pattern.
+
+/** Shared: textarea — matches IDEAS_NEW_TEXTAREA, full width. */
+export const IDEA_DETAIL_INPUT =
+  "min-h-[88px] w-full resize-none rounded-xl border border-border/80 bg-background px-3 py-2.5 text-sm leading-relaxed transition-colors duration-200 placeholder:text-muted-foreground/80 hover:border-primary/30 focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none";
+
+/** Shared: post button — text "Post", primary, right-aligned in footer. */
+export const IDEA_DETAIL_SEND_BTN =
+  "inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/95 disabled:opacity-50 disabled:hover:bg-primary";
+
+/** Shared: anonymous label — subtle, left-aligned in footer. */
+export const IDEA_DETAIL_ANONYMOUS_LABEL =
+  "flex cursor-pointer items-center gap-2 text-[12px] text-muted-foreground/50 transition-colors hover:text-muted-foreground/75";
+
+/** Form footer — Anonymous left, Send right. */
+export const IDEA_DETAIL_FORM_FOOTER =
+  "flex items-center justify-between gap-3 pt-2";
+
+/** Main comment form — minimal wrapper. */
+export const IDEA_DETAIL_COMMENT_FORM =
+  "flex flex-col gap-4";
+
+/** "Commenting as" — label on first line, avatar + name on second. */
+export const IDEA_DETAIL_COMMENT_AS_ROW =
+  "flex flex-col gap-2.5 text-sm";
+
+/** Main comment form body — textarea + footer. */
+export const IDEA_DETAIL_COMMENT_FORM_BODY =
+  "flex flex-col gap-0 rounded-xl";
+
+/** Reply form — same structure. */
+export const IDEA_DETAIL_REPLY_FORM =
+  "flex flex-col gap-0 rounded-xl";
+
+/** Legacy: input row (textarea now full width, no inline button). */
+export const IDEA_DETAIL_INPUT_ROW = "flex flex-col gap-2";
+
+/** Edit form textarea — matches standard input design. */
+export const IDEA_DETAIL_EDIT_INPUT =
+  "min-h-[80px] w-full resize-none rounded-xl border border-border/80 bg-background px-3 py-2.5 text-sm leading-relaxed transition-colors duration-200 placeholder:text-muted-foreground/80 hover:border-primary/30 focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none";
+
+/** Legacy alias (edit form uses IDEA_DETAIL_EDIT_INPUT) */
+export const IDEA_DETAIL_COMMENT_INPUT = IDEA_DETAIL_EDIT_INPUT;
+export const IDEA_DETAIL_REPLY_INPUT_ROW = IDEA_DETAIL_INPUT_ROW;
+export const IDEA_DETAIL_REPLY_FORM_INPUT = IDEA_DETAIL_INPUT;
+export const IDEA_DETAIL_REPLY_FORM_FOOTER = IDEA_DETAIL_FORM_FOOTER;
+export const IDEA_DETAIL_REPLY_SEND_BTN = IDEA_DETAIL_SEND_BTN;
+
+/** Idea detail: replies — pl-12 indent (avatar+gap), stretch so edit/reply forms fill width. overflow-visible avoids clipping. */
+export const IDEA_DETAIL_REPLIES_SPACING = "pl-12 flex flex-col items-stretch gap-3 overflow-visible";
+
+/** Idea detail: replies at depth 2+ — no extra indent, keeps width consistent (prevents reply 4+ overflow). */
+export const IDEA_DETAIL_REPLIES_SPACING_FLAT = "flex flex-col items-stretch gap-3 overflow-visible";
+
+/** Idea detail: View X replies button — left-aligned, w-fit. */
+export const IDEA_DETAIL_VIEW_REPLIES =
+  "w-fit text-left text-[13px] font-medium text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer";
+
 /** Attachment file name — compact, truncatable. */
 export const IDEA_ATTACHMENT_NAME = "min-w-0 truncate text-[13px] text-foreground/80";
+
+/** Idea detail: category pill — rounded pill (matches image). */
+export const IDEA_DETAIL_CATEGORY_PILL =
+  "inline-flex items-center gap-1.5 rounded-full border border-border/35 bg-muted/[0.06] px-2.5 py-1 text-[11px] font-medium text-muted-foreground/80";
 
 // ─── Ideas Hub (/ideas) — standardized, minimal ─────────────────────────────
 //
@@ -393,7 +525,7 @@ export const IDEAS_HUB_ENGAGEMENT_BORDER = "border-t border-border/40";
 
 /** Idea card — modern, refined. Soft corners, subtle hover. */
 export const IDEAS_HUB_ARTICLE_CLASS =
-  "group relative flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card transition-all duration-200 hover:border-border/60 hover:shadow-[var(--shadow-card-hover)]";
+  "group relative flex flex-col overflow-visible rounded-2xl border border-border/50 bg-card transition-all duration-200 hover:border-border/60 hover:shadow-[var(--shadow-card-hover)]";
 
 /** Idea card author avatar. */
 export const IDEAS_HUB_AVATAR = "size-9 shrink-0 rounded-full ring-1 ring-border/35";
@@ -407,20 +539,6 @@ export const IDEAS_HUB_TITLE =
 
 /** Idea card description — optimal readability. */
 export const IDEAS_HUB_DESC = "text-sm leading-[1.6] text-muted-foreground/80";
-
-/** Idea card engagement action — base layout (vote, comment, view). Minimal transition for snappy feel. */
-export const IDEAS_HUB_ACTION_BASE =
-  "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] font-medium tabular-nums transition-colors duration-100";
-
-/** Idea card engagement action — inactive/neutral. */
-export const IDEAS_HUB_ACTION_INACTIVE =
-  "text-muted-foreground/55 hover:bg-muted/[0.05] hover:text-foreground/70 disabled:cursor-not-allowed";
-
-/** Idea card engagement action — vote up active. No background. */
-export const IDEAS_HUB_ACTION_UP = "text-success";
-
-/** Idea card engagement action — vote down active. No background. */
-export const IDEAS_HUB_ACTION_DOWN = "text-destructive";
 
 /** Idea card expand/collapse (continue reading / show less). Minimal, subtle. */
 export const IDEAS_HUB_READ_MORE =
@@ -459,16 +577,27 @@ export const IDEAS_HUB_EMPTY_ICON = "flex size-12 items-center justify-center ro
 export const IDEAS_HUB_CTA_CARD =
   "flex items-center gap-3 rounded-2xl border border-border/50 bg-card px-4 py-4 sm:py-5 transition-all duration-200 hover:border-border/60 hover:shadow-[var(--shadow-card-hover)]";
 
-/** My proposals card — 3-dot actions trigger. Minimal, subtle. */
-export const IDEAS_MY_ACTIONS_TRIGGER =
-  "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground/45 transition-colors duration-200 hover:bg-muted/[0.04] hover:text-muted-foreground/75 data-[state=open]:bg-muted/[0.04] data-[state=open]:text-muted-foreground/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+/** Ideas 3-dot menu — trigger (Edit/Delete). Subtle, appears on hover. */
+export const IDEAS_ACTIONS_TRIGGER =
+  "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground/30 transition-colors duration-200 hover:text-muted-foreground/70 hover:bg-muted/[0.04] data-[state=open]:text-muted-foreground/70 data-[state=open]:bg-muted/[0.04] focus-visible:outline-none focus-visible:ring-0";
 
-/** My proposals card — actions menu. Refined spacing. */
-export const IDEAS_MY_ACTIONS_MENU = "min-w-[7.5rem] p-1.5";
+/** Ideas 3-dot menu — dropdown content. align=end, sideOffset=4. */
+export const IDEAS_ACTIONS_MENU = "min-w-[8rem] p-1.5";
 
-/** My proposals card — actions menu item. Edit: primary (indigo) on hover. */
-export const IDEAS_MY_ACTIONS_ITEM =
-  "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-foreground/75 transition-colors duration-150 focus:bg-primary/10 focus:text-primary data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:!text-current [&_svg]:transition-colors [&_svg]:duration-150 focus:[&_svg]:!text-primary data-[highlighted]:[&_svg]:!text-primary";
+/** Ideas 3-dot menu — item (Edit). Primary on focus/hover. */
+export const IDEAS_ACTIONS_ITEM =
+  "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-foreground/80 transition-colors duration-150 focus:bg-primary/[0.08] focus:text-primary data-[highlighted]:bg-primary/[0.08] data-[highlighted]:text-primary [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:!text-current focus:[&_svg]:!text-primary data-[highlighted]:[&_svg]:!text-primary";
+
+/** Ideas 3-dot menu — item (Delete). Destructive. */
+export const IDEAS_ACTIONS_ITEM_DESTRUCTIVE =
+  "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-destructive/90 transition-colors duration-150 focus:bg-destructive/[0.08] focus:text-destructive data-[highlighted]:bg-destructive/[0.08] data-[highlighted]:text-destructive [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:!text-current focus:[&_svg]:!text-destructive data-[highlighted]:[&_svg]:!text-destructive";
+
+/** @deprecated Use IDEAS_ACTIONS_TRIGGER */
+export const IDEAS_MY_ACTIONS_TRIGGER = IDEAS_ACTIONS_TRIGGER;
+/** @deprecated Use IDEAS_ACTIONS_MENU */
+export const IDEAS_MY_ACTIONS_MENU = IDEAS_ACTIONS_MENU;
+/** @deprecated Use IDEAS_ACTIONS_ITEM */
+export const IDEAS_MY_ACTIONS_ITEM = IDEAS_ACTIONS_ITEM;
 
 /** My proposals card — top-right label: voting period (Comment & vote). Active state. */
 export const IDEAS_MY_STATUS_VOTING =
@@ -562,6 +691,9 @@ export const NAVBAR_DIVIDER = "bg-border/45";
 /** Navbar background — clean, light. */
 export const NAVBAR_BG = "bg-background/95 backdrop-blur-sm";
 
+/** Navbar horizontal padding — more space from edges. */
+export const NAVBAR_PX = "px-6 md:px-8";
+
 // ─── Staff layout (compact top bar, no sidebar) ───────────────────────────
 
 /** Staff header height — matches Manager Navbar (h-16). */
@@ -570,8 +702,8 @@ export const STAFF_HEADER_HEIGHT = "h-16";
 /** Staff header: uses NAVBAR_* tokens. */
 export const STAFF_HEADER_BG = NAVBAR_BG;
 
-/** Staff header horizontal padding — synced with Manager rhythm. */
-export const STAFF_HEADER_PX = "px-5 md:px-6";
+/** Staff header horizontal padding — more space from edges. */
+export const STAFF_HEADER_PX = "px-6 md:px-8";
 
 /** Staff pill group — minimal: no border, subtle bg only. */
 export const STAFF_PILL_GROUP_CLASS =
@@ -580,8 +712,9 @@ export const STAFF_PILL_GROUP_CLASS =
 /** Staff main max-width — narrow, ideas-focused. */
 export const STAFF_MAIN_MAX_W = "max-w-4xl";
 
-/** Staff context label (active year) — caption, muted. */
-export const STAFF_CONTEXT_LABEL_CLASS = TYPO_CAPTION + " text-muted-foreground/72";
+/** Staff context label (active year) — subtle, nav-level. */
+export const STAFF_CONTEXT_LABEL_CLASS =
+  "text-sm font-normal text-foreground/75";
 
 // ─── Page spacing (Staff + Role Manager) ───────────────────────────────────
 

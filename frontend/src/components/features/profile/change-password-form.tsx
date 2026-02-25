@@ -32,6 +32,7 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   PROFILE_SECTION_CARD_CLASS,
+  PROFILE_STAFF_SECTION_CARD_CLASS,
   PROFILE_SECTION_HEADER_CLASS,
   PROFILE_SECTION_TITLE_CLASS,
   PROFILE_HEADER_BUTTON_CLASS,
@@ -74,7 +75,12 @@ function PasswordInputWithToggle({
   );
 }
 
-export function ChangePasswordForm() {
+interface ChangePasswordFormProps {
+  /** Staff layout: rounded-2xl card matching Ideas. */
+  staffLayout?: boolean;
+}
+
+export function ChangePasswordForm({ staffLayout = false }: ChangePasswordFormProps = {}) {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -115,7 +121,7 @@ export function ChangePasswordForm() {
   }
 
   return (
-    <Card className={PROFILE_SECTION_CARD_CLASS}>
+    <Card className={staffLayout ? PROFILE_STAFF_SECTION_CARD_CLASS : PROFILE_SECTION_CARD_CLASS}>
       <CardHeader className={PROFILE_SECTION_HEADER_CLASS}>
         <CardTitle className={PROFILE_SECTION_TITLE_CLASS}>
           <KeyRound className="size-4 shrink-0 text-muted-foreground" aria-hidden />
