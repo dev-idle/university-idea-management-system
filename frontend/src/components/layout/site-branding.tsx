@@ -24,9 +24,9 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
   const user = useAuthStore((s) => s.user);
   const entryHref = user?.roles?.length ? getEntryRouteForRoles(user.roles) : ROUTES.LOGIN;
 
-  /* ── Header (navbar): full logo at a compact, readable height ──────────── */
+  /* ── Header (navbar): full logo — matches Sidebar height (h-9) for consistency ─ */
   if (variant === "header") {
-    const logo = <BrandLogo className="h-7" />;
+    const logo = <BrandLogo className="h-9" align="left" />;
 
     if (linkToEntry) {
       return (

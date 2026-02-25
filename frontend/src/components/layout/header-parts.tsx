@@ -100,7 +100,7 @@ export function HeaderIconButton({
     : "text-muted-foreground/55 hover:text-foreground/80";
   const content = (
     <span className={`flex items-center justify-center ${HEADER_ICON_CLASS} ${activeClass}`}>
-      <Icon className="size-4" aria-hidden />
+      <Icon className="size-[16.3px]" aria-hidden />
     </span>
   );
 
@@ -151,7 +151,7 @@ export function UserMenu({
               : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:ring-0`
           }
         >
-          <Avatar className={isPill ? "size-7 shrink-0" : "shrink-0"}>
+          <Avatar className={isPill ? "size-8 shrink-0" : "shrink-0"}>
             <AvatarFallback className={`${PROFILE_AVATAR_FALLBACK_CLASS} text-xs font-semibold`}>
               {avatarInitial}
             </AvatarFallback>

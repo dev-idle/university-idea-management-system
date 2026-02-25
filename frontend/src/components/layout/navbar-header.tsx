@@ -3,17 +3,24 @@
 import { usePathname } from "next/navigation";
 import { Lightbulb } from "lucide-react";
 import { getEntryRouteForRoles, ROUTES } from "@/config/constants";
+import { cn } from "@/lib/utils";
 import { hasRole } from "@/lib/rbac";
-import { NAVBAR_BORDER, NAVBAR_BG, NAVBAR_DIVIDER, NAVBAR_PX } from "@/config/design";
+import {
+  NAVBAR_ACTION_GROUP,
+  NAVBAR_BORDER,
+  NAVBAR_BG,
+  NAVBAR_DIVIDER_VERTICAL,
+  NAVBAR_HEADER_BASE,
+  NAVBAR_PX,
+  NAVBAR_RIGHT_GAP,
+  STAFF_HEADER_HEIGHT,
+} from "@/config/design";
 import {
   HeaderBreadcrumbs,
   HeaderIconButton,
   UserMenu,
 } from "@/components/layout/header-parts";
 import { NotificationDropdown } from "@/components/layout/notification-dropdown";
-
-/** Top app bar height — aligns with SidebarHeader. */
-const TOP_BAR_HEIGHT = "h-16";
 
 interface NavbarHeaderProps {
   user: { roles?: string[] };
@@ -33,10 +40,18 @@ export function NavbarHeader({
   onLogout,
 }: NavbarHeaderProps) {
   const pathname = usePathname();
+  const showNotification = !hasRole(user.roles, "ADMIN") && !hasRole(user.roles, "QA_MANAGER");
+  const hasLeftActions = hasRole(user.roles, "STAFF") || showNotification;
 
   return (
     <header
-      className={`sticky top-0 z-10 flex ${TOP_BAR_HEIGHT} min-w-0 shrink-0 items-center gap-4 border-b ${NAVBAR_PX} ${NAVBAR_BG} ${NAVBAR_BORDER}`}
+      className={cn(
+        NAVBAR_HEADER_BASE,
+        STAFF_HEADER_HEIGHT,
+        NAVBAR_PX,
+        NAVBAR_BG,
+        NAVBAR_BORDER
+      )}
     >
       <div className="flex min-w-0 flex-1 items-center">
         <HeaderBreadcrumbs
@@ -46,25 +61,32 @@ export function NavbarHeader({
         />
       </div>
 
-      <div className="ml-auto flex shrink-0 items-center gap-0.5">
-        {hasRole(user.roles, "STAFF") && (
-          <HeaderIconButton
-            icon={Lightbulb}
-            label="Ideas Hub"
-            href={ROUTES.IDEAS}
-            isActive={pathname === ROUTES.IDEAS}
-          />
+      <div className={cn("flex shrink-0 items-center", NAVBAR_RIGHT_GAP)}>
+        {hasLeftActions && (
+          <div className={NAVBAR_ACTION_GROUP}>
+            {hasRole(user.roles, "STAFF") && (
+              <HeaderIconButton
+                icon={Lightbulb}
+                label="Ideas Hub"
+                href={ROUTES.IDEAS}
+                isActive={pathname === ROUTES.IDEAS}
+                pillGroup
+              />
+            )}
+            {showNotification && <NotificationDropdown variant="pill" />}
+          </div>
         )}
-        <NotificationDropdown variant="standalone" />
 
-        <div className={`mx-2 hidden h-5 w-px md:block ${NAVBAR_DIVIDER}`} aria-hidden />
+        {hasLeftActions && (
+          <div className={NAVBAR_DIVIDER_VERTICAL} aria-hidden />
+        )}
 
         <UserMenu
           user={user}
           displayName={displayName}
           avatarInitial={avatarInitial}
           onLogout={onLogout}
-          variant="minimal"
+          variant="pill"
         />
       </div>
     </header>

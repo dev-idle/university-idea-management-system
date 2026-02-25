@@ -56,7 +56,10 @@ import {
   MAIN_PX,
   MAIN_PY,
   NAVBAR_BORDER,
-  NAVBAR_DIVIDER,
+  NAVBAR_DIVIDER_LEFT,
+  NAVBAR_DIVIDER_VERTICAL,
+  NAVBAR_HEADER_BASE,
+  NAVBAR_RIGHT_GAP,
   STAFF_HEADER_HEIGHT,
   STAFF_HEADER_BG,
   STAFF_HEADER_PX,
@@ -617,7 +620,7 @@ function StaffLayout({
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <header
         className={cn(
-          "sticky top-0 z-50 flex shrink-0 items-center justify-between gap-4 border-b",
+          NAVBAR_HEADER_BASE,
           STAFF_HEADER_HEIGHT,
           STAFF_HEADER_BG,
           STAFF_HEADER_PX,
@@ -626,7 +629,7 @@ function StaffLayout({
       >
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <SiteBranding variant="header" linkToEntry />
-          <div className={cn("h-4 w-px shrink-0", NAVBAR_DIVIDER)} aria-hidden />
+          <div className={NAVBAR_DIVIDER_LEFT} aria-hidden />
           <span
             className={cn("truncate", STAFF_CONTEXT_LABEL_CLASS)}
             title={contextLabel}
@@ -634,7 +637,7 @@ function StaffLayout({
             {contextLabel}
           </span>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className={cn("flex shrink-0 items-center", NAVBAR_RIGHT_GAP)}>
           <div className={STAFF_PILL_GROUP_CLASS}>
             <HeaderIconButton
               icon={Lightbulb}
@@ -652,7 +655,7 @@ function StaffLayout({
             />
             <NotificationDropdown variant="pill" />
           </div>
-          <div className={cn("h-5 w-px shrink-0", NAVBAR_DIVIDER)} aria-hidden />
+          <div className={NAVBAR_DIVIDER_VERTICAL} aria-hidden />
           <UserMenu
             user={user}
             displayName={displayName}

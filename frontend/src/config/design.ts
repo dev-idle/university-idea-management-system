@@ -678,21 +678,39 @@ export const IDEAS_NEW_TEXTAREA =
 export const IDEAS_NEW_ACTIONS =
   "flex flex-wrap items-center gap-3 border-t border-border/40 pt-6";
 
-// ─── Navbar (Staff + Role Manager) — refined, minimal ───────────────────────
+// ─── Navbar (Staff + Role Manager) — refined, minimal, unified ─────────────
 //
 // Softer border/divider for a lighter, less noisy top bar. Same h-16 for both.
 
 /** Navbar bottom border — subtle, minimal (/45). */
 export const NAVBAR_BORDER = "border-border/45";
 
-/** Navbar vertical divider (between icon group and user). */
-export const NAVBAR_DIVIDER = "bg-border/45";
+/** Navbar vertical divider color (used in w-px elements). */
+export const NAVBAR_DIVIDER = "bg-border/40";
 
 /** Navbar background — clean, light. */
-export const NAVBAR_BG = "bg-background/95 backdrop-blur-sm";
+export const NAVBAR_BG = "bg-background/98 backdrop-blur-sm";
 
 /** Navbar horizontal padding — more space from edges. */
 export const NAVBAR_PX = "px-6 md:px-8";
+
+/** Navbar header base — shared by Staff & Role Manager for consistent layout. */
+export const NAVBAR_HEADER_BASE =
+  "sticky top-0 z-50 flex shrink-0 items-center justify-between gap-4 border-b";
+
+/** Navbar right section: gap between icon group and user menu. */
+export const NAVBAR_RIGHT_GAP = "gap-2";
+
+/** Navbar icon group — shared by Staff & Role Manager. Subtle container for nav icons. */
+export const NAVBAR_ACTION_GROUP =
+  "flex items-center gap-2 rounded-lg bg-muted/[0.015] p-1";
+
+/** Navbar vertical divider (between icon group and user menu) — centered between bell and User. */
+export const NAVBAR_DIVIDER_VERTICAL =
+  "ml-0.5 mr-1.5 hidden h-5 w-px shrink-0 md:block bg-border/40";
+
+/** Navbar left-section divider (e.g. between branding and context label) — shorter. */
+export const NAVBAR_DIVIDER_LEFT = "h-4 w-px shrink-0 bg-border/40";
 
 // ─── Staff layout (compact top bar, no sidebar) ───────────────────────────
 
@@ -702,12 +720,11 @@ export const STAFF_HEADER_HEIGHT = "h-16";
 /** Staff header: uses NAVBAR_* tokens. */
 export const STAFF_HEADER_BG = NAVBAR_BG;
 
-/** Staff header horizontal padding — more space from edges. */
-export const STAFF_HEADER_PX = "px-6 md:px-8";
+/** Staff header horizontal padding — matches NAVBAR_PX. */
+export const STAFF_HEADER_PX = NAVBAR_PX;
 
-/** Staff pill group — minimal: no border, subtle bg only. */
-export const STAFF_PILL_GROUP_CLASS =
-  "flex items-center gap-1 rounded-lg bg-muted/[0.02] p-1";
+/** Staff pill group — alias for unified NAVBAR_ACTION_GROUP. */
+export const STAFF_PILL_GROUP_CLASS = NAVBAR_ACTION_GROUP;
 
 /** Staff main max-width — narrow, ideas-focused. */
 export const STAFF_MAIN_MAX_W = "max-w-4xl";

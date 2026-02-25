@@ -136,7 +136,7 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
       )}
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
     >
-      <Bell className="size-4" aria-hidden />
+      <Bell className="size-[16.3px]" aria-hidden />
       {unreadCount > 0 && (
         <span
           className={cn(
