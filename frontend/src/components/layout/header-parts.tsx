@@ -7,7 +7,7 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { TYPO_LABEL, TYPO_NAV, HOVER_TRANSITION_NAV } from "@/config/design";
+import { TYPO_LABEL, TYPO_NAV, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE } from "@/config/design";
 import { PROFILE_AVATAR_FALLBACK_CLASS } from "@/components/features/admin/constants";
 import { ROUTES } from "@/config/constants";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -100,7 +100,7 @@ export function HeaderIconButton({
     : "text-muted-foreground/55 hover:text-foreground/80";
   const content = (
     <span className={`flex items-center justify-center ${HEADER_ICON_CLASS} ${activeClass}`}>
-      <Icon className="size-[16.3px]" aria-hidden />
+      <Icon className={NAVBAR_ICON_SIZE} aria-hidden />
     </span>
   );
 

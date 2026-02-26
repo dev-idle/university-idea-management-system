@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import {
@@ -10,7 +10,7 @@ import {
   useMyIdeasFiltersQuery,
 } from "@/hooks/use-ideas";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
-import { ROUTES } from "@/config/constants";
+import { ROUTES, buildPageTitle } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { cn, timeAgo, getAvatarInitial } from "@/lib/utils";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -453,6 +453,11 @@ export default function MyIdeasPage() {
   );
   const deleteMutation = useDeleteMyIdeaMutation();
   const voteMutation = useVoteIdeaMutation();
+
+  useEffect(() => {
+    document.title = buildPageTitle("My Ideas");
+    // No cleanup: next page sets its own title
+  }, []);
 
   if (status === "error") throw error;
 

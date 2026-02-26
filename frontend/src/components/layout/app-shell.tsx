@@ -55,14 +55,12 @@ import {
   MAIN_MAX_W_COLLAPSED,
   MAIN_PX,
   MAIN_PY,
-  NAVBAR_BORDER,
   NAVBAR_DIVIDER_LEFT,
   NAVBAR_DIVIDER_VERTICAL,
-  NAVBAR_HEADER_BASE,
+  NAVBAR_HEADER_CLASS,
+  NAVBAR_LEFT_BASE,
+  NAVBAR_RIGHT_BASE,
   NAVBAR_RIGHT_GAP,
-  STAFF_HEADER_HEIGHT,
-  STAFF_HEADER_BG,
-  STAFF_HEADER_PX,
   STAFF_PILL_GROUP_CLASS,
   STAFF_MAIN_MAX_W,
   STAFF_CONTEXT_LABEL_CLASS,
@@ -619,15 +617,9 @@ function StaffLayout({
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <header
-        className={cn(
-          NAVBAR_HEADER_BASE,
-          STAFF_HEADER_HEIGHT,
-          STAFF_HEADER_BG,
-          STAFF_HEADER_PX,
-          NAVBAR_BORDER
-        )}
+        className={NAVBAR_HEADER_CLASS}
       >
-        <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className={cn(NAVBAR_LEFT_BASE, "gap-4")}>
           <SiteBranding variant="header" linkToEntry />
           <div className={NAVBAR_DIVIDER_LEFT} aria-hidden />
           <span
@@ -637,7 +629,7 @@ function StaffLayout({
             {contextLabel}
           </span>
         </div>
-        <div className={cn("flex shrink-0 items-center", NAVBAR_RIGHT_GAP)}>
+        <div className={cn(NAVBAR_RIGHT_BASE, NAVBAR_RIGHT_GAP)}>
           <div className={STAFF_PILL_GROUP_CLASS}>
             <HeaderIconButton
               icon={Lightbulb}

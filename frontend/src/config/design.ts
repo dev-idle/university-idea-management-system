@@ -698,6 +698,19 @@ export const NAVBAR_PX = "px-6 md:px-8";
 export const NAVBAR_HEADER_BASE =
   "sticky top-0 z-50 flex shrink-0 items-center justify-between gap-4 border-b";
 
+/** Navbar header full — combined tokens for header element (Staff & Role Manager). */
+export const NAVBAR_HEADER_CLASS =
+  "sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border/45 px-6 md:px-8 bg-background/98 backdrop-blur-sm";
+
+/** Navbar left section base — flex-1, min-w-0 for truncation. */
+export const NAVBAR_LEFT_BASE = "flex min-w-0 flex-1 items-center";
+
+/** Navbar right section base — icon group + divider + user menu. */
+export const NAVBAR_RIGHT_BASE = "flex shrink-0 items-center";
+
+/** Navbar icon size — unified 16.5px for Ideas Hub, My Ideas, Notifications. */
+export const NAVBAR_ICON_SIZE = "size-[16.5px]";
+
 /** Navbar right section: gap between icon group and user menu. */
 export const NAVBAR_RIGHT_GAP = "gap-2";
 

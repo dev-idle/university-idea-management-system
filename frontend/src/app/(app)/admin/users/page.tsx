@@ -3,7 +3,7 @@ import { AdminUsersManagement } from "@/components/features/admin/users-manageme
 import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
-  title: "User management",
+  title: "User Management",
   description: "Manage users, roles, and access. Authorization is enforced by the backend.",
 };
 

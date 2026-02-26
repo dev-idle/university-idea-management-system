@@ -5,7 +5,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
-  title: "Academic years",
+  title: "Academic Years",
   description:
     "Create and manage academic years. Exactly one can be active. Backend enforces authorization.",
 };

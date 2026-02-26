@@ -14,7 +14,7 @@ import {
 } from "@/hooks/use-ideas";
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
 import { useProfileQuery } from "@/hooks/use-profile";
-import { ROUTES } from "@/config/constants";
+import { ROUTES, buildPageTitle } from "@/config/constants";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import type { IdeaComment } from "@/lib/schemas/ideas.schema";
 import { getAvatarInitial, getCommentDisplayInfo, cn, timeAgo } from "@/lib/utils";
@@ -665,6 +665,13 @@ export default function IdeaDetailPage() {
   useEffect(() => {
     if (!id) router.replace(ROUTES.IDEAS);
   }, [id, router]);
+
+  useEffect(() => {
+    if (idea?.title) {
+      document.title = buildPageTitle("Proposal");
+      // No cleanup: next page sets its own title
+    }
+  }, [idea?.title]);
 
   useEffect(() => {
     if (!idea || typeof window === "undefined" || window.location.hash !== "#comments") return;

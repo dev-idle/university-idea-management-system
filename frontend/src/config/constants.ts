@@ -4,6 +4,20 @@ import { isRole, type Role } from "@/lib/rbac";
  * Shared constants (auth cookie name must match backend).
  */
 
+/** Site name — used in document titles and branding. */
+export const SITE_NAME = "Greenwich University";
+
+/** Default document title when no page-specific title applies. Kept short for tab display. */
+export const DEFAULT_PAGE_TITLE = `Ideas | ${SITE_NAME}`;
+
+/** Page title template: "%s" is replaced with the page title. */
+export const PAGE_TITLE_TEMPLATE = `%s | ${SITE_NAME}`;
+
+/** Helper: build full page title. */
+export function buildPageTitle(pageTitle: string): string {
+  return `${pageTitle} | ${SITE_NAME}`;
+}
+
 export const AUTH = {
   /** Cookie name for refresh token (must match backend COOKIE_REFRESH_NAME). */
   REFRESH_COOKIE_NAME: "refreshToken",

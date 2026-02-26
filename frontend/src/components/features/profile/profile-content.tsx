@@ -205,6 +205,7 @@ function EditableDisplayName({
 
 export function ProfileContent() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { data: profile, isLoading, error } = useProfileQuery();
 
   const updateProfileMutation = useMutation({
@@ -274,7 +275,6 @@ export function ProfileContent() {
     );
   }
 
-  const { user } = useAuth();
   const staffLayout = isStaffOnly(user?.roles);
 
   const roleLabel =

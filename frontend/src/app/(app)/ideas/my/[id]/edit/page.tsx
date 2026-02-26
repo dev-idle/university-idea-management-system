@@ -16,7 +16,7 @@ import {
 } from "@/hooks/use-ideas";
 import type { UpdateIdeaBody, OwnIdea } from "@/lib/schemas/ideas.schema";
 import { updateIdeaBodySchema } from "@/lib/schemas/ideas.schema";
-import { ROUTES } from "@/config/constants";
+import { ROUTES, buildPageTitle } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
@@ -562,6 +562,13 @@ export default function EditIdeaPage() {
   useEffect(() => {
     if (!id) router.replace(ROUTES.MY_IDEAS);
   }, [id, router]);
+
+  useEffect(() => {
+    if (idea?.title) {
+      document.title = buildPageTitle("Edit Proposal");
+      // No cleanup: next page sets its own title
+    }
+  }, [idea?.title]);
 
   if (!id) return null;
   if (status === "error") throw error;

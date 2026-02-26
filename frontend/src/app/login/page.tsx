@@ -5,7 +5,7 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 import { TR_PAGE_FADE, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MODAL } from "@/config/design";
 
 export const metadata: Metadata = {
-  title: "Sign in",
+  title: "Sign In",
   description: "Greenwich University — Internal Idea Collection System",
 };
 

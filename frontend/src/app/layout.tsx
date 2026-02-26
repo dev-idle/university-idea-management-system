@@ -4,11 +4,12 @@ import { GeistSans } from "geist/font/sans";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Providers } from "./providers";
 import { SessionRestore } from "@/components/auth/session-restore";
+import { DEFAULT_PAGE_TITLE, PAGE_TITLE_TEMPLATE, SITE_NAME } from "@/config/constants";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Greenwich University — Idea Management", template: "%s | Greenwich University" },
-  description: "Greenwich University — Internal Idea Collection System. Submit, review, and manage ideas.",
+  title: { default: DEFAULT_PAGE_TITLE, template: PAGE_TITLE_TEMPLATE },
+  description: `${SITE_NAME} — Internal Idea Collection System. Submit, review, and manage ideas.`,
 };
 
 /** Theme colors aligned with design-system primary (Greenwich purple/indigo). */

@@ -3,7 +3,7 @@ import { DepartmentsManagement } from "@/components/features/admin/departments-m
 import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
-  title: "Department management",
+  title: "Department Management",
   description: "Create and manage departments (admin). Backend enforces authorization.",
 };
 

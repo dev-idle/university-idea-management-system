@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIdeasContextQuery, useCreateIdeaMutation } from "@/hooks/use-ideas";
 import { SubmitIdeaForm } from "@/components/features/ideas/submit-idea-form";
-import { ROUTES } from "@/config/constants";
+import { ROUTES, buildPageTitle } from "@/config/constants";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
@@ -41,10 +41,8 @@ export default function SubmitIdeaPage() {
   }, [contextStatus, canSubmit, router]);
 
   useEffect(() => {
-    document.title = "New proposal | Greenwich University";
-    return () => {
-      document.title = "Greenwich University — Idea Management";
-    };
+    document.title = buildPageTitle("New Proposal");
+    // No cleanup: next page sets its own title via metadata or useEffect
   }, []);
 
   if (

@@ -25,6 +25,7 @@ import {
   MGMT_BG_TOOLBAR,
   MGMT_BG_ROW_HOVER,
   MGMT_BORDER_ROW,
+  NAVBAR_ICON_SIZE,
 } from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
 import { env } from "@/config/env";
@@ -136,7 +137,7 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
       )}
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
     >
-      <Bell className="size-[16.3px]" aria-hidden />
+      <Bell className={NAVBAR_ICON_SIZE} aria-hidden />
       {unreadCount > 0 && (
         <span
           className={cn(
