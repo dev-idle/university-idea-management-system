@@ -81,11 +81,11 @@ import {
   LOADING_SPINNER_ON_PRIMARY_CLASS,
   LOADING_SPINNER_ON_PRIMARY_SM_CLASS,
   IDEAS_HUB_SPACING,
-  PAGE_WRAPPER_PROFILE_CLASS,
+  PAGE_WRAPPER_NARROW_CLASS,
   PAGE_CONTAINER_CLASS,
 } from "@/config/design";
 import { ROUTES } from "@/config/constants";
-import { getAvatarInitial } from "@/lib/utils";
+import { getAvatarInitial, cn } from "@/lib/utils";
 
 const GENDER_NONE = "__none__";
 const GENDER_OPTIONS = [
@@ -292,7 +292,7 @@ export function ProfileContent() {
   const identityCardClass = staffLayout ? PROFILE_STAFF_IDENTITY_CARD_CLASS : PROFILE_IDENTITY_CARD_CLASS;
   const sectionCardClass = staffLayout ? PROFILE_STAFF_SECTION_CARD_CLASS : PROFILE_SECTION_CARD_CLASS;
   const pageWrapperClass = staffLayout
-    ? `${IDEAS_HUB_SPACING} ${PAGE_WRAPPER_PROFILE_CLASS}`
+    ? `${IDEAS_HUB_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`
     : `${PROFILE_PAGE_CLASS} ${PAGE_CONTAINER_CLASS}`;
 
   return (
@@ -348,7 +348,7 @@ export function ProfileContent() {
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
+      <div className={cn("grid gap-6", staffLayout ? "lg:grid-cols-[1fr_380px]" : "lg:grid-cols-[1fr_440px]")}>
         <Card className={sectionCardClass}>
           <CardHeader className={PROFILE_SECTION_HEADER_CLASS}>
             <CardTitle className={PROFILE_SECTION_TITLE_CLASS}>
