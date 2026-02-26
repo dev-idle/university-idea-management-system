@@ -264,7 +264,13 @@ export function ProfileContent() {
     await updateProfileMutation.mutateAsync(body);
   }
 
-  if (isLoading) return <LoadingState />;
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[12rem] flex-col items-center justify-center py-20">
+        <LoadingState compact />
+      </div>
+    );
+  }
   if (error || !profile) {
     return (
       <div className={`${PROFILE_ERROR_CLASS} px-6 py-5`} role="alert">

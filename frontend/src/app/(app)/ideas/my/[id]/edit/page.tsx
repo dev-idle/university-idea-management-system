@@ -575,7 +575,7 @@ export default function EditIdeaPage() {
   if (status === "pending" || !idea) {
     return (
       <div className={PAGE_WRAPPER_NARROW_CLASS}>
-        <LoadingState />
+        <LoadingState compact />
       </div>
     );
   }

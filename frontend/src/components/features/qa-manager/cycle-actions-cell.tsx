@@ -210,6 +210,15 @@ function CycleActionsCellInner({
               disabled={unlockMutation.isPending}
               onClick={() => unlockMutation.mutate(c.id)}
             />
+          ) : c.status === "ACTIVE" ? (
+            <ActionBtn
+              label="Lock cycle"
+              tooltip="Deactivate first to lock"
+              icon={Lock}
+              className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
+              disabled
+              asSpan
+            />
           ) : (
             <ActionBtn
               label="Lock cycle"
@@ -351,11 +360,11 @@ function CycleActionsCellInner({
             ) : (
               <ActionBtn
                 label="Lock cycle"
-                tooltip="Lock"
+                tooltip="Deactivate first to lock"
                 icon={Lock}
-                className={ACTION_BUTTON_LOCK_CLASS}
-                disabled={lockMutation.isPending}
-                onClick={() => lockMutation.mutate(c.id)}
+                className={ACTION_BUTTON_DISABLED_BLUR_CLASS}
+                disabled
+                asSpan
               />
             )
           ) : (

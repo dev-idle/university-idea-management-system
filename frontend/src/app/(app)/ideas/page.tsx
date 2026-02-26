@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { IdeasHubContent } from "@/components/features/ideas/ideas-hub-content";
-import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_WRAPPER_NARROW_CLASS,
   IDEAS_HUB_SPACING,
@@ -15,9 +13,7 @@ export const metadata: Metadata = {
 export default function IdeasPage() {
   return (
     <div className={`${IDEAS_HUB_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
-      <Suspense fallback={<LoadingState />}>
-        <IdeasHubContent />
-      </Suspense>
+      <IdeasHubContent />
     </div>
   );
 }
