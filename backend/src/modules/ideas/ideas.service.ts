@@ -130,16 +130,7 @@ export class IdeasService {
         where: { cycleId: cycle.id },
         select: { category: { select: { id: true, name: true } } },
       });
-      const categoryIdsWithIdeas = await this.prisma.idea.groupBy({
-        by: ['categoryId'],
-        where: { cycleId: cycle.id, categoryId: { not: null } },
-      });
-      const nonEmptyCategoryIds = new Set(
-        categoryIdsWithIdeas.map((g) => g.categoryId!).filter(Boolean),
-      );
-      categories = cycleCategories
-        .map((cc) => cc.category)
-        .filter((cat) => nonEmptyCategoryIds.has(cat.id));
+      categories = cycleCategories.map((cc) => cc.category);
     }
 
     let closedCyclesForYear: Array<{
@@ -169,20 +160,10 @@ export class IdeasService {
           where: { cycleId: c.id },
           select: { category: { select: { id: true, name: true } } },
         });
-        const categoryIdsWithIdeas = await this.prisma.idea.groupBy({
-          by: ['categoryId'],
-          where: { cycleId: c.id, categoryId: { not: null } },
-        });
-        const nonEmptyCategoryIds = new Set(
-          categoryIdsWithIdeas.map((g) => g.categoryId!).filter(Boolean),
-        );
-        const cycleCategoriesWithIdeas = cycleCategories
-          .map((cc) => cc.category)
-          .filter((cat) => nonEmptyCategoryIds.has(cat.id));
         closedCyclesForYear.push({
           id: c.id,
           name: c.name ?? 'Unnamed',
-          categories: cycleCategoriesWithIdeas,
+          categories: cycleCategories.map((cc) => cc.category),
         });
       }
     }

@@ -8,6 +8,7 @@ import {
   ICON_BOX_PRIMARY_CLASS,
   FOCUS_RING_CLASS,
   TYPO_STAT,
+  TYPO_HEADER_AND_STAT_TEXT,
 } from "@/config/design";
 import {
   DASHBOARD_STAT_CARD_CLASS,
@@ -90,7 +91,7 @@ function QaManagerSummary() {
       </div>
       <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
-        <p className={`mt-1 ${TYPO_STAT}`}>
+        <p className={`mt-1 font-semibold text-primary ${TYPO_HEADER_AND_STAT_TEXT}`}>
           {activeCycle?.name ?? "—"}
         </p>
       </div>

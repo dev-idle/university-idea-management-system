@@ -7,7 +7,7 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { TYPO_LABEL, TYPO_NAV, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE } from "@/config/design";
+import { TYPO_LABEL, TYPO_NAV, TYPO_HEADER_AND_STAT_TEXT, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE } from "@/config/design";
 import { PROFILE_AVATAR_FALLBACK_CLASS } from "@/components/features/admin/constants";
 import { ROUTES } from "@/config/constants";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
@@ -227,7 +227,7 @@ export function HeaderBreadcrumbs({
 
   return (
     <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
-      <ol className="flex min-w-0 flex-wrap items-center gap-1.5 font-sans text-[15px]">
+      <ol className={`flex min-w-0 flex-wrap items-center gap-1.5 font-sans ${TYPO_HEADER_AND_STAT_TEXT}`}>
         {breadcrumbs.length === 0 ? (
           <li>
             <Link

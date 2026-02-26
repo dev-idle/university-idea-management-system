@@ -14,6 +14,8 @@ import {
 } from "@/config/design";
 import {
   BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_LINK_CLASS,
+  BREADCRUMB_CURRENT_CLASS,
   BREADCRUMB_SEP_CLASS,
 } from "@/components/features/admin/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -75,14 +77,14 @@ export default function SubmitIdeaPage() {
           <li>
             <Link
               href={ROUTES.IDEAS}
-              className="transition-colors duration-200 hover:text-foreground"
+              className={BREADCRUMB_LINK_CLASS}
             >
               Ideas Hub
             </Link>
           </li>
           <li className="flex items-center" aria-current="page">
             <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
-            New proposal
+            <span className={BREADCRUMB_CURRENT_CLASS}>New proposal</span>
           </li>
         </ol>
       </nav>

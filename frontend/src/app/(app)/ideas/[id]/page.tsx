@@ -81,6 +81,8 @@ import {
   IDEAS_ACTIONS_MENU,
   IDEAS_ACTIONS_ITEM,
   IDEAS_ACTIONS_ITEM_DESTRUCTIVE,
+  IDEAS_MY_STATUS_VOTING,
+  IDEAS_MY_STATUS_CLOSED,
 } from "@/config/design";
 import {
   AlertDialog,
@@ -100,6 +102,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_LINK_CLASS,
+  BREADCRUMB_CURRENT_CLASS,
   BREADCRUMB_SEP_CLASS,
   ALERT_DIALOG_ERROR_CLASS,
 } from "@/components/features/admin/constants";
@@ -117,6 +121,8 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  Activity,
+  Lock,
 } from "lucide-react";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
@@ -135,15 +141,6 @@ function findCommentById(comments: IdeaComment[], id: string): IdeaComment | und
     if (found) return found;
   }
   return undefined;
-}
-
-function formatDate(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 /* ─── Main comment form ("Commenting as" + input + Anonymous) ───────────────── */
@@ -649,7 +646,7 @@ export default function IdeaDetailPage() {
   const updateCommentMutation = useUpdateCommentMutation();
   const deleteCommentMutation = useDeleteCommentMutation();
   const likeCommentMutation = useLikeCommentMutation();
-  const { markViewedByAction } = useIdeaViewTracker(id);
+  const { markViewedByAction } = useIdeaViewTracker(id, idea?.cycleStatus ?? null);
 
   const [commentContent, setCommentContent] = useState("");
   const [commentAnonymous, setCommentAnonymous] = useState(false);
@@ -743,7 +740,7 @@ export default function IdeaDetailPage() {
 
   const handleVote = (v: "up" | "down") => {
     if (!open || voteMutation.isPending) return;
-    markViewedByAction(id);
+    markViewedByAction(id, idea.cycleStatus);
     voteMutation.mutate({ ideaId: id, value: v });
   };
 
@@ -751,7 +748,7 @@ export default function IdeaDetailPage() {
     e.preventDefault();
     const trimmed = commentContent.trim();
     if (!trimmed || !open || createCommentMutation.isPending) return;
-    markViewedByAction(id);
+    markViewedByAction(id, idea.cycleStatus);
     createCommentMutation.mutate(
       { ideaId: id, body: { content: trimmed, isAnonymous: commentAnonymous } },
       {
@@ -808,14 +805,14 @@ export default function IdeaDetailPage() {
           <li>
             <Link
               href={ROUTES.IDEAS}
-              className="transition-colors duration-200 hover:text-foreground"
+              className={BREADCRUMB_LINK_CLASS}
             >
               Ideas Hub
             </Link>
           </li>
           <li className="flex items-center" aria-current="page">
             <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
-            Proposal
+            <span className={BREADCRUMB_CURRENT_CLASS}>Proposal</span>
           </li>
         </ol>
       </nav>
@@ -853,11 +850,17 @@ export default function IdeaDetailPage() {
             </div>
           </div>
           {submissionClosed && interactionEndsAt && (
-            <span className={cn("shrink-0 text-[11px]", IDEAS_HUB_COUNT)}>
+            <span className={cn("shrink-0", open ? IDEAS_MY_STATUS_VOTING : IDEAS_MY_STATUS_CLOSED)}>
               {open ? (
-                <>Open until {formatDate(interactionEndsAt)}</>
+                <>
+                  <Activity className="size-3 shrink-0 opacity-70" aria-hidden />
+                  Comment & Vote
+                </>
               ) : (
-                <span className="text-destructive/80">Closed</span>
+                <>
+                  <Lock className="size-3 shrink-0" aria-hidden />
+                  Closed
+                </>
               )}
             </span>
           )}

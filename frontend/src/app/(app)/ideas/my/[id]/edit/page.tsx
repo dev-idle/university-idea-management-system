@@ -61,6 +61,8 @@ import {
 } from "lucide-react";
 import {
   BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_LINK_CLASS,
+  BREADCRUMB_CURRENT_CLASS,
   BREADCRUMB_SEP_CLASS,
   FORM_FIELD_ERROR_CLASS,
 } from "@/components/features/admin/constants";
@@ -598,7 +600,7 @@ export default function EditIdeaPage() {
           <li>
             <Link
               href={ROUTES.IDEAS}
-              className="transition-colors duration-200 hover:text-foreground"
+              className={BREADCRUMB_LINK_CLASS}
             >
               Ideas Hub
             </Link>
@@ -607,14 +609,14 @@ export default function EditIdeaPage() {
             <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
             <Link
               href={ROUTES.MY_IDEAS}
-              className="transition-colors duration-200 hover:text-foreground"
+              className={BREADCRUMB_LINK_CLASS}
             >
               My Ideas
             </Link>
           </li>
           <li className="flex items-center" aria-current="page">
             <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
-            Edit proposal
+            <span className={BREADCRUMB_CURRENT_CLASS}>Edit proposal</span>
           </li>
         </ol>
       </nav>

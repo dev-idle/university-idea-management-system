@@ -62,6 +62,10 @@ export const TYPO_STAT =
 export const TYPO_NAV =
   "text-sm font-medium";
 
+/** Header breadcrumb + dashboard stat text (e.g. cycle name, academic year). 15px. */
+export const TYPO_HEADER_AND_STAT_TEXT =
+  "text-[15px]";
+
 /** Label: form labels, badges, chips. */
 export const TYPO_LABEL =
   "text-xs font-medium";
@@ -568,7 +572,7 @@ export const IDEAS_HUB_TAB_BASE =
 export const IDEAS_HUB_TAB_ACTIVE = "bg-primary/10 text-primary";
 
 /** Ideas Hub view tab — inactive. */
-export const IDEAS_HUB_TAB_INACTIVE = "text-muted-foreground/45 hover:text-foreground/70 hover:bg-muted/[0.03]";
+export const IDEAS_HUB_TAB_INACTIVE = "text-muted-foreground/45 hover:text-primary hover:bg-muted/[0.03]";
 
 /** Ideas Hub empty state icon container. */
 export const IDEAS_HUB_EMPTY_ICON = "flex size-12 items-center justify-center rounded-xl bg-muted/[0.04]";
@@ -579,7 +583,7 @@ export const IDEAS_HUB_CTA_CARD =
 
 /** Ideas 3-dot menu — trigger (Edit/Delete). Subtle, appears on hover. */
 export const IDEAS_ACTIONS_TRIGGER =
-  "inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground/30 transition-colors duration-200 hover:text-muted-foreground/70 hover:bg-muted/[0.04] data-[state=open]:text-muted-foreground/70 data-[state=open]:bg-muted/[0.04] focus-visible:outline-none focus-visible:ring-0";
+  "inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground/30 transition-colors duration-200 hover:text-muted-foreground/70 hover:bg-muted/[0.04] data-[state=open]:text-muted-foreground/70 data-[state=open]:bg-muted/[0.04] focus-visible:outline-none focus-visible:ring-0";
 
 /** Ideas 3-dot menu — dropdown content. align=end, sideOffset=4. */
 export const IDEAS_ACTIONS_MENU = "min-w-[8rem] p-1.5";

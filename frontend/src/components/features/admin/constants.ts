@@ -157,6 +157,13 @@ export const SHOWING_RANGE_BADGE_CLASS =
 /** Ghost-style breadcrumb (uppercase, subtle, academic). */
 export const BREADCRUMB_GHOST_CLASS = TYPO_CAPTION_XS;
 
+/** Staff breadcrumb link — hover turns primary (blue). */
+export const BREADCRUMB_LINK_CLASS =
+  "transition-colors duration-200 hover:text-primary";
+
+/** Staff breadcrumb current page — primary color for emphasis. */
+export const BREADCRUMB_CURRENT_CLASS = "text-primary";
+
 /** Breadcrumb separator: design scale muted-foreground/80. */
 export const BREADCRUMB_SEP_CLASS = "text-muted-foreground/80 mx-2";
 

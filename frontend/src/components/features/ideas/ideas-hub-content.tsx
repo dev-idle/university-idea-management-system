@@ -472,7 +472,9 @@ export function IdeasHubContent() {
     { enabled: true },
   );
   const voteMutation = useVoteIdeaMutation();
-  const { markViewedByAction } = useIdeaViewTracker(null);
+  const expandedIdea = expandedId ? (listData?.items ?? []).find((i) => i.id === expandedId) : null;
+  const expandedCycleStatus = expandedIdea?.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null);
+  const { markViewedByAction } = useIdeaViewTracker(expandedId, expandedCycleStatus);
 
   if (ctxStatus === "error") throw ctxError;
   if (ideasStatus === "error") throw ideasError;
@@ -494,8 +496,8 @@ export function IdeasHubContent() {
       {!canSubmit && (
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
-            {interactionOpen
-              ? "Submissions are closed. You can still view, vote, and comment on ideas."
+            {interactionOpen && interactionClosesAt
+              ? `Submissions are closed. You can still view, vote, and comment on ideas until ${fmtDateTime(interactionClosesAt)}.`
               : "Submissions are closed. Browse ideas (read-only)."}
           </AlertDescription>
         </Alert>
@@ -617,10 +619,10 @@ export function IdeasHubContent() {
                       setExpandedId((prev) => (prev === id ? null : id))
                     }
                     onVote={(id, v) => {
-                      markViewedByAction(id);
+                      markViewedByAction(id, idea.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null));
                       voteMutation.mutate({ ideaId: id, value: v });
                     }}
-                    onDwellComplete={markViewedByAction}
+                    onDwellComplete={(id) => markViewedByAction(id, idea.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null))}
                     votePending={voteMutation.isPending}
                     voteDisabled={!interactionOpen}
                   />

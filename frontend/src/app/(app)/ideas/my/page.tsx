@@ -77,6 +77,8 @@ import {
 } from "@/config/design";
 import {
   BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_LINK_CLASS,
+  BREADCRUMB_CURRENT_CLASS,
   BREADCRUMB_SEP_CLASS,
 } from "@/components/features/admin/constants";
 import {
@@ -240,7 +242,7 @@ function IdeaRow({
         ) : topRightStatus === "voting" ? (
           <span className={IDEAS_MY_STATUS_VOTING} title="Cannot edit or delete, can still comment and vote">
             <Activity className="size-3 shrink-0 opacity-70" aria-hidden />
-            Comment & vote
+            Comment & Vote
           </span>
         ) : (
           <span className={IDEAS_MY_STATUS_CLOSED} title="Cycle closed">
@@ -484,14 +486,14 @@ export default function MyIdeasPage() {
           <li>
             <Link
               href={ROUTES.IDEAS}
-              className="transition-colors duration-200 hover:text-foreground"
+              className={BREADCRUMB_LINK_CLASS}
             >
               Ideas Hub
             </Link>
           </li>
           <li className="flex items-center" aria-current="page">
             <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
-            My proposals
+            <span className={BREADCRUMB_CURRENT_CLASS}>My proposals</span>
           </li>
         </ol>
       </nav>

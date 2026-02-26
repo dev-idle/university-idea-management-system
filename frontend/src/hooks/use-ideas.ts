@@ -40,6 +40,28 @@ function parseIdeasPaginated(data: unknown): IdeasPaginatedResponse {
   return parsed.data;
 }
 
+/** Refetch interval (ms): poll when within 1h of deadline. Final 5s: every 1s. One refetch after it passes. */
+function getDeadlineRefetchInterval(deadline: string | Date | null | undefined): number | false {
+  if (!deadline) return false;
+  const closesAt = new Date(deadline);
+  const now = Date.now();
+  const msLeft = closesAt.getTime() - now;
+  if (msLeft <= 0) return 5_000;
+  if (msLeft <= 5_000) return 1_000;
+  if (msLeft <= 60_000) return 5_000;
+  if (msLeft <= 300_000) return 15_000;
+  if (msLeft <= 3_600_000) return 60_000;
+  return false;
+}
+
+function getContextRefetchInterval(data: IdeasContext | undefined): number | false {
+  if (!data?.submissionClosesAt) return false;
+  const closesAt = new Date(data.submissionClosesAt);
+  const msLeft = closesAt.getTime() - Date.now();
+  if (msLeft <= 0 && !data.canSubmit) return false;
+  return getDeadlineRefetchInterval(data.submissionClosesAt);
+}
+
 /** Context for Ideas Hub: can submit, active cycle, categories, active academic year. STAFF only. */
 export function useIdeasContextQuery(options?: { enabled?: boolean }) {
   return useQuery({
@@ -49,6 +71,7 @@ export function useIdeasContextQuery(options?: { enabled?: boolean }) {
       return parseIdeasContext(data);
     },
     enabled: options?.enabled !== false,
+    refetchInterval: (query) => getContextRefetchInterval(query.state.data),
   });
 }
 
@@ -387,16 +410,44 @@ export function useLatestCommentsQuery(options?: { enabled?: boolean; limit?: nu
 
 /* ── View tracking ───────────────────────────────────────────────────────── */
 
+/** Increment viewCount by 1 in cache for real-time UI update when dwell completes. */
+function incrementViewInCache(ideaId: string, queryClient: ReturnType<typeof useQueryClient>) {
+  const inc = (v: number | undefined) => (v ?? 0) + 1;
+
+  // Idea detail
+  queryClient.setQueryData<Idea>(queryKeys.ideas.detail(ideaId), (old) =>
+    old ? { ...old, viewCount: inc(old.viewCount) } : old
+  );
+
+  // Ideas list + My ideas list
+  queryClient.setQueriesData<{ items?: Array<{ id: string; viewCount?: number }> }>(
+    { queryKey: queryKeys.ideas.all },
+    (old) => {
+      if (!old || !("items" in old)) return old;
+      const items = (old as { items: Array<{ id: string; viewCount?: number }> }).items;
+      return {
+        ...old,
+        items: items.map((i) =>
+          i.id === ideaId ? { ...i, viewCount: inc(i.viewCount) } : i
+        ),
+      };
+    }
+  );
+}
+
 /**
- * Fire-and-forget mutation to record a view. Idempotent on backend.
- * No query invalidation – view counts update on next natural refetch.
+ * Record a view. Idempotent on backend.
+ * Optimistic cache update so view count increases in real time when dwell completes.
  */
 export function useRecordViewMutation() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ideaId: string) => {
       await fetchWithAuth<void>(`ideas/${ideaId}/view`, { method: "POST" });
     },
-    // Silent: no invalidation, no error surfacing
+    onSuccess: (_, ideaId) => {
+      incrementViewInCache(ideaId, queryClient);
+    },
     onError: () => {},
   });
 }
@@ -429,6 +480,17 @@ export function useMyIdeasFiltersQuery(options?: { enabled?: boolean }) {
   });
 }
 
+/** Nearest deadline among items for real-time refetch when submission closes. */
+function getMyIdeasRefetchInterval(data: { items?: Array<{ submissionClosesAt?: string | Date | null }> } | undefined): number | false {
+  const items = data?.items ?? [];
+  let nearest: number | null = null;
+  for (const item of items) {
+    const interval = getDeadlineRefetchInterval(item.submissionClosesAt);
+    if (interval && (nearest === null || interval < nearest)) nearest = interval;
+  }
+  return nearest ?? false;
+}
+
 /** List the current user's own ideas with pagination. STAFF only. */
 export function useMyIdeasQuery(
   params?: { page?: number; limit?: number; categoryId?: string; cycleId?: string; academicYearId?: string },
@@ -452,6 +514,7 @@ export function useMyIdeasQuery(
       return parseOwnIdeasPaginated(data);
     },
     enabled: options?.enabled !== false,
+    refetchInterval: (query) => getMyIdeasRefetchInterval(query.state.data),
   });
 }
 
@@ -464,6 +527,7 @@ export function useMyIdeaQuery(id: string | null, options?: { enabled?: boolean 
       return parseOwnIdea(data);
     },
     enabled: options?.enabled !== false && !!id,
+    refetchInterval: (query) => getDeadlineRefetchInterval((query.state.data as { submissionClosesAt?: string | Date | null })?.submissionClosesAt),
   });
 }
 

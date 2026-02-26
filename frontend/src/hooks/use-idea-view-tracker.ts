@@ -59,14 +59,15 @@ function isInCooldown(ideaId: string, userId: string | null): boolean {
 
 /**
  * Tracks idea views with two paths and a 20-minute session window.
+ * Only records when the idea's cycle is ACTIVE — closed-cycle views are not counted.
  *
  * **Timer path (dwell 5 s):**
  * When `activeIdeaId` is set (expanded card in Hub or detail page) and the
- * user stays for 5 visible seconds, a view is recorded.
+ * user stays for 5 visible seconds, a view is recorded (if cycle ACTIVE).
  *
  * **Action path (vote / comment):**
- * `markViewedByAction(ideaId)` records a view immediately — proving the user
- * has engaged. Unlike does NOT remove the view.
+ * `markViewedByAction(ideaId, cycleStatus)` records a view immediately — proving the user
+ * has engaged. Skips when cycleStatus !== "ACTIVE".
  *
  * **Mutual exclusion:** Whichever path fires first for an idea disables the
  * other for the remainder of the 20-minute session window.
@@ -80,7 +81,10 @@ function isInCooldown(ideaId: string, userId: string | null): boolean {
  * **Visibility:** The dwell timer pauses when the tab is hidden and resumes
  * when the tab becomes visible again.
  */
-export function useIdeaViewTracker(activeIdeaId: string | null) {
+export function useIdeaViewTracker(
+  activeIdeaId: string | null,
+  activeCycleStatus: string | null | undefined = undefined,
+) {
   const userId = useAuthStore((s) => s.user?.id ?? null);
   const recordView = useRecordViewMutation();
 
@@ -103,12 +107,12 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
     }
   }, []);
 
-  /** Central record function — checks both in-memory and localStorage. */
+  /** Central record function — checks cycle, in-memory, and localStorage. */
   const record = useCallback(
-    (ideaId: string) => {
+    (ideaId: string, cycleStatus?: string | null) => {
+      if (cycleStatus !== "ACTIVE") return;
       if (recordedThisLoad.current.has(ideaId)) return;
       if (isInCooldown(ideaId, userId)) {
-        // Already within a 20-min window — mark in-memory to skip future checks
         recordedThisLoad.current.add(ideaId);
         return;
       }
@@ -128,10 +132,10 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
       timerIdRef.current = setTimeout(() => {
         timerIdRef.current = null;
         const id = activeIdRef.current;
-        if (id) record(id);
+        if (id) record(id, activeCycleStatus);
       }, remaining);
     },
-    [clearTimer, record],
+    [clearTimer, record, activeCycleStatus],
   );
 
   const pauseTimer = useCallback(() => {
@@ -146,11 +150,11 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
     if (!id || recordedThisLoad.current.has(id) || isInCooldown(id, userId)) return;
     const remaining = DWELL_MS - elapsedRef.current;
     if (remaining <= 0) {
-      record(id);
+      record(id, activeCycleStatus);
     } else {
       startTimer(remaining);
     }
-  }, [record, startTimer, userId]);
+  }, [record, startTimer, userId, activeCycleStatus]);
 
   /* ── visibilitychange ───────────────────────────────────────────────────── */
 
@@ -177,17 +181,16 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
 
     if (
       !activeIdeaId ||
+      activeCycleStatus !== "ACTIVE" ||
       recordedThisLoad.current.has(activeIdeaId) ||
       isInCooldown(activeIdeaId, userId)
     ) {
-      // Already in cooldown — add to in-memory set so we skip future checks
       if (activeIdeaId && isInCooldown(activeIdeaId, userId)) {
         recordedThisLoad.current.add(activeIdeaId);
       }
       return;
     }
 
-    // Start 10 s dwell timer only when the tab is visible
     if (document.visibilityState === "visible") {
       startTimer(DWELL_MS);
     }
@@ -196,16 +199,14 @@ export function useIdeaViewTracker(activeIdeaId: string | null) {
       clearTimer();
       elapsedRef.current = 0;
     };
-  }, [activeIdeaId, userId, clearTimer, startTimer]);
+  }, [activeIdeaId, activeCycleStatus, userId, clearTimer, startTimer]);
 
   /* ── action path (vote / comment) ───────────────────────────────────────── */
 
   const markViewedByAction = useCallback(
-    (ideaId: string) => {
-      // record() already handles in-memory + cooldown checks
-      record(ideaId);
+    (ideaId: string, cycleStatus?: string | null) => {
+      record(ideaId, cycleStatus);
 
-      // If this action is for the currently-timed idea, cancel the dwell timer
       if (ideaId === activeIdRef.current) {
         clearTimer();
         elapsedRef.current = 0;

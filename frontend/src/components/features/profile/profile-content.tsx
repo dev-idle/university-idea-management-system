@@ -75,6 +75,8 @@ import {
   PROFILE_STAFF_SM_OUTLINE_CLASS,
   PROFILE_STAFF_SM_PRIMARY_CLASS,
   BREADCRUMB_GHOST_CLASS,
+  BREADCRUMB_LINK_CLASS,
+  BREADCRUMB_CURRENT_CLASS,
   BREADCRUMB_SEP_CLASS,
 } from "@/components/features/admin/constants";
 import {
@@ -303,14 +305,14 @@ export function ProfileContent() {
             <li>
               <Link
                 href={ROUTES.IDEAS}
-                className="transition-colors duration-200 hover:text-foreground"
+                className={BREADCRUMB_LINK_CLASS}
               >
                 Ideas Hub
               </Link>
             </li>
             <li className="flex items-center" aria-current="page">
               <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
-              Profile
+              <span className={BREADCRUMB_CURRENT_CLASS}>Profile</span>
             </li>
           </ol>
         </nav>
