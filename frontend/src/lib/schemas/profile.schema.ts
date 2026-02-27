@@ -80,3 +80,34 @@ export const departmentMembersSchema = z
   .nullable();
 
 export type DepartmentMembers = z.infer<typeof departmentMembersSchema>;
+
+/** GET /me/department-stats response — null if user has no department. Active academic year scope. */
+export const departmentStatsSchema = z
+  .object({
+    totalIdeas: z.number().int().min(0),
+    totalComments: z.number().int().min(0),
+    totalViews: z.number().int().min(0),
+    votesUp: z.number().int().min(0),
+    votesDown: z.number().int().min(0),
+  })
+  .nullable();
+
+export type DepartmentStats = z.infer<typeof departmentStatsSchema>;
+
+/** GET /me/department-charts response — null if user has no department. */
+export const departmentChartsSchema = z
+  .object({
+    ideasByCategory: z.array(
+      z.object({ categoryName: z.string(), count: z.number().int().min(0) })
+    ),
+    ideasOverTime: z.array(
+      z.object({
+        date: z.string(),
+        dateEnd: z.string(),
+        count: z.number().int().min(0),
+      })
+    ),
+  })
+  .nullable();
+
+export type DepartmentCharts = z.infer<typeof departmentChartsSchema>;

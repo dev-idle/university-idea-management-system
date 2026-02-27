@@ -174,6 +174,219 @@ export class MeService {
   }
 
   /**
+   * Get department stats for QA Coordinator: total ideas, comments, views, votes (up/down)
+   * for the active academic year. Returns null if user has no department.
+   */
+  async getDepartmentStats(userId: string): Promise<{
+    totalIdeas: number;
+    totalComments: number;
+    totalViews: number;
+    votesUp: number;
+    votesDown: number;
+  } | null> {
+    const me = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { departmentId: true },
+    });
+    if (!me?.departmentId) return null;
+
+    const activeYear = await this.prisma.academicYear.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    if (!activeYear) {
+      return {
+        totalIdeas: 0,
+        totalComments: 0,
+        totalViews: 0,
+        votesUp: 0,
+        votesDown: 0,
+      };
+    }
+
+    const cycles = await this.prisma.ideaSubmissionCycle.findMany({
+      where: { academicYearId: activeYear.id },
+      select: { id: true, status: true },
+    });
+    const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
+    const cycleIds =
+      activeCycle != null
+        ? [activeCycle.id]
+        : cycles.map((c) => c.id);
+    if (cycleIds.length === 0) {
+      return {
+        totalIdeas: 0,
+        totalComments: 0,
+        totalViews: 0,
+        votesUp: 0,
+        votesDown: 0,
+      };
+    }
+
+    const ideaWhere = {
+      submittedBy: { departmentId: me.departmentId },
+      cycleId: { in: cycleIds },
+    };
+
+    const [totalIdeas, totalComments, totalViews, votesUp, votesDown] =
+      await Promise.all([
+        this.prisma.idea.count({ where: ideaWhere }),
+        this.prisma.ideaComment.count({
+          where: { idea: ideaWhere },
+        }),
+        this.prisma.ideaView.count({
+          where: { idea: ideaWhere },
+        }),
+        this.prisma.ideaVote.count({
+          where: { idea: ideaWhere, value: 'up' },
+        }),
+        this.prisma.ideaVote.count({
+          where: { idea: ideaWhere, value: 'down' },
+        }),
+      ]);
+
+    return {
+      totalIdeas,
+      totalComments,
+      totalViews,
+      votesUp,
+      votesDown,
+    };
+  }
+
+  /**
+   * Get department chart data for QA Coordinator: ideas by category, ideas over time.
+   * Scope: active academic year. Returns null if user has no department.
+   */
+  async getDepartmentCharts(userId: string): Promise<{
+    ideasByCategory: Array<{ categoryName: string; count: number }>;
+    ideasOverTime: Array<{ date: string; dateEnd: string; count: number }>;
+  } | null> {
+    const me = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { departmentId: true },
+    });
+    if (!me?.departmentId) return null;
+
+    const activeYear = await this.prisma.academicYear.findFirst({
+      where: { isActive: true },
+      select: { id: true, startDate: true, endDate: true },
+    });
+    if (!activeYear) {
+      return { ideasByCategory: [], ideasOverTime: [] };
+    }
+
+    const cycles = await this.prisma.ideaSubmissionCycle.findMany({
+      where: { academicYearId: activeYear.id },
+      select: { id: true, ideaSubmissionClosesAt: true, status: true },
+      orderBy: { ideaSubmissionClosesAt: 'desc' },
+    });
+    const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
+    const cycleIds =
+      activeCycle != null
+        ? [activeCycle.id]
+        : cycles.map((c) => c.id);
+    if (cycleIds.length === 0) {
+      return { ideasByCategory: [], ideasOverTime: [] };
+    }
+
+    const cycleForClosure = activeCycle ?? cycles[0]!;
+    const closureDate = cycleForClosure.ideaSubmissionClosesAt;
+    const ideaWhereAll = {
+      submittedBy: { departmentId: me.departmentId },
+      cycleId: { in: cycleIds },
+    };
+
+    const [cycleCategories, byCategoryRows, ideasWithDate] = await Promise.all([
+      this.prisma.cycleCategory.findMany({
+        where: { cycleId: { in: cycleIds } },
+        select: { category: { select: { id: true, name: true } } },
+      }),
+      this.prisma.idea.groupBy({
+        by: ['categoryId'],
+        where: ideaWhereAll,
+        _count: { id: true },
+      }),
+      this.prisma.idea.findMany({
+        where: ideaWhereAll,
+        select: { createdAt: true },
+      }),
+    ]);
+
+    const firstSubmission =
+      ideasWithDate.length > 0
+        ? new Date(Math.min(...ideasWithDate.map((i) => i.createdAt.getTime())))
+        : null;
+    const windowEnd = new Date(closureDate);
+    const windowStart = firstSubmission
+      ? (() => {
+          const start = new Date(firstSubmission);
+          start.setDate(start.getDate() - 5);
+          return start;
+        })()
+      : (() => {
+          const start = new Date(closureDate);
+          start.setDate(start.getDate() - 30);
+          return start;
+        })();
+
+    const countByCategoryId = new Map<string, number>();
+    for (const r of byCategoryRows) {
+      const key = r.categoryId ?? '__uncategorized__';
+      countByCategoryId.set(key, r._count.id);
+    }
+
+    const seenCategoryIds = new Set<string>();
+    const ideasByCategory: Array<{ categoryName: string; count: number }> = [];
+    for (const cc of cycleCategories) {
+      const cat = cc.category;
+      if (seenCategoryIds.has(cat.id)) continue;
+      seenCategoryIds.add(cat.id);
+      ideasByCategory.push({
+        categoryName: cat.name,
+        count: countByCategoryId.get(cat.id) ?? 0,
+      });
+    }
+    ideasByCategory.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+
+    const uncategorizedCount = countByCategoryId.get('__uncategorized__') ?? 0;
+    if (uncategorizedCount > 0) {
+      ideasByCategory.push({ categoryName: 'Uncategorized', count: uncategorizedCount });
+    }
+
+    const periodDays = 5;
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const totalDays = Math.max(1, Math.ceil((windowEnd.getTime() - windowStart.getTime()) / msPerDay));
+    const periodCount = Math.max(1, Math.ceil(totalDays / periodDays));
+
+    const periodCounts = new Map<number, number>();
+    for (const idea of ideasWithDate) {
+      if (idea.createdAt > windowEnd) continue; // Exclude submissions after closure (comment/vote period)
+      const msSinceStart = idea.createdAt.getTime() - windowStart.getTime();
+      const daysSince = Math.max(0, Math.floor(msSinceStart / msPerDay));
+      const periodIndex = Math.min(Math.floor(daysSince / periodDays), periodCount - 1);
+      periodCounts.set(periodIndex, (periodCounts.get(periodIndex) ?? 0) + 1);
+    }
+    const ideasOverTime: Array<{ date: string; dateEnd: string; count: number }> = [];
+    for (let i = 0; i < periodCount; i++) {
+      const startDay = new Date(windowStart);
+      startDay.setDate(startDay.getDate() + i * periodDays);
+      const endDay = new Date(startDay);
+      const daysInPeriod = Math.min(periodDays, totalDays - i * periodDays);
+      endDay.setDate(endDay.getDate() + daysInPeriod - 1);
+      const dateKey = `${startDay.getFullYear()}-${String(startDay.getMonth() + 1).padStart(2, '0')}-${String(startDay.getDate()).padStart(2, '0')}`;
+      const dateEndKey = `${endDay.getFullYear()}-${String(endDay.getMonth() + 1).padStart(2, '0')}-${String(endDay.getDate()).padStart(2, '0')}`;
+      ideasOverTime.push({
+        date: dateKey,
+        dateEnd: dateEndKey,
+        count: periodCounts.get(i) ?? 0,
+      });
+    }
+
+    return { ideasByCategory, ideasOverTime };
+  }
+
+  /**
    * Update password: verify current, hash new, update, invalidate all refresh tokens.
    * No admin override; no email/role/department updates.
    */

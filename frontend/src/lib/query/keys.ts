@@ -43,6 +43,8 @@ export const queryKeys = {
     all: ["api", "me"] as const,
     me: () => [...queryKeys.profile.all, "me"] as const,
     departmentMembers: () => [...queryKeys.profile.all, "department-members"] as const,
+    departmentStats: () => [...queryKeys.profile.all, "department-stats"] as const,
+    departmentCharts: () => [...queryKeys.profile.all, "department-charts"] as const,
   },
   notifications: {
     all: ["api", "notifications"] as const,

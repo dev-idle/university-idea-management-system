@@ -45,6 +45,42 @@ export class MeController {
   }
 
   /**
+   * GET /me/department-stats — QA Coordinator only. Returns aggregate stats for ideas from the department
+   * in the active academic year: totalIdeas, totalComments, totalViews, votesUp, votesDown.
+   * Returns null if user has no department.
+   */
+  @Get('department-stats')
+  @UseGuards(RolesGuard)
+  @Roles('QA_COORDINATOR')
+  getDepartmentStats(
+    @CurrentUser() payload: AccessTokenPayload,
+  ): Promise<{
+    totalIdeas: number;
+    totalComments: number;
+    totalViews: number;
+    votesUp: number;
+    votesDown: number;
+  } | null> {
+    return this.meService.getDepartmentStats(payload.sub);
+  }
+
+  /**
+   * GET /me/department-charts — QA Coordinator only. Chart data: ideas by category, ideas over time (daily, 30 days before closure).
+   * Returns null if user has no department.
+   */
+  @Get('department-charts')
+  @UseGuards(RolesGuard)
+  @Roles('QA_COORDINATOR')
+  getDepartmentCharts(
+    @CurrentUser() payload: AccessTokenPayload,
+  ): Promise<{
+    ideasByCategory: Array<{ categoryName: string; count: number }>;
+    ideasOverTime: Array<{ date: string; count: number }>;
+  } | null> {
+    return this.meService.getDepartmentCharts(payload.sub);
+  }
+
+  /**
    * PATCH /me — Auth required. Only fullName is editable.
    */
   @Patch()

@@ -54,9 +54,11 @@ export const TYPO_HEADING =
 export const TYPO_HEADING_LG =
   "font-sans text-2xl font-semibold tracking-tight text-foreground sm:text-3xl";
 
-/** Stat: dashboard numbers, metrics. */
-export const TYPO_STAT =
-  "text-2xl font-bold tabular-nums tracking-tight text-primary";
+/** Stat base: dashboard numbers (omit color for semantic variants: info, success, destructive). */
+export const TYPO_STAT_BASE = "text-2xl font-bold tabular-nums tracking-tight";
+
+/** Stat: dashboard numbers, metrics (primary). */
+export const TYPO_STAT = `${TYPO_STAT_BASE} text-primary`;
 
 /** Nav item: sidebar, breadcrumbs. */
 export const TYPO_NAV =
@@ -130,6 +132,10 @@ export const TR_PAGE_FADE = "animate-in fade-in-0 duration-[360ms]";
 /** Route loading frame (skeleton/spinner) — 200ms, snappy for in-app nav. */
 export const TR_LOADING_FRAME = "animate-in fade-in-0 duration-[200ms]";
 
+/** Chart/content entrance — staggered reveal (420ms, slide-from-bottom). */
+export const TR_CHART_ENTRANCE =
+  "animate-in fade-in-0 slide-in-from-bottom-1 duration-[420ms] ease-out fill-mode-both";
+
 /** Popup/Overlay UI — unified: User menu, Add dialogs, Action dialogs, Select, Tooltip. */
 export const POPUP_BG = "bg-popover";
 export const POPUP_BORDER = "border border-border/55";
@@ -137,6 +143,18 @@ export const POPUP_SHADOW = "shadow-[var(--shadow-dialog)]";
 export const POPUP_ROUNDED_MENU = "rounded-xl";   /* Dropdown, Select, User menu */
 export const POPUP_ROUNDED_MODAL = "rounded-2xl";   /* Dialog, AlertDialog */
 export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers */
+
+/** Chart colors (globals.css): --chart-1 = categorical/bar, --chart-2 = temporal/line, --chart-3–5 = multi-series. */
+export const CHART_COLOR_CATEGORICAL = "var(--chart-1)";
+export const CHART_COLOR_TEMPORAL = "var(--chart-2)";
+
+/** Chart tooltip — shared: border/45, shadow-card-hover, backdrop-blur. */
+export const CHART_TOOLTIP_CLASS =
+  "animate-in fade-in-0 zoom-in-95 duration-150 max-w-[14rem] break-words rounded-xl border border-border/45 bg-background/95 px-3 py-2.5 text-xs shadow-[var(--shadow-card-hover)] backdrop-blur-sm";
+
+/** Chart tooltip label — muted, uppercase. */
+export const CHART_TOOLTIP_LABEL_CLASS =
+  "text-muted-foreground text-[11px] font-medium uppercase tracking-wider";
 
 // ─── Main content area (Staff + Role Manager) — refined, minimal ─────────────
 //

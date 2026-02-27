@@ -353,7 +353,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
       <NavLink
         key={ROUTES.QA_COORDINATOR_DASHBOARD}
         href={ROUTES.QA_COORDINATOR_DASHBOARD}
-        label="QA Coordinator"
+        label="Dashboard"
         icon={ClipboardList}
         isActive={pathname === ROUTES.QA_COORDINATOR_DASHBOARD}
         collapsed={collapsed}

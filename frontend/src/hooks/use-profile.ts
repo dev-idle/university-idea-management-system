@@ -6,8 +6,12 @@ import { queryKeys } from "@/lib/query/keys";
 import {
   profileSchema,
   departmentMembersSchema,
+  departmentStatsSchema,
+  departmentChartsSchema,
   type Profile,
   type DepartmentMembers,
+  type DepartmentStats,
+  type DepartmentCharts,
 } from "@/lib/schemas/profile.schema";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -20,6 +24,18 @@ function parseProfile(data: unknown): Profile {
 function parseDepartmentMembers(data: unknown): DepartmentMembers {
   const parsed = departmentMembersSchema.safeParse(data);
   if (!parsed.success) throw new Error("Invalid department members response");
+  return parsed.data;
+}
+
+function parseDepartmentStats(data: unknown): DepartmentStats {
+  const parsed = departmentStatsSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid department stats response");
+  return parsed.data;
+}
+
+function parseDepartmentCharts(data: unknown): DepartmentCharts {
+  const parsed = departmentChartsSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid department charts response");
   return parsed.data;
 }
 
@@ -53,6 +69,42 @@ export function useDepartmentMembersQuery(options?: { enabled?: boolean }) {
     queryFn: async () => {
       const data = await fetchWithAuth<unknown>("me/department-members");
       return parseDepartmentMembers(data);
+    },
+    enabled: options?.enabled !== false && isAuthenticated,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+/**
+ * TanStack Query: fetch GET /me/department-stats (QA Coordinator only).
+ * Returns null if user has no department. Stats scope: active academic year.
+ */
+export function useDepartmentStatsQuery(options?: { enabled?: boolean }) {
+  const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.profile.departmentStats(),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>("me/department-stats");
+      return parseDepartmentStats(data);
+    },
+    enabled: options?.enabled !== false && isAuthenticated,
+    staleTime: 1 * 60 * 1000,
+  });
+}
+
+/**
+ * TanStack Query: fetch GET /me/department-charts (QA Coordinator only).
+ * Returns chart data: ideas by category, ideas over time (daily, 30 days before closure).
+ */
+export function useDepartmentChartsQuery(options?: { enabled?: boolean }) {
+  const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.profile.departmentCharts(),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>("me/department-charts");
+      return parseDepartmentCharts(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,
     staleTime: 2 * 60 * 1000,
