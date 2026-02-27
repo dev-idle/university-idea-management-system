@@ -10,19 +10,14 @@ import {
   useVoteIdeaMutation,
 } from "@/hooks/use-ideas";
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
+import { useAuthStore } from "@/stores/auth.store";
+import { hasRole } from "@/lib/rbac";
 import { useDwellInView } from "@/hooks/use-dwell-in-view";
 import type { Idea } from "@/lib/schemas/ideas.schema";
 import { ROUTES } from "@/config/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { UnifiedPagination } from "@/components/ui/unified-pagination";
 import {
   Select,
   SelectContent,
@@ -63,8 +58,8 @@ import {
   IDEAS_HUB_COUNT,
   IDEAS_HUB_TOOLBAR,
   IDEAS_HUB_SELECT_TRIGGER,
+  IDEAS_HUB_SELECT_TRIGGER_COORDINATOR,
   IDEAS_HUB_TOOLBAR_DIVIDER,
-  IDEAS_HUB_PAGINATION,
   IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -436,8 +431,11 @@ function IdeaCard({
 /* ─── Hub ──────────────────────────────────────────────────────────────────── */
 
 export function IdeasHubContent() {
+  const user = useAuthStore((s) => s.user);
+  const isQaCoordinator = hasRole(user?.roles, "QA_COORDINATOR");
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [sort, setSort] = useQueryState("sort", SORT_PARSER);
+  const [departmentId, setDepartmentId] = useQueryState("department", parseAsString.withDefault(""));
   const [categoryId, setCategoryId] = useQueryState("category", parseAsString.withDefault(""));
   const [cycleId, setCycleId] = useQueryState("cycle", parseAsString.withDefault(""));
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -455,6 +453,22 @@ export function IdeasHubContent() {
       : (cycleId
         ? (closedCycles.find((c) => c.id === cycleId)?.categories ?? [])
         : []);
+  const departments =
+    isQaCoordinator
+      ? (hasActiveCycle
+          ? (context?.departmentsForFilter ?? [])
+          : cycleId
+            ? (closedCycles.find((c) => c.id === cycleId)?.departments ?? [])
+            : (() => {
+                const seen = new Map<string, { id: string; name: string }>();
+                for (const c of closedCycles) {
+                  for (const d of c.departments ?? []) {
+                    if (!seen.has(d.id)) seen.set(d.id, d);
+                  }
+                }
+                return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+              })())
+      : [];
   const effectiveCycleId = hasActiveCycle ? undefined : (cycleId || undefined);
 
   const {
@@ -468,18 +482,23 @@ export function IdeasHubContent() {
       sort,
       categoryId: categoryId || undefined,
       cycleId: effectiveCycleId,
+      departmentId: isQaCoordinator ? (departmentId || undefined) : undefined,
     },
     { enabled: true },
   );
   const voteMutation = useVoteIdeaMutation();
   const expandedIdea = expandedId ? (listData?.items ?? []).find((i) => i.id === expandedId) : null;
   const expandedCycleStatus = expandedIdea?.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null);
-  const { markViewedByAction } = useIdeaViewTracker(expandedId, expandedCycleStatus);
+  const { markViewedByAction } = useIdeaViewTracker(
+    expandedId,
+    expandedCycleStatus,
+    isQaCoordinator,
+  );
 
   if (ctxStatus === "error") throw ctxError;
   if (ideasStatus === "error") throw ideasError;
 
-  const canSubmit = context?.canSubmit ?? false;
+  const canSubmit = isQaCoordinator ? false : (context?.canSubmit ?? false);
   const closesAt = context?.submissionClosesAt;
   const interactionClosesAt = context?.interactionClosesAt;
   const interactionOpen =
@@ -496,9 +515,11 @@ export function IdeasHubContent() {
       {!canSubmit && (
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
-            {interactionOpen && interactionClosesAt
-              ? `Submissions are closed. You can still view, vote, and comment on ideas until ${fmtDateTime(interactionClosesAt)}.`
-              : "Submissions are closed. Browse ideas (read-only)."}
+            {isQaCoordinator
+              ? "View only. You cannot submit, vote, or comment on ideas."
+              : interactionOpen && interactionClosesAt
+                ? `Submissions are closed. You can still view, vote, and comment on ideas until ${fmtDateTime(interactionClosesAt)}.`
+                : "Submissions are closed. Browse ideas (read-only)."}
           </AlertDescription>
         </Alert>
       )}
@@ -511,17 +532,40 @@ export function IdeasHubContent() {
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
       <div className={IDEAS_HUB_TOOLBAR}>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+          {isQaCoordinator && departments.length > 0 && (
+            <Select
+              value={departmentId || "all"}
+              onValueChange={(v) => {
+                setDepartmentId(v === "all" ? "" : v);
+                setPage(1);
+                setExpandedId(null);
+              }}
+            >
+              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER_COORDINATOR}>
+                <SelectValue placeholder="Department" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All departments</SelectItem>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {!hasActiveCycle && (
             <Select
               value={cycleId || "all"}
               onValueChange={(v) => {
                 setCycleId(v === "all" ? "" : v);
+                setDepartmentId("");
                 setCategoryId("");
                 setPage(1);
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+              <SelectTrigger className={isQaCoordinator ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
                 <SelectValue placeholder="Cycle" />
               </SelectTrigger>
               <SelectContent>
@@ -543,7 +587,7 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+              <SelectTrigger className={isQaCoordinator ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -556,28 +600,50 @@ export function IdeasHubContent() {
               </SelectContent>
             </Select>
           )}
-          {(closedCycles.length > 0 || categories.length > 0) && (
+          {!isQaCoordinator && (closedCycles.length > 0 || departments.length > 0 || categories.length > 0) && (
             <div className={IDEAS_HUB_TOOLBAR_DIVIDER} aria-hidden />
           )}
-          <nav className="flex items-center gap-1" aria-label="Sort by">
-            {VIEW_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => {
-                  setSort(tab.value);
-                  setPage(1);
-                  setExpandedId(null);
-                }}
-                className={cn(
-                  IDEAS_HUB_TAB_BASE,
-                  sort === tab.value ? IDEAS_HUB_TAB_ACTIVE : IDEAS_HUB_TAB_INACTIVE,
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+          {isQaCoordinator ? (
+            <Select
+              value={sort}
+              onValueChange={(v) => {
+                setSort(v as ViewMode);
+                setPage(1);
+                setExpandedId(null);
+              }}
+            >
+              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER_COORDINATOR} aria-label="Sort by">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {VIEW_TABS.map((tab) => (
+                  <SelectItem key={tab.value} value={tab.value}>
+                    {tab.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <nav className="flex items-center gap-1" aria-label="Sort by">
+              {VIEW_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => {
+                    setSort(tab.value);
+                    setPage(1);
+                    setExpandedId(null);
+                  }}
+                  className={cn(
+                    IDEAS_HUB_TAB_BASE,
+                    sort === tab.value ? IDEAS_HUB_TAB_ACTIVE : IDEAS_HUB_TAB_INACTIVE,
+                  )}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+          )}
         </div>
         {total > 0 && (
           <p className={cn("shrink-0 tabular-nums", IDEAS_HUB_COUNT)}>
@@ -624,63 +690,20 @@ export function IdeasHubContent() {
                     }}
                     onDwellComplete={(id) => markViewedByAction(id, idea.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null))}
                     votePending={voteMutation.isPending}
-                    voteDisabled={!interactionOpen}
+                    voteDisabled={!interactionOpen || isQaCoordinator}
                   />
                 ))}
               </div>
 
           {pages > 1 && (
-                <Pagination className={IDEAS_HUB_PAGINATION}>
-                  <PaginationContent className="gap-1">
-                    <PaginationItem>
-                      <PaginationPrevious
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (page > 1) setPage(page - 1);
-                        }}
-                        aria-disabled={page <= 1}
-                        className={
-                          page <= 1
-                            ? "pointer-events-none opacity-40"
-                            : "rounded-lg"
-                        }
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: pages }, (_, i) => i + 1).map(
-                      (p) => (
-                        <PaginationItem key={p}>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setPage(p);
-                            }}
-                            isActive={page === p}
-                            className="rounded-lg"
-                          >
-                            {p}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ),
-                    )}
-                    <PaginationItem>
-                      <PaginationNext
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (page < pages) setPage(page + 1);
-                        }}
-                        aria-disabled={page >= pages}
-                        className={
-                          page >= pages
-                            ? "pointer-events-none opacity-40"
-                            : "rounded-lg"
-                        }
-                      />
-                    </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+                <UnifiedPagination
+                  page={page}
+                  totalPages={pages}
+                  setPage={setPage}
+                  ariaLabel="Ideas feed pagination"
+                  className="pt-8"
+                  align="center"
+                />
           )}
         </>
       )}

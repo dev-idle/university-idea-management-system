@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import {
   useMyIdeasQuery,
@@ -9,6 +10,8 @@ import {
   useVoteIdeaMutation,
   useMyIdeasFiltersQuery,
 } from "@/hooks/use-ideas";
+import { useAuth } from "@/hooks/use-auth";
+import { hasRole } from "@/lib/rbac";
 import type { OwnIdeaListItem } from "@/lib/schemas/ideas.schema";
 import { ROUTES, buildPageTitle } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
@@ -32,16 +35,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UnifiedPagination } from "@/components/ui/unified-pagination";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  PAGE_WRAPPER_NARROW_CLASS,
+  PAGE_CONTAINER_CLASS,
   IDEAS_HUB_SPACING,
   IDEAS_HUB_ARTICLE_CLASS,
   IDEAS_HUB_CARD_PX,
@@ -67,7 +63,6 @@ import {
   IDEAS_MY_STATUS_VOTING,
   IDEAS_MY_STATUS_CLOSED,
   IDEAS_HUB_FEED_GAP,
-  IDEAS_HUB_PAGINATION,
   IDEAS_HUB_COUNT,
   IDEAS_HUB_EMPTY_ICON,
   IDEAS_HUB_TOOLBAR,
@@ -425,6 +420,8 @@ function IdeaRow({
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 
 export default function MyIdeasPage() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [categoryId, setCategoryId] = useQueryState("category", parseAsString.withDefault(""));
   const [cycleId, setCycleId] = useQueryState("cycle", parseAsString.withDefault(""));
@@ -461,6 +458,12 @@ export default function MyIdeasPage() {
     // No cleanup: next page sets its own title
   }, []);
 
+  useEffect(() => {
+    if (hasRole(user?.roles, "QA_COORDINATOR")) {
+      router.replace(ROUTES.IDEAS);
+    }
+  }, [user?.roles, router]);
+
   if (status === "error") throw error;
 
   const ideas = data?.items ?? [];
@@ -480,7 +483,7 @@ export default function MyIdeasPage() {
   };
 
   return (
-    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_CONTAINER_CLASS)}>
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
           <li>
@@ -619,55 +622,14 @@ export default function MyIdeasPage() {
           </div>
 
           {pages > 1 && (
-            <Pagination className={IDEAS_HUB_PAGINATION}>
-              <PaginationContent className="gap-1">
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (page > 1) setPage(page - 1);
-                    }}
-                    aria-disabled={page <= 1}
-                    className={
-                      page <= 1
-                        ? "pointer-events-none opacity-40"
-                        : "rounded-lg"
-                    }
-                  />
-                </PaginationItem>
-                {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
-                  <PaginationItem key={p}>
-                    <PaginationLink
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setPage(p);
-                      }}
-                      isActive={page === p}
-                      className="rounded-lg"
-                    >
-                      {p}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (page < pages) setPage(page + 1);
-                    }}
-                    aria-disabled={page >= pages}
-                    className={
-                      page >= pages
-                        ? "pointer-events-none opacity-40"
-                        : "rounded-lg"
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <UnifiedPagination
+              page={page}
+              totalPages={pages}
+              setPage={setPage}
+              ariaLabel="My ideas pagination"
+              className="pt-8"
+              align="center"
+            />
           )}
         </>
       )}

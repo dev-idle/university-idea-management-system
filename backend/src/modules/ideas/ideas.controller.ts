@@ -52,7 +52,7 @@ import { likeCommentBodySchema, type LikeCommentBody } from './dto/like-comment.
 
 @Controller('ideas')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('STAFF', 'ADMIN')
+@Roles('STAFF', 'ADMIN', 'QA_MANAGER', 'QA_COORDINATOR')
 export class IdeasController {
   constructor(
     private readonly ideasService: IdeasService,
@@ -60,13 +60,13 @@ export class IdeasController {
   ) {}
 
   @Get('context')
-  @Roles('STAFF', 'ADMIN', 'QA_MANAGER', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_MANAGER', 'QA_COORDINATOR')
   getContext(@CurrentUser() user: AccessTokenPayload) {
     return this.ideasService.getContext(user.sub);
   }
 
   @Get()
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   findAll(
     @CurrentUser() user: AccessTokenPayload,
     @Query('page') page?: string,
@@ -75,6 +75,7 @@ export class IdeasController {
     sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments',
     @Query('categoryId') categoryId?: string,
     @Query('cycleId') cycleId?: string,
+    @Query('departmentId') departmentId?: string,
   ) {
     const { page: pageNum, limit: limitNum } = parsePagination(page, limit);
     const sortVal =
@@ -89,12 +90,13 @@ export class IdeasController {
       sort: sortVal,
       categoryId: categoryId || undefined,
       cycleId: cycleId || undefined,
+      departmentId: departmentId || undefined,
       userId: user.sub,
     });
   }
 
   @Get('upload-params')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF')
   getUploadParams() {
     return this.ideasService.getUploadParams();
   }
@@ -104,7 +106,7 @@ export class IdeasController {
    * Avoids CORS "Failed to fetch" when uploading directly from browser to Cloudinary.
    */
   @Post('upload')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF')
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   async uploadFile(
@@ -128,7 +130,7 @@ export class IdeasController {
    * Validates secureUrl is from our Cloudinary cloud, then streams with inline disposition.
    */
   @Post('attachments/preview')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF')
   async previewAttachment(
     @Body(new ZodValidationPipe(previewAttachmentBodySchema))
     body: PreviewAttachmentBody,
@@ -153,7 +155,7 @@ export class IdeasController {
    * Content-Disposition: inline and correct filename so the file opens with the right extension.
    */
   @Get('attachments/:attachmentId/view')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   async viewAttachment(
     @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
   ): Promise<StreamableFile> {
@@ -176,7 +178,7 @@ export class IdeasController {
    * Content-Disposition: attachment and correct filename so the saved file keeps its extension.
    */
   @Get('attachments/:attachmentId/download')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   async downloadAttachment(
     @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
   ): Promise<StreamableFile> {
@@ -196,7 +198,7 @@ export class IdeasController {
 
   /** Latest comments across all ideas in the active academic year. */
   @Get('latest-comments')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   getLatestComments(@Query('limit') limit?: string) {
     const { limit: limitNum } = parsePagination(undefined, limit);
     return this.ideasService.getLatestComments({
@@ -299,7 +301,7 @@ export class IdeasController {
   /* ── Public idea routes ───────────────────────────────────────────────────── */
 
   @Get(':id/comments')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   getComments(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
@@ -307,19 +309,19 @@ export class IdeasController {
     return this.ideasService.getComments(id, user.sub);
   }
 
-  /** Record a view for an idea. Idempotent: at most one view per user per idea. */
+  /** Record a view for an idea. Idempotent: at most one view per user per idea. QA Coordinator views are not counted. */
   @Post(':id/view')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   @HttpCode(HttpStatus.NO_CONTENT)
   async recordView(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    await this.ideasService.recordView(id, user.sub);
+    await this.ideasService.recordView(id, user.sub, user.roles);
   }
 
   @Post(':id/vote')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF')
   setVote(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
@@ -375,7 +377,7 @@ export class IdeasController {
   }
 
   @Get(':id')
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF', 'QA_COORDINATOR')
   findOne(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
@@ -384,14 +386,14 @@ export class IdeasController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('QA_MANAGER')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteIdea(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     await this.ideasService.deleteIdea(id);
   }
 
   @Post()
-  @Roles('STAFF', 'ADMIN')
+  @Roles('STAFF')
   @HttpCode(HttpStatus.CREATED)
   create(
     @CurrentUser() user: AccessTokenPayload,

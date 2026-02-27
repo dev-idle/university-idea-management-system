@@ -47,7 +47,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  PAGE_WRAPPER_NARROW_CLASS,
+  PAGE_CONTAINER_CLASS,
   ALERT_WARNING_CLASS,
   LOADING_SPINNER_CLASS,
 } from "@/config/design";
@@ -576,7 +576,7 @@ export default function EditIdeaPage() {
   if (status === "error") throw error;
   if (status === "pending" || !idea) {
     return (
-      <div className={PAGE_WRAPPER_NARROW_CLASS}>
+      <div className={PAGE_CONTAINER_CLASS}>
         <LoadingState compact />
       </div>
     );
@@ -593,7 +593,7 @@ export default function EditIdeaPage() {
   const closed = !cycleActive || submissionClosed;
 
   return (
-    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_CONTAINER_CLASS)}>
       {/* Breadcrumb — aligned with /ideas/new */}
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>

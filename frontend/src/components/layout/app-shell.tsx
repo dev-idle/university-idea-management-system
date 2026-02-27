@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   Users,
+  UsersRound,
   Building2,
   CalendarDays,
   CalendarRange,
@@ -355,6 +356,26 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         label="QA Coordinator"
         icon={ClipboardList}
         isActive={pathname === ROUTES.QA_COORDINATOR_DASHBOARD}
+        collapsed={collapsed}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.IDEAS}
+        href={ROUTES.IDEAS}
+        label="Ideas Hub"
+        icon={Lightbulb}
+        isActive={pathname === ROUTES.IDEAS || (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))}
+        collapsed={collapsed}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.DEPARTMENT_MEMBERS}
+        href={ROUTES.DEPARTMENT_MEMBERS}
+        label="Department Members"
+        icon={UsersRound}
+        isActive={pathname === ROUTES.DEPARTMENT_MEMBERS}
         collapsed={collapsed}
       />
     );

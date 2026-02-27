@@ -81,6 +81,7 @@ export type IdeasListParams = {
   sort?: "latest" | "mostPopular" | "mostViewed" | "latestComments";
   categoryId?: string;
   cycleId?: string;
+  departmentId?: string;
 };
 
 /** List ideas for the active academic year with pagination and sort. STAFF only. */
@@ -90,8 +91,9 @@ export function useIdeasQuery(params?: IdeasListParams, options?: { enabled?: bo
   const sort = params?.sort ?? "latest";
   const categoryId = params?.categoryId;
   const cycleId = params?.cycleId;
+  const departmentId = params?.departmentId;
   return useQuery({
-    queryKey: queryKeys.ideas.list({ page, limit, sort, categoryId, cycleId }),
+    queryKey: queryKeys.ideas.list({ page, limit, sort, categoryId, cycleId, departmentId }),
     queryFn: async () => {
       const search = new URLSearchParams();
       search.set("page", String(page));
@@ -99,6 +101,7 @@ export function useIdeasQuery(params?: IdeasListParams, options?: { enabled?: bo
       if (sort !== "latest") search.set("sort", sort);
       if (categoryId) search.set("categoryId", categoryId);
       if (cycleId) search.set("cycleId", cycleId);
+      if (departmentId) search.set("departmentId", departmentId);
       const data = await fetchWithAuth<unknown>(`ideas?${search.toString()}`);
       return parseIdeasPaginated(data);
     },

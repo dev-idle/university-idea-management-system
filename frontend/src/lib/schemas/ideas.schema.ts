@@ -69,10 +69,16 @@ const closedCycleForYearSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   categories: z.array(categoryRefSchema),
+  departments: z.array(categoryRefSchema).optional().default([]),
 });
 
 const cycleForFilterSchema = closedCycleForYearSchema.extend({
   academicYearId: z.string().uuid(),
+});
+
+const departmentRefSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
 });
 
 export const ideasContextSchema = z.object({
@@ -83,6 +89,7 @@ export const ideasContextSchema = z.object({
   interactionClosesAt: z.coerce.date().nullable().optional(),
   activeAcademicYear: activeAcademicYearRefSchema.nullable(),
   categories: z.array(categoryRefSchema),
+  departmentsForFilter: z.array(departmentRefSchema).optional().default([]),
   closedCyclesForYear: z.array(closedCycleForYearSchema).optional().default([]),
   allCyclesForFilter: z.array(cycleForFilterSchema).optional().default([]),
   allAcademicYearsForFilter: z.array(activeAcademicYearRefSchema).optional().default([]),

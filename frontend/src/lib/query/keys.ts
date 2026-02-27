@@ -42,6 +42,7 @@ export const queryKeys = {
   profile: {
     all: ["api", "me"] as const,
     me: () => [...queryKeys.profile.all, "me"] as const,
+    departmentMembers: () => [...queryKeys.profile.all, "department-members"] as const,
   },
   notifications: {
     all: ["api", "notifications"] as const,
@@ -50,7 +51,7 @@ export const queryKeys = {
   },
   ideas: {
     all: ["api", "ideas"] as const,
-    list: (params?: { page: number; limit: number; sort?: string; categoryId?: string; cycleId?: string }) =>
+    list: (params?: { page: number; limit: number; sort?: string; categoryId?: string; cycleId?: string; departmentId?: string }) =>
       [...queryKeys.ideas.all, "list", params ?? {}] as const,
     detail: (id: string) => [...queryKeys.ideas.all, "detail", id] as const,
     context: () => [...queryKeys.ideas.all, "context"] as const,

@@ -2,6 +2,8 @@ import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { MeService, type MeProfile } from './me.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AccessTokenPayload } from '../auth/auth.types';
 import { changePasswordBodySchema } from './dto/change-password.dto';
@@ -19,6 +21,27 @@ export class MeController {
   @Get()
   getProfile(@CurrentUser() payload: AccessTokenPayload): Promise<MeProfile> {
     return this.meService.getProfile(payload.sub);
+  }
+
+  /**
+   * GET /me/department-members — QA Coordinator only. Returns members of the current user's department.
+   * Returns null if user has no department.
+   */
+  @Get('department-members')
+  @UseGuards(RolesGuard)
+  @Roles('QA_COORDINATOR')
+  getDepartmentMembers(
+    @CurrentUser() payload: AccessTokenPayload,
+  ): Promise<{
+    department: { id: string; name: string };
+    members: Array<{
+      id: string;
+      fullName: string | null;
+      email: string;
+      role: string;
+    }>;
+  } | null> {
+    return this.meService.getDepartmentMembers(payload.sub);
   }
 
   /**

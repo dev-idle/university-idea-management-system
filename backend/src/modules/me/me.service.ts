@@ -121,6 +121,59 @@ export class MeService {
   }
 
   /**
+   * Get users in the current user's department. Returns null if user has no department.
+   * Only returns safe fields: id, fullName, email, role name.
+   */
+  async getDepartmentMembers(userId: string): Promise<{
+    department: { id: string; name: string };
+    members: Array<{
+      id: string;
+      fullName: string | null;
+      email: string;
+      role: string;
+    }>;
+  } | null> {
+    const me = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        departmentId: true,
+        department: { select: { id: true, name: true } },
+      },
+    });
+    if (!me?.departmentId || !me.department) return null;
+    const users = await this.prisma.user.findMany({
+      where: { departmentId: me.departmentId, isActive: true },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        role: { select: { name: true } },
+      },
+      orderBy: [{ fullName: 'asc' }, { email: 'asc' }],
+    });
+    const members = users.map((u) => ({
+      id: u.id,
+      fullName: u.fullName ?? null,
+      email: u.email,
+      role: u.role.name,
+    }));
+    // QA Coordinator first, then others by fullName, email
+    members.sort((a, b) => {
+      const aQc = a.role === 'QA_COORDINATOR' ? 1 : 0;
+      const bQc = b.role === 'QA_COORDINATOR' ? 1 : 0;
+      if (bQc !== aQc) return bQc - aQc; // QA Coordinator first
+      const aName = (a.fullName ?? a.email).toLowerCase();
+      const bName = (b.fullName ?? b.email).toLowerCase();
+      const cmp = aName.localeCompare(bName);
+      return cmp !== 0 ? cmp : a.email.localeCompare(b.email);
+    });
+    return {
+      department: me.department,
+      members,
+    };
+  }
+
+  /**
    * Update password: verify current, hash new, update, invalidate all refresh tokens.
    * No admin override; no email/role/department updates.
    */

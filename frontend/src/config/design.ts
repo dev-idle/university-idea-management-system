@@ -636,6 +636,10 @@ export const IDEAS_HUB_TOOLBAR =
 export const IDEAS_HUB_SELECT_TRIGGER =
   "relative flex h-8 w-[9rem] min-w-[9rem] items-center rounded-lg border border-border/80 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
 
+/** Ideas Hub filter trigger — larger for QA Coordinator (Department/Category). */
+export const IDEAS_HUB_SELECT_TRIGGER_COORDINATOR =
+  "relative flex h-8 min-w-[10rem] w-[10rem] items-center rounded-lg border border-border/80 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
+
 /** Ideas Hub toolbar divider (vertical). */
 export const IDEAS_HUB_TOOLBAR_DIVIDER = "h-3 w-px shrink-0 bg-border/25";
 

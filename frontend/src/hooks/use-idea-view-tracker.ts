@@ -84,6 +84,7 @@ function isInCooldown(ideaId: string, userId: string | null): boolean {
 export function useIdeaViewTracker(
   activeIdeaId: string | null,
   activeCycleStatus: string | null | undefined = undefined,
+  skipRecording = false,
 ) {
   const userId = useAuthStore((s) => s.user?.id ?? null);
   const recordView = useRecordViewMutation();
@@ -110,6 +111,7 @@ export function useIdeaViewTracker(
   /** Central record function — checks cycle, in-memory, and localStorage. */
   const record = useCallback(
     (ideaId: string, cycleStatus?: string | null) => {
+      if (skipRecording) return;
       if (cycleStatus !== "ACTIVE") return;
       if (recordedThisLoad.current.has(ideaId)) return;
       if (isInCooldown(ideaId, userId)) {
@@ -120,7 +122,7 @@ export function useIdeaViewTracker(
       setTimestamp(ideaId, userId);
       recordView.mutate(ideaId);
     },
-    [recordView, userId],
+    [recordView, userId, skipRecording],
   );
 
   /* ── timer path ─────────────────────────────────────────────────────────── */

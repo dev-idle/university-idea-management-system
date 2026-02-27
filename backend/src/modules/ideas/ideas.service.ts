@@ -125,18 +125,21 @@ export class IdeasService {
     const hasActiveCycle = !!cycle && interactionOpen;
 
     let categories: Array<{ id: string; name: string }> = [];
+    let departmentsForFilter: Array<{ id: string; name: string }> = [];
     if (cycle && hasActiveCycle) {
       const cycleCategories = await this.prisma.cycleCategory.findMany({
         where: { cycleId: cycle.id },
         select: { category: { select: { id: true, name: true } } },
       });
       categories = cycleCategories.map((cc) => cc.category);
+      departmentsForFilter = await this.getAllDepartmentsForFilter();
     }
 
     let closedCyclesForYear: Array<{
       id: string;
       name: string;
       categories: Array<{ id: string; name: string }>;
+      departments: Array<{ id: string; name: string }>;
     }> = [];
     if (activeYear && !hasActiveCycle) {
       const allCycles = await this.prisma.ideaSubmissionCycle.findMany({
@@ -160,10 +163,12 @@ export class IdeasService {
           where: { cycleId: c.id },
           select: { category: { select: { id: true, name: true } } },
         });
+        const departments = await this.getAllDepartmentsForFilter();
         closedCyclesForYear.push({
           id: c.id,
           name: c.name ?? 'Unnamed',
           categories: cycleCategories.map((cc) => cc.category),
+          departments,
         });
       }
     }
@@ -181,10 +186,30 @@ export class IdeasService {
         ? { id: activeYear.id, name: activeYear.name }
         : null,
       categories,
+      departmentsForFilter,
       closedCyclesForYear,
       allCyclesForFilter,
       allAcademicYearsForFilter,
     };
+  }
+
+  /** Department names excluded from Ideas Hub filter (internal/admin departments). */
+  private static readonly EXCLUDED_DEPARTMENT_NAMES = new Set([
+    'IT Services / System Administration Department',
+    'Quality Assurance Office',
+  ]);
+
+  /** All departments for Ideas Hub filter, excluding internal/admin. Includes departments with zero ideas. */
+  private async getAllDepartmentsForFilter(): Promise<
+    Array<{ id: string; name: string }>
+  > {
+    const all = await this.prisma.department.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+    return all.filter(
+      (d) => !IdeasService.EXCLUDED_DEPARTMENT_NAMES.has(d.name.trim()),
+    );
   }
 
   /**
@@ -341,6 +366,7 @@ export class IdeasService {
     sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments';
     categoryId?: string;
     cycleId?: string;
+    departmentId?: string;
     userId?: string;
   }) {
     const page = Math.max(1, params.page ?? 1);
@@ -364,6 +390,9 @@ export class IdeasService {
     const where = {
       cycleId: { in: cycleIds },
       ...(params.categoryId && { categoryId: params.categoryId }),
+      ...(params.departmentId && {
+        submittedBy: { departmentId: params.departmentId },
+      }),
     };
 
     const ideaSelect = {
@@ -1199,7 +1228,14 @@ export class IdeasService {
    */
   private static readonly VIEW_COOLDOWN_MS = 20 * 60 * 1000; // 20 minutes
 
-  async recordView(ideaId: string, userId: string): Promise<void> {
+  async recordView(
+    ideaId: string,
+    userId: string,
+    roles: string[] = [],
+  ): Promise<void> {
+    // QA Coordinator: view-only; do not count views
+    if (roles.some((r) => r.toUpperCase() === 'QA_COORDINATOR')) return;
+
     const idea = await this.prisma.idea.findUnique({
       where: { id: ideaId },
       select: { id: true, submittedById: true },

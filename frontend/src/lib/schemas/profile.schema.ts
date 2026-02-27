@@ -63,3 +63,20 @@ export const changePasswordBodySchema = z
   });
 
 export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>;
+
+/** GET /me/department-members response — null if user has no department. */
+export const departmentMembersSchema = z
+  .object({
+    department: z.object({ id: z.string(), name: z.string() }),
+    members: z.array(
+      z.object({
+        id: z.string(),
+        fullName: z.string().nullable(),
+        email: z.string().email(),
+        role: z.string(),
+      })
+    ),
+  })
+  .nullable();
+
+export type DepartmentMembers = z.infer<typeof departmentMembersSchema>;

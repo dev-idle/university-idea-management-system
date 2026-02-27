@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IdeasHubContent } from "@/components/features/ideas/ideas-hub-content";
 import {
-  PAGE_WRAPPER_NARROW_CLASS,
+  PAGE_CONTAINER_CLASS,
   IDEAS_HUB_SPACING,
 } from "@/config/design";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function IdeasPage() {
   return (
-    <div className={`${IDEAS_HUB_SPACING} ${PAGE_WRAPPER_NARROW_CLASS}`}>
+    <div className={`${IDEAS_HUB_SPACING} ${PAGE_CONTAINER_CLASS}`}>
       <IdeasHubContent />
     </div>
   );

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-  PAGE_WRAPPER_NARROW_CLASS,
+  PAGE_CONTAINER_CLASS,
   IDEAS_HUB_SPACING,
   SKELETON_BG_INPUT,
   SKELETON_BG_MEDIUM,
@@ -15,7 +15,7 @@ import {
  */
 export function StaffRouteLoading() {
   return (
-    <div className={cn(TR_LOADING_FRAME, IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+    <div className={cn(TR_LOADING_FRAME, IDEAS_HUB_SPACING, PAGE_CONTAINER_CLASS)}>
       {/* Toolbar skeleton */}
       <div className="flex flex-wrap items-center gap-3">
         <div className={cn("h-9 w-28 animate-pulse rounded-xl", SKELETON_BG_INPUT)} />

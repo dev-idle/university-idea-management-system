@@ -4,11 +4,13 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useIdeasContextQuery, useCreateIdeaMutation } from "@/hooks/use-ideas";
+import { useAuth } from "@/hooks/use-auth";
+import { hasRole } from "@/lib/rbac";
 import { SubmitIdeaForm } from "@/components/features/ideas/submit-idea-form";
 import { ROUTES, buildPageTitle } from "@/config/constants";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
-  PAGE_WRAPPER_NARROW_CLASS,
+  PAGE_CONTAINER_CLASS,
   ALERT_WARNING_CLASS,
   IDEAS_HUB_SPACING,
 } from "@/config/design";
@@ -23,6 +25,7 @@ import { cn } from "@/lib/utils";
 
 export default function SubmitIdeaPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const {
     data: context,
     status: contextStatus,
@@ -35,12 +38,17 @@ export default function SubmitIdeaPage() {
   }, [contextStatus, contextError]);
 
   const canSubmit = context?.canSubmit ?? false;
+  const isQaCoordinator = hasRole(user?.roles, "QA_COORDINATOR");
 
   useEffect(() => {
+    if (isQaCoordinator) {
+      router.replace(ROUTES.IDEAS);
+      return;
+    }
     if (contextStatus === "success" && !canSubmit) {
       router.replace(ROUTES.IDEAS);
     }
-  }, [contextStatus, canSubmit, router]);
+  }, [contextStatus, canSubmit, isQaCoordinator, router]);
 
   useEffect(() => {
     document.title = buildPageTitle("New Proposal");
@@ -52,7 +60,7 @@ export default function SubmitIdeaPage() {
     (contextStatus === "success" && !context)
   ) {
     return (
-      <div className={PAGE_WRAPPER_NARROW_CLASS}>
+      <div className={PAGE_CONTAINER_CLASS}>
         <LoadingState compact />
       </div>
     );
@@ -60,7 +68,7 @@ export default function SubmitIdeaPage() {
 
   if (contextStatus === "success" && !canSubmit) {
     return (
-      <div className={cn("space-y-8", PAGE_WRAPPER_NARROW_CLASS)}>
+      <div className={cn("space-y-8", PAGE_CONTAINER_CLASS)}>
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
             Submission is currently closed. Redirecting to Ideas Hub…
@@ -71,7 +79,7 @@ export default function SubmitIdeaPage() {
   }
 
   return (
-    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_CONTAINER_CLASS)}>
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
           <li>

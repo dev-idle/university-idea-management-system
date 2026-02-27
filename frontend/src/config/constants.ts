@@ -53,6 +53,8 @@ export const ROUTES = {
   ADMIN_ACADEMIC_YEARS: "/admin/academic-years",
   /** Profile: all authenticated users. */
   PROFILE: "/profile",
+  /** Department members: QA Coordinator only — view colleagues in same department. */
+  DEPARTMENT_MEMBERS: "/department-members",
 } as const;
 
 const ROLE_TO_ENTRY: Record<Role, string> = {
@@ -79,7 +81,7 @@ export function getEntryRouteForRoles(roles: string[] | undefined): string {
 const ROLE_ALLOWED_PATHS: Record<Role, string[]> = {
   ADMIN: ["/admin", "/profile"],
   QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/proposal-cycles", "/qa-manager/export", "/profile"],
-  QA_COORDINATOR: ["/qa-coordinator", "/profile"],
+  QA_COORDINATOR: ["/qa-coordinator", "/profile", "/ideas", "/department-members"],
   STAFF: ["/ideas", "/profile"],
 };
 
@@ -98,7 +100,13 @@ export function getPrimaryRole(roles: string[] | undefined): Role | null {
  */
 export function isPathAllowedForRole(pathname: string, role: Role): boolean {
   const allowed = ROLE_ALLOWED_PATHS[role];
-  return allowed.some(
+  const matches = allowed.some(
     (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
   );
+  if (!matches) return false;
+  // QA Coordinator: block /ideas/new and /ideas/my (submit, my ideas)
+  if (role === "QA_COORDINATOR" && pathname.startsWith("/ideas")) {
+    if (pathname === "/ideas/new" || pathname.startsWith("/ideas/my")) return false;
+  }
+  return true;
 }

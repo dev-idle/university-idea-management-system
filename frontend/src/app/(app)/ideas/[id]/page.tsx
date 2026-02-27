@@ -14,6 +14,8 @@ import {
 } from "@/hooks/use-ideas";
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
 import { useProfileQuery } from "@/hooks/use-profile";
+import { useAuthStore } from "@/stores/auth.store";
+import { hasRole } from "@/lib/rbac";
 import { ROUTES, buildPageTitle } from "@/config/constants";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import type { IdeaComment } from "@/lib/schemas/ideas.schema";
@@ -25,7 +27,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
-  PAGE_WRAPPER_NARROW_CLASS,
+  PAGE_CONTAINER_CLASS,
   IDEAS_HUB_SPACING,
   IDEAS_HUB_ENGAGEMENT_BORDER,
   IDEAS_HUB_ACTION_BASE,
@@ -637,6 +639,8 @@ function CommentItem({
 export default function IdeaDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const isQaCoordinator = hasRole(user?.roles, "QA_COORDINATOR");
   const id = typeof params.id === "string" ? params.id : null;
   const { data: idea, status, error } = useIdeaQuery(id);
   const { data: comments = [], status: commentsStatus } =
@@ -646,7 +650,11 @@ export default function IdeaDetailPage() {
   const updateCommentMutation = useUpdateCommentMutation();
   const deleteCommentMutation = useDeleteCommentMutation();
   const likeCommentMutation = useLikeCommentMutation();
-  const { markViewedByAction } = useIdeaViewTracker(id, idea?.cycleStatus ?? null);
+  const { markViewedByAction } = useIdeaViewTracker(
+    id,
+    idea?.cycleStatus ?? null,
+    isQaCoordinator,
+  );
 
   const [commentContent, setCommentContent] = useState("");
   const [commentAnonymous, setCommentAnonymous] = useState(false);
@@ -714,7 +722,7 @@ export default function IdeaDetailPage() {
   if (status === "error") throw error;
   if (status === "pending" || !idea) {
     return (
-      <div className={PAGE_WRAPPER_NARROW_CLASS}>
+      <div className={PAGE_CONTAINER_CLASS}>
         <LoadingState compact />
       </div>
     );
@@ -739,7 +747,7 @@ export default function IdeaDetailPage() {
     : "?";
 
   const handleVote = (v: "up" | "down") => {
-    if (!open || voteMutation.isPending) return;
+    if (!open || voteMutation.isPending || isQaCoordinator) return;
     markViewedByAction(id, idea.cycleStatus);
     voteMutation.mutate({ ideaId: id, value: v });
   };
@@ -747,7 +755,7 @@ export default function IdeaDetailPage() {
   const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = commentContent.trim();
-    if (!trimmed || !open || createCommentMutation.isPending) return;
+    if (!trimmed || !open || createCommentMutation.isPending || isQaCoordinator) return;
     markViewedByAction(id, idea.cycleStatus);
     createCommentMutation.mutate(
       { ideaId: id, body: { content: trimmed, isAnonymous: commentAnonymous } },
@@ -798,7 +806,7 @@ export default function IdeaDetailPage() {
   };
 
   return (
-    <div className={cn(IDEAS_HUB_SPACING, PAGE_WRAPPER_NARROW_CLASS)}>
+    <div className={cn(IDEAS_HUB_SPACING, PAGE_CONTAINER_CLASS)}>
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
@@ -906,13 +914,13 @@ export default function IdeaDetailPage() {
         >
           <button
             type="button"
-            disabled={!open || voteMutation.isPending}
+            disabled={!open || voteMutation.isPending || isQaCoordinator}
             onClick={() => handleVote("up")}
             className={cn(
               IDEAS_HUB_ACTION_BASE,
               "cursor-pointer",
               myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
-              (!open || voteMutation.isPending) && "pointer-events-none opacity-50",
+              (!open || voteMutation.isPending || isQaCoordinator) && "pointer-events-none opacity-50",
             )}
             aria-label={`Support (${votes.up})`}
           >
@@ -922,13 +930,13 @@ export default function IdeaDetailPage() {
           <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
           <button
             type="button"
-            disabled={!open || voteMutation.isPending}
+            disabled={!open || voteMutation.isPending || isQaCoordinator}
             onClick={() => handleVote("down")}
             className={cn(
               IDEAS_HUB_ACTION_BASE,
               "cursor-pointer",
               myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
-              (!open || voteMutation.isPending) && "pointer-events-none opacity-50",
+              (!open || voteMutation.isPending || isQaCoordinator) && "pointer-events-none opacity-50",
             )}
             aria-label={`Do not support (${votes.down})`}
           >
@@ -968,7 +976,7 @@ export default function IdeaDetailPage() {
           aria-label="Comments"
         >
           <div className={cn(IDEAS_HUB_CARD_PX, "pt-5 pb-4 sm:pt-6 sm:pb-4")}>
-            {open ? (
+            {open && !isQaCoordinator ? (
               <MainCommentForm
                 commentContent={commentContent}
                 commentAnonymous={commentAnonymous}
@@ -1000,7 +1008,7 @@ export default function IdeaDetailPage() {
                     key={c.id}
                       comment={c}
                       ideaId={id}
-                      open={open}
+                      open={open && !isQaCoordinator}
                       isReply={false}
                       depth={1}
                       isFirstReply={idx === 0}
