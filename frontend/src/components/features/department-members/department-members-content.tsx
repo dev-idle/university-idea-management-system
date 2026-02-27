@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useDepartmentMembersQuery } from "@/hooks/use-profile";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,7 +22,6 @@ import {
   TABLE_EMPTY_CELL_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
-  formatManagementShowingRange,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { TYPO_BODY_SM } from "@/config/design";
@@ -164,10 +163,9 @@ export function DepartmentMembersContent() {
               ⌘K
             </kbd>
           </div>
-          <span className="inline-flex items-center rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80">
-            {showPagination
-              ? formatManagementShowingRange(safePage, MANAGEMENT_PAGE_SIZE, totalFiltered)
-              : `${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80">
+            <Users className="size-3.5 shrink-0" aria-hidden />
+            {`${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
           </span>
         </div>
         <div className="overflow-x-auto">
