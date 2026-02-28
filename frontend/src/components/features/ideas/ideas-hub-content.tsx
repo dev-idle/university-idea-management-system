@@ -456,7 +456,7 @@ export function IdeasHubContent() {
         ? (closedCycles.find((c) => c.id === cycleId)?.categories ?? [])
         : []);
   const departments =
-    isQaCoordinator && !isQaManager
+    (isQaCoordinator || isQaManager)
       ? (hasActiveCycle
           ? (context?.departmentsForFilter ?? [])
           : cycleId
@@ -484,7 +484,7 @@ export function IdeasHubContent() {
       sort,
       categoryId: categoryId || undefined,
       cycleId: effectiveCycleId,
-      departmentId: isQaCoordinator && !isQaManager ? (departmentId || undefined) : undefined,
+      departmentId: (isQaCoordinator || isQaManager) ? (departmentId || undefined) : undefined,
     },
     { enabled: true },
   );
@@ -534,7 +534,7 @@ export function IdeasHubContent() {
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
       <div className={IDEAS_HUB_TOOLBAR}>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-          {isQaCoordinator && !isQaManager && departments.length > 0 && (
+          {(isQaCoordinator || isQaManager) && departments.length > 0 && (
             <Select
               value={departmentId || "all"}
               onValueChange={(v) => {

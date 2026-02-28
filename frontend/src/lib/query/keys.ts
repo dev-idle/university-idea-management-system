@@ -45,6 +45,7 @@ export const queryKeys = {
     departmentMembers: () => [...queryKeys.profile.all, "department-members"] as const,
     departmentStats: () => [...queryKeys.profile.all, "department-stats"] as const,
     departmentCharts: () => [...queryKeys.profile.all, "department-charts"] as const,
+    qaManagerStats: () => [...queryKeys.profile.all, "qa-manager-stats"] as const,
   },
   notifications: {
     all: ["api", "notifications"] as const,

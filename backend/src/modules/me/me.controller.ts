@@ -65,6 +65,27 @@ export class MeController {
   }
 
   /**
+   * GET /me/qa-manager-stats — QA Manager only. Org-wide stats for active year:
+   * totalIdeas, totalComments, totalViews, votesUp, votesDown, participatingDepartments.
+   * Excludes IT Services and Quality Assurance Office departments.
+   */
+  @Get('qa-manager-stats')
+  @UseGuards(RolesGuard)
+  @Roles('QA_MANAGER')
+  getQaManagerStats(
+    @CurrentUser() payload: AccessTokenPayload,
+  ): Promise<{
+    totalIdeas: number;
+    totalComments: number;
+    totalViews: number;
+    votesUp: number;
+    votesDown: number;
+    participatingDepartments: number;
+  }> {
+    return this.meService.getQaManagerStats(payload.sub);
+  }
+
+  /**
    * GET /me/department-charts — QA Coordinator only. Chart data: ideas by category, ideas over time (daily, 30 days before closure).
    * Returns null if user has no department.
    */

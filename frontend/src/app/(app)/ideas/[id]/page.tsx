@@ -812,25 +812,22 @@ export default function IdeaDetailPage() {
 
   return (
     <div className={cn(IDEAS_HUB_SPACING, PAGE_CONTAINER_CLASS)}>
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
-          <li>
-            <Link
-              href={
-                isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : isQaManager ? ROUTES.QA_MANAGER_IDEAS : ROUTES.IDEAS
-              }
-              className={BREADCRUMB_LINK_CLASS}
-            >
-              Ideas Hub
-            </Link>
-          </li>
-          <li className="flex items-center" aria-current="page">
-            <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
-            <span className={BREADCRUMB_CURRENT_CLASS}>Proposal</span>
-          </li>
-        </ol>
-      </nav>
+      {/* Breadcrumb — Staff only; QA Coordinator/Manager have it in Nav */}
+      {!isQaCoordinator && !isQaManager && (
+        <nav aria-label="Breadcrumb" className="mb-4">
+          <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
+            <li>
+              <Link href={ROUTES.IDEAS} className={BREADCRUMB_LINK_CLASS}>
+                Ideas Hub
+              </Link>
+            </li>
+            <li className="flex items-center" aria-current="page">
+              <span className={BREADCRUMB_SEP_CLASS} aria-hidden>/</span>
+              <span className={BREADCRUMB_CURRENT_CLASS}>Proposal</span>
+            </li>
+          </ol>
+        </nav>
+      )}
 
       {/* ── Article + Discussion (single card, aligned with hub) ───────── */}
       <article

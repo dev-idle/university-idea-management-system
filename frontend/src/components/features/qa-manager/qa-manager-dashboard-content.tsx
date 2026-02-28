@@ -1,98 +1,100 @@
 "use client";
 
-import Link from "next/link";
-import { CalendarRange, ChevronRight, Tags, Download } from "lucide-react";
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   SECTION_LABEL_CLASS,
-  ICON_BOX_PRIMARY_CLASS,
-  FOCUS_RING_CLASS,
-  TYPO_STAT,
-  TYPO_HEADER_AND_STAT_TEXT,
+  TYPO_STAT_SUBTLE,
+  TYPO_STAT_BASE_SUBTLE,
 } from "@/config/design";
-import {
-  DASHBOARD_STAT_CARD_CLASS,
-  DASHBOARD_CARD_CLASS,
-} from "../admin/constants";
-import { ROUTES } from "@/config/constants";
-import { useCategoriesQuery } from "@/hooks/use-categories";
-import { useSubmissionCyclesQuery } from "@/hooks/use-submission-cycles";
-import type { LucideIcon } from "lucide-react";
+import { UNIFIED_CARD_CLASS } from "../admin/constants";
+import { useQaManagerStatsQuery } from "@/hooks/use-profile";
+import { useIdeasContextQuery } from "@/hooks/use-ideas";
+function fmtDate(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return date.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
 
-const QA_MANAGER_FUNCTIONS = [
-  {
-    href: ROUTES.QA_MANAGER_CATEGORIES,
-    title: "Categories",
-    description: "Manage categories for proposal classification.",
-    icon: Tags,
-  },
-  {
-    href: ROUTES.QA_MANAGER_PROPOSAL_CYCLES,
-    title: "Proposal cycles",
-    description: "Create and manage proposal cycles.",
-    icon: CalendarRange,
-  },
-  {
-    href: ROUTES.QA_MANAGER_EXPORT,
-    title: "Export data",
-    description: "Export by proposal cycle (CSV + ZIP) after closure.",
-    icon: Download,
-  },
-] as const;
+function QaManagerOverview() {
+  const { data: stats } = useQaManagerStatsQuery();
+  const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
 
-function QaManagerModuleLink({
-  href,
-  title,
-  description,
-  icon: Icon,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-}) {
+  const activeCycleName = ideasContext?.activeCycleName ?? null;
+  const submissionClosesAt = ideasContext?.submissionClosesAt ?? null;
+  const interactionClosesAt = ideasContext?.interactionClosesAt ?? null;
+  const hasStats = stats !== null && stats !== undefined;
+
   return (
-    <Link
-      href={href}
-      className={`group flex flex-col p-5 transition-all duration-300 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
-      aria-label={`${title} — ${description}`}
-    >
-      <div className={ICON_BOX_PRIMARY_CLASS}>
-        <Icon className="size-5" aria-hidden />
+    <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6">
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
+          <p className={`mt-1.5 min-w-0 truncate ${TYPO_STAT_SUBTLE}`} title={activeCycleName ?? undefined}>
+            {activeCycleName ?? "—"}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Submission closes</p>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+            {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+            {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
+          </p>
+        </div>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Total ideas</p>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalIdeas : "—"}</p>
+        </div>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Total departments</p>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+            {hasStats ? stats.participatingDepartments : "—"}
+          </p>
+        </div>
       </div>
-      <CardHeader className="flex-1 gap-1 p-0 pt-4">
-        <CardTitle className="text-sm font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
-          {title}
-        </CardTitle>
-        <CardDescription className="text-xs font-normal text-muted-foreground">
-          {description}
-        </CardDescription>
-      </CardHeader>
-      <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary/60 transition-colors group-hover:text-primary">
-        Manage
-        <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-      </span>
-    </Link>
+    </div>
   );
 }
 
-function QaManagerSummary() {
-  const { data: categories = [] } = useCategoriesQuery();
-  const { data: cycles = [] } = useSubmissionCyclesQuery();
-  const activeCycle = cycles.find((c) => c.status === "ACTIVE");
+function QaManagerEngagement() {
+  const { data: stats } = useQaManagerStatsQuery();
+  const hasStats = stats !== null && stats !== undefined;
+
+  const statCardClass =
+    "rounded-xl border border-border/45 bg-muted/[0.02] px-6 py-4";
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
-        <p className={SECTION_LABEL_CLASS}>Categories</p>
-        <p className={`mt-1 ${TYPO_STAT}`}>
-          {categories.length}
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={statCardClass}>
+        <p className={SECTION_LABEL_CLASS}>Comments</p>
+        <p className={`mt-1 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalComments : "—"}</p>
+      </div>
+      <div className={statCardClass}>
+        <p className={SECTION_LABEL_CLASS}>Views</p>
+        <p className={cn("mt-1", TYPO_STAT_BASE_SUBTLE, "text-info")}>
+          {hasStats ? stats.totalViews : "—"}
         </p>
       </div>
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
-        <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
-        <p className={`mt-1 font-semibold text-primary ${TYPO_HEADER_AND_STAT_TEXT}`}>
-          {activeCycle?.name ?? "—"}
+      <div className={statCardClass}>
+        <p className={SECTION_LABEL_CLASS}>Upvotes</p>
+        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-success")}>
+          <ThumbsUp className="size-[18px] shrink-0" aria-hidden />
+          {hasStats ? stats.votesUp : "—"}
+        </p>
+      </div>
+      <div className={statCardClass}>
+        <p className={SECTION_LABEL_CLASS}>Downvotes</p>
+        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-destructive")}>
+          <ThumbsDown className="size-[18px] shrink-0" aria-hidden />
+          {hasStats ? stats.votesDown : "—"}
         </p>
       </div>
     </div>
@@ -101,31 +103,20 @@ function QaManagerSummary() {
 
 export function QaManagerDashboardContent() {
   return (
-    <div className="space-y-8">
-      <section aria-labelledby="qa-summary-heading">
-        <h2 id="qa-summary-heading" className="sr-only">
-          Summary
+    <div className="space-y-7">
+      <section aria-labelledby="qa-manager-overview-heading">
+        <h2 id="qa-manager-overview-heading" className="sr-only">
+          Overview
         </h2>
-        <QaManagerSummary />
+        <QaManagerOverview />
       </section>
-      <section aria-labelledby="qa-modules-heading">
-        <h2 id="qa-modules-heading" className={SECTION_LABEL_CLASS}>
-          Management
+      <section aria-labelledby="qa-manager-engagement-heading">
+        <h2 id="qa-manager-engagement-heading" className={SECTION_LABEL_CLASS}>
+          Engagement
         </h2>
-        <nav
-          className="mt-3 grid gap-4 sm:grid-cols-2"
-          aria-label="QA Manager modules"
-        >
-          {QA_MANAGER_FUNCTIONS.map((item) => (
-            <QaManagerModuleLink
-              key={item.href}
-              href={item.href}
-              title={item.title}
-              description={item.description}
-              icon={item.icon}
-            />
-          ))}
-        </nav>
+        <div className="mt-2.5">
+          <QaManagerEngagement />
+        </div>
       </section>
     </div>
   );

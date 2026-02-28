@@ -8,10 +8,12 @@ import {
   departmentMembersSchema,
   departmentStatsSchema,
   departmentChartsSchema,
+  qaManagerStatsSchema,
   type Profile,
   type DepartmentMembers,
   type DepartmentStats,
   type DepartmentCharts,
+  type QaManagerStats,
 } from "@/lib/schemas/profile.schema";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -87,6 +89,30 @@ export function useDepartmentStatsQuery(options?: { enabled?: boolean }) {
     queryFn: async () => {
       const data = await fetchWithAuth<unknown>("me/department-stats");
       return parseDepartmentStats(data);
+    },
+    enabled: options?.enabled !== false && isAuthenticated,
+    staleTime: 1 * 60 * 1000,
+  });
+}
+
+function parseQaManagerStats(data: unknown): QaManagerStats {
+  const parsed = qaManagerStatsSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid QA Manager stats response");
+  return parsed.data;
+}
+
+/**
+ * TanStack Query: fetch GET /me/qa-manager-stats (QA Manager only).
+ * Org-wide stats for active year; excludes IT Services and Quality Assurance Office.
+ */
+export function useQaManagerStatsQuery(options?: { enabled?: boolean }) {
+  const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.profile.qaManagerStats(),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>("me/qa-manager-stats");
+      return parseQaManagerStats(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,
     staleTime: 1 * 60 * 1000,

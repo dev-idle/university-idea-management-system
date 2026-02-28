@@ -254,6 +254,108 @@ export class MeService {
     };
   }
 
+  /** Department names excluded from QA Manager stats (internal/admin). */
+  private static readonly QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES = [
+    'IT Services / System Administration Department',
+    'Quality Assurance Office',
+  ] as const;
+
+  /**
+   * Get QA Manager dashboard stats: total ideas, comments, views, votes (up/down),
+   * participating departments. Excludes IT Services and Quality Assurance Office.
+   * Scope: active academic year.
+   */
+  async getQaManagerStats(userId: string): Promise<{
+    totalIdeas: number;
+    totalComments: number;
+    totalViews: number;
+    votesUp: number;
+    votesDown: number;
+    participatingDepartments: number;
+  }> {
+    const activeYear = await this.prisma.academicYear.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    if (!activeYear) {
+      return {
+        totalIdeas: 0,
+        totalComments: 0,
+        totalViews: 0,
+        votesUp: 0,
+        votesDown: 0,
+        participatingDepartments: 0,
+      };
+    }
+
+    const cycles = await this.prisma.ideaSubmissionCycle.findMany({
+      where: { academicYearId: activeYear.id },
+      select: { id: true, status: true },
+    });
+    const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
+    const cycleIds =
+      activeCycle != null
+        ? [activeCycle.id]
+        : cycles.map((c) => c.id);
+    if (cycleIds.length === 0) {
+      return {
+        totalIdeas: 0,
+        totalComments: 0,
+        totalViews: 0,
+        votesUp: 0,
+        votesDown: 0,
+        participatingDepartments: 0,
+      };
+    }
+
+    const ideaWhere = {
+      cycleId: { in: cycleIds },
+      submittedBy: {
+        departmentId: { not: null },
+        department: {
+          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+        },
+      },
+    };
+
+    const [totalIdeas, totalComments, totalViews, votesUp, votesDown, ideasForDepts] =
+      await Promise.all([
+        this.prisma.idea.count({ where: ideaWhere }),
+        this.prisma.ideaComment.count({
+          where: { idea: ideaWhere },
+        }),
+        this.prisma.ideaView.count({
+          where: { idea: ideaWhere },
+        }),
+        this.prisma.ideaVote.count({
+          where: { idea: ideaWhere, value: 'up' },
+        }),
+        this.prisma.ideaVote.count({
+          where: { idea: ideaWhere, value: 'down' },
+        }),
+        this.prisma.idea.findMany({
+          where: ideaWhere,
+          select: { submittedBy: { select: { departmentId: true } } },
+        }),
+      ]);
+
+    const uniqueDepts = new Set(
+      ideasForDepts
+        .map((i) => i.submittedBy?.departmentId)
+        .filter((id): id is string => id != null),
+    );
+    const participatingDepartments = uniqueDepts.size;
+
+    return {
+      totalIdeas,
+      totalComments,
+      totalViews,
+      votesUp,
+      votesDown,
+      participatingDepartments: deptCount,
+    };
+  }
+
   /**
    * Get department chart data for QA Coordinator: ideas by category, ideas over time.
    * Scope: active academic year. Returns null if user has no department.

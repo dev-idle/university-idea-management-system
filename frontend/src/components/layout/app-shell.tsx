@@ -330,16 +330,6 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
     );
     items.push(
       <NavLink
-        key={ROUTES.QA_MANAGER_EXPORT}
-        href={ROUTES.QA_MANAGER_EXPORT}
-        label="Export Data"
-        icon={Download}
-        isActive={pathname === ROUTES.QA_MANAGER_EXPORT}
-        collapsed={collapsed}
-      />
-    );
-    items.push(
-      <NavLink
         key={ROUTES.QA_MANAGER_IDEAS}
         href={ROUTES.QA_MANAGER_IDEAS}
         label="Ideas Hub"
@@ -348,6 +338,16 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           pathname === ROUTES.QA_MANAGER_IDEAS ||
           (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
         }
+        collapsed={collapsed}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.QA_MANAGER_EXPORT}
+        href={ROUTES.QA_MANAGER_EXPORT}
+        label="Export Data"
+        icon={Download}
+        isActive={pathname === ROUTES.QA_MANAGER_EXPORT}
         collapsed={collapsed}
       />
     );

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import {
   ChevronDown,
   LogOut,
@@ -8,7 +9,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { TYPO_LABEL, TYPO_NAV, TYPO_HEADER_AND_STAT_TEXT, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE } from "@/config/design";
-import { PROFILE_AVATAR_FALLBACK_CLASS } from "@/components/features/admin/constants";
+import {
+  PROFILE_AVATAR_FALLBACK_CLASS,
+  BREADCRUMB_LINK_CLASS,
+  BREADCRUMB_CURRENT_CLASS,
+} from "@/components/features/admin/constants";
 import { ROUTES } from "@/config/constants";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import {
@@ -61,7 +66,7 @@ export function getBreadcrumbs(
       { href: "/profile", label: "Profile" },
     ];
   }
-  // QA Coordinator: /ideas/[id] → QA Coordinator > Ideas Hub > Detail
+  // QA Coordinator: /ideas/[id] → QA Coordinator > Ideas Hub > Proposal
   const isQaCoord =
     user?.roles?.some((r) => String(r).toUpperCase() === "QA_COORDINATOR");
   if (
@@ -76,10 +81,10 @@ export function getBreadcrumbs(
     return [
       { href: ROUTES.QA_COORDINATOR_DASHBOARD, label: "QA Coordinator" },
       { href: ROUTES.QA_COORDINATOR_IDEAS, label: "Ideas Hub" },
-      { href: pathname, label: isEdit ? "Edit" : "Detail" },
+      { href: pathname, label: isEdit ? "Edit" : "Proposal" },
     ];
   }
-  // QA Manager: /ideas/[id] → QA Manager > Ideas Hub > Detail
+  // QA Manager: /ideas/[id] → QA Manager > Ideas Hub > Proposal
   const isQaMgr =
     user?.roles?.some((r) => String(r).toUpperCase() === "QA_MANAGER");
   if (
@@ -94,7 +99,7 @@ export function getBreadcrumbs(
     return [
       { href: ROUTES.QA_MANAGER_DASHBOARD, label: "QA Manager" },
       { href: ROUTES.QA_MANAGER_IDEAS, label: "Ideas Hub" },
-      { href: pathname, label: isEdit ? "Edit" : "Detail" },
+      { href: pathname, label: isEdit ? "Edit" : "Proposal" },
     ];
   }
   const segments = pathname.split("/").filter(Boolean);
@@ -106,7 +111,7 @@ export function getBreadcrumbs(
     const label =
       SEGMENT_LABELS[seg] ??
       (seg.match(/^[0-9a-f-]{36}$/i)
-        ? "Detail"
+        ? "Proposal"
         : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
     items.push({ href, label });
   }
@@ -265,14 +270,16 @@ export function HeaderBreadcrumbs({
 }) {
   const breadcrumbs = getBreadcrumbs(pathname, user);
 
+  const linkClass = `${BREADCRUMB_LINK_CLASS} cursor-pointer rounded-sm py-0.5 text-muted-foreground/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${HOVER_TRANSITION_NAV}`;
+
   return (
     <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
-      <ol className={`flex min-w-0 flex-wrap items-center gap-1.5 font-sans ${TYPO_HEADER_AND_STAT_TEXT}`}>
+      <ol className={`flex min-w-0 flex-wrap items-center gap-1.5 font-sans text-muted-foreground ${TYPO_HEADER_AND_STAT_TEXT}`}>
         {breadcrumbs.length === 0 ? (
           <li>
             <Link
               href={getEntryRouteForRoles(user.roles)}
-              className={`cursor-pointer rounded-sm py-0.5 text-muted-foreground/72 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
+              className={linkClass}
             >
               Dashboard
             </Link>
@@ -281,29 +288,20 @@ export function HeaderBreadcrumbs({
           breadcrumbs.map((item, i) => (
             <li key={item.href || `ctx-${i}`} className="flex items-center gap-1">
               {i > 0 && (
-                <span
-                  className="shrink-0 text-primary/25"
-                  aria-hidden
-                >
+                <span className="shrink-0 mx-0.5 text-muted-foreground/80" aria-hidden>
                   /
                 </span>
               )}
               {item.isContext ? (
-                <span className="truncate text-muted-foreground/65">
+                <span className="truncate">
                   {item.label}
                 </span>
               ) : i < breadcrumbs.length - 1 ? (
-                <Link
-                  href={item.href}
-                  className={`cursor-pointer truncate rounded-sm py-0.5 text-muted-foreground/75 ${HOVER_TRANSITION_NAV} hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1`}
-                >
+                <Link href={item.href} className={cn("truncate", linkClass)}>
                   {item.label}
                 </Link>
               ) : (
-                <span
-                  className="truncate font-medium text-primary/90"
-                  aria-current="page"
-                >
+                <span className={cn("truncate font-medium", BREADCRUMB_CURRENT_CLASS)} aria-current="page">
                   {item.label}
                 </span>
               )}

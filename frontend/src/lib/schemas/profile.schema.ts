@@ -94,6 +94,18 @@ export const departmentStatsSchema = z
 
 export type DepartmentStats = z.infer<typeof departmentStatsSchema>;
 
+/** GET /me/qa-manager-stats response — QA Manager only. Active year, excludes IT/QA departments. */
+export const qaManagerStatsSchema = z.object({
+  totalIdeas: z.number().int().min(0),
+  totalComments: z.number().int().min(0),
+  totalViews: z.number().int().min(0),
+  votesUp: z.number().int().min(0),
+  votesDown: z.number().int().min(0),
+  participatingDepartments: z.number().int().min(0),
+});
+
+export type QaManagerStats = z.infer<typeof qaManagerStatsSchema>;
+
 /** GET /me/department-charts response — null if user has no department. */
 export const departmentChartsSchema = z
   .object({
