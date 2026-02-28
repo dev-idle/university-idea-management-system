@@ -13,8 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import {
   SECTION_LABEL_CLASS,
-  TYPO_STAT,
-  TYPO_STAT_BASE,
+  TYPO_STAT_SUBTLE,
+  TYPO_STAT_BASE_SUBTLE,
   TYPO_BODY_SM,
   CHART_COLOR_CATEGORICAL,
   CHART_COLOR_TEMPORAL,
@@ -22,10 +22,7 @@ import {
   CHART_TOOLTIP_LABEL_CLASS,
   TR_CHART_ENTRANCE,
 } from "@/config/design";
-import {
-  DASHBOARD_STAT_CARD_CLASS,
-  UNIFIED_CARD_CLASS,
-} from "../admin/constants";
+import { UNIFIED_CARD_CLASS } from "../admin/constants";
 import {
   useDepartmentMembersQuery,
   useDepartmentStatsQuery,
@@ -64,29 +61,29 @@ function QaCoordinatorOverview() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6">
         <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
-          <p className={`mt-1.5 min-w-0 truncate ${TYPO_STAT}`} title={activeCycleName ?? undefined}>
+          <p className={`mt-1.5 min-w-0 truncate ${TYPO_STAT_SUBTLE}`} title={activeCycleName ?? undefined}>
             {activeCycleName ?? "—"}
           </p>
         </div>
         <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Submission closes</p>
-          <p className={`mt-1.5 ${TYPO_STAT}`}>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
             {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
           </p>
         </div>
         <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
-          <p className={`mt-1.5 ${TYPO_STAT}`}>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
             {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
           </p>
         </div>
         <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Total ideas</p>
-          <p className={`mt-1.5 ${TYPO_STAT}`}>{hasStats ? stats.totalIdeas : "—"}</p>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalIdeas : "—"}</p>
         </div>
         <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Department members</p>
-          <p className={`mt-1.5 ${TYPO_STAT}`}>{memberCount !== null ? memberCount : "—"}</p>
+          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>{memberCount !== null ? memberCount : "—"}</p>
         </div>
       </div>
     </div>
@@ -97,31 +94,32 @@ function QaCoordinatorEngagement() {
   const { data: stats } = useDepartmentStatsQuery();
   const hasStats = stats !== null && stats !== undefined;
 
+  const statCardClass =
+    "rounded-xl border border-border/45 bg-muted/[0.02] px-6 py-4";
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
+      <div className={statCardClass}>
         <p className={SECTION_LABEL_CLASS}>Comments</p>
-        <p className={`mt-1 ${TYPO_STAT}`}>
-          {hasStats ? stats.totalComments : "—"}
-        </p>
+        <p className={`mt-1 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalComments : "—"}</p>
       </div>
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
+      <div className={statCardClass}>
         <p className={SECTION_LABEL_CLASS}>Views</p>
-        <p className={cn("mt-1", TYPO_STAT_BASE, "text-info")}>
+        <p className={cn("mt-1", TYPO_STAT_BASE_SUBTLE, "text-info")}>
           {hasStats ? stats.totalViews : "—"}
         </p>
       </div>
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
+      <div className={statCardClass}>
         <p className={SECTION_LABEL_CLASS}>Upvotes</p>
-        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE, "text-success")}>
-          <ThumbsUp className="size-5 shrink-0" aria-hidden />
+        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-success")}>
+          <ThumbsUp className="size-[18px] shrink-0" aria-hidden />
           {hasStats ? stats.votesUp : "—"}
         </p>
       </div>
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
+      <div className={statCardClass}>
         <p className={SECTION_LABEL_CLASS}>Downvotes</p>
-        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE, "text-destructive")}>
-          <ThumbsDown className="size-5 shrink-0" aria-hidden />
+        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-destructive")}>
+          <ThumbsDown className="size-[18px] shrink-0" aria-hidden />
           {hasStats ? stats.votesDown : "—"}
         </p>
       </div>
@@ -285,7 +283,7 @@ function DepartmentCharts() {
 
 export function QaCoordinatorDashboardContent() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       <section aria-labelledby="qa-coord-overview-heading">
         <h2 id="qa-coord-overview-heading" className="sr-only">
           Overview
@@ -296,7 +294,7 @@ export function QaCoordinatorDashboardContent() {
         <h2 id="qa-coord-engagement-heading" className={SECTION_LABEL_CLASS}>
           Engagement
         </h2>
-        <div className="mt-3">
+        <div className="mt-2.5">
           <QaCoordinatorEngagement />
         </div>
       </section>
@@ -304,7 +302,7 @@ export function QaCoordinatorDashboardContent() {
         <h2 id="qa-coord-charts-heading" className={SECTION_LABEL_CLASS}>
           Insights
         </h2>
-        <div className="mt-3">
+        <div className="mt-2.5">
           <DepartmentCharts />
         </div>
       </section>

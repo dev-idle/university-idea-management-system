@@ -60,6 +60,14 @@ export const TYPO_STAT_BASE = "text-2xl font-bold tabular-nums tracking-tight";
 /** Stat: dashboard numbers, metrics (primary). */
 export const TYPO_STAT = `${TYPO_STAT_BASE} text-primary`;
 
+/** Stat subtle: refined dashboards, lighter weight. */
+export const TYPO_STAT_SUBTLE =
+  "text-xl font-semibold tabular-nums tracking-tight text-primary";
+
+/** Stat base subtle: for semantic color variants (info, success, destructive). */
+export const TYPO_STAT_BASE_SUBTLE =
+  "text-xl font-semibold tabular-nums tracking-tight";
+
 /** Nav item: sidebar, breadcrumbs. */
 export const TYPO_NAV =
   "text-sm font-medium";
