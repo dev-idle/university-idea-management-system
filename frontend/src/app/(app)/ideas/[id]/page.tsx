@@ -668,8 +668,9 @@ export default function IdeaDetailPage() {
   const commentsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!id) router.replace(ROUTES.IDEAS);
-  }, [id, router]);
+    if (!id)
+      router.replace(isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : ROUTES.IDEAS);
+  }, [id, router, isQaCoordinator]);
 
   useEffect(() => {
     if (idea?.title) {
@@ -812,7 +813,7 @@ export default function IdeaDetailPage() {
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
           <li>
             <Link
-              href={ROUTES.IDEAS}
+              href={isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : ROUTES.IDEAS}
               className={BREADCRUMB_LINK_CLASS}
             >
               Ideas Hub

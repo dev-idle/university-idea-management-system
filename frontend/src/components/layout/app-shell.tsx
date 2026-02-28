@@ -361,21 +361,24 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
     );
     items.push(
       <NavLink
-        key={ROUTES.IDEAS}
-        href={ROUTES.IDEAS}
-        label="Ideas Hub"
-        icon={Lightbulb}
-        isActive={pathname === ROUTES.IDEAS || (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))}
+        key={ROUTES.QA_COORDINATOR_DEPARTMENT}
+        href={ROUTES.QA_COORDINATOR_DEPARTMENT}
+        label="Department Members"
+        icon={UsersRound}
+        isActive={pathname === ROUTES.QA_COORDINATOR_DEPARTMENT}
         collapsed={collapsed}
       />
     );
     items.push(
       <NavLink
-        key={ROUTES.DEPARTMENT_MEMBERS}
-        href={ROUTES.DEPARTMENT_MEMBERS}
-        label="Department Members"
-        icon={UsersRound}
-        isActive={pathname === ROUTES.DEPARTMENT_MEMBERS}
+        key={ROUTES.QA_COORDINATOR_IDEAS}
+        href={ROUTES.QA_COORDINATOR_IDEAS}
+        label="Ideas Hub"
+        icon={Lightbulb}
+        isActive={
+          pathname === ROUTES.QA_COORDINATOR_IDEAS ||
+          (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
+        }
         collapsed={collapsed}
       />
     );

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { IdeasHubContent } from "@/components/features/ideas/ideas-hub-content";
-import { IdeasHubRedirect } from "@/components/features/ideas/ideas-hub-redirect";
 import {
   PAGE_CONTAINER_CLASS,
   IDEAS_HUB_SPACING,
@@ -11,12 +10,10 @@ export const metadata: Metadata = {
   description: "Formal improvement proposals for the active academic year.",
 };
 
-export default function IdeasPage() {
+export default function QaCoordinatorIdeasPage() {
   return (
-    <IdeasHubRedirect>
-      <div className={`${IDEAS_HUB_SPACING} ${PAGE_CONTAINER_CLASS}`}>
-        <IdeasHubContent />
-      </div>
-    </IdeasHubRedirect>
+    <div className={`${IDEAS_HUB_SPACING} ${PAGE_CONTAINER_CLASS}`}>
+      <IdeasHubContent />
+    </div>
   );
 }

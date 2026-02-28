@@ -27,13 +27,14 @@ const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   users: "Users",
   departments: "Departments",
+  department: "Department Members",
   "academic-years": "Academic Years",
   "qa-manager": "QA Manager",
   categories: "Categories",
   "submission-cycles": "Proposal Cycles",
   "proposal-cycles": "Proposal Cycles",
   "qa-coordinator": "QA Coordinator",
-  ideas: "Ideas",
+  ideas: "Ideas Hub",
   new: "New",
   my: "My Ideas",
   edit: "Edit",
@@ -50,11 +51,32 @@ export function PrimaryRoleLabel({ roles }: { roles: string[] | undefined }) {
 
 export type BreadcrumbItem = { href: string; label: string; isContext?: boolean };
 
-export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
+export function getBreadcrumbs(
+  pathname: string,
+  user?: { roles?: string[] }
+): BreadcrumbItem[] {
   if (pathname === "/profile") {
     return [
       { href: "", label: "Account", isContext: true },
       { href: "/profile", label: "Profile" },
+    ];
+  }
+  // QA Coordinator: /ideas/[id] → QA Coordinator > Ideas Hub > Detail
+  const isQaCoord =
+    user?.roles?.some((r) => String(r).toUpperCase() === "QA_COORDINATOR");
+  if (
+    isQaCoord &&
+    pathname.startsWith("/ideas/") &&
+    !pathname.startsWith("/ideas/new") &&
+    !pathname.startsWith("/ideas/my")
+  ) {
+    const segs = pathname.split("/").filter(Boolean);
+    const id = segs[segs.length - 1];
+    const isEdit = id === "edit" || segs[segs.length - 2] === "edit";
+    return [
+      { href: ROUTES.QA_COORDINATOR_DASHBOARD, label: "QA Coordinator" },
+      { href: ROUTES.QA_COORDINATOR_IDEAS, label: "Ideas Hub" },
+      { href: pathname, label: isEdit ? "Edit" : "Detail" },
     ];
   }
   const segments = pathname.split("/").filter(Boolean);
@@ -223,7 +245,7 @@ export function HeaderBreadcrumbs({
   user: { roles?: string[] };
   getEntryRouteForRoles: (roles: string[] | undefined) => string;
 }) {
-  const breadcrumbs = getBreadcrumbs(pathname);
+  const breadcrumbs = getBreadcrumbs(pathname, user);
 
   return (
     <nav aria-label="Breadcrumb" className="min-w-0 flex-1">

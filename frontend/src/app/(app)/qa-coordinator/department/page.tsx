@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DepartmentMembersContent } from "@/components/features/department-members/department-members-content";
-import { DepartmentMembersRedirect } from "@/components/features/department-members/department-members-redirect";
 import { buildPageTitle } from "@/config/constants";
 import { PAGE_CONTAINER_CLASS } from "@/config/design";
 
@@ -9,12 +8,10 @@ export const metadata: Metadata = {
   description: "View members in your department.",
 };
 
-export default function DepartmentMembersPage() {
+export default function QaCoordinatorDepartmentPage() {
   return (
-    <DepartmentMembersRedirect>
-      <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
-        <DepartmentMembersContent />
-      </div>
-    </DepartmentMembersRedirect>
+    <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
+      <DepartmentMembersContent />
+    </div>
   );
 }

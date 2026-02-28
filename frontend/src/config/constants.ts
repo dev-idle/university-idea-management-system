@@ -42,6 +42,10 @@ export const ROUTES = {
   QA_MANAGER_EXPORT: "/qa-manager/export",
   /** QA Coordinator → /qa-coordinator/dashboard. */
   QA_COORDINATOR_DASHBOARD: "/qa-coordinator/dashboard",
+  /** QA Coordinator: Department Members (under coordinator namespace). */
+  QA_COORDINATOR_DEPARTMENT: "/qa-coordinator/department",
+  /** QA Coordinator: Ideas Hub (under coordinator namespace). */
+  QA_COORDINATOR_IDEAS: "/qa-coordinator/ideas",
   /** Ideas: Staff Ideas Hub. Staff are routed here after login (no separate /staff page). */
   IDEAS: "/ideas",
   /** Staff: Submit new idea (full-page creative mode). */
