@@ -641,6 +641,8 @@ export default function IdeaDetailPage() {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isQaCoordinator = hasRole(user?.roles, "QA_COORDINATOR");
+  const isQaManager = hasRole(user?.roles, "QA_MANAGER");
+  const isReadOnly = isQaCoordinator || isQaManager;
   const id = typeof params.id === "string" ? params.id : null;
   const { data: idea, status, error } = useIdeaQuery(id);
   const { data: comments = [], status: commentsStatus } =
@@ -653,7 +655,7 @@ export default function IdeaDetailPage() {
   const { markViewedByAction } = useIdeaViewTracker(
     id,
     idea?.cycleStatus ?? null,
-    isQaCoordinator,
+    isReadOnly,
   );
 
   const [commentContent, setCommentContent] = useState("");
@@ -668,9 +670,11 @@ export default function IdeaDetailPage() {
   const commentsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!id)
-      router.replace(isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : ROUTES.IDEAS);
-  }, [id, router, isQaCoordinator]);
+    if (!id) {
+      const hub = isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : isQaManager ? ROUTES.QA_MANAGER_IDEAS : ROUTES.IDEAS;
+      router.replace(hub);
+    }
+  }, [id, router, isQaCoordinator, isQaManager]);
 
   useEffect(() => {
     if (idea?.title) {
@@ -748,7 +752,7 @@ export default function IdeaDetailPage() {
     : "?";
 
   const handleVote = (v: "up" | "down") => {
-    if (!open || voteMutation.isPending || isQaCoordinator) return;
+    if (!open || voteMutation.isPending || isReadOnly) return;
     markViewedByAction(id, idea.cycleStatus);
     voteMutation.mutate({ ideaId: id, value: v });
   };
@@ -756,7 +760,7 @@ export default function IdeaDetailPage() {
   const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = commentContent.trim();
-    if (!trimmed || !open || createCommentMutation.isPending || isQaCoordinator) return;
+    if (!trimmed || !open || createCommentMutation.isPending || isReadOnly) return;
     markViewedByAction(id, idea.cycleStatus);
     createCommentMutation.mutate(
       { ideaId: id, body: { content: trimmed, isAnonymous: commentAnonymous } },
@@ -813,7 +817,9 @@ export default function IdeaDetailPage() {
         <ol className={cn("flex flex-wrap items-center", BREADCRUMB_GHOST_CLASS)}>
           <li>
             <Link
-              href={isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : ROUTES.IDEAS}
+              href={
+                isQaCoordinator ? ROUTES.QA_COORDINATOR_IDEAS : isQaManager ? ROUTES.QA_MANAGER_IDEAS : ROUTES.IDEAS
+              }
               className={BREADCRUMB_LINK_CLASS}
             >
               Ideas Hub
@@ -915,13 +921,13 @@ export default function IdeaDetailPage() {
         >
           <button
             type="button"
-            disabled={!open || voteMutation.isPending || isQaCoordinator}
+            disabled={!open || voteMutation.isPending || isReadOnly}
             onClick={() => handleVote("up")}
             className={cn(
               IDEAS_HUB_ACTION_BASE,
               "cursor-pointer",
               myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
-              (!open || voteMutation.isPending || isQaCoordinator) && "pointer-events-none opacity-50",
+              (!open || voteMutation.isPending || isReadOnly) && "pointer-events-none opacity-50",
             )}
             aria-label={`Support (${votes.up})`}
           >
@@ -931,13 +937,13 @@ export default function IdeaDetailPage() {
           <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
           <button
             type="button"
-            disabled={!open || voteMutation.isPending || isQaCoordinator}
+            disabled={!open || voteMutation.isPending || isReadOnly}
             onClick={() => handleVote("down")}
             className={cn(
               IDEAS_HUB_ACTION_BASE,
               "cursor-pointer",
               myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
-              (!open || voteMutation.isPending || isQaCoordinator) && "pointer-events-none opacity-50",
+              (!open || voteMutation.isPending || isReadOnly) && "pointer-events-none opacity-50",
             )}
             aria-label={`Do not support (${votes.down})`}
           >
@@ -977,7 +983,7 @@ export default function IdeaDetailPage() {
           aria-label="Comments"
         >
           <div className={cn(IDEAS_HUB_CARD_PX, "pt-5 pb-4 sm:pt-6 sm:pb-4")}>
-            {open && !isQaCoordinator ? (
+            {open && !isReadOnly ? (
               <MainCommentForm
                 commentContent={commentContent}
                 commentAnonymous={commentAnonymous}
@@ -1009,7 +1015,7 @@ export default function IdeaDetailPage() {
                     key={c.id}
                       comment={c}
                       ideaId={id}
-                      open={open && !isQaCoordinator}
+                      open={open && !isReadOnly}
                       isReply={false}
                       depth={1}
                       isFirstReply={idx === 0}

@@ -39,6 +39,15 @@ import {
 import { LoadingState } from "@/components/ui/loading-state";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
 
+function fmtDate(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return date.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function QaCoordinatorOverview() {
   const { data: stats } = useDepartmentStatsQuery();
   const { data: departmentData } = useDepartmentMembersQuery();
@@ -46,28 +55,38 @@ function QaCoordinatorOverview() {
 
   const memberCount = departmentData?.members?.length ?? null;
   const activeCycleName = ideasContext?.activeCycleName ?? null;
+  const submissionClosesAt = ideasContext?.submissionClosesAt ?? null;
+  const interactionClosesAt = ideasContext?.interactionClosesAt ?? null;
   const hasStats = stats !== null && stats !== undefined;
 
   return (
     <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
-      <div className="flex flex-wrap items-baseline gap-x-10 gap-y-5 sm:gap-x-12">
-        <div className="min-w-0 flex-1 basis-0">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6">
+        <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
-          <p className={`mt-1.5 ${TYPO_STAT}`}>
+          <p className={`mt-1.5 min-w-0 truncate ${TYPO_STAT}`} title={activeCycleName ?? undefined}>
             {activeCycleName ?? "—"}
           </p>
         </div>
-        <div className="min-w-0 flex-1 basis-0">
-          <p className={SECTION_LABEL_CLASS}>Total ideas</p>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Submission closes</p>
           <p className={`mt-1.5 ${TYPO_STAT}`}>
-            {hasStats ? stats.totalIdeas : "—"}
+            {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
           </p>
         </div>
-        <div className="min-w-0 flex-1 basis-0">
-          <p className={SECTION_LABEL_CLASS}>Department members</p>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
           <p className={`mt-1.5 ${TYPO_STAT}`}>
-            {memberCount !== null ? memberCount : "—"}
+            {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
           </p>
+        </div>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Total ideas</p>
+          <p className={`mt-1.5 ${TYPO_STAT}`}>{hasStats ? stats.totalIdeas : "—"}</p>
+        </div>
+        <div className="min-w-0">
+          <p className={SECTION_LABEL_CLASS}>Department members</p>
+          <p className={`mt-1.5 ${TYPO_STAT}`}>{memberCount !== null ? memberCount : "—"}</p>
         </div>
       </div>
     </div>
@@ -158,7 +177,6 @@ function DepartmentCharts() {
     ...d,
     label: formatPeriodLabel(d.date, d.dateEnd),
   }));
-
   const hasCategoryData = ideasByCategory.length > 0;
   const hasTimeData = ideasOverTime.some((d) => d.count > 0);
 

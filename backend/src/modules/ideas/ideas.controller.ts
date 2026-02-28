@@ -66,7 +66,7 @@ export class IdeasController {
   }
 
   @Get()
-  @Roles('STAFF', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   findAll(
     @CurrentUser() user: AccessTokenPayload,
     @Query('page') page?: string,
@@ -155,7 +155,7 @@ export class IdeasController {
    * Content-Disposition: inline and correct filename so the file opens with the right extension.
    */
   @Get('attachments/:attachmentId/view')
-  @Roles('STAFF', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   async viewAttachment(
     @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
   ): Promise<StreamableFile> {
@@ -178,7 +178,7 @@ export class IdeasController {
    * Content-Disposition: attachment and correct filename so the saved file keeps its extension.
    */
   @Get('attachments/:attachmentId/download')
-  @Roles('STAFF', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   async downloadAttachment(
     @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
   ): Promise<StreamableFile> {
@@ -198,7 +198,7 @@ export class IdeasController {
 
   /** Latest comments across all ideas in the active academic year. */
   @Get('latest-comments')
-  @Roles('STAFF', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   getLatestComments(@Query('limit') limit?: string) {
     const { limit: limitNum } = parsePagination(undefined, limit);
     return this.ideasService.getLatestComments({
@@ -301,7 +301,7 @@ export class IdeasController {
   /* ── Public idea routes ───────────────────────────────────────────────────── */
 
   @Get(':id/comments')
-  @Roles('STAFF', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   getComments(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,
@@ -377,7 +377,7 @@ export class IdeasController {
   }
 
   @Get(':id')
-  @Roles('STAFF', 'QA_COORDINATOR')
+  @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   findOne(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id', ParseUUIDPipe) id: string,

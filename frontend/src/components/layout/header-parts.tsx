@@ -79,6 +79,24 @@ export function getBreadcrumbs(
       { href: pathname, label: isEdit ? "Edit" : "Detail" },
     ];
   }
+  // QA Manager: /ideas/[id] → QA Manager > Ideas Hub > Detail
+  const isQaMgr =
+    user?.roles?.some((r) => String(r).toUpperCase() === "QA_MANAGER");
+  if (
+    isQaMgr &&
+    pathname.startsWith("/ideas/") &&
+    !pathname.startsWith("/ideas/new") &&
+    !pathname.startsWith("/ideas/my")
+  ) {
+    const segs = pathname.split("/").filter(Boolean);
+    const id = segs[segs.length - 1];
+    const isEdit = id === "edit" || segs[segs.length - 2] === "edit";
+    return [
+      { href: ROUTES.QA_MANAGER_DASHBOARD, label: "QA Manager" },
+      { href: ROUTES.QA_MANAGER_IDEAS, label: "Ideas Hub" },
+      { href: pathname, label: isEdit ? "Edit" : "Detail" },
+    ];
+  }
   const segments = pathname.split("/").filter(Boolean);
   if (segments.length === 0) return [];
   const items: BreadcrumbItem[] = [];

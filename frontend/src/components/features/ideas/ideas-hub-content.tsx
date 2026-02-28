@@ -433,6 +433,8 @@ function IdeaCard({
 export function IdeasHubContent() {
   const user = useAuthStore((s) => s.user);
   const isQaCoordinator = hasRole(user?.roles, "QA_COORDINATOR");
+  const isQaManager = hasRole(user?.roles, "QA_MANAGER");
+  const isReadOnly = isQaCoordinator || isQaManager;
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [sort, setSort] = useQueryState("sort", SORT_PARSER);
   const [departmentId, setDepartmentId] = useQueryState("department", parseAsString.withDefault(""));
@@ -454,7 +456,7 @@ export function IdeasHubContent() {
         ? (closedCycles.find((c) => c.id === cycleId)?.categories ?? [])
         : []);
   const departments =
-    isQaCoordinator
+    isQaCoordinator && !isQaManager
       ? (hasActiveCycle
           ? (context?.departmentsForFilter ?? [])
           : cycleId
@@ -482,7 +484,7 @@ export function IdeasHubContent() {
       sort,
       categoryId: categoryId || undefined,
       cycleId: effectiveCycleId,
-      departmentId: isQaCoordinator ? (departmentId || undefined) : undefined,
+      departmentId: isQaCoordinator && !isQaManager ? (departmentId || undefined) : undefined,
     },
     { enabled: true },
   );
@@ -492,13 +494,13 @@ export function IdeasHubContent() {
   const { markViewedByAction } = useIdeaViewTracker(
     expandedId,
     expandedCycleStatus,
-    isQaCoordinator,
+    isReadOnly,
   );
 
   if (ctxStatus === "error") throw ctxError;
   if (ideasStatus === "error") throw ideasError;
 
-  const canSubmit = isQaCoordinator ? false : (context?.canSubmit ?? false);
+  const canSubmit = isReadOnly ? false : (context?.canSubmit ?? false);
   const closesAt = context?.submissionClosesAt;
   const interactionClosesAt = context?.interactionClosesAt;
   const interactionOpen =
@@ -515,7 +517,7 @@ export function IdeasHubContent() {
       {!canSubmit && (
         <Alert className={ALERT_WARNING_CLASS}>
           <AlertDescription>
-            {isQaCoordinator
+            {isReadOnly
               ? "View only. You cannot submit, vote, or comment on ideas."
               : interactionOpen && interactionClosesAt
                 ? `Submissions are closed. You can still view, vote, and comment on ideas until ${fmtDateTime(interactionClosesAt)}.`
@@ -532,7 +534,7 @@ export function IdeasHubContent() {
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
       <div className={IDEAS_HUB_TOOLBAR}>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-          {isQaCoordinator && departments.length > 0 && (
+          {isQaCoordinator && !isQaManager && departments.length > 0 && (
             <Select
               value={departmentId || "all"}
               onValueChange={(v) => {
@@ -565,7 +567,7 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={isQaCoordinator ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
+              <SelectTrigger className={isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
                 <SelectValue placeholder="Cycle" />
               </SelectTrigger>
               <SelectContent>
@@ -587,7 +589,7 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={isQaCoordinator ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
+              <SelectTrigger className={isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -600,10 +602,10 @@ export function IdeasHubContent() {
               </SelectContent>
             </Select>
           )}
-          {!isQaCoordinator && (closedCycles.length > 0 || departments.length > 0 || categories.length > 0) && (
+          {!isQaCoordinator && !isQaManager && (closedCycles.length > 0 || departments.length > 0 || categories.length > 0) && (
             <div className={IDEAS_HUB_TOOLBAR_DIVIDER} aria-hidden />
           )}
-          {isQaCoordinator ? (
+          {(isQaCoordinator || isQaManager) ? (
             <Select
               value={sort}
               onValueChange={(v) => {
@@ -690,7 +692,7 @@ export function IdeasHubContent() {
                     }}
                     onDwellComplete={(id) => markViewedByAction(id, idea.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null))}
                     votePending={voteMutation.isPending}
-                    voteDisabled={!interactionOpen || isQaCoordinator}
+                    voteDisabled={!interactionOpen || isReadOnly}
                   />
                 ))}
               </div>

@@ -261,6 +261,7 @@ export class MeService {
   async getDepartmentCharts(userId: string): Promise<{
     ideasByCategory: Array<{ categoryName: string; count: number }>;
     ideasOverTime: Array<{ date: string; dateEnd: string; count: number }>;
+    closureDate: string | null;
   } | null> {
     const me = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -273,7 +274,7 @@ export class MeService {
       select: { id: true, startDate: true, endDate: true },
     });
     if (!activeYear) {
-      return { ideasByCategory: [], ideasOverTime: [] };
+      return { ideasByCategory: [], ideasOverTime: [], closureDate: null };
     }
 
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
@@ -287,7 +288,7 @@ export class MeService {
         ? [activeCycle.id]
         : cycles.map((c) => c.id);
     if (cycleIds.length === 0) {
-      return { ideasByCategory: [], ideasOverTime: [] };
+      return { ideasByCategory: [], ideasOverTime: [], closureDate: null };
     }
 
     const cycleForClosure = activeCycle ?? cycles[0]!;
@@ -313,15 +314,17 @@ export class MeService {
       }),
     ]);
 
+    const BUFFER_DAYS_BEFORE = 6;
+    const BUFFER_DAYS_AFTER = 5;
+
     const firstSubmission =
       ideasWithDate.length > 0
         ? new Date(Math.min(...ideasWithDate.map((i) => i.createdAt.getTime())))
         : null;
-    const windowEnd = new Date(closureDate);
     const windowStart = firstSubmission
       ? (() => {
           const start = new Date(firstSubmission);
-          start.setDate(start.getDate() - 5);
+          start.setDate(start.getDate() - BUFFER_DAYS_BEFORE);
           return start;
         })()
       : (() => {
@@ -329,6 +332,8 @@ export class MeService {
           start.setDate(start.getDate() - 30);
           return start;
         })();
+    const windowEnd = new Date(closureDate);
+    windowEnd.setDate(windowEnd.getDate() + BUFFER_DAYS_AFTER);
 
     const countByCategoryId = new Map<string, number>();
     for (const r of byCategoryRows) {
@@ -354,26 +359,33 @@ export class MeService {
       ideasByCategory.push({ categoryName: 'Uncategorized', count: uncategorizedCount });
     }
 
-    const periodDays = 5;
     const msPerDay = 24 * 60 * 60 * 1000;
     const totalDays = Math.max(1, Math.ceil((windowEnd.getTime() - windowStart.getTime()) / msPerDay));
-    const periodCount = Math.max(1, Math.ceil(totalDays / periodDays));
+    const bucketCount = Math.min(12, Math.max(4, Math.ceil(totalDays / 5)));
+    const daysPerBucket = totalDays / bucketCount;
 
     const periodCounts = new Map<number, number>();
     for (const idea of ideasWithDate) {
-      if (idea.createdAt > windowEnd) continue; // Exclude submissions after closure (comment/vote period)
+      if (idea.createdAt > closureDate) continue;
       const msSinceStart = idea.createdAt.getTime() - windowStart.getTime();
-      const daysSince = Math.max(0, Math.floor(msSinceStart / msPerDay));
-      const periodIndex = Math.min(Math.floor(daysSince / periodDays), periodCount - 1);
+      const daysSince = Math.max(0, msSinceStart / msPerDay);
+      const periodIndex = Math.min(
+        Math.floor(daysSince / daysPerBucket),
+        bucketCount - 1,
+      );
       periodCounts.set(periodIndex, (periodCounts.get(periodIndex) ?? 0) + 1);
     }
     const ideasOverTime: Array<{ date: string; dateEnd: string; count: number }> = [];
-    for (let i = 0; i < periodCount; i++) {
+    for (let i = 0; i < bucketCount; i++) {
+      const startOffset = Math.floor(i * daysPerBucket);
+      const endOffset = Math.min(
+        Math.floor((i + 1) * daysPerBucket) - 1,
+        totalDays - 1,
+      );
       const startDay = new Date(windowStart);
-      startDay.setDate(startDay.getDate() + i * periodDays);
-      const endDay = new Date(startDay);
-      const daysInPeriod = Math.min(periodDays, totalDays - i * periodDays);
-      endDay.setDate(endDay.getDate() + daysInPeriod - 1);
+      startDay.setDate(startDay.getDate() + startOffset);
+      const endDay = new Date(windowStart);
+      endDay.setDate(endDay.getDate() + endOffset);
       const dateKey = `${startDay.getFullYear()}-${String(startDay.getMonth() + 1).padStart(2, '0')}-${String(startDay.getDate()).padStart(2, '0')}`;
       const dateEndKey = `${endDay.getFullYear()}-${String(endDay.getMonth() + 1).padStart(2, '0')}-${String(endDay.getDate()).padStart(2, '0')}`;
       ideasOverTime.push({
@@ -383,7 +395,11 @@ export class MeService {
       });
     }
 
-    return { ideasByCategory, ideasOverTime };
+    const closureDateStr = closureDate
+      ? `${closureDate.getFullYear()}-${String(closureDate.getMonth() + 1).padStart(2, '0')}-${String(closureDate.getDate()).padStart(2, '0')}`
+      : null;
+
+    return { ideasByCategory, ideasOverTime, closureDate: closureDateStr };
   }
 
   /**

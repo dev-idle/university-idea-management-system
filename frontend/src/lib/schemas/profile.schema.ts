@@ -107,6 +107,7 @@ export const departmentChartsSchema = z
         count: z.number().int().min(0),
       })
     ),
+    closureDate: z.string().nullable(),
   })
   .nullable();
 

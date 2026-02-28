@@ -338,6 +338,19 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         collapsed={collapsed}
       />
     );
+    items.push(
+      <NavLink
+        key={ROUTES.QA_MANAGER_IDEAS}
+        href={ROUTES.QA_MANAGER_IDEAS}
+        label="Ideas Hub"
+        icon={Lightbulb}
+        isActive={
+          pathname === ROUTES.QA_MANAGER_IDEAS ||
+          (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
+        }
+        collapsed={collapsed}
+      />
+    );
   }
   if (hasRole(user.roles, "QA_COORDINATOR")) {
     items.push(

@@ -40,6 +40,8 @@ export const ROUTES = {
   QA_MANAGER_PROPOSAL_CYCLES: "/qa-manager/proposal-cycles",
   /** QA Manager export (CSV + ZIP after closure). */
   QA_MANAGER_EXPORT: "/qa-manager/export",
+  /** QA Manager: Ideas Hub (read-only, no vote/comment/view). */
+  QA_MANAGER_IDEAS: "/qa-manager/ideas",
   /** QA Coordinator → /qa-coordinator/dashboard. */
   QA_COORDINATOR_DASHBOARD: "/qa-coordinator/dashboard",
   /** QA Coordinator: Department Members (under coordinator namespace). */
@@ -84,7 +86,7 @@ export function getEntryRouteForRoles(roles: string[] | undefined): string {
 /** Path prefixes/routes allowed per role (UX-only; backend enforces). Each user has one role. */
 const ROLE_ALLOWED_PATHS: Record<Role, string[]> = {
   ADMIN: ["/admin", "/profile"],
-  QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/proposal-cycles", "/qa-manager/export", "/profile"],
+  QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/proposal-cycles", "/qa-manager/export", "/qa-manager/ideas", "/profile", "/ideas"],
   QA_COORDINATOR: ["/qa-coordinator", "/profile", "/ideas", "/department-members"],
   STAFF: ["/ideas", "/profile"],
 };
@@ -108,8 +110,11 @@ export function isPathAllowedForRole(pathname: string, role: Role): boolean {
     (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
   );
   if (!matches) return false;
-  // QA Coordinator: block /ideas/new and /ideas/my (submit, my ideas)
-  if (role === "QA_COORDINATOR" && pathname.startsWith("/ideas")) {
+  // QA Coordinator / QA Manager: block /ideas/new and /ideas/my (submit, my ideas)
+  if (
+    (role === "QA_COORDINATOR" || role === "QA_MANAGER") &&
+    pathname.startsWith("/ideas")
+  ) {
     if (pathname === "/ideas/new" || pathname.startsWith("/ideas/my")) return false;
   }
   return true;
