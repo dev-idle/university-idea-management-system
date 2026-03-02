@@ -12,9 +12,10 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import {
-  SECTION_LABEL_CLASS,
-  TYPO_STAT_SUBTLE,
-  TYPO_STAT_BASE_SUBTLE,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  CARD_STAT_LABEL_CLASS,
+  TYPO_STAT_COORD,
+  TYPO_STAT_BASE_COORD,
   TYPO_BODY_SM,
   CHART_COLOR_CATEGORICAL,
   CHART_COLOR_TEMPORAL,
@@ -25,7 +26,6 @@ import {
 import { UNIFIED_CARD_CLASS } from "../admin/constants";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  useDepartmentMembersQuery,
   useDepartmentStatsQuery,
   useDepartmentChartsQuery,
 } from "@/hooks/use-profile";
@@ -47,6 +47,17 @@ function fmtDate(d: Date | string): string {
   });
 }
 
+function fmtDateTime(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function QaCoordinatorOverview() {
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
 
@@ -55,74 +66,61 @@ function QaCoordinatorOverview() {
   const interactionClosesAt = ideasContext?.interactionClosesAt ?? null;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {/* Card 1: Cycle dates */}
-      <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
-        <p className={cn(SECTION_LABEL_CLASS, "mb-4")}>Proposal cycle</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
-          <div className="min-w-0">
-            <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
-            {activeCycleName ? (
-              <Tooltip delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_SUBTLE}`}>
-                    {activeCycleName}
-                  </p>
-                </TooltipTrigger>
-                <TooltipContent side="top">{activeCycleName}</TooltipContent>
-              </Tooltip>
-            ) : (
-              <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>—</p>
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className={SECTION_LABEL_CLASS}>Submission closes</p>
-            <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-              {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
-            </p>
-          </div>
-          <div className="min-w-0">
-            <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
-            <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-              {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
-            </p>
+    <div className="flex flex-col gap-10">
+      <section aria-labelledby="qa-coord-cycle-heading">
+        <h2 id="qa-coord-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal cycle</h2>
+        <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+            <div className="min-w-0">
+              <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
+              {activeCycleName ? (
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
+                      {activeCycleName}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">{activeCycleName}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className={CARD_STAT_LABEL_CLASS}>Submission deadline</p>
+              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                {submissionClosesAt ? fmtDateTime(submissionClosesAt) : "—"}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className={CARD_STAT_LABEL_CLASS}>Comments & votes deadline</p>
+              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                {interactionClosesAt ? fmtDateTime(interactionClosesAt) : "—"}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Card 2: Department stats — ideas, members, participation rate */}
-      <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
-        <p className={cn(SECTION_LABEL_CLASS, "mb-4")}>Department</p>
-        <div className="flex flex-col gap-6">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-            <div className="min-w-0">
-              <p className={SECTION_LABEL_CLASS}>Total ideas</p>
-              <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-                <QaCoordinatorStatValue select="totalIdeas" />
-              </p>
-            </div>
-            <div className="min-w-0">
-              <p className={SECTION_LABEL_CLASS}>Department members</p>
-              <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-                <QaCoordinatorMemberCount />
-              </p>
-            </div>
+      </section>
+      <section aria-labelledby="qa-coord-participation-heading">
+        <h2 id="qa-coord-participation-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Participation</h2>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Ideas submitted</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+              <QaCoordinatorStatValue select="totalIdeas" />
+            </p>
           </div>
-          <div className="min-w-0">
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <p className={`${SECTION_LABEL_CLASS} cursor-default`}>Participation Rate</p>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                Stats for your department only — Staff who submitted at least 1 idea in this cycle
-              </TooltipContent>
-            </Tooltip>
-            <p className={`mt-1 ${TYPO_BODY_SM}`}>
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Participation rate</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
               <QaCoordinatorParticipationValue />
             </p>
-            <QaCoordinatorParticipationProgress />
+            <div className="mt-2.5">
+              <QaCoordinatorParticipationProgress />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
@@ -134,26 +132,13 @@ function QaCoordinatorStatValue({ select }: { select: "totalIdeas" }) {
   return null;
 }
 
-function QaCoordinatorMemberCount() {
-  const { data: departmentData } = useDepartmentMembersQuery();
-  const memberCount = departmentData?.members?.length ?? null;
-  return <>{memberCount !== null ? memberCount : "—"}</>;
-}
-
 function QaCoordinatorParticipationValue() {
   const { data: stats } = useDepartmentStatsQuery();
   const hasStats = stats !== null && stats !== undefined;
   const totalStaff = stats?.totalStaff ?? 0;
   const submittedCount = stats?.submittedCount ?? 0;
   if (!hasStats) return <>—</>;
-  return (
-    <>
-      <span className="font-medium tabular-nums text-foreground">{submittedCount}</span>
-      {" / "}
-      <span className="tabular-nums">{totalStaff}</span>
-      {" staff"}
-    </>
-  );
+  return <>{submittedCount} / {totalStaff} members</>;
 }
 
 function QaCoordinatorParticipationProgress() {
@@ -163,42 +148,35 @@ function QaCoordinatorParticipationProgress() {
   const submittedCount = stats?.submittedCount ?? 0;
   const rate = totalStaff > 0 ? Math.round((submittedCount / totalStaff) * 1000) / 10 : 0;
   if (!hasStats || totalStaff === 0) return null;
-  return (
-    <div className="mt-3">
-      <Progress value={rate} className="h-2" />
-    </div>
-  );
+  return <Progress value={rate} className="h-2" />;
 }
 
 function QaCoordinatorEngagement() {
   const { data: stats } = useDepartmentStatsQuery();
   const hasStats = stats !== null && stats !== undefined;
 
-  const statCardClass =
-    "rounded-xl border border-border/45 bg-muted/[0.02] px-6 py-4";
-
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className={statCardClass}>
-        <p className={SECTION_LABEL_CLASS}>Comments</p>
-        <p className={`mt-1 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalComments : "—"}</p>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Comments</p>
+        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalComments : "—"}</p>
       </div>
-      <div className={statCardClass}>
-        <p className={SECTION_LABEL_CLASS}>Views</p>
-        <p className={cn("mt-1", TYPO_STAT_BASE_SUBTLE, "text-info")}>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Views</p>
+        <p className={cn("mt-1.5", TYPO_STAT_BASE_COORD, "text-info")}>
           {hasStats ? stats.totalViews : "—"}
         </p>
       </div>
-      <div className={statCardClass}>
-        <p className={SECTION_LABEL_CLASS}>Upvotes</p>
-        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-success")}>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Upvotes</p>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-success")}>
           <ThumbsUp className="size-[18px] shrink-0" aria-hidden />
           {hasStats ? stats.votesUp : "—"}
         </p>
       </div>
-      <div className={statCardClass}>
-        <p className={SECTION_LABEL_CLASS}>Downvotes</p>
-        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-destructive")}>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Downvotes</p>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-destructive")}>
           <ThumbsDown className="size-[18px] shrink-0" aria-hidden />
           {hasStats ? stats.votesDown : "—"}
         </p>
@@ -233,15 +211,15 @@ function DepartmentCharts() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
-          <p className={SECTION_LABEL_CLASS}>Ideas by Category</p>
+          <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
             <LoadingState compact />
           </div>
         </div>
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
-          <p className={SECTION_LABEL_CLASS}>Ideas Over Time</p>
+          <p className={CARD_STAT_LABEL_CLASS}>Ideas Over Time</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
             <LoadingState compact />
           </div>
@@ -259,12 +237,12 @@ function DepartmentCharts() {
   const hasTimeData = ideasOverTime.some((d) => d.count > 0);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div
         className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}
         style={{ animationDelay: "0ms" }}
       >
-        <p className={SECTION_LABEL_CLASS}>Ideas by Category</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
         <div className="mt-4 aspect-video">
           {hasCategoryData ? (
             <ChartContainer config={CHART_CONFIG_CATEGORY} className="h-full w-full">
@@ -304,7 +282,7 @@ function DepartmentCharts() {
             </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No ideas yet in this period
+              No ideas in this cycle
             </div>
           )}
         </div>
@@ -313,7 +291,7 @@ function DepartmentCharts() {
         className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}
         style={{ animationDelay: "70ms" }}
       >
-        <p className={SECTION_LABEL_CLASS}>Ideas Over Time</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Ideas Over Time</p>
         <div className="mt-4 aspect-video">
           {hasTimeData ? (
             <ChartContainer config={CHART_CONFIG_TIME} className="h-full w-full">
@@ -352,7 +330,7 @@ function DepartmentCharts() {
             </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No ideas submitted yet in this period
+              No ideas in this cycle
             </div>
           )}
         </div>
@@ -363,26 +341,21 @@ function DepartmentCharts() {
 
 export function QaCoordinatorDashboardContent() {
   return (
-    <div className="space-y-7">
-      <section aria-labelledby="qa-coord-overview-heading">
-        <h2 id="qa-coord-overview-heading" className="sr-only">
-          Overview
-        </h2>
-        <QaCoordinatorOverview />
-      </section>
+    <div className="space-y-10">
+      <QaCoordinatorOverview />
       <section aria-labelledby="qa-coord-engagement-heading">
-        <h2 id="qa-coord-engagement-heading" className={SECTION_LABEL_CLASS}>
+        <h2 id="qa-coord-engagement-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Engagement
         </h2>
-        <div className="mt-2.5">
+        <div className="mt-4">
           <QaCoordinatorEngagement />
         </div>
       </section>
       <section aria-labelledby="qa-coord-charts-heading">
-        <h2 id="qa-coord-charts-heading" className={SECTION_LABEL_CLASS}>
+        <h2 id="qa-coord-charts-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Insights
         </h2>
-        <div className="mt-2.5">
+        <div className="mt-4">
           <DepartmentCharts />
         </div>
       </section>

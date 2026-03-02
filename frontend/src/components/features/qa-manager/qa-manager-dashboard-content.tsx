@@ -16,8 +16,8 @@ import {
 import { cn } from "@/lib/utils";
 import {
   SECTION_LABEL_CLASS,
-  TYPO_STAT_SUBTLE,
-  TYPO_STAT_BASE_SUBTLE,
+  TYPO_STAT_COORD,
+  TYPO_STAT_BASE_COORD,
   TYPO_BODY_SM,
   INSIGHTS_BAR_COLOR,
   INSIGHTS_RATE_COLOR,
@@ -47,6 +47,17 @@ function fmtDate(d: Date | string): string {
   });
 }
 
+function fmtDateTime(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function QaManagerOverview() {
   const { data: stats } = useQaManagerStatsQuery();
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
@@ -60,35 +71,35 @@ function QaManagerOverview() {
     <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6">
         <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
+          <p className={SECTION_LABEL_CLASS}>Cycle name</p>
           {activeCycleName ? (
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_SUBTLE}`}>
+                <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
                   {activeCycleName}
                 </p>
               </TooltipTrigger>
               <TooltipContent side="top">{activeCycleName}</TooltipContent>
             </Tooltip>
           ) : (
-            <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>—</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
           )}
         </div>
         <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Submission closes</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-            {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
+          <p className={SECTION_LABEL_CLASS}>Submission deadline</p>
+          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+            {submissionClosesAt ? fmtDateTime(submissionClosesAt) : "—"}
           </p>
         </div>
         <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-            {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
+          <p className={SECTION_LABEL_CLASS}>Comments & votes deadline</p>
+          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+            {interactionClosesAt ? fmtDateTime(interactionClosesAt) : "—"}
           </p>
         </div>
         <div className="min-w-0">
           <p className={SECTION_LABEL_CLASS}>Total ideas</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalIdeas : "—"}</p>
+          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalIdeas : "—"}</p>
         </div>
         <div className="min-w-0">
           <Tooltip delayDuration={300}>
@@ -99,7 +110,7 @@ function QaManagerOverview() {
               Excludes IT Services and Quality Assurance Office
             </TooltipContent>
           </Tooltip>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
             {hasStats ? stats.totalDepartments : "—"}
           </p>
         </div>
@@ -112,31 +123,28 @@ function QaManagerEngagement() {
   const { data: stats } = useQaManagerStatsQuery();
   const hasStats = stats !== null && stats !== undefined;
 
-  const statCardClass =
-    "rounded-xl border border-border/45 bg-muted/[0.02] px-6 py-4";
-
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div className={statCardClass}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={SECTION_LABEL_CLASS}>Comments</p>
-        <p className={`mt-1 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalComments : "—"}</p>
+        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalComments : "—"}</p>
       </div>
-      <div className={statCardClass}>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={SECTION_LABEL_CLASS}>Views</p>
-        <p className={cn("mt-1", TYPO_STAT_BASE_SUBTLE, "text-info")}>
+        <p className={cn("mt-1.5", TYPO_STAT_BASE_COORD, "text-info")}>
           {hasStats ? stats.totalViews : "—"}
         </p>
       </div>
-      <div className={statCardClass}>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={SECTION_LABEL_CLASS}>Upvotes</p>
-        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-success")}>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-success")}>
           <ThumbsUp className="size-[18px] shrink-0" aria-hidden />
           {hasStats ? stats.votesUp : "—"}
         </p>
       </div>
-      <div className={statCardClass}>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={SECTION_LABEL_CLASS}>Downvotes</p>
-        <p className={cn("mt-1 flex items-center gap-2", TYPO_STAT_BASE_SUBTLE, "text-destructive")}>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-destructive")}>
           <ThumbsDown className="size-[18px] shrink-0" aria-hidden />
           {hasStats ? stats.votesDown : "—"}
         </p>
@@ -286,9 +294,9 @@ function QaManagerCharts() {
               Submission Rate per Department
             </p>
           </TooltipTrigger>
-          <TooltipContent side="top">
-            Distinct staff who submitted / Total staff (excl. IT Services & QA Office)
-          </TooltipContent>
+            <TooltipContent side="top">
+              Distinct staff who submitted / Total staff (excl. IT Services, QA Office, QA Coordinators)
+            </TooltipContent>
         </Tooltip>
         <div className="mt-4 aspect-video">
           {hasRateData ? (
@@ -332,7 +340,7 @@ function QaManagerCharts() {
                           fill?: string;
                         };
                         const label = p.departmentName != null && p.submittedCount != null && p.totalStaff != null
-                          ? `${p.departmentName} — ${p.submittedCount}/${p.totalStaff} staff`
+                          ? `${p.departmentName} — ${p.submittedCount}/${p.totalStaff} Staff`
                           : "";
                         return (
                           <>

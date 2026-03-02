@@ -68,6 +68,14 @@ export const TYPO_STAT_SUBTLE =
 export const TYPO_STAT_BASE_SUBTLE =
   "text-xl font-semibold tabular-nums tracking-tight";
 
+/** Stat coordinated: dashboard numbers — 1.2rem, font-semibold. Use for QA Manager/Coordinator. */
+export const TYPO_STAT_COORD =
+  "text-[1.2rem] font-semibold tabular-nums tracking-tight text-primary";
+
+/** Stat base coordinated: semantic variants (info, success, destructive). */
+export const TYPO_STAT_BASE_COORD =
+  "text-[1.2rem] font-semibold tabular-nums tracking-tight";
+
 /** Nav item: sidebar, breadcrumbs. */
 export const TYPO_NAV =
   "text-sm font-medium";
@@ -252,6 +260,14 @@ export const PAGE_DESCRIPTION_WIDE_CLASS =
 
 /** Uppercase section label (e.g. Description, Attachments). Also for form labels. */
 export const SECTION_LABEL_CLASS = TYPO_CAPTION_STRONG;
+
+/** Dashboard page section heading — text-muted-foreground/95 for subtle hierarchy over card labels. */
+export const DASHBOARD_SECTION_HEADING_CLASS =
+  "text-xs font-medium uppercase tracking-wider text-muted-foreground/95";
+
+/** Card stat label — inside dashboard stat cards, harmonious with section headings. */
+export const CARD_STAT_LABEL_CLASS =
+  "text-xs font-medium uppercase tracking-wider text-muted-foreground/90";
 
 /** Section card header (icon + title + description). Design: border/40. */
 export const SECTION_CARD_HEADER_CLASS =

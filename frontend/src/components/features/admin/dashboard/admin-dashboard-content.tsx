@@ -59,7 +59,7 @@ function AdminModuleLink({
   return (
     <Link
       href={href}
-      className={`group flex flex-col p-5 transition-all duration-300 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
+      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
       aria-label={`${title} — ${description}`}
     >
       <div className={ICON_BOX_PRIMARY_CLASS}>
@@ -95,19 +95,19 @@ function AdminSummary() {
     <div className="grid gap-4 sm:grid-cols-3">
       <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Total users</p>
-        <p className={`mt-1 ${TYPO_STAT}`}>
+        <p className={`mt-1.5 ${TYPO_STAT}`}>
           {totalUsers !== null ? totalUsers : "—"}
         </p>
       </div>
       <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Departments</p>
-        <p className={`mt-1 ${TYPO_STAT}`}>
+        <p className={`mt-1.5 ${TYPO_STAT}`}>
           {departmentCount !== null ? departmentCount : "—"}
         </p>
       </div>
       <div className={DASHBOARD_STAT_CARD_CLASS}>
         <p className={SECTION_LABEL_CLASS}>Active academic year</p>
-        <p className={`mt-1 font-semibold text-primary ${TYPO_HEADER_AND_STAT_TEXT}`}>
+        <p className={`mt-1.5 font-semibold text-primary ${TYPO_HEADER_AND_STAT_TEXT}`}>
           {activeYear?.name ?? "—"}
         </p>
       </div>
@@ -129,7 +129,7 @@ export function AdminDashboardContent() {
           Management
         </h2>
         <nav
-          className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
           aria-label="Admin modules"
         >
           {ADMIN_FUNCTIONS.map((item) => (

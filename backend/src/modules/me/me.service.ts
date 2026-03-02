@@ -197,9 +197,14 @@ export class MeService {
       where: { isActive: true },
       select: { id: true },
     });
+    const staffWhere = {
+      departmentId: me.departmentId,
+      isActive: true,
+      role: { name: { not: 'QA_COORDINATOR' } },
+    };
     if (!activeYear) {
       const totalStaff = await this.prisma.user.count({
-        where: { departmentId: me.departmentId, isActive: true },
+        where: staffWhere,
       });
       return {
         totalIdeas: 0,
@@ -223,7 +228,7 @@ export class MeService {
         : cycles.map((c) => c.id);
     if (cycleIds.length === 0) {
       const totalStaff = await this.prisma.user.count({
-        where: { departmentId: me.departmentId, isActive: true },
+        where: staffWhere,
       });
       return {
         totalIdeas: 0,
@@ -238,6 +243,13 @@ export class MeService {
 
     const ideaWhere = {
       submittedBy: { departmentId: me.departmentId },
+      cycleId: { in: cycleIds },
+    };
+    const ideaWhereExclQc = {
+      submittedBy: {
+        departmentId: me.departmentId,
+        role: { name: { not: 'QA_COORDINATOR' } },
+      },
       cycleId: { in: cycleIds },
     };
 
@@ -258,10 +270,10 @@ export class MeService {
         }),
         this.prisma.idea.groupBy({
           by: ['submittedById'],
-          where: { ...ideaWhere, submittedById: { not: null } },
+          where: { ...ideaWhereExclQc, submittedById: { not: null } },
         }),
         this.prisma.user.count({
-          where: { departmentId: me.departmentId, isActive: true },
+          where: staffWhere,
         }),
       ]);
 
@@ -607,14 +619,23 @@ export class MeService {
           where: ideaWhere,
           select: {
             submittedById: true,
-            submittedBy: { select: { departmentId: true } },
+            submittedBy: {
+              select: {
+                departmentId: true,
+                role: { select: { name: true } },
+              },
+            },
             createdAt: true,
             categoryId: true,
           },
         }),
         this.prisma.user.groupBy({
           by: ['departmentId'],
-          where: { departmentId: { in: deptIds }, isActive: true },
+          where: {
+            departmentId: { in: deptIds },
+            isActive: true,
+            role: { name: { not: 'QA_COORDINATOR' } },
+          },
           _count: { id: true },
         }),
         this.prisma.idea.groupBy({
@@ -624,11 +645,12 @@ export class MeService {
         }),
       ]);
 
-    // Build submittedCount per department (distinct staff who submitted)
+    // Build submittedCount per department (distinct staff who submitted, excl. QA Coordinator)
     const submittersByDeptId = new Map<string, Set<string>>();
     for (const idea of ideasForCharts) {
-      const deptId = idea.submittedBy?.departmentId;
-      if (!deptId) continue;
+      const submitter = idea.submittedBy;
+      if (!submitter?.departmentId || submitter.role?.name === 'QA_COORDINATOR') continue;
+      const deptId = submitter.departmentId;
       if (!submittersByDeptId.has(deptId)) {
         submittersByDeptId.set(deptId, new Set());
       }
