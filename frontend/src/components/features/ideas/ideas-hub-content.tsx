@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getAvatarInitial, cn, timeAgo } from "@/lib/utils";
 import {
   ALERT_WARNING_CLASS,
@@ -346,9 +347,12 @@ function IdeaCard({
                   )}
                 >
                   <FileText className="size-3 shrink-0 text-muted-foreground/45" aria-hidden />
-                  <span className="min-w-0 truncate" title={att.fileName}>
-                    {att.fileName}
-                  </span>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="min-w-0 truncate cursor-default">{att.fileName}</span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{att.fileName}</TooltipContent>
+                  </Tooltip>
                 </div>
               ))}
             </div>

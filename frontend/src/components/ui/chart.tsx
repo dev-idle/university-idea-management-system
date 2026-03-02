@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
+import { CHART_TOOLTIP_VALUE_CLASS } from "@/config/design"
 import { CHART_THEME_SELECTORS } from "@/config/theme"
 import { cn } from "@/lib/utils"
 
@@ -238,7 +239,7 @@ function ChartTooltipContent({
                         </span>
                       </div>
                       {item.value && (
-                        <span className="text-foreground font-mono font-medium tabular-nums">
+                        <span className={CHART_TOOLTIP_VALUE_CLASS}>
                           {item.value.toLocaleString()}
                         </span>
                       )}

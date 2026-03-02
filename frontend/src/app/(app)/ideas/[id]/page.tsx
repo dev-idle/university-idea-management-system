@@ -21,6 +21,7 @@ import { fetchWithAuthResponse } from "@/lib/api/client";
 import type { IdeaComment } from "@/lib/schemas/ideas.schema";
 import { getAvatarInitial, getCommentDisplayInfo, cn, timeAgo } from "@/lib/utils";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -259,9 +260,12 @@ function AttachmentItem({ att }: { att: Attachment }) {
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted/[0.06] text-muted-foreground/50">
           <FileText className="size-4 shrink-0" aria-hidden />
         </div>
-        <span className={IDEA_ATTACHMENT_NAME} title={att.fileName}>
-          {att.fileName}
-        </span>
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <span className={cn(IDEA_ATTACHMENT_NAME, "cursor-default")}>{att.fileName}</span>
+          </TooltipTrigger>
+          <TooltipContent side="top">{att.fileName}</TooltipContent>
+        </Tooltip>
       </div>
       <Button
         type="button"

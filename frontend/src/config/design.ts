@@ -156,6 +156,21 @@ export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers *
 export const CHART_COLOR_CATEGORICAL = "var(--chart-1)";
 export const CHART_COLOR_TEMPORAL = "var(--chart-2)";
 
+/**
+ * Insights section — QA Manager dashboard.
+ * Ideas per Department: chart-1. Submission Rate: chart-3. Ideas Over Time: chart-2. Donut: chart-donut-*.
+ */
+export const INSIGHTS_BAR_COLOR = "var(--chart-1)";
+export const INSIGHTS_RATE_COLOR = "var(--chart-3)";
+export const INSIGHTS_LINE_COLOR = "var(--chart-2)";
+export const INSIGHTS_DONUT_COLORS = [
+  "var(--chart-donut-1)",
+  "var(--chart-donut-2)",
+  "var(--chart-donut-3)",
+  "var(--chart-donut-4)",
+  "var(--chart-donut-5)",
+] as const;
+
 /** Chart tooltip — shared: border/45, shadow-card-hover, backdrop-blur. */
 export const CHART_TOOLTIP_CLASS =
   "animate-in fade-in-0 zoom-in-95 duration-150 max-w-[14rem] break-words rounded-xl border border-border/45 bg-background/95 px-3 py-2.5 text-xs shadow-[var(--shadow-card-hover)] backdrop-blur-sm";
@@ -163,6 +178,10 @@ export const CHART_TOOLTIP_CLASS =
 /** Chart tooltip label — muted, uppercase. */
 export const CHART_TOOLTIP_LABEL_CLASS =
   "text-muted-foreground text-[11px] font-medium uppercase tracking-wider";
+
+/** Chart tooltip value — number display (matches chart.tsx default). */
+export const CHART_TOOLTIP_VALUE_CLASS =
+  "text-foreground font-mono font-medium tabular-nums";
 
 // ─── Main content area (Staff + Role Manager) — refined, minimal ─────────────
 //

@@ -9,11 +9,13 @@ import {
   departmentStatsSchema,
   departmentChartsSchema,
   qaManagerStatsSchema,
+  qaManagerChartsSchema,
   type Profile,
   type DepartmentMembers,
   type DepartmentStats,
   type DepartmentCharts,
   type QaManagerStats,
+  type QaManagerCharts,
 } from "@/lib/schemas/profile.schema";
 import { useAuthStore } from "@/stores/auth.store";
 
@@ -116,6 +118,30 @@ export function useQaManagerStatsQuery(options?: { enabled?: boolean }) {
     },
     enabled: options?.enabled !== false && isAuthenticated,
     staleTime: 1 * 60 * 1000,
+  });
+}
+
+function parseQaManagerCharts(data: unknown): QaManagerCharts {
+  const parsed = qaManagerChartsSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid QA Manager charts response");
+  return parsed.data;
+}
+
+/**
+ * TanStack Query: fetch GET /me/qa-manager-charts (QA Manager only).
+ * Chart data: submission rate per department, ideas over time, ideas per department, ideas by category.
+ */
+export function useQaManagerChartsQuery(options?: { enabled?: boolean }) {
+  const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.profile.qaManagerCharts(),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>("me/qa-manager-charts");
+      return parseQaManagerCharts(data);
+    },
+    enabled: options?.enabled !== false && isAuthenticated,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

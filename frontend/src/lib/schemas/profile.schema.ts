@@ -89,6 +89,8 @@ export const departmentStatsSchema = z
     totalViews: z.number().int().min(0),
     votesUp: z.number().int().min(0),
     votesDown: z.number().int().min(0),
+    submittedCount: z.number().int().min(0),
+    totalStaff: z.number().int().min(0),
   })
   .nullable();
 
@@ -101,10 +103,37 @@ export const qaManagerStatsSchema = z.object({
   totalViews: z.number().int().min(0),
   votesUp: z.number().int().min(0),
   votesDown: z.number().int().min(0),
-  participatingDepartments: z.number().int().min(0),
+  totalDepartments: z.number().int().min(0),
 });
 
 export type QaManagerStats = z.infer<typeof qaManagerStatsSchema>;
+
+/** GET /me/qa-manager-charts response — QA Manager only. Excludes IT/QA departments. */
+export const qaManagerChartsSchema = z.object({
+  submissionRatePerDepartment: z.array(
+    z.object({
+      departmentName: z.string(),
+      submittedCount: z.number().int().min(0),
+      totalStaff: z.number().int().min(0),
+      rate: z.number().min(0),
+    })
+  ),
+  ideasOverTime: z.array(
+    z.object({
+      date: z.string(),
+      dateEnd: z.string(),
+      count: z.number().int().min(0),
+    })
+  ),
+  ideasPerDepartment: z.array(
+    z.object({ departmentName: z.string(), count: z.number().int().min(0) })
+  ),
+  ideasByCategory: z.array(
+    z.object({ categoryName: z.string(), count: z.number().int().min(0) })
+  ),
+});
+
+export type QaManagerCharts = z.infer<typeof qaManagerChartsSchema>;
 
 /** GET /me/department-charts response — null if user has no department. */
 export const departmentChartsSchema = z

@@ -35,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { UnifiedPagination } from "@/components/ui/unified-pagination";
 import {
   PAGE_CONTAINER_CLASS,
@@ -235,15 +236,27 @@ function IdeaRow({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : topRightStatus === "voting" ? (
-          <span className={IDEAS_MY_STATUS_VOTING} title="Cannot edit or delete, can still comment and vote">
-            <Activity className="size-3 shrink-0 opacity-70" aria-hidden />
-            Comment & Vote
-          </span>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <span className={cn(IDEAS_MY_STATUS_VOTING, "cursor-default")}>
+                <Activity className="size-3 shrink-0 opacity-70" aria-hidden />
+                Comment & Vote
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              Cannot edit or delete, can still comment and vote
+            </TooltipContent>
+          </Tooltip>
         ) : (
-          <span className={IDEAS_MY_STATUS_CLOSED} title="Cycle closed">
-            <Lock className="size-3 shrink-0" aria-hidden />
-            Closed
-          </span>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <span className={cn(IDEAS_MY_STATUS_CLOSED, "cursor-default")}>
+                <Lock className="size-3 shrink-0" aria-hidden />
+                Closed
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">Cycle closed</TooltipContent>
+          </Tooltip>
         )}
       </div>
 
@@ -298,9 +311,12 @@ function IdeaRow({
                   )}
                 >
                   <FileText className="size-3 shrink-0 text-muted-foreground/45" aria-hidden />
-                  <span className="min-w-0 truncate" title={att.fileName}>
-                    {att.fileName}
-                  </span>
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="min-w-0 truncate cursor-default">{att.fileName}</span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{att.fileName}</TooltipContent>
+                  </Tooltip>
                 </div>
               ))}
             </div>

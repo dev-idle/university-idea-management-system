@@ -174,8 +174,9 @@ export class MeService {
   }
 
   /**
-   * Get department stats for QA Coordinator: total ideas, comments, views, votes (up/down)
-   * for the active academic year. Returns null if user has no department.
+   * Get department stats for QA Coordinator: total ideas, comments, views, votes (up/down),
+   * submittedCount (staff who submitted ≥1 idea in cycle), totalStaff.
+   * Scope: active academic year. Returns null if user has no department.
    */
   async getDepartmentStats(userId: string): Promise<{
     totalIdeas: number;
@@ -183,6 +184,8 @@ export class MeService {
     totalViews: number;
     votesUp: number;
     votesDown: number;
+    submittedCount: number;
+    totalStaff: number;
   } | null> {
     const me = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -195,12 +198,17 @@ export class MeService {
       select: { id: true },
     });
     if (!activeYear) {
+      const totalStaff = await this.prisma.user.count({
+        where: { departmentId: me.departmentId, isActive: true },
+      });
       return {
         totalIdeas: 0,
         totalComments: 0,
         totalViews: 0,
         votesUp: 0,
         votesDown: 0,
+        submittedCount: 0,
+        totalStaff,
       };
     }
 
@@ -214,12 +222,17 @@ export class MeService {
         ? [activeCycle.id]
         : cycles.map((c) => c.id);
     if (cycleIds.length === 0) {
+      const totalStaff = await this.prisma.user.count({
+        where: { departmentId: me.departmentId, isActive: true },
+      });
       return {
         totalIdeas: 0,
         totalComments: 0,
         totalViews: 0,
         votesUp: 0,
         votesDown: 0,
+        submittedCount: 0,
+        totalStaff,
       };
     }
 
@@ -228,7 +241,7 @@ export class MeService {
       cycleId: { in: cycleIds },
     };
 
-    const [totalIdeas, totalComments, totalViews, votesUp, votesDown] =
+    const [totalIdeas, totalComments, totalViews, votesUp, votesDown, submittersGroup, totalStaff] =
       await Promise.all([
         this.prisma.idea.count({ where: ideaWhere }),
         this.prisma.ideaComment.count({
@@ -243,7 +256,16 @@ export class MeService {
         this.prisma.ideaVote.count({
           where: { idea: ideaWhere, value: 'down' },
         }),
+        this.prisma.idea.groupBy({
+          by: ['submittedById'],
+          where: { ...ideaWhere, submittedById: { not: null } },
+        }),
+        this.prisma.user.count({
+          where: { departmentId: me.departmentId, isActive: true },
+        }),
       ]);
+
+    const submittedCount = submittersGroup.length;
 
     return {
       totalIdeas,
@@ -251,6 +273,8 @@ export class MeService {
       totalViews,
       votesUp,
       votesDown,
+      submittedCount,
+      totalStaff,
     };
   }
 
@@ -262,8 +286,8 @@ export class MeService {
 
   /**
    * Get QA Manager dashboard stats: total ideas, comments, views, votes (up/down),
-   * participating departments. Excludes IT Services and Quality Assurance Office.
-   * Scope: active academic year.
+   * total departments. Total departments = all departments excluding IT Services and QA Office.
+   * Scope: active academic year for ideas/comments/votes.
    */
   async getQaManagerStats(userId: string): Promise<{
     totalIdeas: number;
@@ -271,20 +295,23 @@ export class MeService {
     totalViews: number;
     votesUp: number;
     votesDown: number;
-    participatingDepartments: number;
+    totalDepartments: number;
   }> {
     const activeYear = await this.prisma.academicYear.findFirst({
       where: { isActive: true },
       select: { id: true },
     });
     if (!activeYear) {
+      const totalDepartments = await this.prisma.department.count({
+        where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+      });
       return {
         totalIdeas: 0,
         totalComments: 0,
         totalViews: 0,
         votesUp: 0,
         votesDown: 0,
-        participatingDepartments: 0,
+        totalDepartments,
       };
     }
 
@@ -298,13 +325,16 @@ export class MeService {
         ? [activeCycle.id]
         : cycles.map((c) => c.id);
     if (cycleIds.length === 0) {
+      const totalDepartments = await this.prisma.department.count({
+        where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+      });
       return {
         totalIdeas: 0,
         totalComments: 0,
         totalViews: 0,
         votesUp: 0,
         votesDown: 0,
-        participatingDepartments: 0,
+        totalDepartments,
       };
     }
 
@@ -318,7 +348,7 @@ export class MeService {
       },
     };
 
-    const [totalIdeas, totalComments, totalViews, votesUp, votesDown, ideasForDepts] =
+    const [totalIdeas, totalComments, totalViews, votesUp, votesDown, totalDepartments] =
       await Promise.all([
         this.prisma.idea.count({ where: ideaWhere }),
         this.prisma.ideaComment.count({
@@ -333,18 +363,10 @@ export class MeService {
         this.prisma.ideaVote.count({
           where: { idea: ideaWhere, value: 'down' },
         }),
-        this.prisma.idea.findMany({
-          where: ideaWhere,
-          select: { submittedBy: { select: { departmentId: true } } },
+        this.prisma.department.count({
+          where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
         }),
       ]);
-
-    const uniqueDepts = new Set(
-      ideasForDepts
-        .map((i) => i.submittedBy?.departmentId)
-        .filter((id): id is string => id != null),
-    );
-    const participatingDepartments = uniqueDepts.size;
 
     return {
       totalIdeas,
@@ -352,7 +374,7 @@ export class MeService {
       totalViews,
       votesUp,
       votesDown,
-      participatingDepartments: deptCount,
+      totalDepartments,
     };
   }
 
@@ -502,6 +524,239 @@ export class MeService {
       : null;
 
     return { ideasByCategory, ideasOverTime, closureDate: closureDateStr };
+  }
+
+  /**
+   * Get QA Manager chart data: submission rate per department, ideas over time,
+   * ideas per department, ideas by category. Excludes IT Services and QA Office.
+   * Scope: active academic year.
+   */
+  async getQaManagerCharts(userId: string): Promise<{
+    submissionRatePerDepartment: Array<{
+      departmentName: string;
+      submittedCount: number;
+      totalStaff: number;
+      rate: number;
+    }>;
+    ideasOverTime: Array<{ date: string; dateEnd: string; count: number }>;
+    ideasPerDepartment: Array<{ departmentName: string; count: number }>;
+    ideasByCategory: Array<{ categoryName: string; count: number }>;
+  }> {
+    const activeYear = await this.prisma.academicYear.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    if (!activeYear) {
+      return {
+        submissionRatePerDepartment: [],
+        ideasOverTime: [],
+        ideasPerDepartment: [],
+        ideasByCategory: [],
+      };
+    }
+
+    const cycles = await this.prisma.ideaSubmissionCycle.findMany({
+      where: { academicYearId: activeYear.id },
+      select: { id: true, ideaSubmissionClosesAt: true, status: true },
+      orderBy: { ideaSubmissionClosesAt: 'desc' },
+    });
+    const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
+    const cycleIds =
+      activeCycle != null
+        ? [activeCycle.id]
+        : cycles.map((c) => c.id);
+    if (cycleIds.length === 0) {
+      return {
+        submissionRatePerDepartment: [],
+        ideasOverTime: [],
+        ideasPerDepartment: [],
+        ideasByCategory: [],
+      };
+    }
+
+    const depts = await this.prisma.department.findMany({
+      where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+    const deptIds = depts.map((d) => d.id);
+
+    const ideaWhere = {
+      cycleId: { in: cycleIds },
+      submittedById: { not: null },
+      submittedBy: {
+        departmentId: { in: deptIds },
+        department: {
+          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+        },
+      },
+    };
+
+    const cycleForClosure = activeCycle ?? cycles[0]!;
+    const closureDate = cycleForClosure.ideaSubmissionClosesAt;
+    const BUFFER_DAYS_BEFORE = 6;
+    const BUFFER_DAYS_AFTER = 5;
+
+    const [cycleCategories, ideasForCharts, staffByDept, byCategoryRows] =
+      await Promise.all([
+        this.prisma.cycleCategory.findMany({
+          where: { cycleId: { in: cycleIds } },
+          select: { category: { select: { id: true, name: true } } },
+        }),
+        this.prisma.idea.findMany({
+          where: ideaWhere,
+          select: {
+            submittedById: true,
+            submittedBy: { select: { departmentId: true } },
+            createdAt: true,
+            categoryId: true,
+          },
+        }),
+        this.prisma.user.groupBy({
+          by: ['departmentId'],
+          where: { departmentId: { in: deptIds }, isActive: true },
+          _count: { id: true },
+        }),
+        this.prisma.idea.groupBy({
+          by: ['categoryId'],
+          where: ideaWhere,
+          _count: { id: true },
+        }),
+      ]);
+
+    // Build submittedCount per department (distinct staff who submitted)
+    const submittersByDeptId = new Map<string, Set<string>>();
+    for (const idea of ideasForCharts) {
+      const deptId = idea.submittedBy?.departmentId;
+      if (!deptId) continue;
+      if (!submittersByDeptId.has(deptId)) {
+        submittersByDeptId.set(deptId, new Set());
+      }
+      if (idea.submittedById) {
+        submittersByDeptId.get(deptId)!.add(idea.submittedById);
+      }
+    }
+
+    const staffCountByDept = new Map<string, number>();
+    for (const r of staffByDept) {
+      if (r.departmentId) staffCountByDept.set(r.departmentId, r._count.id);
+    }
+
+    const submissionRatePerDepartment: Array<{
+      departmentName: string;
+      submittedCount: number;
+      totalStaff: number;
+      rate: number;
+    }> = [];
+    for (const dept of depts) {
+      const totalStaff = staffCountByDept.get(dept.id) ?? 0;
+      const submittedCount = submittersByDeptId.get(dept.id)?.size ?? 0;
+      const rate = totalStaff > 0 ? Math.round((submittedCount / totalStaff) * 1000) / 10 : 0;
+      submissionRatePerDepartment.push({
+        departmentName: dept.name,
+        submittedCount,
+        totalStaff,
+        rate,
+      });
+    }
+
+    // Ideas per department
+    const ideasCountByDept = new Map<string, number>();
+    for (const idea of ideasForCharts) {
+      const deptId = idea.submittedBy?.departmentId;
+      if (!deptId) continue;
+      ideasCountByDept.set(deptId, (ideasCountByDept.get(deptId) ?? 0) + 1);
+    }
+    const ideasPerDepartment = depts.map((d) => ({
+      departmentName: d.name,
+      count: ideasCountByDept.get(d.id) ?? 0,
+    }));
+
+    // Ideas by category
+    const countByCategoryId = new Map<string, number>();
+    for (const r of byCategoryRows) {
+      const key = r.categoryId ?? '__uncategorized__';
+      countByCategoryId.set(key, r._count.id);
+    }
+    const seenCategoryIds = new Set<string>();
+    const ideasByCategory: Array<{ categoryName: string; count: number }> = [];
+    for (const cc of cycleCategories) {
+      const cat = cc.category;
+      if (seenCategoryIds.has(cat.id)) continue;
+      seenCategoryIds.add(cat.id);
+      ideasByCategory.push({
+        categoryName: cat.name,
+        count: countByCategoryId.get(cat.id) ?? 0,
+      });
+    }
+    ideasByCategory.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+    const uncategorizedCount = countByCategoryId.get('__uncategorized__') ?? 0;
+    if (uncategorizedCount > 0) {
+      ideasByCategory.push({ categoryName: 'Uncategorized', count: uncategorizedCount });
+    }
+
+    // Ideas over time
+    const firstSubmission =
+      ideasForCharts.length > 0
+        ? new Date(Math.min(...ideasForCharts.map((i) => i.createdAt.getTime())))
+        : null;
+    const windowStart = firstSubmission
+      ? (() => {
+          const start = new Date(firstSubmission);
+          start.setDate(start.getDate() - BUFFER_DAYS_BEFORE);
+          return start;
+        })()
+      : (() => {
+          const start = new Date(closureDate);
+          start.setDate(start.getDate() - 30);
+          return start;
+        })();
+    const windowEnd = new Date(closureDate);
+    windowEnd.setDate(windowEnd.getDate() + BUFFER_DAYS_AFTER);
+
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const totalDays = Math.max(1, Math.ceil((windowEnd.getTime() - windowStart.getTime()) / msPerDay));
+    const bucketCount = Math.min(12, Math.max(4, Math.ceil(totalDays / 5)));
+    const daysPerBucket = totalDays / bucketCount;
+
+    const periodCounts = new Map<number, number>();
+    for (const idea of ideasForCharts) {
+      if (idea.createdAt > closureDate) continue;
+      const msSinceStart = idea.createdAt.getTime() - windowStart.getTime();
+      const daysSince = Math.max(0, msSinceStart / msPerDay);
+      const periodIndex = Math.min(
+        Math.floor(daysSince / daysPerBucket),
+        bucketCount - 1,
+      );
+      periodCounts.set(periodIndex, (periodCounts.get(periodIndex) ?? 0) + 1);
+    }
+
+    const ideasOverTime: Array<{ date: string; dateEnd: string; count: number }> = [];
+    for (let i = 0; i < bucketCount; i++) {
+      const startOffset = Math.floor(i * daysPerBucket);
+      const endOffset = Math.min(
+        Math.floor((i + 1) * daysPerBucket) - 1,
+        totalDays - 1,
+      );
+      const startDay = new Date(windowStart);
+      startDay.setDate(startDay.getDate() + startOffset);
+      const endDay = new Date(windowStart);
+      endDay.setDate(endDay.getDate() + endOffset);
+      const dateKey = `${startDay.getFullYear()}-${String(startDay.getMonth() + 1).padStart(2, '0')}-${String(startDay.getDate()).padStart(2, '0')}`;
+      const dateEndKey = `${endDay.getFullYear()}-${String(endDay.getMonth() + 1).padStart(2, '0')}-${String(endDay.getDate()).padStart(2, '0')}`;
+      ideasOverTime.push({
+        date: dateKey,
+        dateEnd: dateEndKey,
+        count: periodCounts.get(i) ?? 0,
+      });
+    }
+
+    return {
+      submissionRatePerDepartment,
+      ideasOverTime,
+      ideasPerDepartment,
+      ideasByCategory,
+    };
   }
 
   /**

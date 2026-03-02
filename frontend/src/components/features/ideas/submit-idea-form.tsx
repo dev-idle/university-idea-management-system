@@ -28,6 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   CARD_CLASS,
@@ -90,9 +91,14 @@ function AttachmentRow({
   return (
     <li className="flex flex-col gap-1 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]">
       <div className="flex min-w-0 items-center justify-between gap-3">
-        <span className="min-w-0 truncate text-[13px] text-foreground/80" title={att.fileName}>
-          {att.fileName}
-        </span>
+        <Tooltip delayDuration={300}>
+          <TooltipTrigger asChild>
+            <span className="min-w-0 truncate cursor-default text-[13px] text-foreground/80">
+              {att.fileName}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top">{att.fileName}</TooltipContent>
+        </Tooltip>
         <div className="flex shrink-0 items-center gap-0.5">
           <Button
             type="button"

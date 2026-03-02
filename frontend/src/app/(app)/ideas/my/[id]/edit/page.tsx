@@ -33,6 +33,7 @@ import {
   IDEAS_NEW_ACTIONS,
   IDEAS_HUB_SPACING,
 } from "@/config/design";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -137,12 +138,14 @@ function AttachmentRow({
             className="size-4 shrink-0 text-muted-foreground/65"
             aria-hidden
           />
-          <span
-            className="min-w-0 truncate text-[13px] text-foreground/80"
-            title={att.fileName}
-          >
-            {att.fileName}
-          </span>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <span className="min-w-0 truncate cursor-default text-[13px] text-foreground/80">
+                {att.fileName}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">{att.fileName}</TooltipContent>
+          </Tooltip>
         </div>
         <div className="flex shrink-0 items-center gap-0.5">
           <Button

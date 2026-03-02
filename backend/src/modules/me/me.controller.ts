@@ -80,9 +80,32 @@ export class MeController {
     totalViews: number;
     votesUp: number;
     votesDown: number;
-    participatingDepartments: number;
+    totalDepartments: number;
   }> {
     return this.meService.getQaManagerStats(payload.sub);
+  }
+
+  /**
+   * GET /me/qa-manager-charts — QA Manager only. Chart data: submission rate per department,
+   * ideas over time, ideas per department, ideas by category. Excludes IT Services and QA Office.
+   */
+  @Get('qa-manager-charts')
+  @UseGuards(RolesGuard)
+  @Roles('QA_MANAGER')
+  getQaManagerCharts(
+    @CurrentUser() payload: AccessTokenPayload,
+  ): Promise<{
+    submissionRatePerDepartment: Array<{
+      departmentName: string;
+      submittedCount: number;
+      totalStaff: number;
+      rate: number;
+    }>;
+    ideasOverTime: Array<{ date: string; dateEnd: string; count: number }>;
+    ideasPerDepartment: Array<{ departmentName: string; count: number }>;
+    ideasByCategory: Array<{ categoryName: string; count: number }>;
+  }> {
+    return this.meService.getQaManagerCharts(payload.sub);
   }
 
   /**

@@ -23,6 +23,7 @@ import {
   TR_CHART_ENTRANCE,
 } from "@/config/design";
 import { UNIFIED_CARD_CLASS } from "../admin/constants";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   useDepartmentMembersQuery,
   useDepartmentStatsQuery,
@@ -33,6 +34,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { Progress } from "@/components/ui/progress";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
 
@@ -46,46 +48,124 @@ function fmtDate(d: Date | string): string {
 }
 
 function QaCoordinatorOverview() {
-  const { data: stats } = useDepartmentStatsQuery();
-  const { data: departmentData } = useDepartmentMembersQuery();
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
 
-  const memberCount = departmentData?.members?.length ?? null;
   const activeCycleName = ideasContext?.activeCycleName ?? null;
   const submissionClosesAt = ideasContext?.submissionClosesAt ?? null;
   const interactionClosesAt = ideasContext?.interactionClosesAt ?? null;
-  const hasStats = stats !== null && stats !== undefined;
 
   return (
-    <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6">
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
-          <p className={`mt-1.5 min-w-0 truncate ${TYPO_STAT_SUBTLE}`} title={activeCycleName ?? undefined}>
-            {activeCycleName ?? "—"}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Submission closes</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-            {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
-            {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Total ideas</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>{hasStats ? stats.totalIdeas : "—"}</p>
-        </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Department members</p>
-          <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>{memberCount !== null ? memberCount : "—"}</p>
+    <div className="grid gap-4 md:grid-cols-2">
+      {/* Card 1: Cycle dates */}
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
+        <p className={cn(SECTION_LABEL_CLASS, "mb-4")}>Proposal cycle</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+          <div className="min-w-0">
+            <p className={SECTION_LABEL_CLASS}>Active proposal cycle</p>
+            {activeCycleName ? (
+              <Tooltip delayDuration={300}>
+                <TooltipTrigger asChild>
+                  <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_SUBTLE}`}>
+                    {activeCycleName}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent side="top">{activeCycleName}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>—</p>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className={SECTION_LABEL_CLASS}>Submission closes</p>
+            <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+              {submissionClosesAt ? fmtDate(submissionClosesAt) : "—"}
+            </p>
+          </div>
+          <div className="min-w-0">
+            <p className={SECTION_LABEL_CLASS}>Comments & votes close</p>
+            <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+              {interactionClosesAt ? fmtDate(interactionClosesAt) : "—"}
+            </p>
+          </div>
         </div>
       </div>
+      {/* Card 2: Department stats — ideas, members, participation rate */}
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
+        <p className={cn(SECTION_LABEL_CLASS, "mb-4")}>Department</p>
+        <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+            <div className="min-w-0">
+              <p className={SECTION_LABEL_CLASS}>Total ideas</p>
+              <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+                <QaCoordinatorStatValue select="totalIdeas" />
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className={SECTION_LABEL_CLASS}>Department members</p>
+              <p className={`mt-1.5 ${TYPO_STAT_SUBTLE}`}>
+                <QaCoordinatorMemberCount />
+              </p>
+            </div>
+          </div>
+          <div className="min-w-0">
+            <Tooltip delayDuration={300}>
+              <TooltipTrigger asChild>
+                <p className={`${SECTION_LABEL_CLASS} cursor-default`}>Participation Rate</p>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                Stats for your department only — Staff who submitted at least 1 idea in this cycle
+              </TooltipContent>
+            </Tooltip>
+            <p className={`mt-1 ${TYPO_BODY_SM}`}>
+              <QaCoordinatorParticipationValue />
+            </p>
+            <QaCoordinatorParticipationProgress />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QaCoordinatorStatValue({ select }: { select: "totalIdeas" }) {
+  const { data: stats } = useDepartmentStatsQuery();
+  const hasStats = stats !== null && stats !== undefined;
+  if (select === "totalIdeas") return <>{hasStats ? stats.totalIdeas : "—"}</>;
+  return null;
+}
+
+function QaCoordinatorMemberCount() {
+  const { data: departmentData } = useDepartmentMembersQuery();
+  const memberCount = departmentData?.members?.length ?? null;
+  return <>{memberCount !== null ? memberCount : "—"}</>;
+}
+
+function QaCoordinatorParticipationValue() {
+  const { data: stats } = useDepartmentStatsQuery();
+  const hasStats = stats !== null && stats !== undefined;
+  const totalStaff = stats?.totalStaff ?? 0;
+  const submittedCount = stats?.submittedCount ?? 0;
+  if (!hasStats) return <>—</>;
+  return (
+    <>
+      <span className="font-medium tabular-nums text-foreground">{submittedCount}</span>
+      {" / "}
+      <span className="tabular-nums">{totalStaff}</span>
+      {" staff"}
+    </>
+  );
+}
+
+function QaCoordinatorParticipationProgress() {
+  const { data: stats } = useDepartmentStatsQuery();
+  const hasStats = stats !== null && stats !== undefined;
+  const totalStaff = stats?.totalStaff ?? 0;
+  const submittedCount = stats?.submittedCount ?? 0;
+  const rate = totalStaff > 0 ? Math.round((submittedCount / totalStaff) * 1000) / 10 : 0;
+  if (!hasStats || totalStaff === 0) return null;
+  return (
+    <div className="mt-3">
+      <Progress value={rate} className="h-2" />
     </div>
   );
 }
