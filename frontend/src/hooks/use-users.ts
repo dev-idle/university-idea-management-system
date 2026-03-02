@@ -61,6 +61,7 @@ export function useCreateUserMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }
@@ -109,6 +110,7 @@ export function useUpdateUserMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }

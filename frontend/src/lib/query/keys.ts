@@ -48,6 +48,10 @@ export const queryKeys = {
     qaManagerStats: () => [...queryKeys.profile.all, "qa-manager-stats"] as const,
     qaManagerCharts: () => [...queryKeys.profile.all, "qa-manager-charts"] as const,
   },
+  admin: {
+    all: ["api", "admin"] as const,
+    dashboardStats: () => [...queryKeys.admin.all, "dashboard-stats"] as const,
+  },
   notifications: {
     all: ["api", "notifications"] as const,
     list: (limit?: number) => [...queryKeys.notifications.all, "list", limit ?? 20] as const,

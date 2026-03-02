@@ -18,6 +18,7 @@ import {
   DIALOG_TITLE_SCULPTED_CLASS,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { UsersTable } from "./users-table";
@@ -136,7 +137,7 @@ export function AdminUsersManagement() {
       <div className={UNIFIED_CARD_CLASS}>
         <Can permission="USERS">
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-            <div className="relative w-72">
+            <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
                 className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
                 aria-hidden

@@ -14,6 +14,8 @@ import {
   TABLE_ACTIONS_MIN_W_2,
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_EMPTY_PRIMARY_CLASS,
+  TABLE_EMPTY_HINT_CLASS,
   TABLE_BASE_CLASS,
   TABLE_HEAD_ROW_CLASS,
   TABLE_ROW_CLASS,
@@ -129,10 +131,10 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
             {users.length === 0 ? (
               <tr>
                 <td colSpan={USERS_TABLE_COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
-                  <p className="font-sans text-sm font-medium text-foreground">
+                  <p className={TABLE_EMPTY_PRIMARY_CLASS}>
                     {hasActiveSearch ? "No users found." : "No users yet."}
                   </p>
-                  <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
+                  <p className={TABLE_EMPTY_HINT_CLASS}>
                     {hasActiveSearch ? "Try another search." : "Add one to begin."}
                   </p>
                 </td>

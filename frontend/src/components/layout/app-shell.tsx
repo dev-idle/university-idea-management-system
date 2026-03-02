@@ -276,6 +276,17 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
       </Can>
     );
     items.push(
+      <Can key="dept-members" permission="DEPARTMENTS">
+        <NavLink
+          href={ROUTES.ADMIN_DEPARTMENT_MEMBERS}
+          label="Department Members"
+          icon={UsersRound}
+          isActive={pathname === ROUTES.ADMIN_DEPARTMENT_MEMBERS}
+          collapsed={collapsed}
+        />
+      </Can>
+    );
+    items.push(
       <Can key="years" permission="ACADEMIC_YEARS">
         <NavLink
           href={ROUTES.ADMIN_ACADEMIC_YEARS}

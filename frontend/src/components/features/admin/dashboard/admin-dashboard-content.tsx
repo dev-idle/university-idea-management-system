@@ -1,148 +1,183 @@
 "use client";
 
-import Link from "next/link";
-import { Building2, CalendarDays, ChevronRight, Users } from "lucide-react";
-import { Can } from "@/components/ui/can";
-import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  SECTION_LABEL_CLASS,
-  ICON_BOX_PRIMARY_CLASS,
-  FOCUS_RING_CLASS,
-  TYPO_STAT,
-  TYPO_HEADER_AND_STAT_TEXT,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  CARD_STAT_LABEL_CLASS,
+  TYPO_STAT_COORD,
+  TYPO_STAT_BASE_COORD,
+  TYPO_BODY_SM,
 } from "@/config/design";
-import {
-  DASHBOARD_STAT_CARD_CLASS,
-  DASHBOARD_CARD_CLASS,
-} from "../constants";
-import { ROUTES } from "@/config/constants";
-import { useAcademicYearsQuery } from "@/hooks/use-academic-years";
-import { useDepartmentsQuery } from "@/hooks/use-departments";
-import { useUsersListQuery } from "@/hooks/use-users";
-import type { LucideIcon } from "lucide-react";
+import { UNIFIED_CARD_CLASS } from "../constants";
+import { useAdminDashboardStats, type AdminDashboardStats } from "@/hooks/use-admin-dashboard";
+import { LoadingState } from "@/components/ui/loading-state";
+import { getRoleLabel, type Role } from "@/lib/rbac";
+import { cn } from "@/lib/utils";
 
-const ADMIN_FUNCTIONS = [
-  {
-    permission: "USERS" as const,
-    href: ROUTES.ADMIN_USERS,
-    title: "User management",
-    description: "Manage user accounts and roles.",
-    icon: Users,
-  },
-  {
-    permission: "DEPARTMENTS" as const,
-    href: ROUTES.ADMIN_DEPARTMENTS,
-    title: "Department management",
-    description: "Manage departments and assignments.",
-    icon: Building2,
-  },
-  {
-    permission: "ACADEMIC_YEARS" as const,
-    href: ROUTES.ADMIN_ACADEMIC_YEARS,
-    title: "Academic years",
-    description: "Configure academic years for idea cycles.",
-    icon: CalendarDays,
-  },
-] as const;
-
-function AdminModuleLink({
-  href,
-  title,
-  description,
-  icon: Icon,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-}) {
+function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
   return (
-    <Link
-      href={href}
-      className={`group flex flex-col p-5 transition-all duration-200 hover:bg-primary/[0.07] hover:border-primary/25 hover:shadow-[var(--shadow-card-hover)] ${FOCUS_RING_CLASS} ${DASHBOARD_CARD_CLASS}`}
-      aria-label={`${title} — ${description}`}
-    >
-      <div className={ICON_BOX_PRIMARY_CLASS}>
-        <Icon className="size-5" aria-hidden />
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Total users</p>
+        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{stats.totalUsers}</p>
       </div>
-      <CardHeader className="flex-1 gap-1 p-0 pt-4">
-        <CardTitle className="text-sm font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
-          {title}
-        </CardTitle>
-        <CardDescription className="text-xs font-normal text-muted-foreground">
-          {description}
-        </CardDescription>
-      </CardHeader>
-      <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary/60 transition-colors group-hover:text-primary">
-        Manage
-        <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden />
-      </span>
-    </Link>
-  );
-}
-
-function AdminSummary() {
-  const { data: usersData } = useUsersListQuery({ page: 1, limit: 1 });
-  const { data: departments } = useDepartmentsQuery();
-  const { data: academicYearsData } = useAcademicYearsQuery();
-  const academicYears = academicYearsData?.list ?? [];
-  const activeYear = academicYears.find((y) => y.isActive);
-
-  const totalUsers = usersData?.total ?? null;
-  const departmentCount = departments?.length ?? null;
-
-  return (
-    <div className="grid gap-4 sm:grid-cols-3">
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
-        <p className={SECTION_LABEL_CLASS}>Total users</p>
-        <p className={`mt-1.5 ${TYPO_STAT}`}>
-          {totalUsers !== null ? totalUsers : "—"}
-        </p>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Departments</p>
+        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{stats.departmentCount}</p>
       </div>
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
-        <p className={SECTION_LABEL_CLASS}>Departments</p>
-        <p className={`mt-1.5 ${TYPO_STAT}`}>
-          {departmentCount !== null ? departmentCount : "—"}
-        </p>
-      </div>
-      <div className={DASHBOARD_STAT_CARD_CLASS}>
-        <p className={SECTION_LABEL_CLASS}>Active academic year</p>
-        <p className={`mt-1.5 font-semibold text-primary ${TYPO_HEADER_AND_STAT_TEXT}`}>
-          {activeYear?.name ?? "—"}
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
+        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+          {stats.activeAcademicYear?.name ?? "—"}
         </p>
       </div>
     </div>
   );
 }
 
-export function AdminDashboardContent() {
+function AdminUsersByRole({ stats }: { stats: AdminDashboardStats }) {
+  const roles: Role[] = ["ADMIN", "QA_MANAGER", "QA_COORDINATOR", "STAFF"];
+  const roleOrder: Record<Role, number> = {
+    ADMIN: 0,
+    QA_MANAGER: 1,
+    QA_COORDINATOR: 2,
+    STAFF: 3,
+  };
+
   return (
-    <div className="space-y-8">
-      <section aria-labelledby="admin-summary-heading">
-        <h2 id="admin-summary-heading" className="sr-only">
-          Summary
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {roles
+        .sort((a, b) => roleOrder[a] - roleOrder[b])
+        .map((role) => {
+          const count = stats.usersByRole[role] ?? 0;
+          return (
+            <div key={role} className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+              <p className={CARD_STAT_LABEL_CLASS}>{getRoleLabel(role)}</p>
+              <p className={cn("mt-1.5 tabular-nums", TYPO_STAT_BASE_COORD)}>
+                {count}
+              </p>
+            </div>
+          );
+        })}
+    </div>
+  );
+}
+
+function getStatusHint(status: string): string {
+  if (status === "ok") return "";
+  if (status === "missing_both") return "No QA Coordinator · No staff";
+  if (status === "missing_qc") return "No QA Coordinator";
+  return "No staff";
+}
+
+function DepartmentComplianceSection({ stats }: { stats: AdminDashboardStats }) {
+  const applicable = stats.departmentCompliance.filter((d) => !d.isExcluded);
+  const compliant = applicable.filter((d) => d.status === "ok");
+  const nonCompliant = applicable.filter((d) => d.status !== "ok");
+  const totalApplicable = applicable.length;
+
+  return (
+    <div className={cn(UNIFIED_CARD_CLASS, "px-6 py-5")}>
+        {stats.departmentCompliance.length === 0 ? (
+          <p className={cn("py-8 text-center", TYPO_BODY_SM)}>No departments</p>
+        ) : (
+          <>
+            <div className="mb-5">
+              <span className={cn("text-[12px] text-muted-foreground/75", totalApplicable > 0 && "tabular-nums")}>
+                {compliant.length} of {totalApplicable} compliant
+              </span>
+              {nonCompliant.length > 0 && (
+                <span className="text-[12px] text-muted-foreground/65 ml-2 tabular-nums">
+                  · {nonCompliant.length} need{nonCompliant.length === 1 ? "s" : ""} attention
+                </span>
+              )}
+            </div>
+
+            <ul className="divide-y divide-border/30" role="list">
+              {stats.departmentCompliance.map((d) => {
+                const isExcluded = d.isExcluded;
+                const isOk = !isExcluded && d.status === "ok";
+                return (
+                  <li
+                    key={d.id}
+                    className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3.5 first:pt-0 last:pb-0"
+                  >
+                    <span className="font-sans text-sm text-foreground/88 truncate min-w-0">
+                      {d.name}
+                    </span>
+                    <div className="flex items-center gap-3 text-[12px] text-muted-foreground/75">
+                      {isExcluded ? (
+                        <span>—</span>
+                      ) : (
+                        <>
+                          <span className="tabular-nums">
+                            QC{d.hasQaCoordinator ? " ✓" : " —"} · {d.staffCount} staff
+                          </span>
+                          {!isOk && (
+                            <span className="text-muted-foreground/70">
+                              {getStatusHint(d.status)}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+    </div>
+  );
+}
+
+export function AdminDashboardContent() {
+  const { data: stats, isLoading } = useAdminDashboardStats();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-10">
+        <div className={`${UNIFIED_CARD_CLASS} min-h-[180px] p-6`}>
+          <LoadingState compact />
+        </div>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className={UNIFIED_CARD_CLASS} style={{ padding: "2rem" }}>
+        <p className={TYPO_BODY_SM}>Unable to load dashboard data.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-10">
+      <section aria-labelledby="admin-overview-heading">
+        <h2 id="admin-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+          Overview
         </h2>
-        <AdminSummary />
+        <div className="mt-4">
+          <AdminOverview stats={stats} />
+        </div>
       </section>
-      <section aria-labelledby="admin-modules-heading">
-        <h2 id="admin-modules-heading" className={SECTION_LABEL_CLASS}>
-          Management
+
+      <section aria-labelledby="admin-users-heading">
+        <h2 id="admin-users-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+          Users by role
         </h2>
-        <nav
-          className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          aria-label="Admin modules"
-        >
-          {ADMIN_FUNCTIONS.map((item) => (
-            <Can key={item.href} permission={item.permission}>
-              <AdminModuleLink
-                href={item.href}
-                title={item.title}
-                description={item.description}
-                icon={item.icon}
-              />
-            </Can>
-          ))}
-        </nav>
+        <div className="mt-4">
+          <AdminUsersByRole stats={stats} />
+        </div>
+      </section>
+
+      <section aria-labelledby="admin-compliance-heading">
+        <h2 id="admin-compliance-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+          Department rules
+        </h2>
+        <div className="mt-4">
+          <DepartmentComplianceSection stats={stats} />
+        </div>
       </section>
     </div>
   );

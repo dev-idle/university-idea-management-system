@@ -56,6 +56,7 @@ export const ROUTES = {
   MY_IDEAS: "/ideas/my",
   ADMIN_USERS: "/admin/users",
   ADMIN_DEPARTMENTS: "/admin/departments",
+  ADMIN_DEPARTMENT_MEMBERS: "/admin/department-members",
   ADMIN_ACADEMIC_YEARS: "/admin/academic-years",
   /** Profile: all authenticated users. */
   PROFILE: "/profile",

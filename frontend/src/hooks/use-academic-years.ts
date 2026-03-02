@@ -49,6 +49,7 @@ export function useCreateAcademicYearMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }
@@ -97,6 +98,7 @@ export function useUpdateAcademicYearMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }
@@ -127,6 +129,7 @@ export function useDeleteAcademicYearMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.academicYears.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }

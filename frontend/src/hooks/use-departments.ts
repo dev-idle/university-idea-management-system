@@ -49,6 +49,7 @@ export function useCreateDepartmentMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }
@@ -76,6 +77,7 @@ export function useUpdateDepartmentMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }
@@ -106,6 +108,7 @@ export function useDeleteDepartmentMutation() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.departments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
     },
   });
 }

@@ -39,6 +39,8 @@ import {
   TABLE_ACTIONS_MIN_W_2,
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_EMPTY_PRIMARY_CLASS,
+  TABLE_EMPTY_HINT_CLASS,
   TABLE_BASE_CLASS,
   TABLE_HEAD_ROW_CLASS,
   TABLE_ROW_CLASS,
@@ -291,10 +293,10 @@ export function DepartmentsManagement() {
                     {!departments || departments.length === 0 ? (
                       <tr>
                         <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
-                          <p className="font-sans text-sm font-medium text-foreground">
+                          <p className={TABLE_EMPTY_PRIMARY_CLASS}>
                             No departments yet.
                           </p>
-                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
+                          <p className={TABLE_EMPTY_HINT_CLASS}>
                             Add one to begin.
                           </p>
                         </td>
@@ -302,10 +304,10 @@ export function DepartmentsManagement() {
                     ) : filtered.length === 0 ? (
                       <tr>
                         <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
-                          <p className="font-sans text-sm font-medium text-foreground">
+                          <p className={TABLE_EMPTY_PRIMARY_CLASS}>
                             No matching departments.
                           </p>
-                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
+                          <p className={TABLE_EMPTY_HINT_CLASS}>
                             Try a different search.
                           </p>
                         </td>

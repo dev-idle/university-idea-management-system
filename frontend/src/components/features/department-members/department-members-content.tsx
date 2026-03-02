@@ -20,13 +20,15 @@ import {
   TABLE_CELL_NAME_CLASS,
   TABLE_CELL_STATUS_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_EMPTY_PRIMARY_CLASS,
+  TABLE_EMPTY_HINT_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { TYPO_BODY_SM } from "@/config/design";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
-import { getAvatarInitial } from "@/lib/utils";
+import { cn, getAvatarInitial } from "@/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -168,12 +170,12 @@ export function DepartmentMembersContent() {
             {`${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
           </span>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto transition-opacity duration-200">
           <table className={TABLE_BASE_CLASS}>
             <thead>
               <tr className={TABLE_HEAD_ROW_CLASS}>
                 <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
-                  Member
+                  Name
                 </th>
                 <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                   Email
@@ -187,11 +189,11 @@ export function DepartmentMembersContent() {
               {filteredMembers.length === 0 ? (
                 <tr>
                   <td colSpan={3} className={TABLE_EMPTY_CELL_CLASS}>
-                    <p className="font-sans text-sm font-medium text-foreground">
+                    <p className={TABLE_EMPTY_PRIMARY_CLASS}>
                       {search ? "No members found." : "No members yet."}
                     </p>
                     {search && (
-                      <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
+                      <p className={TABLE_EMPTY_HINT_CLASS}>
                         Try another search.
                       </p>
                     )}
@@ -200,7 +202,7 @@ export function DepartmentMembersContent() {
               ) : (
                 paginatedMembers.map((m) => (
                   <tr key={m.id} className={TABLE_ROW_CLASS}>
-                    <td className={TABLE_CELL_NAME_CLASS}>
+                    <td className={cn(TABLE_CELL_NAME_CLASS, "py-3.5")}>
                       <div className="flex items-center gap-3">
                         <Avatar className="size-9 shrink-0 rounded-full border border-border/55 bg-primary/[0.10]">
                           <AvatarFallback className="rounded-full bg-primary/[0.10] text-primary text-xs font-medium">
@@ -212,12 +214,12 @@ export function DepartmentMembersContent() {
                         </span>
                       </div>
                     </td>
-                    <td className={`${TABLE_CELL_CLASS} max-w-[16rem]`}>
+                    <td className={cn(TABLE_CELL_CLASS, "max-w-[16rem] py-3.5")}>
                       <span className="block truncate" title={m.email}>
                         {m.email}
                       </span>
                     </td>
-                    <td className={TABLE_CELL_STATUS_CLASS}>
+                    <td className={cn(TABLE_CELL_STATUS_CLASS, "py-3.5")}>
                       <span className={STATUS_BADGE_INACTIVE_CLASS}>
                         {getRoleLabel(m.role)}
                       </span>

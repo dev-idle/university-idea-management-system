@@ -80,6 +80,18 @@ export const UNIFIED_CARD_TOOLBAR_CLASS =
 export const UNIFIED_SEARCH_INPUT_CLASS =
   "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-colors duration-200 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
 
+/** Toolbar filter select — h-9, matches UNIFIED_SEARCH_INPUT. For filter bars (Search + Selects). */
+export const TOOLBAR_FILTER_SELECT_TRIGGER_CLASS =
+  "!h-9 w-full min-w-0 overflow-hidden rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:block [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
+
+/** Toolbar filter widths (rem-based, design scale). Search: 18rem, Dept & Role: 10rem. */
+export const TOOLBAR_SEARCH_WIDTH = "w-72";       /* 18rem */
+export const TOOLBAR_FILTER_DEPT_WIDTH = "w-40";  /* 10rem, same as Role */
+export const TOOLBAR_FILTER_ROLE_WIDTH = "w-40";  /* 10rem */
+
+/** Toolbar vertical divider — separates Search from filter selects. */
+export const TOOLBAR_FILTER_DIVIDER = "h-9 w-px shrink-0 self-center bg-border/40";
+
 /** Sculpted modal overlay (matches TR_OVERLAY 240ms). */
 export const DIALOG_OVERLAY_SCULPTED_CLASS =
   "!bg-overlay-modal backdrop-blur-md duration-[240ms]";
@@ -185,6 +197,12 @@ export const TABLE_LOADING_CELL_CLASS =
 /** Empty table message cell (typography for children). */
 export const TABLE_EMPTY_CELL_CLASS =
   `px-6 py-20 text-center sm:px-6 ${TYPO_BODY_SM}`;
+
+/** Empty state primary message (bold). */
+export const TABLE_EMPTY_PRIMARY_CLASS = "font-sans text-sm font-medium text-foreground";
+
+/** Empty state hint (muted, below primary). */
+export const TABLE_EMPTY_HINT_CLASS = "mt-1.5 font-sans text-xs text-muted-foreground/80";
 
 /** Skeleton: divide between rows. */
 export const SKELETON_DIVIDE_CLASS = MGMT_DIVIDE;

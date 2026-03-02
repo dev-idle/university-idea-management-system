@@ -58,6 +58,8 @@ import {
   TABLE_ACTIONS_CELL_CLASS,
   TABLE_ACTIONS_WRAPPER_CLASS,
   TABLE_EMPTY_CELL_CLASS,
+  TABLE_EMPTY_PRIMARY_CLASS,
+  TABLE_EMPTY_HINT_CLASS,
   STATUS_BADGE_ACTIVE_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
   ACTION_BUTTON_EDIT_CLASS,
@@ -330,12 +332,12 @@ export function AcademicYearsManagement() {
                     {!years || years.length === 0 ? (
                       <tr>
                         <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
-                          <p className="font-sans text-sm font-medium text-foreground">
+                          <p className={TABLE_EMPTY_PRIMARY_CLASS}>
                             {searchQuery.trim()
                               ? "No matching academic years."
                               : "No academic years yet."}
                           </p>
-                          <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
+                          <p className={TABLE_EMPTY_HINT_CLASS}>
                             {searchQuery.trim() ? "Try a different search." : "Add one to begin."}
                           </p>
                         </td>
