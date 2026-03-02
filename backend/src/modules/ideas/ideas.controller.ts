@@ -72,7 +72,7 @@ export class IdeasController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('sort')
-    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments',
+    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments' | 'mostComments',
     @Query('categoryId') categoryId?: string,
     @Query('cycleId') cycleId?: string,
     @Query('departmentId') departmentId?: string,
@@ -81,7 +81,8 @@ export class IdeasController {
     const sortVal =
       sort === 'mostPopular' ||
       sort === 'mostViewed' ||
-      sort === 'latestComments'
+      sort === 'latestComments' ||
+      sort === 'mostComments'
         ? sort
         : 'latest';
     return this.ideasService.findAllForActiveYear({

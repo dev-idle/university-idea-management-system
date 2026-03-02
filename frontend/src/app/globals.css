@@ -61,12 +61,20 @@
   --chart-4: oklch(0.45 0.09 205);
   --chart-5: oklch(0.52 0.1 230);
 
+  /* Submission Rate — bright coral; contrasts with Ideas per Dept (blue) and Ideas Over Time (teal). */
+  --chart-submission-rate: oklch(0.68 0.14 55);
+
   /* Donut: highly distinct hues for category differentiation */
   --chart-donut-1: oklch(0.38 0.1 280);
   --chart-donut-2: oklch(0.5 0.12 175);
   --chart-donut-3: oklch(0.55 0.14 70);
   --chart-donut-4: oklch(0.48 0.14 300);
   --chart-donut-5: oklch(0.52 0.14 25);
+  --chart-donut-6: oklch(0.5 0.14 145);
+  --chart-donut-7: oklch(0.52 0.12 200);
+  --chart-donut-8: oklch(0.55 0.14 330);
+  --chart-donut-9: oklch(0.58 0.14 100);
+  --chart-donut-10: oklch(0.48 0.12 260);
 
   /* --- 5. Sidebar (Refined, luxurious contrast from main content) --- */
   --sidebar: oklch(0.982 0.003 280);
@@ -142,11 +150,18 @@
   --chart-4: oklch(0.58 0.1 205);
   --chart-5: oklch(0.6 0.1 230);
 
+  --chart-submission-rate: oklch(0.72 0.14 55);
+
   --chart-donut-1: oklch(0.62 0.14 280);
   --chart-donut-2: oklch(0.6 0.12 175);
   --chart-donut-3: oklch(0.65 0.14 70);
   --chart-donut-4: oklch(0.6 0.14 300);
   --chart-donut-5: oklch(0.62 0.14 25);
+  --chart-donut-6: oklch(0.62 0.14 145);
+  --chart-donut-7: oklch(0.64 0.12 200);
+  --chart-donut-8: oklch(0.65 0.14 330);
+  --chart-donut-9: oklch(0.68 0.14 100);
+  --chart-donut-10: oklch(0.6 0.12 260);
 
   --sidebar: oklch(0.145 0.025 280);
   --sidebar-foreground: oklch(0.9 0.015 280);
@@ -371,7 +386,8 @@
 
 /* Reduced motion: opacity pulse instead of spin. */
 @keyframes loading-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {

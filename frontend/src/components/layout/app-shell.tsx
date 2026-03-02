@@ -12,7 +12,6 @@ import {
   Building2,
   CalendarDays,
   CalendarRange,
-  ClipboardList,
   Tags,
   Lightbulb,
   FolderPen,
@@ -367,7 +366,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         key={ROUTES.QA_COORDINATOR_DASHBOARD}
         href={ROUTES.QA_COORDINATOR_DASHBOARD}
         label="Dashboard"
-        icon={ClipboardList}
+        icon={LayoutDashboard}
         isActive={pathname === ROUTES.QA_COORDINATOR_DASHBOARD}
         collapsed={collapsed}
       />
@@ -542,7 +541,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         className={cn(
           "flex h-screen shrink-0 flex-col border-r bg-sidebar transition-[width] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
           SIDEBAR_BORDER,
-          sidebarCollapsed ? "w-full items-center md:w-20" : "w-full md:w-[272px]"
+          sidebarCollapsed ? "w-16 items-center md:w-20" : "w-64 md:w-[272px]"
         )}
       >
         <SidebarHeader collapsed={sidebarCollapsed} />

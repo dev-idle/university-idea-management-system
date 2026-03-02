@@ -166,10 +166,12 @@ export const CHART_COLOR_TEMPORAL = "var(--chart-2)";
 
 /**
  * Insights section — QA Manager dashboard.
- * Ideas per Department: chart-1. Submission Rate: chart-3. Ideas Over Time: chart-2. Donut: chart-donut-*.
+ * Ideas per Department: chart-1. Submission Rate: chart-2 (contrasting). Ideas Over Time: chart-2. Donut: chart-donut-*.
  */
 export const INSIGHTS_BAR_COLOR = "var(--chart-1)";
 export const INSIGHTS_RATE_COLOR = "var(--chart-3)";
+/** Submission Rate chart — light cyan, contrasting with Ideas per Department (chart-1) and Ideas Over Time (chart-2). */
+export const INSIGHTS_RATE_CONTRAST = "var(--chart-submission-rate)";
 export const INSIGHTS_LINE_COLOR = "var(--chart-2)";
 export const INSIGHTS_DONUT_COLORS = [
   "var(--chart-donut-1)",
@@ -177,6 +179,11 @@ export const INSIGHTS_DONUT_COLORS = [
   "var(--chart-donut-3)",
   "var(--chart-donut-4)",
   "var(--chart-donut-5)",
+  "var(--chart-donut-6)",
+  "var(--chart-donut-7)",
+  "var(--chart-donut-8)",
+  "var(--chart-donut-9)",
+  "var(--chart-donut-10)",
 ] as const;
 
 /** Chart tooltip — shared: border/45, shadow-card-hover, backdrop-blur. */

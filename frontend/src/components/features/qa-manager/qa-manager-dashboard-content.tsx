@@ -1,6 +1,7 @@
 "use client";
 
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import Link from "next/link";
+import { MessageSquare, Eye, ThumbsUp, ThumbsDown, ChevronRight } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -15,12 +16,13 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import {
-  SECTION_LABEL_CLASS,
+  DASHBOARD_SECTION_HEADING_CLASS,
+  CARD_STAT_LABEL_CLASS,
   TYPO_STAT_COORD,
   TYPO_STAT_BASE_COORD,
   TYPO_BODY_SM,
   INSIGHTS_BAR_COLOR,
-  INSIGHTS_RATE_COLOR,
+  INSIGHTS_RATE_CONTRAST,
   INSIGHTS_LINE_COLOR,
   INSIGHTS_DONUT_COLORS,
   CHART_TOOLTIP_CLASS,
@@ -31,7 +33,7 @@ import {
 import { UNIFIED_CARD_CLASS } from "../admin/constants";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQaManagerStatsQuery, useQaManagerChartsQuery } from "@/hooks/use-profile";
-import { useIdeasContextQuery } from "@/hooks/use-ideas";
+import { useIdeasContextQuery, useIdeasQuery } from "@/hooks/use-ideas";
 import {
   ChartContainer,
   ChartTooltip,
@@ -68,53 +70,63 @@ function QaManagerOverview() {
   const hasStats = stats !== null && stats !== undefined;
 
   return (
-    <div className={`${UNIFIED_CARD_CLASS} px-6 py-6`}>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-6">
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Cycle name</p>
-          {activeCycleName ? (
+    <div className="flex flex-col gap-10">
+      <section aria-labelledby="qa-manager-cycle-heading">
+        <h2 id="qa-manager-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal cycle</h2>
+        <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+            <div className="min-w-0">
+              <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
+              {activeCycleName ? (
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
+                      {activeCycleName}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">{activeCycleName}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className={CARD_STAT_LABEL_CLASS}>Submission deadline</p>
+              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                {submissionClosesAt ? fmtDateTime(submissionClosesAt) : "—"}
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className={CARD_STAT_LABEL_CLASS}>Comments & votes deadline</p>
+              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                {interactionClosesAt ? fmtDateTime(interactionClosesAt) : "—"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="qa-manager-overview-heading">
+        <h2 id="qa-manager-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Overview</h2>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalIdeas : "—"}</p>
+          </div>
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
-                <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
-                  {activeCycleName}
-                </p>
+                <p className={`${CARD_STAT_LABEL_CLASS} cursor-default`}>Total departments</p>
               </TooltipTrigger>
-              <TooltipContent side="top">{activeCycleName}</TooltipContent>
+              <TooltipContent side="top">
+                Excludes IT Services and Quality Assurance Office
+              </TooltipContent>
             </Tooltip>
-          ) : (
-            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
-          )}
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+              {hasStats ? stats.totalDepartments : "—"}
+            </p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Submission deadline</p>
-          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-            {submissionClosesAt ? fmtDateTime(submissionClosesAt) : "—"}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Comments & votes deadline</p>
-          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-            {interactionClosesAt ? fmtDateTime(interactionClosesAt) : "—"}
-          </p>
-        </div>
-        <div className="min-w-0">
-          <p className={SECTION_LABEL_CLASS}>Total ideas</p>
-          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalIdeas : "—"}</p>
-        </div>
-        <div className="min-w-0">
-          <Tooltip delayDuration={300}>
-            <TooltipTrigger asChild>
-              <p className={`${SECTION_LABEL_CLASS} cursor-default`}>Total departments</p>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              Excludes IT Services and Quality Assurance Office
-            </TooltipContent>
-          </Tooltip>
-          <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-            {hasStats ? stats.totalDepartments : "—"}
-          </p>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
@@ -124,29 +136,33 @@ function QaManagerEngagement() {
   const hasStats = stats !== null && stats !== undefined;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-        <p className={SECTION_LABEL_CLASS}>Comments</p>
-        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalComments : "—"}</p>
-      </div>
-      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-        <p className={SECTION_LABEL_CLASS}>Views</p>
-        <p className={cn("mt-1.5", TYPO_STAT_BASE_COORD, "text-info")}>
-          {hasStats ? stats.totalViews : "—"}
+        <p className={CARD_STAT_LABEL_CLASS}>Comments</p>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_COORD)}>
+          <MessageSquare className="size-[18px] shrink-0" aria-hidden />
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.totalComments : "—"}</span>
         </p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-        <p className={SECTION_LABEL_CLASS}>Upvotes</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Views</p>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-info")}>
+          <Eye className="size-[18px] shrink-0" aria-hidden />
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.totalViews : "—"}</span>
+        </p>
+      </div>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>Upvotes</p>
         <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-success")}>
           <ThumbsUp className="size-[18px] shrink-0" aria-hidden />
-          {hasStats ? stats.votesUp : "—"}
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.votesUp : "—"}</span>
         </p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-        <p className={SECTION_LABEL_CLASS}>Downvotes</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Downvotes</p>
         <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-destructive")}>
           <ThumbsDown className="size-[18px] shrink-0" aria-hidden />
-          {hasStats ? stats.votesDown : "—"}
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.votesDown : "—"}</span>
         </p>
       </div>
     </div>
@@ -168,8 +184,8 @@ function formatPeriodLabel(dateStr: string, dateEndStr?: string): string {
 }
 
 const CHART_CONFIG_RATE = {
-  rate: { label: "Submission rate (%)", color: INSIGHTS_RATE_COLOR },
-  count: { label: "Ideas", color: INSIGHTS_RATE_COLOR }, /* alias for cursor --color-rate */
+  rate: { label: "Submission rate (%)", color: INSIGHTS_RATE_CONTRAST },
+  count: { label: "Ideas", color: INSIGHTS_RATE_CONTRAST }, /* alias for cursor --color-rate */
 } as const;
 const CHART_CONFIG_TIME = {
   count: { label: "Ideas", color: INSIGHTS_LINE_COLOR },
@@ -187,27 +203,27 @@ function QaManagerCharts() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
-          <p className={SECTION_LABEL_CLASS}>Ideas per Department</p>
+          <p className={CARD_STAT_LABEL_CLASS}>Ideas per Department</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
             <LoadingState compact />
           </div>
         </div>
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
-          <p className={SECTION_LABEL_CLASS}>Submission Rate per Department</p>
+          <p className={CARD_STAT_LABEL_CLASS}>Submission Rate per Department</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
             <LoadingState compact />
           </div>
         </div>
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
-          <p className={SECTION_LABEL_CLASS}>Ideas by Category</p>
+          <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
             <LoadingState compact />
           </div>
         </div>
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
-          <p className={SECTION_LABEL_CLASS}>Ideas Over Time</p>
+          <p className={CARD_STAT_LABEL_CLASS}>Ideas Over Time</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
             <LoadingState compact />
           </div>
@@ -231,13 +247,13 @@ function QaManagerCharts() {
   const pieData = ideasByCategory.map((d) => ({ name: d.categoryName, value: d.count }));
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Ideas per Department — bar chart */}
       <div
         className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}
         style={{ animationDelay: "0ms" }}
       >
-        <p className={SECTION_LABEL_CLASS}>Ideas per Department</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Ideas per Department</p>
         <div className="mt-4 aspect-video">
           {hasDeptData ? (
             <ChartContainer config={CHART_CONFIG_DEPT} className="h-full w-full">
@@ -277,7 +293,7 @@ function QaManagerCharts() {
             </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No ideas yet in this period
+              No ideas in this cycle
             </div>
           )}
         </div>
@@ -290,7 +306,7 @@ function QaManagerCharts() {
       >
         <Tooltip delayDuration={300}>
           <TooltipTrigger asChild>
-            <p className={`${SECTION_LABEL_CLASS} cursor-default`}>
+            <p className={`${CARD_STAT_LABEL_CLASS} cursor-default`}>
               Submission Rate per Department
             </p>
           </TooltipTrigger>
@@ -375,7 +391,7 @@ function QaManagerCharts() {
             </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No department data yet
+              No department data in this cycle
             </div>
           )}
         </div>
@@ -386,7 +402,7 @@ function QaManagerCharts() {
         className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}
         style={{ animationDelay: "140ms" }}
       >
-        <p className={SECTION_LABEL_CLASS}>Ideas by Category</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
         <div className="mt-4 aspect-video">
           {hasCategoryData ? (
             <div className="flex h-full w-full items-stretch gap-4">
@@ -455,7 +471,7 @@ function QaManagerCharts() {
             </div>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No ideas yet in this period
+              No ideas in this cycle
             </div>
           )}
         </div>
@@ -466,7 +482,7 @@ function QaManagerCharts() {
         className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}
         style={{ animationDelay: "210ms" }}
       >
-        <p className={SECTION_LABEL_CLASS}>Ideas Over Time</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Ideas Over Time</p>
         <div className="mt-4 aspect-video">
           {hasTimeData ? (
             <ChartContainer config={CHART_CONFIG_TIME} className="h-full w-full">
@@ -505,7 +521,7 @@ function QaManagerCharts() {
             </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No ideas submitted yet in this period
+              No ideas in this cycle
             </div>
           )}
         </div>
@@ -514,31 +530,197 @@ function QaManagerCharts() {
   );
 }
 
+function HighlightIdeaCard({
+  idea,
+  rank,
+}: {
+  idea: { id: string; title: string; voteCounts?: { up: number; down: number }; commentCount?: number; viewCount?: number };
+  rank: number;
+}) {
+  const votes = idea.voteCounts ?? { up: 0, down: 0 };
+  const comments = idea.commentCount ?? 0;
+  const views = idea.viewCount ?? 0;
+
+  const rankStyle = rank === 1
+    ? "bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
+    : rank === 2
+      ? "bg-slate-400/15 text-slate-600 dark:bg-slate-400/20 dark:text-slate-300"
+      : rank === 3
+        ? "bg-amber-700/15 text-amber-800 dark:bg-amber-600/20 dark:text-amber-500"
+        : "bg-muted/50 text-muted-foreground";
+
+  const metrics = [
+    { key: "up", icon: ThumbsUp, value: votes.up },
+    { key: "down", icon: ThumbsDown, value: votes.down },
+    { key: "comments", icon: MessageSquare, value: comments },
+    { key: "views", icon: Eye, value: views },
+  ];
+
+  return (
+    <Link
+      href={`/ideas/${idea.id}`}
+      className={cn(
+        "group flex items-start gap-3 rounded-lg border border-border/55 bg-muted/[0.03] px-4 py-3",
+        "transition-colors hover:bg-muted/[0.06] hover:border-border/80",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums",
+          rankStyle
+        )}
+        aria-hidden
+      >
+        {rank}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="min-w-0 truncate text-sm font-medium text-foreground group-hover:text-primary" title={idea.title}>
+          {idea.title}
+        </p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-1 gap-y-1 text-[11px] text-muted-foreground">
+          {metrics.map(({ key, icon: Icon, value }, i) => (
+            <span key={key} className="inline-flex items-center gap-2">
+              {i > 0 && (
+                <span className="select-none px-1 text-muted-foreground/10" aria-hidden>|</span>
+              )}
+              <Icon className="size-3 shrink-0 opacity-55" strokeWidth={2} aria-hidden />
+              <span className="tabular-nums">{value}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/50 transition-colors group-hover:text-primary/80" aria-hidden />
+    </Link>
+  );
+}
+
+function QaManagerHighlight() {
+  const { data: popular, isLoading: popularLoading } = useIdeasQuery(
+    { sort: "mostPopular", limit: 5 },
+    { enabled: true }
+  );
+  const { data: mostComments, isLoading: commentsLoading } = useIdeasQuery(
+    { sort: "mostComments", limit: 5 },
+    { enabled: true }
+  );
+  const { data: mostViewed, isLoading: viewedLoading } = useIdeasQuery(
+    { sort: "mostViewed", limit: 5 },
+    { enabled: true }
+  );
+
+  const isLoading = popularLoading || commentsLoading || viewedLoading;
+  const hasPopular = (popular?.items?.length ?? 0) > 0;
+  const hasComments = (mostComments?.items?.length ?? 0) > 0;
+  const hasViewed = (mostViewed?.items?.length ?? 0) > 0;
+  const hasAny = hasPopular || hasComments || hasViewed;
+
+  if (isLoading) {
+    return (
+      <section aria-labelledby="qa-manager-highlight-heading">
+        <h2 id="qa-manager-highlight-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+          Top Ideas
+        </h2>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className={`${UNIFIED_CARD_CLASS} min-h-[120px] p-6`}>
+            <LoadingState compact />
+          </div>
+          <div className={`${UNIFIED_CARD_CLASS} min-h-[120px] p-6`}>
+            <LoadingState compact />
+          </div>
+          <div className={`${UNIFIED_CARD_CLASS} min-h-[120px] p-6`}>
+            <LoadingState compact />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!hasAny) return null;
+
+  return (
+    <section aria-labelledby="qa-manager-highlight-heading">
+      <h2 id="qa-manager-highlight-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+        Top Ideas
+      </h2>
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}>
+          <div className="flex items-center gap-2.5">
+            <ThumbsUp className="size-3.5 shrink-0 text-muted-foreground/70" strokeWidth={2} aria-hidden />
+            <p className={CARD_STAT_LABEL_CLASS}>Most Popular</p>
+          </div>
+          <div className="mt-4 flex min-h-[120px] flex-col gap-2.5">
+            {hasPopular ? (
+              popular!.items.map((idea, i) => (
+                <HighlightIdeaCard key={idea.id} idea={idea} rank={i + 1} />
+              ))
+            ) : (
+              <div className="flex flex-1 items-center justify-center py-8">
+                <p className={TYPO_BODY_SM}>No ideas with votes yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}>
+          <div className="flex items-center gap-2.5">
+            <MessageSquare className="size-3.5 shrink-0 text-muted-foreground/70" strokeWidth={2} aria-hidden />
+            <p className={CARD_STAT_LABEL_CLASS}>Most Comments</p>
+          </div>
+          <div className="mt-4 flex min-h-[120px] flex-col gap-2.5">
+            {hasComments ? (
+              mostComments!.items.map((idea, i) => (
+                <HighlightIdeaCard key={idea.id} idea={idea} rank={i + 1} />
+              ))
+            ) : (
+              <div className="flex flex-1 items-center justify-center py-8">
+                <p className={TYPO_BODY_SM}>No ideas with comments yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}>
+          <div className="flex items-center gap-2.5">
+            <Eye className="size-3.5 shrink-0 text-muted-foreground/70" strokeWidth={2} aria-hidden />
+            <p className={CARD_STAT_LABEL_CLASS}>Most Viewed</p>
+          </div>
+          <div className="mt-4 flex min-h-[120px] flex-col gap-2.5">
+            {hasViewed ? (
+              mostViewed!.items.map((idea, i) => (
+                <HighlightIdeaCard key={idea.id} idea={idea} rank={i + 1} />
+              ))
+            ) : (
+              <div className="flex flex-1 items-center justify-center py-8">
+                <p className={TYPO_BODY_SM}>No ideas with views yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function QaManagerDashboardContent() {
   return (
-    <div className="space-y-7">
-      <section aria-labelledby="qa-manager-overview-heading">
-        <h2 id="qa-manager-overview-heading" className="sr-only">
-          Overview
-        </h2>
-        <QaManagerOverview />
-      </section>
+    <div className="space-y-10">
+      <QaManagerOverview />
       <section aria-labelledby="qa-manager-engagement-heading">
-        <h2 id="qa-manager-engagement-heading" className={SECTION_LABEL_CLASS}>
+        <h2 id="qa-manager-engagement-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Engagement
         </h2>
-        <div className="mt-2.5">
+        <div className="mt-4">
           <QaManagerEngagement />
         </div>
       </section>
       <section aria-labelledby="qa-manager-charts-heading">
-        <h2 id="qa-manager-charts-heading" className={SECTION_LABEL_CLASS}>
+        <h2 id="qa-manager-charts-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Insights
         </h2>
-        <div className="mt-2.5">
+        <div className="mt-4">
           <QaManagerCharts />
         </div>
       </section>
+      <QaManagerHighlight />
     </div>
   );
 }

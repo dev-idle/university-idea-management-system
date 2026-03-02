@@ -363,7 +363,7 @@ export class IdeasService {
   async findAllForActiveYear(params: {
     page?: number;
     limit?: number;
-    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments';
+    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments' | 'mostComments';
     categoryId?: string;
     cycleId?: string;
     departmentId?: string;
@@ -509,17 +509,105 @@ export class IdeasService {
       };
     }
 
-    /* ── Most Viewed / Latest: Prisma orderBy ─────────────────────────── */
-    const orderBy: any =
-      sort === 'mostViewed'
-        ? [{ views: { _count: 'desc' } }, { createdAt: 'desc' }]
-        : { createdAt: 'desc' };
+    /* ── Most Comments: sort by comment count, tie-break: (up−down) + 0.01×views ─ */
+    if (sort === 'mostComments') {
+      const [allIdeas, total] = await Promise.all([
+        this.prisma.idea.findMany({
+          where,
+          select: {
+            id: true,
+            createdAt: true,
+            votes: { select: { value: true } },
+            _count: { select: { comments: true, views: true } },
+          },
+        }),
+        this.prisma.idea.count({ where }),
+      ]);
+      const scored = allIdeas.map((idea) => {
+        let net = 0;
+        for (const v of idea.votes) net += v.value === 'up' ? 1 : -1;
+        const tieBreak = net + 0.01 * idea._count.views;
+        return { id: idea.id, createdAt: idea.createdAt, comments: idea._count.comments, tieBreak };
+      });
+      scored.sort(
+        (a, b) =>
+          b.comments - a.comments ||
+          b.tieBreak - a.tieBreak ||
+          b.createdAt.getTime() - a.createdAt.getTime(),
+      );
+      const pageIds = scored
+        .slice((page - 1) * limit, page * limit)
+        .map((s) => s.id);
+      if (pageIds.length === 0) return { items: [], total };
 
+      const ideas = await this.prisma.idea.findMany({
+        where: { id: { in: pageIds } },
+        select: ideaSelect,
+      });
+      const idOrder = new Map(pageIds.map((id, i) => [id, i]));
+      ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
+
+      return {
+        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        total,
+      };
+    }
+
+    /* ── Most Viewed: sort by view count, tie-break: (up−down) + 0.1×comments ─ */
+    if (sort === 'mostViewed') {
+      const [allIdeas, total] = await Promise.all([
+        this.prisma.idea.findMany({
+          where,
+          select: {
+            id: true,
+            createdAt: true,
+            votes: { select: { value: true } },
+            _count: { select: { comments: true, views: true } },
+          },
+        }),
+        this.prisma.idea.count({ where }),
+      ]);
+      const scored = allIdeas.map((idea) => {
+        let net = 0;
+        for (const v of idea.votes) net += v.value === 'up' ? 1 : -1;
+        const tieBreak = net + 0.1 * idea._count.comments;
+        return {
+          id: idea.id,
+          createdAt: idea.createdAt,
+          views: idea._count.views,
+          tieBreak,
+        };
+      });
+      scored.sort(
+        (a, b) =>
+          b.views - a.views ||
+          b.tieBreak - a.tieBreak ||
+          b.createdAt.getTime() - a.createdAt.getTime(),
+      );
+      const pageIds = scored
+        .slice((page - 1) * limit, page * limit)
+        .map((s) => s.id);
+      if (pageIds.length === 0) return { items: [], total };
+
+      const ideas = await this.prisma.idea.findMany({
+        where: { id: { in: pageIds } },
+        select: ideaSelect,
+      });
+      const idOrder = new Map(pageIds.map((id, i) => [id, i]));
+      ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
+
+      return {
+        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        total,
+      };
+    }
+
+    /* ── Latest: Prisma orderBy ─────────────────────────────────────────── */
     const [items, total] = await Promise.all([
       this.prisma.idea.findMany({
         where,
         select: ideaSelect,
-        orderBy,
+        orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),

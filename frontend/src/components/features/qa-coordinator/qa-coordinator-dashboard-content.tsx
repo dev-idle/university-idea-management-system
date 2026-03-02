@@ -1,11 +1,12 @@
 "use client";
 
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import { MessageSquare, Eye, ThumbsUp, ThumbsDown } from "lucide-react";
 import {
-  Bar,
-  BarChart,
+  Cell,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -17,6 +18,7 @@ import {
   TYPO_STAT_COORD,
   TYPO_STAT_BASE_COORD,
   TYPO_BODY_SM,
+  INSIGHTS_DONUT_COLORS,
   CHART_COLOR_CATEGORICAL,
   CHART_COLOR_TEMPORAL,
   CHART_TOOLTIP_CLASS,
@@ -37,15 +39,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
-
-function fmtDate(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 function fmtDateTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -159,26 +152,30 @@ function QaCoordinatorEngagement() {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Comments</p>
-        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalComments : "—"}</p>
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_COORD)}>
+          <MessageSquare className="size-[18px] shrink-0" aria-hidden />
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.totalComments : "—"}</span>
+        </p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Views</p>
-        <p className={cn("mt-1.5", TYPO_STAT_BASE_COORD, "text-info")}>
-          {hasStats ? stats.totalViews : "—"}
+        <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-info")}>
+          <Eye className="size-[18px] shrink-0" aria-hidden />
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.totalViews : "—"}</span>
         </p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Upvotes</p>
         <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-success")}>
           <ThumbsUp className="size-[18px] shrink-0" aria-hidden />
-          {hasStats ? stats.votesUp : "—"}
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.votesUp : "—"}</span>
         </p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Downvotes</p>
         <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_BASE_COORD, "text-destructive")}>
           <ThumbsDown className="size-[18px] shrink-0" aria-hidden />
-          {hasStats ? stats.votesDown : "—"}
+          <span className="min-w-[2.5rem] tabular-nums">{hasStats ? stats.votesDown : "—"}</span>
         </p>
       </div>
     </div>
@@ -229,11 +226,12 @@ function DepartmentCharts() {
   }
 
   const ideasByCategory = charts?.ideasByCategory ?? [];
+  const hasCategoryData = ideasByCategory.length > 0;
+  const pieData = ideasByCategory.map((d) => ({ name: d.categoryName, value: d.count }));
   const ideasOverTime = (charts?.ideasOverTime ?? []).map((d) => ({
     ...d,
     label: formatPeriodLabel(d.date, d.dateEnd),
   }));
-  const hasCategoryData = ideasByCategory.length > 0;
   const hasTimeData = ideasOverTime.some((d) => d.count > 0);
 
   return (
@@ -245,41 +243,67 @@ function DepartmentCharts() {
         <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
         <div className="mt-4 aspect-video">
           {hasCategoryData ? (
-            <ChartContainer config={CHART_CONFIG_CATEGORY} className="h-full w-full">
-              <BarChart
-                data={ideasByCategory}
-                margin={{ left: 0, right: 12, top: 8, bottom: 24 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-                <XAxis
-                  dataKey="categoryName"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11 }}
-                  tickFormatter={(v) => {
-                    const s = String(v ?? "");
-                    return s.length > 12 ? `${s.slice(0, 10)}…` : s;
-                  }}
-                />
-                <YAxis tickLine={false} axisLine={false} width={24} tick={{ fontSize: 11 }} allowDecimals={false} />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      indicator="line"
-                      className={CHART_TOOLTIP_CLASS}
-                      labelClassName={CHART_TOOLTIP_LABEL_CLASS}
-                      labelFormatter={(val) =>
-                        typeof val === "string" && val.length > 36
-                          ? `${String(val).slice(0, 33)}…`
-                          : val
-                      }
+            <div className="flex h-full w-full items-stretch gap-4">
+              <ChartContainer config={CHART_CONFIG_CATEGORY} className="min-w-0 flex-1 !aspect-auto">
+                <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        indicator="line"
+                        className={CHART_TOOLTIP_CLASS}
+                        labelClassName={CHART_TOOLTIP_LABEL_CLASS}
+                        nameKey="value"
+                        labelFormatter={(_val, payload) => {
+                          const categoryName = payload?.[0]?.payload?.name ?? payload?.[0]?.name;
+                          const str = typeof categoryName === "string" ? categoryName : String(categoryName ?? "");
+                          return str.length > 36 ? `${str.slice(0, 33)}…` : str;
+                        }}
+                      />
+                    }
+                    cursor
+                  />
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="50%"
+                    outerRadius="85%"
+                    paddingAngle={0}
+                    isAnimationActive={true}
+                    animationDuration={500}
+                    animationEasing="ease-out"
+                  >
+                    {pieData.map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length]}
+                        stroke="var(--background)"
+                        strokeWidth={3}
+                      />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+              <div className="flex shrink-0 flex-col justify-center gap-1.5 border-l border-border/40 pl-4">
+                {pieData.map((d, i) => (
+                  <div
+                    key={d.name}
+                    className="flex items-center gap-2 text-[11px]"
+                  >
+                    <span
+                      className="size-2 shrink-0 rounded-[2px]"
+                      style={{ backgroundColor: INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length] }}
+                      aria-hidden
                     />
-                  }
-                  cursor
-                />
-                <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ChartContainer>
+                    <span className="min-w-0 truncate text-muted-foreground" title={d.name}>
+                      {d.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
               No ideas in this cycle

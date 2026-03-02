@@ -78,7 +78,7 @@ export function useIdeasContextQuery(options?: { enabled?: boolean }) {
 export type IdeasListParams = {
   page?: number;
   limit?: number;
-  sort?: "latest" | "mostPopular" | "mostViewed" | "latestComments";
+  sort?: "latest" | "mostPopular" | "mostViewed" | "latestComments" | "mostComments";
   categoryId?: string;
   cycleId?: string;
   departmentId?: string;
