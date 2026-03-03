@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "View members in your department.",
 };
 
-export default function QaCoordinatorDepartmentPage() {
+export default function QaCoordinatorDepartmentMembersPage() {
   return (
     <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
       <DepartmentMembersContent />

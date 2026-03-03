@@ -7,7 +7,7 @@ import { useAuthStore } from "@/stores/auth.store";
 import { ROUTES } from "@/config/constants";
 
 /**
- * Redirects QA Coordinator from /department-members to /qa-coordinator/department.
+ * Redirects QA Coordinator from /department-members to /qa-coordinator/department-members.
  * Keeps URL structure consistent with sidebar.
  */
 export function DepartmentMembersRedirect({
