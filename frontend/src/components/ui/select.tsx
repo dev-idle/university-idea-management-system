@@ -51,11 +51,16 @@ function SelectTrigger({
   )
 }
 
+/** Max height for select dropdown — ~6 items, then scroll. */
+const SELECT_CONTENT_MAX_H = "max-h-[min(14rem,var(--radix-select-content-available-height,80vh))]";
+
 function SelectContent({
   className,
   children,
-  position = "item-aligned",
-  align = "center",
+  position = "popper",
+  align = "start",
+  side = "bottom",
+  sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
@@ -65,7 +70,8 @@ function SelectContent({
         className={cn(
           TR_MENU,
           POPUP_BG,
-          "text-popover-foreground relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto",
+          "text-popover-foreground relative z-50 min-w-[8rem] origin-(--radix-select-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto",
+          SELECT_CONTENT_MAX_H,
           POPUP_BORDER,
           POPUP_ROUNDED_MENU,
           POPUP_SHADOW,
@@ -75,6 +81,8 @@ function SelectContent({
         )}
         position={position}
         align={align}
+        side={side}
+        sideOffset={sideOffset}
         {...props}
       >
         <SelectScrollUpButton />
@@ -82,7 +90,7 @@ function SelectContent({
           className={cn(
             "p-1.5",
             position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+              "w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
           )}
         >
           {children}
