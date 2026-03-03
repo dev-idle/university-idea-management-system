@@ -1,21 +1,40 @@
 "use client";
 
+import Link from "next/link";
 import {
   DASHBOARD_SECTION_HEADING_CLASS,
   CARD_STAT_LABEL_CLASS,
   TYPO_STAT_COORD,
   TYPO_STAT_BASE_COORD,
   TYPO_BODY_SM,
+  MGMT_BORDER_DIVIDER,
+  MGMT_BG_TOOLBAR,
+  MGMT_BG_ROW_HOVER,
+  MGMT_DIVIDE,
 } from "@/config/design";
-import { UNIFIED_CARD_CLASS } from "../constants";
+import {
+  UNIFIED_CARD_CLASS,
+  STATUS_BADGE_ACTIVE_WARM_CLASS,
+  STATUS_BADGE_INACTIVE_CLASS,
+} from "../constants";
 import { useAdminDashboardStats, type AdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { LoadingState } from "@/components/ui/loading-state";
 import { getRoleLabel, type Role } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
+import { CheckCircle2, UserCog, Users, ChevronRight } from "lucide-react";
+import { ROUTES } from "@/config/constants";
 
 function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
+  const cycleStats = stats.activeYearCycleStats;
+  const totalActivated =
+    cycleStats
+      ? cycleStats.nonActiveWithIdeas + cycleStats.activeWithIdeas
+      : 0;
+  const cycleLabel =
+    !stats.activeAcademicYear ? "—" : totalActivated > 0 ? `${totalActivated}` : "None";
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Total users</p>
         <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{stats.totalUsers}</p>
@@ -28,6 +47,14 @@ function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
         <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
         <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
           {stats.activeAcademicYear?.name ?? "—"}
+        </p>
+      </div>
+      <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+        <p className={CARD_STAT_LABEL_CLASS}>
+          Total proposal cycles
+        </p>
+        <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+          {cycleLabel}
         </p>
       </div>
     </div>
@@ -62,70 +89,96 @@ function AdminUsersByRole({ stats }: { stats: AdminDashboardStats }) {
   );
 }
 
-function getStatusHint(status: string): string {
-  if (status === "ok") return "";
-  if (status === "missing_both") return "No QA Coordinator · No staff";
-  if (status === "missing_qc") return "No QA Coordinator";
-  return "No staff";
-}
-
 function DepartmentComplianceSection({ stats }: { stats: AdminDashboardStats }) {
   const applicable = stats.departmentCompliance.filter((d) => !d.isExcluded);
-  const compliant = applicable.filter((d) => d.status === "ok");
   const nonCompliant = applicable.filter((d) => d.status !== "ok");
   const totalApplicable = applicable.length;
+  const allCompliant = totalApplicable > 0 && nonCompliant.length === 0;
 
   return (
-    <div className={cn(UNIFIED_CARD_CLASS, "px-6 py-5")}>
-        {stats.departmentCompliance.length === 0 ? (
-          <p className={cn("py-8 text-center", TYPO_BODY_SM)}>No departments</p>
-        ) : (
-          <>
-            <div className="mb-5">
-              <span className={cn("text-[12px] text-muted-foreground/75", totalApplicable > 0 && "tabular-nums")}>
-                {compliant.length} of {totalApplicable} compliant
-              </span>
-              {nonCompliant.length > 0 && (
-                <span className="text-[12px] text-muted-foreground/65 ml-2 tabular-nums">
-                  · {nonCompliant.length} need{nonCompliant.length === 1 ? "s" : ""} attention
-                </span>
-              )}
+    <div className={UNIFIED_CARD_CLASS}>
+      {stats.departmentCompliance.length === 0 ? (
+        <div className="px-6 py-8">
+          <p className={TYPO_BODY_SM}>No departments</p>
+        </div>
+      ) : allCompliant ? (
+        <div className="px-6 py-6">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-success/[0.08]">
+              <CheckCircle2 className="size-5 text-success" aria-hidden />
             </div>
+            <div>
+              <p className={CARD_STAT_LABEL_CLASS}>All compliant</p>
+              <p className={`mt-0.5 ${TYPO_STAT_COORD}`}>
+                {totalApplicable} department{totalApplicable === 1 ? "" : "s"} meet the rules
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div
+            className={cn(
+              "flex items-center justify-between gap-4 border-b px-6 py-4",
+              MGMT_BORDER_DIVIDER,
+              MGMT_BG_TOOLBAR
+            )}
+          >
+            <p className={CARD_STAT_LABEL_CLASS}>
+              {nonCompliant.length} need{nonCompliant.length === 1 ? "s" : ""} attention
+            </p>
+            <Link
+              href={ROUTES.ADMIN_DEPARTMENT_MEMBERS}
+              className="inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-primary/85 transition-colors hover:text-primary"
+            >
+              Manage
+              <ChevronRight className="size-3.5" aria-hidden />
+            </Link>
+          </div>
 
-            <ul className="divide-y divide-border/30" role="list">
-              {stats.departmentCompliance.map((d) => {
-                const isExcluded = d.isExcluded;
-                const isOk = !isExcluded && d.status === "ok";
-                return (
-                  <li
-                    key={d.id}
-                    className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3.5 first:pt-0 last:pb-0"
+          <ul className={cn("divide-y", MGMT_DIVIDE)} role="list">
+            {nonCompliant.map((d) => (
+              <li
+                key={d.id}
+                className={cn(
+                  "flex flex-wrap items-center justify-between gap-4 px-6 py-3.5 transition-colors",
+                  MGMT_BG_ROW_HOVER
+                )}
+              >
+                <span className="min-w-0 truncate text-sm text-foreground/92">
+                  {d.name}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5",
+                      d.hasQaCoordinator
+                        ? STATUS_BADGE_INACTIVE_CLASS
+                        : STATUS_BADGE_ACTIVE_WARM_CLASS
+                    )}
                   >
-                    <span className="font-sans text-sm text-foreground/88 truncate min-w-0">
-                      {d.name}
-                    </span>
-                    <div className="flex items-center gap-3 text-[12px] text-muted-foreground/75">
-                      {isExcluded ? (
-                        <span>—</span>
-                      ) : (
-                        <>
-                          <span className="tabular-nums">
-                            QC{d.hasQaCoordinator ? " ✓" : " —"} · {d.staffCount} staff
-                          </span>
-                          {!isOk && (
-                            <span className="text-muted-foreground/70">
-                              {getStatusHint(d.status)}
-                            </span>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
+                    <UserCog className="size-3.5 shrink-0" aria-hidden />
+                    {d.hasQaCoordinator ? "QA Coordinator" : "No QA Coordinator"}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5",
+                      d.staffCount > 0
+                        ? STATUS_BADGE_INACTIVE_CLASS
+                        : STATUS_BADGE_ACTIVE_WARM_CLASS
+                    )}
+                  >
+                    <Users className="size-3.5 shrink-0" aria-hidden />
+                    {d.staffCount === 0
+                      ? "No staff"
+                      : `${d.staffCount} staff`}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }

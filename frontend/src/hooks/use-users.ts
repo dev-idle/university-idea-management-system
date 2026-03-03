@@ -36,6 +36,7 @@ export function useUsersListQuery(params?: {
 
   return useQuery({
     queryKey: queryKeys.users.list({ page, limit, search }),
+    placeholderData: (prev) => prev,
     queryFn: async () => {
       const searchParam = search ? `&search=${encodeURIComponent(search)}` : "";
       const res = await fetchWithAuth<UsersListResponse>(

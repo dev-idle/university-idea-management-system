@@ -53,6 +53,7 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
 import { CreateDepartmentForm } from "./create-department-form";
@@ -68,14 +69,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { LoadingState } from "@/components/ui/loading-state";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { Building2, Pencil, Plus, Trash2, Search } from "lucide-react";
 
 const COLUMN_COUNT = 2;
+const SEARCH_DEBOUNCE_MS = 350;
 
 export function DepartmentsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [showCreate, setShowCreate] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
@@ -97,10 +101,10 @@ export function DepartmentsManagement() {
 
   const filtered = useMemo(() => {
     if (!departments) return [];
-    if (!searchQuery.trim()) return departments;
-    const q = searchQuery.trim().toLowerCase();
+    if (!debouncedSearch.trim()) return departments;
+    const q = debouncedSearch.trim().toLowerCase();
     return departments.filter((d) => d.name.toLowerCase().includes(q));
-  }, [departments, searchQuery]);
+  }, [departments, debouncedSearch]);
 
   const total = filtered.length;
   const totalPages = useMemo(
@@ -115,6 +119,10 @@ export function DepartmentsManagement() {
       ),
     [filtered, page]
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, setPage]);
 
   const createMutation = useCreateDepartmentMutation();
   const updateMutation = useUpdateDepartmentMutation();
@@ -226,9 +234,12 @@ export function DepartmentsManagement() {
       <div className={UNIFIED_CARD_CLASS}>
         <Can permission="DEPARTMENTS">
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-            <div className="relative w-72">
+            <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+                className={cn(
+                  "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                  searchInput !== debouncedSearch && "opacity-60"
+                )}
                 aria-hidden
               />
               <input
@@ -237,11 +248,8 @@ export function DepartmentsManagement() {
                 role="searchbox"
                 aria-label="Search departments"
                 placeholder="Search by name…"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
-                }}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
@@ -275,7 +283,7 @@ export function DepartmentsManagement() {
         ) : (
           <>
             <TooltipProvider delayDuration={300}>
-              <div className={cn("overflow-x-auto transition-opacity duration-200", isFetching && "opacity-60")}>
+              <div className="overflow-x-auto">
                 <table className={TABLE_BASE_CLASS}>
                   <thead>
                     <tr className={TABLE_HEAD_ROW_CLASS}>

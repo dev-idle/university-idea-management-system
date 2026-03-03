@@ -11,6 +11,7 @@ import {
   UNIFIED_CARD_TOOLBAR_CLASS,
   UNIFIED_SEARCH_INPUT_CLASS,
   SHOWING_RANGE_BADGE_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
   STATUS_BADGE_INACTIVE_CLASS,
   TABLE_BASE_CLASS,
   TABLE_HEAD_ROW_CLASS,
@@ -30,7 +31,7 @@ import { TYPO_BODY_SM } from "@/config/design";
 import { ROLE_LABELS, type Role } from "@/lib/rbac";
 import { cn, getAvatarInitial } from "@/lib/utils";
 
-const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 350;
 
 function getRoleLabel(role: string): string {
   return ROLE_LABELS[role as Role] ?? role;
@@ -139,9 +140,12 @@ export function DepartmentMembersContent() {
   return (
     <div className={UNIFIED_CARD_CLASS}>
         <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-          <div className="relative w-72">
+          <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
             <Search
-              className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+              className={cn(
+                "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                searchInput !== search && "opacity-60"
+              )}
               aria-hidden
             />
             <input
@@ -170,7 +174,7 @@ export function DepartmentMembersContent() {
             {`${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
           </span>
         </div>
-        <div className="overflow-x-auto transition-opacity duration-200">
+        <div className="overflow-x-auto">
           <table className={TABLE_BASE_CLASS}>
             <thead>
               <tr className={TABLE_HEAD_ROW_CLASS}>

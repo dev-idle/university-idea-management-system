@@ -76,9 +76,9 @@ export const UNIFIED_CARD_CLASS =
 export const UNIFIED_CARD_TOOLBAR_CLASS =
   `flex justify-between items-center gap-4 border-b px-6 py-4 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
 
-/** Unified search input — design: border/80, ring /[0.08]. */
+/** Unified search input — design: border/80, ring /[0.08]. Subtle hover, smooth transitions, respects reduced motion. */
 export const UNIFIED_SEARCH_INPUT_CLASS =
-  "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-colors duration-200 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
+  "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-[color,background-color,border-color,box-shadow] duration-200 ease-out hover:border-border/90 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] motion-reduce:transition-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
 
 /** Toolbar filter select — h-9, matches UNIFIED_SEARCH_INPUT. For filter bars (Search + Selects). */
 export const TOOLBAR_FILTER_SELECT_TRIGGER_CLASS =

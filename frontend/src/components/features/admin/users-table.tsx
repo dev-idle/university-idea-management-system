@@ -120,7 +120,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false, depar
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className={cn("overflow-x-auto transition-opacity duration-200", isRefetching && "opacity-60")}>
+      <div className="overflow-x-auto">
         <table className={TABLE_BASE_CLASS}>
           <thead>
             <tr className={TABLE_HEAD_ROW_CLASS}>

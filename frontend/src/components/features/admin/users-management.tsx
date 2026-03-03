@@ -34,7 +34,7 @@ import { UserPlus, Plus, Search } from "lucide-react";
 import { LoadingState } from "@/components/ui/loading-state";
 import { cn } from "@/lib/utils";
 
-const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 350;
 
 export function AdminUsersManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
@@ -141,15 +141,18 @@ export function AdminUsersManagement() {
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
             <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+                className={cn(
+                  "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                  searchInput !== search && "opacity-60"
+                )}
                 aria-hidden
               />
               <input
                 ref={searchInputRef}
                 type="search"
                 role="searchbox"
-                aria-label="Search users by email or name"
-                placeholder="Search by email or name…"
+                aria-label="Search users by name or email"
+                placeholder="Search by name or email…"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {

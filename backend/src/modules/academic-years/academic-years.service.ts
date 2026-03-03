@@ -202,28 +202,53 @@ export class AcademicYearsService {
       isActive: boolean;
       hasActiveSubmissionCycle: boolean;
       submissionCycleCount: number;
+      nonActiveCyclesWithIdeasCount: number;
+      activeCyclesWithIdeasCount: number;
     }>;
     hasActiveSubmissionCycleInSystem: boolean;
   }> {
-    const [list, activeCycleYears] = await Promise.all([
-      this.prisma.academicYear.findMany({
-        select: {
-          id: true,
-          name: true,
-          startDate: true,
-          endDate: true,
-          isActive: true,
-          _count: { select: { ideaSubmissionCycles: true } },
-        },
-        orderBy: { startDate: 'desc' },
-      }),
-      this.prisma.ideaSubmissionCycle.findMany({
-        where: { status: 'ACTIVE' },
-        select: { academicYearId: true },
-      }),
-    ]);
+    const [list, activeCycleYears, nonActiveWithIdeas, activeWithIdeas] =
+      await Promise.all([
+        this.prisma.academicYear.findMany({
+          select: {
+            id: true,
+            name: true,
+            startDate: true,
+            endDate: true,
+            isActive: true,
+            _count: { select: { ideaSubmissionCycles: true } },
+          },
+          orderBy: { startDate: 'desc' },
+        }),
+        this.prisma.ideaSubmissionCycle.findMany({
+          where: { status: 'ACTIVE' },
+          select: { academicYearId: true },
+        }),
+        this.prisma.ideaSubmissionCycle.groupBy({
+          by: ['academicYearId'],
+          where: {
+            status: { not: 'ACTIVE' },
+            ideas: { some: {} },
+          },
+          _count: { id: true },
+        }),
+        this.prisma.ideaSubmissionCycle.groupBy({
+          by: ['academicYearId'],
+          where: {
+            status: 'ACTIVE',
+            ideas: { some: {} },
+          },
+          _count: { id: true },
+        }),
+      ]);
     const yearIdsWithActiveCycle = new Set(
       activeCycleYears.map((c) => c.academicYearId),
+    );
+    const nonActiveMap = new Map(
+      nonActiveWithIdeas.map((g) => [g.academicYearId, g._count.id]),
+    );
+    const activeMap = new Map(
+      activeWithIdeas.map((g) => [g.academicYearId, g._count.id]),
     );
     const listWithFlags = list.map((year) => ({
       id: year.id,
@@ -233,6 +258,8 @@ export class AcademicYearsService {
       isActive: year.isActive,
       hasActiveSubmissionCycle: yearIdsWithActiveCycle.has(year.id),
       submissionCycleCount: year._count.ideaSubmissionCycles,
+      nonActiveCyclesWithIdeasCount: nonActiveMap.get(year.id) ?? 0,
+      activeCyclesWithIdeasCount: activeMap.get(year.id) ?? 0,
     }));
     return {
       list: listWithFlags,

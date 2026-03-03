@@ -62,24 +62,28 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCategoryForm } from "./create-category-form";
 import { UpdateCategoryForm } from "./update-category-form";
 import { LoadingState } from "@/components/ui/loading-state";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 
 /** Columns: Name + Actions (when QA_MANAGER). Used for empty-state colSpan. */
 const COLUMNS_WITH_ACTIONS = 2;
 const COLUMNS_NAME_ONLY = 1;
+const SEARCH_DEBOUNCE_MS = 350;
 
 export function CategoriesManagement() {
   const user = useAuthStore((s) => s.user);
   const isQaManager = hasRole(user?.roles, "QA_MANAGER");
 
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [showCreate, setShowCreate] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
@@ -101,10 +105,10 @@ export function CategoriesManagement() {
 
   const filtered = useMemo(() => {
     if (!categories) return [];
-    if (!searchQuery.trim()) return categories;
-    const q = searchQuery.trim().toLowerCase();
+    if (!debouncedSearch.trim()) return categories;
+    const q = debouncedSearch.trim().toLowerCase();
     return categories.filter((c) => c.name.toLowerCase().includes(q));
-  }, [categories, searchQuery]);
+  }, [categories, debouncedSearch]);
 
   const total = filtered.length;
   const totalPages = useMemo(
@@ -119,6 +123,10 @@ export function CategoriesManagement() {
       ),
     [filtered, page]
   );
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, setPage]);
+
   const createMutation = useCreateCategoryMutation();
   const updateMutation = useUpdateCategoryMutation();
   const deleteMutation = useDeleteCategoryMutation();
@@ -234,9 +242,12 @@ export function CategoriesManagement() {
       <div className={UNIFIED_CARD_CLASS}>
         {isQaManager && (
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-            <div className="relative w-72">
+            <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+                className={cn(
+                  "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                  searchInput !== debouncedSearch && "opacity-60"
+                )}
                 aria-hidden
               />
               <input
@@ -245,11 +256,8 @@ export function CategoriesManagement() {
                 role="searchbox"
                 aria-label="Search categories"
                 placeholder="Search by name…"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
-                }}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
@@ -278,7 +286,7 @@ export function CategoriesManagement() {
         ) : (
             <>
               <TooltipProvider delayDuration={300}>
-                <div className={cn("overflow-x-auto transition-opacity duration-200", isFetching && "opacity-60")}>
+                <div className="overflow-x-auto">
                   <table className={TABLE_BASE_CLASS}>
                     <thead>
                       <tr className={TABLE_HEAD_ROW_CLASS}>
@@ -300,12 +308,12 @@ export function CategoriesManagement() {
                             className={TABLE_EMPTY_CELL_CLASS}
                           >
                             <p className="font-sans text-sm font-medium text-foreground">
-                              {searchQuery.trim()
+                              {debouncedSearch.trim()
                                 ? "No matching categories."
                                 : "No categories yet."}
                             </p>
                             <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
-                              {searchQuery.trim() ? "Try another search." : "Add one to begin."}
+                              {debouncedSearch.trim() ? "Try another search." : "Add one to begin."}
                             </p>
                           </td>
                         </tr>

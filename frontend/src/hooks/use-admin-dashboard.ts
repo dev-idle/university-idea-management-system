@@ -22,6 +22,11 @@ export type AdminDashboardStats = {
   departments: Department[];
   departmentCount: number;
   activeAcademicYear: { id: string; name: string } | null;
+  /** In active year: non-active cycles (DRAFT/CLOSED) with 1+ ideas, active cycles with 1+ ideas. */
+  activeYearCycleStats: {
+    nonActiveWithIdeas: number;
+    activeWithIdeas: number;
+  } | null;
   academicYearsCount: number;
   /** Each department: has exactly 1 QA Coordinator and >= 1 Staff. Excluded depts have isExcluded=true. */
   departmentCompliance: Array<{
@@ -151,12 +156,20 @@ export function useAdminDashboardStats(options?: { enabled?: boolean }) {
         usersByDepartment[d.id] = users.filter((u) => u.departmentId === d.id);
       }
 
+      const activeYearCycleStats = activeYear
+        ? {
+            nonActiveWithIdeas: activeYear.nonActiveCyclesWithIdeasCount ?? 0,
+            activeWithIdeas: activeYear.activeCyclesWithIdeasCount ?? 0,
+          }
+        : null;
+
       return {
         totalUsers: users.length,
         usersByRole,
         departments,
         departmentCount: departments.length,
         activeAcademicYear: activeYear ? { id: activeYear.id, name: activeYear.name } : null,
+        activeYearCycleStats,
         academicYearsCount: academicYears.list.length,
         departmentCompliance,
         usersByDepartment,

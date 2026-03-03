@@ -136,6 +136,8 @@ export const academicYearSchema = z.object({
   isActive: z.boolean(),
   hasActiveSubmissionCycle: z.boolean().optional(),
   submissionCycleCount: z.number().optional(),
+  nonActiveCyclesWithIdeasCount: z.number().optional(),
+  activeCyclesWithIdeasCount: z.number().optional(),
 });
 
 export type AcademicYear = z.infer<typeof academicYearSchema>;

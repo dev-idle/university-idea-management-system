@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { Search, Users } from "lucide-react";
 import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { LoadingState } from "@/components/ui/loading-state";
 import {
   UNIFIED_CARD_CLASS,
@@ -43,9 +44,12 @@ import { ROLES } from "@/lib/rbac";
 import { TYPO_BODY_SM } from "@/config/design";
 import { cn, getAvatarInitial } from "@/lib/utils";
 
+const SEARCH_DEBOUNCE_MS = 350;
+
 export function AdminDepartmentMembersContent() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, flushSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [deptId, setDeptId] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
@@ -75,7 +79,7 @@ export function AdminDepartmentMembersContent() {
     if (roleFilter !== "all") {
       users = users.filter((u) => (u.roles?.[0] ?? "STAFF") === roleFilter);
     }
-    const q = search.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase();
     if (q) {
       users = users.filter((u) => {
         const name = (u.fullName ?? "").toLowerCase();
@@ -91,7 +95,7 @@ export function AdminDepartmentMembersContent() {
       return 0;
     });
     return users;
-  }, [usersByDept, selectedDeptId, roleFilter, search]);
+  }, [usersByDept, selectedDeptId, roleFilter, debouncedSearch]);
 
   const totalFiltered = filteredUsers.length;
   const totalPages = useMemo(
@@ -108,7 +112,7 @@ export function AdminDepartmentMembersContent() {
 
   useEffect(() => {
     setPage(1);
-  }, [selectedDeptId, roleFilter, search, setPage]);
+  }, [selectedDeptId, roleFilter, debouncedSearch, setPage]);
 
   useEffect(() => {
     if (totalPages > 0 && page > totalPages) {
@@ -153,7 +157,10 @@ export function AdminDepartmentMembersContent() {
           <div className="flex flex-wrap items-center gap-3">
             <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+                className={cn(
+                  "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                  searchInput !== debouncedSearch && "opacity-60"
+                )}
                 aria-hidden
               />
               <input
@@ -161,8 +168,15 @@ export function AdminDepartmentMembersContent() {
                 role="searchbox"
                 aria-label="Search by name or email"
                 placeholder="Search by name or email…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    flushSearch();
+                  }
+                }}
+                onBlur={() => flushSearch()}
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd className={SHOWING_RANGE_BADGE_CLASS} aria-hidden>
@@ -210,7 +224,7 @@ export function AdminDepartmentMembersContent() {
           </span>
         </div>
 
-        <div className="overflow-x-auto transition-opacity duration-200">
+        <div className="overflow-x-auto">
           <table className={TABLE_BASE_CLASS}>
             <thead>
               <tr className={TABLE_HEAD_ROW_CLASS}>

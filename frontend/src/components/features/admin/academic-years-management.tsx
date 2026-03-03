@@ -43,6 +43,7 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
   UNIFIED_CARD_CLASS,
   UNIFIED_CARD_TOOLBAR_CLASS,
   UNIFIED_SEARCH_INPUT_CLASS,
@@ -73,6 +74,7 @@ import {
 import { ManagementTablePagination } from "./management-table-pagination";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { LoadingState } from "@/components/ui/loading-state";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { CalendarDays, Pencil, CircleCheck, Plus, Search, Trash2 } from "lucide-react";
 
@@ -86,13 +88,15 @@ function formatDate(d: Date | string): string {
 }
 
 const COLUMN_COUNT = 5;
+const SEARCH_DEBOUNCE_MS = 350;
 
 export function AcademicYearsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [showCreate, setShowCreate] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
   const [yearToDelete, setYearToDelete] = useState<AcademicYear | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -113,15 +117,15 @@ export function AcademicYearsManagement() {
     [listData?.list]
   );
   const years = useMemo(() => {
-    if (!searchQuery.trim()) return allYears;
-    const q = searchQuery.trim().toLowerCase();
+    if (!debouncedSearch.trim()) return allYears;
+    const q = debouncedSearch.trim().toLowerCase();
     return allYears.filter(
       (y) =>
         y.name.toLowerCase().includes(q) ||
         formatDate(y.startDate).toLowerCase().includes(q) ||
         (y.endDate ? formatDate(y.endDate).toLowerCase().includes(q) : false)
     );
-  }, [allYears, searchQuery]);
+  }, [allYears, debouncedSearch]);
   const hasActiveSubmissionCycleInSystem =
     listData?.hasActiveSubmissionCycleInSystem ?? false;
 
@@ -138,6 +142,10 @@ export function AcademicYearsManagement() {
       ) ?? [],
     [years, page]
   );
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, setPage]);
+
   const createMutation = useCreateAcademicYearMutation();
   const updateMutation = useUpdateAcademicYearMutation();
   const deleteMutation = useDeleteAcademicYearMutation();
@@ -256,9 +264,12 @@ export function AcademicYearsManagement() {
       <div className={UNIFIED_CARD_CLASS}>
         <Can permission="ACADEMIC_YEARS">
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-            <div className="relative w-72">
+            <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+                className={cn(
+                  "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                  searchInput !== debouncedSearch && "opacity-60"
+                )}
                 aria-hidden
               />
               <input
@@ -267,11 +278,8 @@ export function AcademicYearsManagement() {
                 role="searchbox"
                 aria-label="Search academic years"
                 placeholder="Search by name…"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
-                }}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
@@ -305,7 +313,7 @@ export function AcademicYearsManagement() {
         ) : (
           <>
             <TooltipProvider delayDuration={300}>
-              <div className={cn("overflow-x-auto transition-opacity duration-200", isFetching && "opacity-60")}>
+              <div className="overflow-x-auto">
                 <table className={TABLE_BASE_CLASS}>
                   <thead>
                     <tr className={TABLE_HEAD_ROW_CLASS}>
@@ -333,12 +341,12 @@ export function AcademicYearsManagement() {
                       <tr>
                         <td colSpan={COLUMN_COUNT} className={TABLE_EMPTY_CELL_CLASS}>
                           <p className={TABLE_EMPTY_PRIMARY_CLASS}>
-                            {searchQuery.trim()
+                            {debouncedSearch.trim()
                               ? "No matching academic years."
                               : "No academic years yet."}
                           </p>
                           <p className={TABLE_EMPTY_HINT_CLASS}>
-                            {searchQuery.trim() ? "Try a different search." : "Add one to begin."}
+                            {debouncedSearch.trim() ? "Try a different search." : "Add one to begin."}
                           </p>
                         </td>
                       </tr>

@@ -56,6 +56,7 @@ import {
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
   SHOWING_RANGE_BADGE_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
 } from "@/components/features/admin/constants";
 import { ManagementTablePagination } from "@/components/features/admin/management-table-pagination";
 import { CreateCycleForm } from "./create-cycle-form";
@@ -76,10 +77,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { LoadingState } from "@/components/ui/loading-state";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
 import { CalendarRange, Plus, Search } from "lucide-react";
 
 const COLUMNS_WITH_ACTIONS = 7;
+const SEARCH_DEBOUNCE_MS = 350;
 const COLUMNS_NAME_ONLY = 6;
 
 function formatDateTime(d: Date | string): string {
@@ -189,7 +192,8 @@ export function SubmissionCyclesManagement() {
   const isQaManager = hasRole(user?.roles, "QA_MANAGER");
 
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [showCreate, setShowCreate] = useState(false);
   const [editingCycle, setEditingCycle] = useState<SubmissionCycle | null>(null);
   const [cycleToDeactivate, setCycleToDeactivate] = useState<SubmissionCycle | null>(null);
@@ -212,14 +216,14 @@ export function SubmissionCyclesManagement() {
 
   const filtered = useMemo(() => {
     if (!cycles) return [];
-    if (!searchQuery.trim()) return cycles;
-    const q = searchQuery.trim().toLowerCase();
+    if (!debouncedSearch.trim()) return cycles;
+    const q = debouncedSearch.trim().toLowerCase();
     return cycles.filter(
       (c) =>
         c.name?.toLowerCase().includes(q) ||
         c.academicYear?.name.toLowerCase().includes(q)
     );
-  }, [cycles, searchQuery]);
+  }, [cycles, debouncedSearch]);
 
   const total = filtered.length;
   const totalPages = useMemo(
@@ -234,6 +238,10 @@ export function SubmissionCyclesManagement() {
       ),
     [filtered, page]
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, setPage]);
 
   const createMutation = useCreateSubmissionCycleMutation();
   const updateMutation = useUpdateSubmissionCycleMutation();
@@ -393,9 +401,12 @@ export function SubmissionCyclesManagement() {
       <div className={UNIFIED_CARD_CLASS}>
         {isQaManager && (
           <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-            <div className="relative w-72">
+            <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
-                className="pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80"
+                className={cn(
+                  "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                  searchInput !== debouncedSearch && "opacity-60"
+                )}
                 aria-hidden
               />
               <input
@@ -404,11 +415,8 @@ export function SubmissionCyclesManagement() {
                 role="searchbox"
                 aria-label="Search proposal cycles"
                 placeholder="Search by name or year…"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(1);
-                }}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className={UNIFIED_SEARCH_INPUT_CLASS}
               />
               <kbd
@@ -443,10 +451,7 @@ export function SubmissionCyclesManagement() {
           <>
             <TooltipProvider delayDuration={300}>
               <div
-                className={cn(
-                  "overflow-x-auto transition-opacity duration-200",
-                  isFetching && "opacity-60"
-                )}
+                className="overflow-x-auto"
               >
                 <table className={TABLE_BASE_CLASS}>
                   <thead>
@@ -492,12 +497,12 @@ export function SubmissionCyclesManagement() {
                           className={TABLE_EMPTY_CELL_CLASS}
                         >
                           <p className="font-sans text-sm font-medium text-foreground">
-                            {searchQuery.trim()
+                            {debouncedSearch.trim()
                               ? "No matching cycles."
                               : "No proposal cycles yet."}
                           </p>
                           <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
-                            {searchQuery.trim()
+                            {debouncedSearch.trim()
                               ? "Try a different search."
                               : "Add one to begin."}
                           </p>
