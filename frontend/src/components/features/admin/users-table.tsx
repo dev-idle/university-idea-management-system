@@ -26,6 +26,7 @@ import {
   ACTION_BUTTON_EDIT_CLASS,
   ACTION_BUTTON_WARNING_CLASS,
   ACTION_BUTTON_SUCCESS_CLASS,
+  ACTION_BUTTON_DISABLED_BLUR_CLASS,
   STATUS_BADGE_ACTIVE_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
   DIALOG_CONTENT_SCULPTED_CLASS,
@@ -72,9 +73,11 @@ interface UsersTableProps {
   isRefetching?: boolean;
   /** When true and empty, show "No users found" / "Try another search."; otherwise "No users yet." / "Add one to begin." */
   hasActiveSearch?: boolean;
+  /** Per-department: hasQaCoordinator (active QC). Used to disable Activate for inactive QCs when dept already has one. */
+  departmentCompliance?: Array<{ id: string; hasQaCoordinator: boolean }>;
 }
 
-export function UsersTable({ users, isRefetching, hasActiveSearch = false }: UsersTableProps) {
+export function UsersTable({ users, isRefetching, hasActiveSearch = false, departmentCompliance }: UsersTableProps) {
   const updateMutation = useUpdateUserMutation();
   const [deactivateUser, setDeactivateUser] = useState<UserListItem | null>(null);
   const [editUser, setEditUser] = useState<UserListItem | null>(null);
@@ -97,6 +100,22 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
 
   function handleEditSuccess() {
     setEditUser(null);
+  }
+
+  const deptHasActiveQc = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const c of departmentCompliance ?? []) {
+      map.set(c.id, c.hasQaCoordinator);
+    }
+    return map;
+  }, [departmentCompliance]);
+
+  function shouldDisableActivate(user: UserListItem): boolean {
+    const role = user.roles?.[0];
+    if (role !== "QA_COORDINATOR" || user.isActive) return false;
+    const deptId = user.departmentId;
+    if (!deptId) return false;
+    return deptHasActiveQc.get(deptId) === true;
   }
 
   return (
@@ -181,10 +200,14 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                               type="button"
                               variant="ghost"
                               size="icon-sm"
-                              className={ACTION_BUTTON_EDIT_CLASS}
+                              className={cn(
+                                updateMutation.isPending
+                                  ? ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                  : ACTION_BUTTON_EDIT_CLASS
+                              )}
                               disabled={updateMutation.isPending}
                               onClick={() => setEditUser(user)}
-                              aria-label="Edit user"
+                              aria-label="Edit User"
                             >
                               <Pencil className="size-4" aria-hidden />
                             </Button>
@@ -198,7 +221,11 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
-                                className={ACTION_BUTTON_WARNING_CLASS}
+                                className={cn(
+                                  togglingId === user.id
+                                    ? ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                    : ACTION_BUTTON_WARNING_CLASS
+                                )}
                                 disabled={togglingId === user.id}
                                 onClick={() => setDeactivateUser(user)}
                                 aria-label="Deactivate user"
@@ -211,24 +238,39 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
                         ) : (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                className={ACTION_BUTTON_SUCCESS_CLASS}
-                                disabled={togglingId === user.id}
-                                onClick={() =>
-                                  updateMutation.mutate({
-                                    id: user.id,
-                                    body: { isActive: true },
-                                  })
-                                }
-                                aria-label="Activate user"
-                              >
-                                <CircleCheck className="size-4" aria-hidden />
-                              </Button>
+                              <span className="inline-flex shrink-0">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  className={cn(
+                                    togglingId === user.id ||
+                                      shouldDisableActivate(user)
+                                      ? ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                      : ACTION_BUTTON_SUCCESS_CLASS
+                                  )}
+                                  disabled={
+                                    togglingId === user.id ||
+                                    shouldDisableActivate(user)
+                                  }
+                                  onClick={() =>
+                                    !shouldDisableActivate(user) &&
+                                    updateMutation.mutate({
+                                      id: user.id,
+                                      body: { isActive: true },
+                                    })
+                                  }
+                                  aria-label="Activate user"
+                                >
+                                  <CircleCheck className="size-4" aria-hidden />
+                                </Button>
+                              </span>
                             </TooltipTrigger>
-                            <TooltipContent side="top">Activate</TooltipContent>
+                            <TooltipContent side="top">
+                              {shouldDisableActivate(user)
+                                ? "Department already has an active QA Coordinator"
+                                : "Activate"}
+                            </TooltipContent>
                           </Tooltip>
                         )}
                       </div>
@@ -284,7 +326,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false }: Use
         >
           <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
             <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-              Edit user
+              Edit User
             </DialogTitle>
           </DialogHeader>
           {editUser && (

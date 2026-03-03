@@ -131,7 +131,10 @@ export class SubmissionCyclesService {
       select: this.cycleSelect(),
       orderBy: { createdAt: 'desc' },
     });
-    return list.map((c) => this.mapCycle(c));
+    const categoryIdeaCountMap = await this.getCategoryIdeaCountMap(
+      list.map((c) => c.id)
+    );
+    return list.map((c) => this.mapCycle(c, categoryIdeaCountMap));
   }
 
   async findOne(id: string) {
@@ -142,6 +145,7 @@ export class SubmissionCyclesService {
     if (!cycle) {
       throw new NotFoundException('Proposal cycle not found');
     }
+    const categoryIdeaCountMap = await this.getCategoryIdeaCountMap([id]);
     const now = new Date();
     if (cycle.status === STATUS_ACTIVE && cycle.interactionClosesAt <= now) {
       const updated = await this.prisma.ideaSubmissionCycle.update({
@@ -149,9 +153,9 @@ export class SubmissionCyclesService {
         data: { status: STATUS_CLOSED, wasEverClosed: true },
         select: this.cycleSelect(),
       });
-      return this.mapCycle(updated);
+      return this.mapCycle(updated, categoryIdeaCountMap);
     }
-    return this.mapCycle(cycle);
+    return this.mapCycle(cycle, categoryIdeaCountMap);
   }
 
   async update(id: string, body: UpdateCycleBody) {
@@ -225,6 +229,29 @@ export class SubmissionCyclesService {
         ay.endDate,
       );
     }
+    if (body.categoryIds !== undefined) {
+      const categoryIdeaCountMap = await this.getCategoryIdeaCountMap([id]);
+      const currentCycle = await this.prisma.ideaSubmissionCycle.findUnique({
+        where: { id },
+        select: {
+          cycleCategories: { select: { categoryId: true } },
+        },
+      });
+      const existingIds = new Set(
+        currentCycle?.cycleCategories?.map((cc) => cc.categoryId) ?? [],
+      );
+      const newIds = new Set(body.categoryIds);
+      for (const catId of existingIds) {
+        if (!newIds.has(catId)) {
+          const count = categoryIdeaCountMap.get(`${id}:${catId}`) ?? 0;
+          if (count > 0) {
+            throw new BadRequestException(
+              `Cannot remove a category that has ideas. Category has ${count} idea(s).`,
+            );
+          }
+        }
+      }
+    }
     try {
       const cycle = await this.prisma.ideaSubmissionCycle.update({
         where: { id },
@@ -243,7 +270,8 @@ export class SubmissionCyclesService {
         },
         select: this.cycleSelect(),
       });
-      return this.mapCycle(cycle);
+      const categoryIdeaCountMap = await this.getCategoryIdeaCountMap([id]);
+      return this.mapCycle(cycle, categoryIdeaCountMap);
     } catch (e) {
       if (isPrismaNotFound(e)) {
         throw new NotFoundException('Proposal cycle not found');
@@ -417,7 +445,29 @@ export class SubmissionCyclesService {
     };
   }
 
-  private mapCycle(row: {
+  private async getCategoryIdeaCountMap(
+    cycleIds: string[],
+  ): Promise<Map<string, number>> {
+    if (cycleIds.length === 0) return new Map();
+    const rows = await this.prisma.idea.groupBy({
+      by: ['cycleId', 'categoryId'],
+      where: {
+        cycleId: { in: cycleIds },
+        categoryId: { not: null },
+      },
+      _count: true,
+    });
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      if (r.categoryId != null) {
+        map.set(`${r.cycleId}:${r.categoryId}`, r._count);
+      }
+    }
+    return map;
+  }
+
+  private mapCycle(
+    row: {
     id: string;
     academicYearId: string;
     name: string | null;
@@ -440,7 +490,9 @@ export class SubmissionCyclesService {
       categoryId: string;
       category: { id: string; name: string };
     }>;
-  }) {
+  },
+  categoryIdeaCountMap?: Map<string, number>,
+  ) {
     return {
       id: row.id,
       academicYearId: row.academicYearId,
@@ -454,7 +506,11 @@ export class SubmissionCyclesService {
       updatedAt: row.updatedAt,
       _count: row._count,
       academicYear: row.academicYear,
-      categories: row.cycleCategories.map((cc) => cc.category),
+      categories: row.cycleCategories.map((cc) => ({
+        ...cc.category,
+        ideaCount:
+          categoryIdeaCountMap?.get(`${row.id}:${cc.categoryId}`) ?? 0,
+      })),
     };
   }
 
@@ -488,7 +544,10 @@ export class SubmissionCyclesService {
         data: { isLocked: true },
         select: this.cycleSelect(),
       })
-      .then((c) => this.mapCycle(c));
+      .then(async (c) => {
+        const map = await this.getCategoryIdeaCountMap([id]);
+        return this.mapCycle(c, map);
+      });
   }
 
   /** Unlock a locked cycle: re-enables Edit and Activate. */
@@ -509,6 +568,9 @@ export class SubmissionCyclesService {
         data: { isLocked: false },
         select: this.cycleSelect(),
       })
-      .then((c) => this.mapCycle(c));
+      .then(async (c) => {
+        const map = await this.getCategoryIdeaCountMap([id]);
+        return this.mapCycle(c, map);
+      });
   }
 }

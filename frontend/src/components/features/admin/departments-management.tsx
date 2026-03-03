@@ -175,7 +175,7 @@ export function DepartmentsManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Edit department
+                Edit Department
               </DialogTitle>
             </DialogHeader>
             {editingDepartment && (
@@ -329,7 +329,7 @@ export function DepartmentsManagement() {
                                       size="icon-sm"
                                       className={ACTION_BUTTON_EDIT_CLASS}
                                       onClick={() => setEditingDepartment(d)}
-                                      aria-label="Edit department"
+                                      aria-label="Edit Department"
                                     >
                                       <Pencil className="size-4" aria-hidden />
                                     </Button>

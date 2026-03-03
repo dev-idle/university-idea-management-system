@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- Prisma client types */
 import {
   Injectable,
+  BadRequestException,
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,12 @@ import { PrismaService } from '../../core/prisma/prisma.service';
 import { hashPassword } from '../../common/crypto/password.util';
 import type { CreateUserBody } from './dto/create-user.dto';
 import type { UpdateUserBody, ListUsersQuery } from './dto/update-user.dto';
+
+/** Departments excluded from QC requirement (IT Services, QA Office). */
+const EXCLUDED_DEPARTMENT_NAMES = new Set([
+  'IT Services / System Administration Department',
+  'Quality Assurance Office',
+]);
 
 const userSelect = {
   id: true,
@@ -63,12 +70,39 @@ export class UsersService {
           where: {
             roleId: qaCoordinatorRole.id,
             departmentId: body.departmentId,
+            isActive: true,
           },
         });
         if (existing > 0) {
           throw new ConflictException(
             'This department already has a QA Coordinator. Each department can have only one.',
           );
+        }
+      }
+    }
+    if (body.role === 'STAFF' && body.departmentId) {
+      const deptWithName = await this.prisma.department.findUnique({
+        where: { id: body.departmentId },
+        select: { name: true },
+      });
+      if (deptWithName && !EXCLUDED_DEPARTMENT_NAMES.has(deptWithName.name)) {
+        const qaCoordinatorRole = await this.prisma.role.findUnique({
+          where: { name: 'QA_COORDINATOR' },
+          select: { id: true },
+        });
+        if (qaCoordinatorRole) {
+          const qcCount = await this.prisma.user.count({
+            where: {
+              roleId: qaCoordinatorRole.id,
+              departmentId: body.departmentId,
+              isActive: true,
+            },
+          });
+          if (qcCount === 0) {
+            throw new BadRequestException(
+              'Department has no QA Coordinator.',
+            );
+          }
         }
       }
     }
@@ -158,6 +192,7 @@ export class UsersService {
           where: {
             roleId: qaCoordinatorRole.id,
             departmentId: newDeptId,
+            isActive: true,
             id: { not: id },
           },
         });
@@ -165,6 +200,33 @@ export class UsersService {
           throw new ConflictException(
             'This department already has a QA Coordinator. Each department can have only one.',
           );
+        }
+      }
+    }
+    if (newRole === 'STAFF' && newDeptId) {
+      const deptWithName = await this.prisma.department.findUnique({
+        where: { id: newDeptId },
+        select: { name: true },
+      });
+      if (deptWithName && !EXCLUDED_DEPARTMENT_NAMES.has(deptWithName.name)) {
+        const qaCoordinatorRole = await this.prisma.role.findUnique({
+          where: { name: 'QA_COORDINATOR' },
+          select: { id: true },
+        });
+        if (qaCoordinatorRole) {
+          const qcCount = await this.prisma.user.count({
+            where: {
+              roleId: qaCoordinatorRole.id,
+              departmentId: newDeptId,
+              isActive: true,
+              id: { not: id },
+            },
+          });
+          if (qcCount === 0) {
+            throw new BadRequestException(
+              'Department has no QA Coordinator.',
+            );
+          }
         }
       }
     }

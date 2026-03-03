@@ -182,7 +182,7 @@ export function CategoriesManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Edit category
+                Edit Category
               </DialogTitle>
             </DialogHeader>
             {editingCategory && (
@@ -326,7 +326,7 @@ export function CategoriesManagement() {
                                         size="icon-sm"
                                         className={ACTION_BUTTON_EDIT_CLASS}
                                         onClick={() => setEditingCategory(c)}
-                                        aria-label="Edit category"
+                                        aria-label="Edit Category"
                                       >
                                         <Pencil className="size-4" aria-hidden />
                                       </Button>

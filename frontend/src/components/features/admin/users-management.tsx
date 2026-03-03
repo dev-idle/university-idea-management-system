@@ -5,6 +5,7 @@ import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
 import { useUsersListQuery, useCreateUserMutation } from "@/hooks/use-users";
+import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { USERS_PAGE_SIZE } from "./users/constants";
 import {
   UNIFIED_CARD_CLASS,
@@ -91,6 +92,7 @@ export function AdminUsersManagement() {
     limit: USERS_PAGE_SIZE,
     search: search || undefined,
   });
+  const { data: stats } = useAdminDashboardStats({ enabled: true });
 
   const totalPages = useMemo(
     () => (data ? Math.ceil(data.total / data.limit) : 0),
@@ -205,6 +207,7 @@ export function AdminUsersManagement() {
               users={data?.data ?? []}
               isRefetching={isFetching}
               hasActiveSearch={!!search}
+              departmentCompliance={stats?.departmentCompliance}
             />
             {data && data.total >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0 && (
               <ManagementTablePagination

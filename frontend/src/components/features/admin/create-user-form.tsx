@@ -23,10 +23,12 @@ import {
   FORM_HINT_CLASS,
   FORM_FIELD_ERROR_CLASS,
   QA_COORDINATOR_CONFLICT_MESSAGE,
+  STAFF_REQUIRES_QC_MESSAGE,
   EMAIL_ALREADY_EXISTS_MESSAGE,
 } from "./constants";
 import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
+import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -63,6 +65,7 @@ export function CreateUserForm({
   variant = "default",
 }: CreateUserFormProps) {
   const { data: departments, isError: departmentsError } = useDepartmentsQuery();
+  const { data: stats } = useAdminDashboardStats({ enabled: true });
 
   const {
     register,
@@ -83,6 +86,16 @@ export function CreateUserForm({
   });
 
   async function onSubmit(data: CreateUserBody) {
+    if (data.role === "STAFF" && data.departmentId && stats?.departmentCompliance) {
+      const comp = stats.departmentCompliance.find((c) => c.id === data.departmentId);
+      if (comp && !comp.isExcluded && !comp.hasQaCoordinator) {
+        setError("departmentId", {
+          type: "validation",
+          message: STAFF_REQUIRES_QC_MESSAGE,
+        });
+        return;
+      }
+    }
     const payload: CreateUserBody = {
       ...data,
       fullName: data.fullName?.trim() || undefined,
@@ -101,6 +114,11 @@ export function CreateUserForm({
         setError("departmentId", {
           type: "server",
           message: QA_COORDINATOR_CONFLICT_MESSAGE,
+        });
+      } else if (lower.includes("department has no qa coordinator")) {
+        setError("departmentId", {
+          type: "server",
+          message: STAFF_REQUIRES_QC_MESSAGE,
         });
       } else if (lower.includes("email") && (lower.includes("already exists") || lower.includes("exists"))) {
         setError("email", { type: "server", message: EMAIL_ALREADY_EXISTS_MESSAGE });

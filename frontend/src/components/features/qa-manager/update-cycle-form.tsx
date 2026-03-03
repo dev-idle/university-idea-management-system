@@ -84,6 +84,15 @@ export function UpdateCycleForm({
 
   const ideaSubmissionClosesAt = watch("ideaSubmissionClosesAt");
 
+  const categoryIdeaCount = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of cycle.categories ?? []) {
+      const cat = c as { id: string; ideaCount?: number };
+      map.set(cat.id, cat.ideaCount ?? 0);
+    }
+    return map;
+  }, [cycle.categories]);
+
   function setInteractionDefault() {
     if (!ideaSubmissionClosesAt) return;
     const d = new Date(ideaSubmissionClosesAt);
@@ -133,7 +142,7 @@ export function UpdateCycleForm({
       {variant === "default" && (
         <div>
           <h3 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Edit proposal cycle
+            Edit Proposal Cycle
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Update closure times for DRAFT or ACTIVE cycles.
@@ -142,7 +151,7 @@ export function UpdateCycleForm({
       )}
 
       <div className={fieldWrapper}>
-        <span className={labelClass}>Academic year</span>
+        <span className={labelClass}>Academic Year</span>
         <p className="text-sm font-medium text-foreground">{cycle.academicYear.name}</p>
       </div>
 
@@ -173,28 +182,43 @@ export function UpdateCycleForm({
           render={({ field }) => (
             <ScrollArea className={FORM_CATEGORIES_SCROLL_AREA_CLASS}>
               <div className="flex flex-col gap-2 pt-2 pb-2 pr-1">
-                {categories.map((c, idx) => (
-                  <label
-                    key={c.id}
-                    htmlFor={idx === 0 ? `edit-cycle-cat-${c.id}` : undefined}
-                    className="flex items-center gap-2 text-sm cursor-pointer"
-                  >
-                    <Checkbox
-                      id={idx === 0 ? `edit-cycle-cat-${c.id}` : undefined}
-                      className={FORM_CHECKBOX_ACADEMIC_CLASS}
-                      checked={field.value?.includes(c.id) ?? false}
-                      onCheckedChange={(checked) => {
-                        const ids = field.value ?? [];
-                        const next =
-                          checked === true
-                            ? [...ids, c.id]
-                            : ids.filter((id: string) => id !== c.id);
-                        field.onChange(next);
-                      }}
-                    />
-                    <span className="text-foreground">{c.name}</span>
-                  </label>
-                ))}
+                {categories.map((c, idx) => {
+                  const isChecked = field.value?.includes(c.id) ?? false;
+                  const hasIdeas = (categoryIdeaCount.get(c.id) ?? 0) > 0;
+                  const isDisabled = isChecked && hasIdeas;
+                  return (
+                    <label
+                      key={c.id}
+                      htmlFor={idx === 0 && !isDisabled ? `edit-cycle-cat-${c.id}` : undefined}
+                      className={cn(
+                        "flex items-center gap-2 text-sm",
+                        isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                      )}
+                    >
+                      <Checkbox
+                        id={idx === 0 && !isDisabled ? `edit-cycle-cat-${c.id}` : undefined}
+                        className={FORM_CHECKBOX_ACADEMIC_CLASS}
+                        checked={isChecked}
+                        disabled={isDisabled}
+                        onCheckedChange={(checked) => {
+                          if (isDisabled && checked === false) return;
+                          const ids = field.value ?? [];
+                          const next =
+                            checked === true
+                              ? [...ids, c.id]
+                              : ids.filter((id: string) => id !== c.id);
+                          field.onChange(next);
+                        }}
+                      />
+                      <span className="text-foreground">{c.name}</span>
+                      {hasIdeas && isChecked && (
+                        <span className="text-xs text-muted-foreground/80">
+                          (has ideas)
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
               </div>
             </ScrollArea>
           )}

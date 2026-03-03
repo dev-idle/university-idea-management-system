@@ -116,7 +116,7 @@ export function useAdminDashboardStats(options?: { enabled?: boolean }) {
         const stats = deptStats.get(deptId);
         if (!stats) continue;
         const role = getPrimaryRole(user);
-        if (role === "QA_COORDINATOR") stats.qaCoordinatorCount += 1;
+        if (role === "QA_COORDINATOR" && user.isActive) stats.qaCoordinatorCount += 1;
         if (role === "STAFF") stats.staffCount += 1;
       }
 

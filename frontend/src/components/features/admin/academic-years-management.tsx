@@ -202,7 +202,7 @@ export function AcademicYearsManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Edit academic year
+                Edit Academic Year
               </DialogTitle>
             </DialogHeader>
             {editingYear && (
@@ -371,7 +371,7 @@ export function AcademicYearsManagement() {
                                       className={ACTION_BUTTON_EDIT_CLASS}
                                       disabled={updateMutation.isPending}
                                       onClick={() => setEditingYear(y)}
-                                      aria-label="Edit academic year"
+                                      aria-label="Edit Academic Year"
                                     >
                                       <Pencil className="size-4" aria-hidden />
                                     </Button>

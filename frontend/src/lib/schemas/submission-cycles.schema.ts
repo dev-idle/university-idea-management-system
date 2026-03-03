@@ -197,6 +197,7 @@ const academicYearRefSchema = z.object({
 const categoryRefSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
+  ideaCount: z.number().int().min(0).optional(),
 });
 
 export const submissionCycleSchema = z.object({

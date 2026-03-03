@@ -61,7 +61,7 @@ function QaCoordinatorOverview() {
   return (
     <div className="flex flex-col gap-10">
       <section aria-labelledby="qa-coord-cycle-heading">
-        <h2 id="qa-coord-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal cycle</h2>
+        <h2 id="qa-coord-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal Cycle</h2>
         <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
             <div className="min-w-0">

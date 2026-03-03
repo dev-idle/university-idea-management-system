@@ -374,7 +374,7 @@ export function SubmissionCyclesManagement() {
           >
             <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
               <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
-                Edit proposal cycle
+                Edit Proposal Cycle
               </DialogTitle>
             </DialogHeader>
             <UpdateCycleForm

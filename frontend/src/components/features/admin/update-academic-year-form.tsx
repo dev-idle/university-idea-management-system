@@ -129,7 +129,7 @@ export function UpdateAcademicYearForm({
       {variant === "default" && (
         <div>
           <h3 className="font-sans text-base font-semibold tracking-tight text-foreground">
-            Edit academic year
+            Edit Academic Year
           </h3>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
             Update name and dates. Use the table actions to set the active year.

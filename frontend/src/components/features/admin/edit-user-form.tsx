@@ -26,9 +26,11 @@ import {
   FORM_DIALOG_HINT_CLASS,
   FORM_HINT_CLASS,
   QA_COORDINATOR_CONFLICT_MESSAGE,
+  STAFF_REQUIRES_QC_MESSAGE,
 } from "./constants";
 import { ROLES, ROLE_LABELS, type Role } from "@/lib/rbac";
 import { useDepartmentsQuery } from "@/hooks/use-departments";
+import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,6 +63,7 @@ export function EditUserForm({
   variant = "default",
 }: EditUserFormProps) {
   const { data: departments, isError: departmentsError } = useDepartmentsQuery();
+  const { data: stats } = useAdminDashboardStats({ enabled: true });
 
   const {
     register,
@@ -103,6 +106,25 @@ export function EditUserForm({
       return;
     }
 
+    const effectiveRole = data.role ?? currentRole;
+    const effectiveDeptId = data.departmentId ?? currentDeptId;
+    if (
+      effectiveRole === "STAFF" &&
+      effectiveDeptId &&
+      stats?.departmentCompliance
+    ) {
+      const comp = stats.departmentCompliance.find(
+        (c) => c.id === effectiveDeptId
+      );
+      if (comp && !comp.isExcluded && !comp.hasQaCoordinator) {
+        setError("departmentId", {
+          type: "validation",
+          message: STAFF_REQUIRES_QC_MESSAGE,
+        });
+        return;
+      }
+    }
+
     try {
       await mutateAsync({
         id: user.id,
@@ -124,6 +146,11 @@ export function EditUserForm({
         setError("departmentId", {
           type: "server",
           message: QA_COORDINATOR_CONFLICT_MESSAGE,
+        });
+      } else if (lower.includes("department has no qa coordinator")) {
+        setError("departmentId", {
+          type: "server",
+          message: STAFF_REQUIRES_QC_MESSAGE,
         });
       } else {
         setError("root", {
@@ -315,7 +342,7 @@ export function EditUserForm({
           disabled={isPending}
           className={FORM_BUTTON_CLASS}
         >
-          {isPending ? "Saving…" : "Save changes"}
+          {isPending ? "Saving…" : "Save"}
         </Button>
       </div>
     </form>

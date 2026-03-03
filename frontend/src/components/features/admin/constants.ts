@@ -421,6 +421,10 @@ export const FORM_HINT_CLASS =
 export const QA_COORDINATOR_CONFLICT_MESSAGE =
   "This department already has a QA Coordinator.";
 
+/** Staff requires QC — department must have QA Coordinator. Shown on Department field. */
+export const STAFF_REQUIRES_QC_MESSAGE =
+  "Department has no QA Coordinator.";
+
 /** Duplicate email — backend rejects when email already exists. */
 export const EMAIL_ALREADY_EXISTS_MESSAGE =
   "Email already in use.";
