@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getRoleLabel, type Role } from "@/lib/rbac";
-import { ROLES } from "@/lib/rbac";
 import { TYPO_BODY_SM } from "@/config/design";
 import { cn, getAvatarInitial } from "@/lib/utils";
 
@@ -72,6 +71,30 @@ export function AdminDepartmentMembersContent() {
 
   const selectedDeptId = deptId || (defaultDept?.id ?? "");
   const selectedDeptName = departments.find((d) => d.id === selectedDeptId)?.name ?? "";
+
+  /** Roles that exist in the selected department (for Role filter options). */
+  const rolesInSelectedDept = useMemo(() => {
+    if (!selectedDeptId) return [];
+    const users = usersByDept[selectedDeptId] ?? [];
+    const roleSet = new Set<string>();
+    for (const u of users) {
+      const r = u.roles?.[0] ?? "STAFF";
+      roleSet.add(r);
+    }
+    const roleOrder: Record<string, number> = {
+      ADMIN: 0,
+      QA_MANAGER: 1,
+      QA_COORDINATOR: 2,
+      STAFF: 3,
+    };
+    return Array.from(roleSet).sort((a, b) => (roleOrder[a] ?? 99) - (roleOrder[b] ?? 99));
+  }, [selectedDeptId, usersByDept]);
+
+  useEffect(() => {
+    if (roleFilter !== "all" && selectedDeptId && !rolesInSelectedDept.includes(roleFilter)) {
+      setRoleFilter("all");
+    }
+  }, [selectedDeptId, roleFilter, rolesInSelectedDept]);
 
   const filteredUsers = useMemo(() => {
     if (!selectedDeptId) return [];
@@ -201,22 +224,24 @@ export function AdminDepartmentMembersContent() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger
-                className={cn(TOOLBAR_FILTER_SELECT_TRIGGER_CLASS, TOOLBAR_FILTER_ROLE_WIDTH)}
-                title={roleFilter === "all" ? "All" : getRoleLabel(roleFilter as Role)}
-              >
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {ROLES.map((r) => (
-                  <SelectItem key={r} value={r} title={getRoleLabel(r as Role)}>
-                    {getRoleLabel(r as Role)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {selectedDeptId ? (
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger
+                  className={cn(TOOLBAR_FILTER_SELECT_TRIGGER_CLASS, TOOLBAR_FILTER_ROLE_WIDTH)}
+                  title={roleFilter === "all" ? "All" : getRoleLabel(roleFilter as Role)}
+                >
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  {rolesInSelectedDept.map((r) => (
+                    <SelectItem key={r} value={r} title={getRoleLabel(r as Role)}>
+                      {getRoleLabel(r as Role)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : null}
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 shrink-0">
             <Users className="size-3.5 shrink-0" aria-hidden />
