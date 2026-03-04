@@ -78,8 +78,8 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   }
 
   const cursorVars = `
-  --chart-cursor-fill: color-mix(in oklch, var(--color-count) 2.5%, transparent);
-  --chart-cursor-stroke: color-mix(in oklch, var(--color-count) 12%, transparent);`
+  --chart-cursor-fill: color-mix(in oklch, var(--color-count, oklch(0.38 0.1 280)) 2.5%, transparent);
+  --chart-cursor-stroke: color-mix(in oklch, var(--color-count, oklch(0.38 0.1 280)) 12%, transparent);`
 
   return (
     <style

@@ -161,29 +161,30 @@ export const POPUP_ROUNDED_MODAL = "rounded-2xl";   /* Dialog, AlertDialog */
 export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers */
 
 /** Chart colors (@theme): --color-chart-1 = categorical/bar, --color-chart-2 = temporal/line, --color-chart-3–5 = multi-series. */
-export const CHART_COLOR_CATEGORICAL = "var(--color-chart-1)";
-export const CHART_COLOR_TEMPORAL = "var(--color-chart-2)";
+export const CHART_COLOR_CATEGORICAL = "var(--color-chart-1, oklch(0.38 0.1 280))";
+export const CHART_COLOR_TEMPORAL = "var(--color-chart-2, oklch(0.48 0.1 175))";
 
 /**
  * Insights section — QA Manager dashboard.
  * Ideas per Department: chart-1. Submission Rate: chart-2 (contrasting). Ideas Over Time: chart-2. Donut: chart-donut-*.
+ * Fallbacks avoid black charts on first paint before CSS vars resolve (e.g. cold server start).
  */
-export const INSIGHTS_BAR_COLOR = "var(--color-chart-1)";
-export const INSIGHTS_RATE_COLOR = "var(--color-chart-3)";
+export const INSIGHTS_BAR_COLOR = "var(--color-chart-1, oklch(0.38 0.1 280))";
+export const INSIGHTS_RATE_COLOR = "var(--color-chart-3, oklch(0.42 0.08 250))";
 /** Submission Rate chart — light cyan, contrasting with Ideas per Department (chart-1) and Ideas Over Time (chart-2). */
-export const INSIGHTS_RATE_CONTRAST = "var(--color-chart-submission-rate)";
-export const INSIGHTS_LINE_COLOR = "var(--color-chart-2)";
+export const INSIGHTS_RATE_CONTRAST = "var(--color-chart-submission-rate, oklch(0.68 0.14 55))";
+export const INSIGHTS_LINE_COLOR = "var(--color-chart-2, oklch(0.48 0.1 175))";
 export const INSIGHTS_DONUT_COLORS = [
-  "var(--color-chart-donut-1)",
-  "var(--color-chart-donut-2)",
-  "var(--color-chart-donut-3)",
-  "var(--color-chart-donut-4)",
-  "var(--color-chart-donut-5)",
-  "var(--color-chart-donut-6)",
-  "var(--color-chart-donut-7)",
-  "var(--color-chart-donut-8)",
-  "var(--color-chart-donut-9)",
-  "var(--color-chart-donut-10)",
+  "var(--color-chart-donut-1, oklch(0.38 0.1 280))",
+  "var(--color-chart-donut-2, oklch(0.5 0.12 175))",
+  "var(--color-chart-donut-3, oklch(0.55 0.14 70))",
+  "var(--color-chart-donut-4, oklch(0.48 0.14 300))",
+  "var(--color-chart-donut-5, oklch(0.52 0.14 25))",
+  "var(--color-chart-donut-6, oklch(0.5 0.14 145))",
+  "var(--color-chart-donut-7, oklch(0.52 0.12 200))",
+  "var(--color-chart-donut-8, oklch(0.55 0.14 330))",
+  "var(--color-chart-donut-9, oklch(0.58 0.14 100))",
+  "var(--color-chart-donut-10, oklch(0.48 0.12 260))",
 ] as const;
 
 /** Chart tooltip — shared: border/45, shadow-card-hover, backdrop-blur. */
