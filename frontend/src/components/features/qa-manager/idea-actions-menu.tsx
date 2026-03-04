@@ -10,6 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -19,10 +25,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { IDEAS_ACTIONS_TRIGGER, IDEAS_ACTIONS_MENU, IDEAS_ACTIONS_ITEM, IDEAS_ACTIONS_ITEM_DESTRUCTIVE } from "@/config/design";
+import {
+  IDEAS_ACTIONS_TRIGGER,
+  IDEAS_ACTIONS_MENU,
+  IDEAS_ACTIONS_ITEM,
+  IDEAS_ACTIONS_ITEM_DESTRUCTIVE,
+  TYPO_BODY_SM,
+} from "@/config/design";
+import {
+  ALERT_DIALOG_ERROR_CLASS,
+  DIALOG_CONTENT_SCULPTED_CLASS,
+  DIALOG_OVERLAY_SCULPTED_CLASS,
+  DIALOG_HEADER_SCULPTED_CLASS,
+  DIALOG_TITLE_SCULPTED_CLASS,
+  FORM_DIALOG_FORM_CLASS,
+  FORM_DIALOG_ROOT_ERROR_CLASS,
+} from "@/components/features/admin/constants";
 import { revealIdeaAuthor, useDeleteIdeaMutation } from "@/hooks/use-ideas";
 import { ROUTES } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
+import { cn } from "@/lib/utils";
 
 type IdeaForMenu = { id: string; isAnonymous: boolean };
 
@@ -63,7 +85,7 @@ export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
           <button
             type="button"
             className={IDEAS_ACTIONS_TRIGGER}
-            aria-label="Idea options"
+            aria-label="Proposal options"
           >
             <MoreVertical className="size-3.5" aria-hidden />
           </button>
@@ -75,7 +97,7 @@ export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
               className={IDEAS_ACTIONS_ITEM}
             >
               <User aria-hidden />
-              View author identity
+              Reveal Author
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
@@ -83,49 +105,51 @@ export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
             className={IDEAS_ACTIONS_ITEM_DESTRUCTIVE}
           >
             <Trash2 aria-hidden />
-            Delete idea
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Reveal author result dialog */}
-      <AlertDialog open={revealOpen} onOpenChange={setRevealOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {revealError ? "Error" : "Author identity"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {revealError ? (
-                <span className="text-destructive/90">{revealError}</span>
-              ) : revealData ? (
-                <span className="font-medium">
-                  {revealData.fullName?.trim() || "(No name)"}
-                  {" — "}
-                  {revealData.email}
-                </span>
-              ) : (
-                "This idea is not anonymous."
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setRevealOpen(false)}>
-              Close
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Reveal author result — click outside or Escape to close */}
+      <Dialog open={revealOpen} onOpenChange={setRevealOpen}>
+        <DialogContent
+          showCloseButton={false}
+          overlayClassName={DIALOG_OVERLAY_SCULPTED_CLASS}
+          className={cn(DIALOG_CONTENT_SCULPTED_CLASS, "sm:max-w-sm")}
+        >
+          <DialogHeader className={DIALOG_HEADER_SCULPTED_CLASS}>
+            <DialogTitle className={DIALOG_TITLE_SCULPTED_CLASS}>
+              {revealError ? "Could not load author" : "Author"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className={FORM_DIALOG_FORM_CLASS}>
+            {revealError ? (
+              <p className={FORM_DIALOG_ROOT_ERROR_CLASS} role="alert">
+                {revealError}
+              </p>
+            ) : revealData ? (
+              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+                <span className="text-muted-foreground/80 shrink-0">Full name</span>
+                <span className="text-foreground min-w-0">{revealData.fullName?.trim() || "—"}</span>
+                <span className="text-muted-foreground/80 shrink-0">Email</span>
+                <span className="break-all text-foreground min-w-0">{revealData.email}</span>
+              </div>
+            ) : (
+              <p className={TYPO_BODY_SM}>Not anonymous.</p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this idea?</AlertDialogTitle>
+            <AlertDialogTitle>Delete proposal?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the proposal and cannot be undone.
+              Removes the proposal permanently. Cannot be undone.
               {deleteMutation.isError && (
-                <span className="block mt-2 text-sm text-destructive/90">
+                <span className={ALERT_DIALOG_ERROR_CLASS}>
                   {getErrorMessage(deleteMutation.error, ERROR_FALLBACK_FORM.delete)}
                 </span>
               )}

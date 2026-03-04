@@ -104,6 +104,10 @@ export const DIALOG_CONTENT_SCULPTED_CLASS =
 export const DIALOG_CONTENT_SCULPTED_CLASS_LG =
   `flex flex-col gap-6 max-h-[90vh] overflow-y-auto rounded-2xl border bg-background p-6 shadow-[var(--shadow-dialog)] sm:max-w-2xl ${MGMT_BORDER_CARD}`;
 
+/** AlertDialog content — matches Add/Edit dialog style (sculpted). */
+export const ALERT_DIALOG_CONTENT_SCULPTED_CLASS =
+  `flex flex-col gap-6 rounded-2xl border bg-background p-6 shadow-[var(--shadow-dialog)] sm:max-w-lg ${MGMT_BORDER_CARD}`;
+
 /** Dialog content (standard width). */
 export const DIALOG_CONTENT_CLASS =
   `max-h-[90vh] overflow-y-auto ${CARD_CLASS} sm:max-w-lg`;
