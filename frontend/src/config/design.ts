@@ -482,12 +482,21 @@ export const IDEA_DETAIL_COMMENT_AVATAR = "size-9 shrink-0 rounded-full";
 export const IDEA_DETAIL_COMMENT_BUBBLE =
   "rounded-2xl bg-muted/30 dark:bg-muted/20 px-3 py-2 w-fit max-w-full text-sm overflow-visible";
 
-/** Idea detail: author + time row. */
+/** Idea detail: author + time row — refined, subtle. */
 export const IDEA_DETAIL_COMMENT_HEADER_ROW =
-  "flex flex-nowrap items-center gap-2 text-[13px]";
+  "flex flex-nowrap items-baseline gap-1.5 text-[13px] min-w-0";
+
+/** Comment author name — medium weight, not bold. */
+export const IDEA_DETAIL_COMMENT_AUTHOR = "font-medium text-foreground/90 truncate";
+
+/** Comment meta (time, edited) — subtle secondary. */
+export const IDEA_DETAIL_COMMENT_META = "shrink-0 text-[11px] text-muted-foreground/55";
+
+/** Separator between meta items. */
+export const IDEA_DETAIL_COMMENT_META_SEP = "text-muted-foreground/35 mx-0.5 aria-hidden";
 
 /** Idea detail: "edited" label for comments modified after creation. */
-export const IDEA_DETAIL_EDITED_LABEL = "text-[12px] text-muted-foreground/50 italic";
+export const IDEA_DETAIL_EDITED_LABEL = "text-[11px] text-muted-foreground/45 italic";
 
 /** Idea detail: comment content text. */
 export const IDEA_DETAIL_COMMENT_BODY =

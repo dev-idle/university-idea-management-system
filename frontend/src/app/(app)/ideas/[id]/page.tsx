@@ -67,6 +67,9 @@ import {
   IDEA_DETAIL_COMMENT_AVATAR,
   IDEA_DETAIL_COMMENT_BUBBLE,
   IDEA_DETAIL_COMMENT_HEADER_ROW,
+  IDEA_DETAIL_COMMENT_AUTHOR,
+  IDEA_DETAIL_COMMENT_META,
+  IDEA_DETAIL_COMMENT_META_SEP,
   IDEA_DETAIL_EDITED_LABEL,
   IDEA_DETAIL_COMMENT_BODY,
   IDEA_DETAIL_COMMENT_ACTIONS_ROW,
@@ -431,15 +434,15 @@ function CommentItem({
               >
                 <div className="flex flex-nowrap items-center justify-between gap-2">
                   <div className={cn(IDEA_DETAIL_COMMENT_HEADER_ROW, "min-w-0 flex-1")}>
-                    <p className={cn("font-semibold truncate", displayName === "Anonymous" && "italic text-muted-foreground")}>
+                    <span className={cn(IDEA_DETAIL_COMMENT_AUTHOR, displayName === "Anonymous" && "italic text-muted-foreground/80")}>
                       {displayName}
-                    </p>
-                    <span className="text-muted-foreground/50 shrink-0" aria-hidden>·</span>
-                    <time className="text-[12px] text-muted-foreground/60 shrink-0">{timeAgo(comment.createdAt)}</time>
+                    </span>
+                    <span className={IDEA_DETAIL_COMMENT_META_SEP} aria-hidden>·</span>
+                    <time className={IDEA_DETAIL_COMMENT_META}>{timeAgo(comment.createdAt)}</time>
                     {comment.updatedAt &&
                       new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 2000 && (
                       <>
-                        <span className="text-muted-foreground/50 shrink-0 ml-0.5" aria-hidden>·</span>
+                        <span className={IDEA_DETAIL_COMMENT_META_SEP} aria-hidden>·</span>
                         <span className={cn(IDEA_DETAIL_EDITED_LABEL, "shrink-0")}>edited</span>
                       </>
                     )}
@@ -1042,6 +1045,9 @@ export default function IdeaDetailPage() {
             )}
             {comments.length > 0 && (
               <div className="flex flex-col gap-3 overflow-visible min-w-0">
+                <h3 className={cn(IDEA_ARTICLE_SECTION_LABEL, "pb-1")}>
+                  Comments ({countAllComments(comments)})
+                </h3>
                 {comments.map((c, idx) => (
                   <CommentItem
                     key={c.id}
