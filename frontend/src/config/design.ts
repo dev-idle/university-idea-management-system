@@ -429,6 +429,10 @@ export const IDEAS_HUB_ACTION_INACTIVE =
 export const IDEAS_HUB_ACTION_UP = "text-success";
 export const IDEAS_HUB_ACTION_DOWN = "text-destructive";
 
+/** Read-only vote buttons — no hover highlight, no tooltip. */
+export const IDEAS_HUB_ACTION_READONLY =
+  "cursor-default text-muted-foreground/55 opacity-50 hover:bg-transparent hover:text-muted-foreground/55";
+
 /** Comment avatar — subtle, aligned with byline. */
 export const IDEA_COMMENT_AVATAR =
   "size-7 shrink-0 rounded-full ring-1 ring-border/20";

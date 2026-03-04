@@ -35,6 +35,7 @@ import {
   IDEAS_HUB_ACTION_INACTIVE,
   IDEAS_HUB_ACTION_UP,
   IDEAS_HUB_ACTION_DOWN,
+  IDEAS_HUB_ACTION_READONLY,
   IDEAS_HUB_COUNT,
   IDEAS_HUB_ARTICLE_CLASS,
   IDEAS_HUB_CARD_PX,
@@ -926,46 +927,70 @@ export default function IdeaDetailPage() {
           role="toolbar"
           aria-label="Engagement"
         >
-          <button
-            type="button"
-            disabled={!open || voteMutation.isPending || isReadOnly}
-            onClick={() => handleVote("up")}
-            className={cn(
-              IDEAS_HUB_ACTION_BASE,
-              "cursor-pointer",
-              myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
-              (!open || voteMutation.isPending || isReadOnly) && "pointer-events-none opacity-50",
-            )}
-            aria-label={`Support (${votes.up})`}
-          >
-            <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
-            <span>{votes.up}</span>
-          </button>
-          <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
-          <button
-            type="button"
-            disabled={!open || voteMutation.isPending || isReadOnly}
-            onClick={() => handleVote("down")}
-            className={cn(
-              IDEAS_HUB_ACTION_BASE,
-              "cursor-pointer",
-              myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
-              (!open || voteMutation.isPending || isReadOnly) && "pointer-events-none opacity-50",
-            )}
-            aria-label={`Do not support (${votes.down})`}
-          >
-            <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
-            <span>{votes.down}</span>
-          </button>
+          {isReadOnly ? (
+            <>
+              <span
+                className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+                aria-label={`Support (${votes.up})`}
+              >
+                <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+                <span>{votes.up}</span>
+              </span>
+              <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
+              <span
+                className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+                aria-label={`Do not support (${votes.down})`}
+              >
+                <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+                <span>{votes.down}</span>
+              </span>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                disabled={!open || voteMutation.isPending}
+                onClick={() => handleVote("up")}
+                className={cn(
+                  IDEAS_HUB_ACTION_BASE,
+                  "cursor-pointer",
+                  myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
+                  (!open || voteMutation.isPending) && "pointer-events-none opacity-50",
+                )}
+                aria-label={`Support (${votes.up})`}
+              >
+                <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+                <span>{votes.up}</span>
+              </button>
+              <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
+              <button
+                type="button"
+                disabled={!open || voteMutation.isPending}
+                onClick={() => handleVote("down")}
+                className={cn(
+                  IDEAS_HUB_ACTION_BASE,
+                  "cursor-pointer",
+                  myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
+                  (!open || voteMutation.isPending) && "pointer-events-none opacity-50",
+                )}
+                aria-label={`Do not support (${votes.down})`}
+              >
+                <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+                <span>{votes.down}</span>
+              </button>
+            </>
+          )}
           <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
           <a
             href="#comments"
             className={cn(
               IDEAS_HUB_ACTION_BASE,
-              open
-                ? cn(IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")
-                : "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
               "no-underline",
+              isReadOnly
+                ? IDEAS_HUB_ACTION_READONLY
+                : open
+                  ? cn(IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")
+                  : "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
             )}
             aria-label={`Comments (${countAllComments(comments)})`}
           >

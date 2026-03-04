@@ -53,6 +53,7 @@ import {
   IDEAS_HUB_ACTION_INACTIVE,
   IDEAS_HUB_ACTION_UP,
   IDEAS_HUB_ACTION_DOWN,
+  IDEAS_HUB_ACTION_READONLY,
   IDEAS_HUB_READ_MORE,
   IDEAS_HUB_ATTACHMENTS_LABEL,
   IDEAS_HUB_ATTACHMENTS_LIST,
@@ -389,20 +390,16 @@ function IdeaRow({
         ) : (
           <>
             <span
-              className={cn(
-                IDEAS_HUB_ACTION_BASE,
-                "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
-              )}
+              className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+              aria-label="Support"
             >
               <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
               {votes.up}
             </span>
             <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
             <span
-              className={cn(
-                IDEAS_HUB_ACTION_BASE,
-                "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
-              )}
+              className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+              aria-label="Do not support"
             >
               <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
               {votes.down}

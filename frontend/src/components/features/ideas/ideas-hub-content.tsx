@@ -42,6 +42,7 @@ import {
   IDEAS_HUB_ACTION_INACTIVE,
   IDEAS_HUB_ACTION_UP,
   IDEAS_HUB_ACTION_DOWN,
+  IDEAS_HUB_ACTION_READONLY,
   IDEAS_HUB_READ_MORE,
   IDEAS_HUB_ATTACHMENTS_LABEL,
   IDEAS_HUB_ATTACHMENTS_LIST,
@@ -392,35 +393,57 @@ function IdeaCard({
         )}
         role="toolbar"
       >
-        <button
-          type="button"
-          disabled={votePending || voteDisabled}
-          onClick={(e) => castVote(e, "up")}
-          className={cn(
-            IDEAS_HUB_ACTION_BASE,
-            "cursor-pointer",
-            myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
-          )}
-          aria-label="Support"
-        >
-          <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
-          {votes.up}
-        </button>
-        <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
-        <button
-          type="button"
-          disabled={votePending || voteDisabled}
-          onClick={(e) => castVote(e, "down")}
-          className={cn(
-            IDEAS_HUB_ACTION_BASE,
-            "cursor-pointer",
-            myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
-          )}
-          aria-label="Do not support"
-        >
-          <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
-          {votes.down}
-        </button>
+        {voteDisabled ? (
+          <>
+            <span
+              className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+              aria-label="Support"
+            >
+              <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+              {votes.up}
+            </span>
+            <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
+            <span
+              className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+              aria-label="Do not support"
+            >
+              <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+              {votes.down}
+            </span>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={votePending}
+              onClick={(e) => castVote(e, "up")}
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "cursor-pointer",
+                myVote === "up" ? IDEAS_HUB_ACTION_UP : IDEAS_HUB_ACTION_INACTIVE,
+              )}
+              aria-label="Support"
+            >
+              <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
+              {votes.up}
+            </button>
+            <div className="h-4 w-px shrink-0 self-center bg-border/30" aria-hidden />
+            <button
+              type="button"
+              disabled={votePending}
+              onClick={(e) => castVote(e, "down")}
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "cursor-pointer",
+                myVote === "down" ? IDEAS_HUB_ACTION_DOWN : IDEAS_HUB_ACTION_INACTIVE,
+              )}
+              aria-label="Do not support"
+            >
+              <ThumbsDown className="size-3.5 shrink-0" aria-hidden />
+              {votes.down}
+            </button>
+          </>
+        )}
         <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/40" aria-hidden />
         <Link
           href={`${ROUTES.IDEAS}/${idea.id}#comments`}
