@@ -104,6 +104,8 @@ export const qaManagerStatsSchema = z.object({
   votesUp: z.number().int().min(0),
   votesDown: z.number().int().min(0),
   totalDepartments: z.number().int().min(0),
+  activeYearName: z.string().nullable(),
+  cyclesInYearCount: z.number().int().min(0),
 });
 
 export type QaManagerStats = z.infer<typeof qaManagerStatsSchema>;

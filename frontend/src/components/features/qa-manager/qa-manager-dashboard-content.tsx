@@ -60,7 +60,7 @@ function fmtDateTime(d: Date | string): string {
   });
 }
 
-function QaManagerOverview() {
+function QaManagerOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) {
   const { data: stats } = useQaManagerStatsQuery();
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
 
@@ -71,43 +71,61 @@ function QaManagerOverview() {
 
   return (
     <div className="flex flex-col gap-10">
-      <section aria-labelledby="qa-manager-cycle-heading">
-        <h2 id="qa-manager-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal Cycle</h2>
-        <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
-            <div className="min-w-0">
-              <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
-              {activeCycleName ? (
-                <Tooltip delayDuration={300}>
-                  <TooltipTrigger asChild>
-                    <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
-                      {activeCycleName}
-                    </p>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">{activeCycleName}</TooltipContent>
-                </Tooltip>
-              ) : (
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className={CARD_STAT_LABEL_CLASS}>Submission deadline</p>
-              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                {submissionClosesAt ? fmtDateTime(submissionClosesAt) : "—"}
-              </p>
-            </div>
-            <div className="min-w-0">
-              <p className={CARD_STAT_LABEL_CLASS}>Comments & votes deadline</p>
-              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                {interactionClosesAt ? fmtDateTime(interactionClosesAt) : "—"}
-              </p>
+      {hasActiveCycle ? (
+        <section aria-labelledby="qa-manager-cycle-heading">
+          <h2 id="qa-manager-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal Cycle</h2>
+          <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+              <div className="min-w-0">
+                <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
+                {activeCycleName ? (
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
+                        {activeCycleName}
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{activeCycleName}</TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className={CARD_STAT_LABEL_CLASS}>Submission deadline</p>
+                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                  {submissionClosesAt ? fmtDateTime(submissionClosesAt) : "—"}
+                </p>
+              </div>
+              <div className="min-w-0">
+                <p className={CARD_STAT_LABEL_CLASS}>Comments & votes deadline</p>
+                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                  {interactionClosesAt ? fmtDateTime(interactionClosesAt) : "—"}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
       <section aria-labelledby="qa-manager-overview-heading">
         <h2 id="qa-manager-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Overview</h2>
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className={`mt-4 grid grid-cols-1 sm:grid-cols-2 ${!hasActiveCycle ? "lg:grid-cols-4" : ""} gap-5`}>
+          {!hasActiveCycle && (
+            <>
+              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+                <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
+                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                  {hasStats && stats.activeYearName ? stats.activeYearName : "—"}
+                </p>
+              </div>
+              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+                <p className={CARD_STAT_LABEL_CLASS}>Total proposal cycles</p>
+                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+                  {hasStats ? stats.cyclesInYearCount : "—"}
+                </p>
+              </div>
+            </>
+          )}
           <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
             <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
             <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalIdeas : "—"}</p>
@@ -701,9 +719,12 @@ function QaManagerHighlight() {
 }
 
 export function QaManagerDashboardContent() {
+  const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
+  const hasActiveCycle = Boolean(ideasContext?.activeCycleName);
+
   return (
     <div className="space-y-10">
-      <QaManagerOverview />
+      <QaManagerOverview hasActiveCycle={hasActiveCycle} />
       <section aria-labelledby="qa-manager-engagement-heading">
         <h2 id="qa-manager-engagement-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Engagement
@@ -712,14 +733,16 @@ export function QaManagerDashboardContent() {
           <QaManagerEngagement />
         </div>
       </section>
-      <section aria-labelledby="qa-manager-charts-heading">
-        <h2 id="qa-manager-charts-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
-          Insights
-        </h2>
-        <div className="mt-4">
-          <QaManagerCharts />
-        </div>
-      </section>
+      {hasActiveCycle && (
+        <section aria-labelledby="qa-manager-charts-heading">
+          <h2 id="qa-manager-charts-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+            Insights
+          </h2>
+          <div className="mt-4">
+            <QaManagerCharts />
+          </div>
+        </section>
+      )}
       <QaManagerHighlight />
     </div>
   );

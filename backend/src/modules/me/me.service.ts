@@ -386,10 +386,12 @@ export class MeService {
     votesUp: number;
     votesDown: number;
     totalDepartments: number;
+    activeYearName: string | null;
+    cyclesInYearCount: number;
   }> {
     const activeYear = await this.prisma.academicYear.findFirst({
       where: { isActive: true },
-      select: { id: true },
+      select: { id: true, name: true },
     });
     if (!activeYear) {
       const totalDepartments = await this.prisma.department.count({
@@ -402,6 +404,8 @@ export class MeService {
         votesUp: 0,
         votesDown: 0,
         totalDepartments,
+        activeYearName: null,
+        cyclesInYearCount: 0,
       };
     }
 
@@ -414,6 +418,23 @@ export class MeService {
       activeCycle != null
         ? [activeCycle.id]
         : cycles.map((c) => c.id);
+
+    const cyclesWithIdeasCount = await this.prisma.ideaSubmissionCycle.count({
+      where: {
+        academicYearId: activeYear.id,
+        ideas: {
+          some: {
+            submittedBy: {
+              departmentId: { not: null },
+              department: {
+                name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+              },
+            },
+          },
+        },
+      },
+    });
+
     if (cycleIds.length === 0) {
       const totalDepartments = await this.prisma.department.count({
         where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
@@ -425,6 +446,8 @@ export class MeService {
         votesUp: 0,
         votesDown: 0,
         totalDepartments,
+        activeYearName: activeYear.name,
+        cyclesInYearCount: cyclesWithIdeasCount,
       };
     }
 
@@ -465,6 +488,8 @@ export class MeService {
       votesUp,
       votesDown,
       totalDepartments,
+      activeYearName: activeYear.name,
+      cyclesInYearCount: cyclesWithIdeasCount,
     };
   }
 
