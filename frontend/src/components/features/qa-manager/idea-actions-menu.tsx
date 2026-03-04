@@ -46,9 +46,10 @@ import { ROUTES } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 
-type IdeaForMenu = { id: string; isAnonymous: boolean };
+type IdeaForMenu = { id: string; isAnonymous: boolean; cycleStatus?: string | null };
 
 export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
+  const canDelete = idea.cycleStatus === "ACTIVE";
   const router = useRouter();
   const deleteMutation = useDeleteIdeaMutation();
   const [revealOpen, setRevealOpen] = useState(false);
@@ -101,8 +102,10 @@ export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
             </DropdownMenuItem>
           )}
           <DropdownMenuItem
-            onClick={() => setDeleteDialogOpen(true)}
+            onClick={() => canDelete && setDeleteDialogOpen(true)}
             className={IDEAS_ACTIONS_ITEM_DESTRUCTIVE}
+            disabled={!canDelete}
+            title={!canDelete ? "Cannot delete ideas in closed proposal cycles" : undefined}
           >
             <Trash2 aria-hidden />
             Delete

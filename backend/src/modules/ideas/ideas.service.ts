@@ -2,6 +2,7 @@ import * as crypto from 'node:crypto';
 import {
   Injectable,
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -1311,7 +1312,8 @@ export class IdeasService {
 
   /**
    * Delete an idea and its Cloudinary attachments (2026 standard).
-   * ADMIN only. Removes idea from DB (cascade deletes IdeaAttachment) and deletes
+   * QA_MANAGER only. Blocked when cycle is not ACTIVE (closed/draft).
+   * Removes idea from DB (cascade deletes IdeaAttachment) and deletes
    * attachment files from Cloudinary when configured.
    */
   async deleteIdea(ideaId: string): Promise<void> {
@@ -1319,11 +1321,18 @@ export class IdeasService {
       where: { id: ideaId },
       select: {
         id: true,
+        cycleId: true,
+        cycle: { select: { status: true } },
         attachments: { select: { cloudinaryPublicId: true } },
       },
     });
     if (!idea) {
       throw new NotFoundException('Idea not found.');
+    }
+    if (idea.cycle && idea.cycle.status !== STATUS_ACTIVE) {
+      throw new ForbiddenException(
+        'Cannot delete ideas in a closed or inactive proposal cycle.',
+      );
     }
     const publicIds = idea.attachments.map((a) => a.cloudinaryPublicId);
     if (publicIds.length > 0 && this.cloudinary.isConfigured()) {

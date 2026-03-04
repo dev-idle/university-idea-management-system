@@ -297,7 +297,7 @@ function IdeaCard({
         </div>
         {showQaManagerActions && (
           <div className="shrink-0">
-            <IdeaActionsMenu idea={{ id: idea.id, isAnonymous: idea.isAnonymous ?? false }} />
+            <IdeaActionsMenu idea={{ id: idea.id, isAnonymous: idea.isAnonymous ?? false, cycleStatus: idea.cycleStatus ?? null }} />
           </div>
         )}
       </div>

@@ -870,7 +870,7 @@ export default function IdeaDetailPage() {
               )}
             </div>
           </div>
-          {submissionClosed && interactionEndsAt && (
+          {submissionClosed && interactionEndsAt && !isQaManager && (
             <span className={cn("shrink-0", open ? IDEAS_MY_STATUS_VOTING : IDEAS_MY_STATUS_CLOSED)}>
               {open ? (
                 <>
@@ -887,7 +887,7 @@ export default function IdeaDetailPage() {
           )}
           {isQaManager && (
             <div className="shrink-0">
-              <IdeaActionsMenu idea={{ id, isAnonymous: idea.isAnonymous ?? false }} />
+              <IdeaActionsMenu idea={{ id, isAnonymous: idea.isAnonymous ?? false, cycleStatus: idea.cycleStatus ?? null }} />
             </div>
           )}
         </div>
