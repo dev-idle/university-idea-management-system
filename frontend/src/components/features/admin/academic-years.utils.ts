@@ -45,6 +45,7 @@ export function computeEndDateFromStart(
   return { date: end, formatted: formatLocalDate(end) };
 }
 
+export { formatAcademicYearDisplay } from "@/lib/utils";
 export function toInputDate(d: Date | string): string {
   if (typeof d === "string") {
     if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;

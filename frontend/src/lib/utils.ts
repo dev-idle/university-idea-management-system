@@ -24,6 +24,13 @@ export function timeAgo(d: Date | string): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
+/** Display format for academic year: 2025-2026 → 2025 - 2026 */
+export function formatAcademicYearDisplay(name: string): string {
+  if (!name || typeof name !== "string") return name;
+  const m = name.trim().match(/^(\d{4})-(\d{4})$/);
+  return m ? `${m[1]} - ${m[2]}` : name;
+}
+
 /** Display info for a comment. Respects isAnonymous — never exposes author when anonymous. */
 export function getCommentDisplayInfo(
   comment: { isAnonymous: boolean; author?: { fullName?: string | null; email: string } | null },

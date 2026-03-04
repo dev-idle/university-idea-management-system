@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfileQuery } from "@/hooks/use-profile";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
 import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole } from "@/config/constants";
+import { formatAcademicYearDisplay } from "@/lib/utils";
 
 /** True when user has only STAFF (no management roles). Staff get minimal top bar, no sidebar. */
 function isStaffOnly(roles: string[] | undefined): boolean {
@@ -656,7 +657,9 @@ function StaffLayout({
   const { data: context } = useIdeasContextQuery({ enabled: true });
   const contextLabel =
     context?.activeCycleName ??
-    context?.activeAcademicYear?.name ??
+    (context?.activeAcademicYear?.name
+      ? formatAcademicYearDisplay(context.activeAcademicYear.name)
+      : null) ??
     String(new Date().getFullYear());
   const isIdeasPage = pathname === ROUTES.IDEAS;
   const isMyIdeasPage = pathname.startsWith(ROUTES.MY_IDEAS);

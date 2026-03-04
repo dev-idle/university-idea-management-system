@@ -17,6 +17,7 @@ import {
   STATUS_BADGE_ACTIVE_WARM_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
 } from "../constants";
+import { formatAcademicYearDisplay } from "../academic-years.utils";
 import { useAdminDashboardStats, type AdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { LoadingState } from "@/components/ui/loading-state";
 import { getRoleLabel, type Role } from "@/lib/rbac";
@@ -46,7 +47,7 @@ function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
         <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-          {stats.activeAcademicYear?.name ?? "—"}
+          {stats.activeAcademicYear ? formatAcademicYearDisplay(stats.activeAcademicYear.name) : "—"}
         </p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>

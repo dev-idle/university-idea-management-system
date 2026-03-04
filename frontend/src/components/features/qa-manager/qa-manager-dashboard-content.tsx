@@ -31,6 +31,7 @@ import {
   TR_CHART_ENTRANCE,
 } from "@/config/design";
 import { UNIFIED_CARD_CLASS } from "../admin/constants";
+import { formatAcademicYearDisplay } from "../admin/academic-years.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQaManagerStatsQuery, useQaManagerChartsQuery } from "@/hooks/use-profile";
 import { useIdeasContextQuery, useIdeasQuery } from "@/hooks/use-ideas";
@@ -115,7 +116,7 @@ function QaManagerOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) {
               <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
                 <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
                 <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  {hasStats && stats.activeYearName ? stats.activeYearName : "—"}
+                  {hasStats && stats.activeYearName ? formatAcademicYearDisplay(stats.activeYearName) : "—"}
                 </p>
               </div>
               <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>

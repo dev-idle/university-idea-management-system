@@ -72,6 +72,7 @@ import {
   TOOLBAR_ADD_BUTTON_PRIMARY_CLASS,
 } from "./constants";
 import { ManagementTablePagination } from "./management-table-pagination";
+import { formatAcademicYearDisplay } from "./academic-years.utils";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -118,10 +119,11 @@ export function AcademicYearsManagement() {
   );
   const years = useMemo(() => {
     if (!debouncedSearch.trim()) return allYears;
-    const q = debouncedSearch.trim().toLowerCase();
+    const q = debouncedSearch.trim().toLowerCase().replace(/\s*-\s*/g, "-");
     return allYears.filter(
       (y) =>
         y.name.toLowerCase().includes(q) ||
+        formatAcademicYearDisplay(y.name).toLowerCase().includes(debouncedSearch.trim().toLowerCase()) ||
         formatDate(y.startDate).toLowerCase().includes(q) ||
         (y.endDate ? formatDate(y.endDate).toLowerCase().includes(q) : false)
     );
@@ -235,7 +237,7 @@ export function AcademicYearsManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete academic year?</AlertDialogTitle>
             <AlertDialogDescription>
-              {yearToDelete?.name}
+              {yearToDelete ? formatAcademicYearDisplay(yearToDelete.name) : ""}
               {" — "}
               Deactivate first if active; remove cycles before deletion.
               {deleteMutation.isError && (
@@ -354,7 +356,7 @@ export function AcademicYearsManagement() {
                       paginatedList.map((y) => (
                         <tr key={y.id} className={TABLE_ROW_CLASS}>
                           <td className={TABLE_CELL_NAME_CLASS}>
-                            {y.name}
+                            {formatAcademicYearDisplay(y.name)}
                           </td>
                           <td className={cn(TABLE_CELL_CLASS, "tabular-nums")}>
                             {formatDate(y.startDate)}
