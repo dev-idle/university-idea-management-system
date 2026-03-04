@@ -223,6 +223,17 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-submission-rate: var(--chart-submission-rate);
+  --color-chart-donut-1: var(--chart-donut-1);
+  --color-chart-donut-2: var(--chart-donut-2);
+  --color-chart-donut-3: var(--chart-donut-3);
+  --color-chart-donut-4: var(--chart-donut-4);
+  --color-chart-donut-5: var(--chart-donut-5);
+  --color-chart-donut-6: var(--chart-donut-6);
+  --color-chart-donut-7: var(--chart-donut-7);
+  --color-chart-donut-8: var(--chart-donut-8);
+  --color-chart-donut-9: var(--chart-donut-9);
+  --color-chart-donut-10: var(--chart-donut-10);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
