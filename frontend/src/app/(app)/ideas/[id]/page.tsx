@@ -504,7 +504,7 @@ function CommentItem({
                       IDEA_DETAIL_COMMENT_ACTION_BASE,
                       "cursor-pointer",
                       comment.myReaction === "up" ? IDEA_DETAIL_COMMENT_LIKE_ACTIVE : IDEA_DETAIL_COMMENT_LIKE_INACTIVE,
-                      "disabled:opacity-50 disabled:cursor-not-allowed",
+                      "disabled:cursor-default disabled:opacity-70",
                     )}
                   >
                     <ThumbsUp className="size-3.5 shrink-0" aria-hidden />
@@ -519,7 +519,7 @@ function CommentItem({
                       IDEA_DETAIL_COMMENT_ACTION_BASE,
                       "cursor-pointer",
                       comment.myReaction === "down" ? IDEA_DETAIL_COMMENT_DISLIKE_ACTIVE : IDEA_DETAIL_COMMENT_DISLIKE_INACTIVE,
-                      "disabled:opacity-50 disabled:cursor-not-allowed",
+                      "disabled:cursor-default disabled:opacity-70",
                     )}
                   >
                     <ThumbsDown className="size-3.5 shrink-0" aria-hidden />

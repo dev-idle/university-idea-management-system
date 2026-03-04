@@ -391,7 +391,46 @@ export function useDeleteCommentMutation() {
   });
 }
 
-/** Toggle like on a comment. STAFF only. */
+/** Compute optimistic like state: same button = remove, else set. */
+function applyLikeComment(
+  c: IdeaComment,
+  value: "up" | "down",
+): { likeCount: number; dislikeCount: number; myReaction: "up" | "down" | null } {
+  const likeCount = c.likeCount ?? 0;
+  const dislikeCount = c.dislikeCount ?? 0;
+  const prevMy = c.myReaction ?? null;
+
+  if (prevMy === value) {
+    return {
+      likeCount: value === "up" ? Math.max(0, likeCount - 1) : likeCount,
+      dislikeCount: value === "down" ? Math.max(0, dislikeCount - 1) : dislikeCount,
+      myReaction: null,
+    };
+  }
+  let up = likeCount;
+  let down = dislikeCount;
+  if (prevMy === "up") up = Math.max(0, up - 1);
+  else if (prevMy === "down") down = Math.max(0, down - 1);
+  if (value === "up") up += 1;
+  else down += 1;
+  return { likeCount: up, dislikeCount: down, myReaction: value };
+}
+
+function updateCommentById(
+  comments: IdeaComment[],
+  commentId: string,
+  updater: (c: IdeaComment) => IdeaComment,
+): IdeaComment[] {
+  return comments.map((c) => {
+    if (c.id === commentId) return updater(c);
+    if (c.replies?.length) {
+      return { ...c, replies: updateCommentById(c.replies, commentId, updater) };
+    }
+    return c;
+  });
+}
+
+/** Toggle like on a comment. STAFF only. Optimistic update for realtime feel. */
 export function useLikeCommentMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -406,7 +445,25 @@ export function useLikeCommentMutation() {
       );
       return res;
     },
-    onSuccess: (_, { ideaId }) => {
+    onMutate: async ({ ideaId, commentId, value }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
+      const prev = queryClient.getQueryData<IdeaComment[]>(queryKeys.ideas.comments(ideaId));
+      queryClient.setQueryData<IdeaComment[]>(queryKeys.ideas.comments(ideaId), (old) => {
+        if (!old) return old;
+        return updateCommentById(old, commentId, (c) => {
+          const applied = applyLikeComment(c, value);
+          return { ...c, ...applied };
+        });
+      });
+      return { prev };
+    },
+    onError: (_err, { ideaId }, ctx) => {
+      if (ctx?.prev != null) {
+        queryClient.setQueryData(queryKeys.ideas.comments(ideaId), ctx.prev);
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
+    },
+    onSettled: (_data, _err, { ideaId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.ideas.comments(ideaId) });
     },
   });

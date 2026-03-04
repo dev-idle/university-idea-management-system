@@ -519,9 +519,9 @@ export const IDEA_DETAIL_COMMENT_DISLIKE_INACTIVE =
   "text-muted-foreground/55 hover:bg-muted/[0.05] hover:text-foreground/70 disabled:cursor-not-allowed";
 export const IDEA_DETAIL_COMMENT_DISLIKE_ACTIVE = "text-destructive";
 
-/** Reply — primary on hover. No background. */
+/** Reply — primary on hover. No background. Cursor pointer. */
 export const IDEA_DETAIL_COMMENT_REPLY =
-  "text-muted-foreground/55 hover:text-primary font-medium";
+  "cursor-pointer text-muted-foreground/55 hover:text-primary font-medium";
 
 /** ─── Comment & Reply forms (unified, standard layout) ──────────────────────── */
 //
