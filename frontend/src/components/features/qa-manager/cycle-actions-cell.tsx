@@ -26,6 +26,8 @@ type IdMutationLike = {
   isPending: boolean;
   mutate: (id: string) => void;
   reset: () => void;
+  /** Cycle id being acted on (when isPending). Used to avoid disabling other rows. */
+  variables?: string;
 };
 
 /** Update only needs isPending/reset; Edit opens dialog, form calls mutate. */
@@ -207,7 +209,7 @@ function CycleActionsCellInner({
               tooltip="Unlock"
               icon={LockOpen}
               className={ACTION_BUTTON_MUTED_CLASS}
-              disabled={unlockMutation.isPending}
+              disabled={unlockMutation.isPending && unlockMutation.variables === c.id}
               onClick={() => unlockMutation.mutate(c.id)}
             />
           ) : c.status === "ACTIVE" ? (
@@ -225,7 +227,7 @@ function CycleActionsCellInner({
               tooltip="Lock"
               icon={Lock}
               className={ACTION_BUTTON_LOCK_CLASS}
-              disabled={lockMutation.isPending}
+              disabled={lockMutation.isPending && lockMutation.variables === c.id}
               onClick={() => lockMutation.mutate(c.id)}
             />
           )}
@@ -354,7 +356,7 @@ function CycleActionsCellInner({
                 tooltip="Unlock"
                 icon={LockOpen}
                 className={ACTION_BUTTON_MUTED_CLASS}
-                disabled={unlockMutation.isPending}
+                disabled={unlockMutation.isPending && unlockMutation.variables === c.id}
                 onClick={() => unlockMutation.mutate(c.id)}
               />
             ) : (
