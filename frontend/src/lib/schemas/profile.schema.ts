@@ -91,6 +91,8 @@ export const departmentStatsSchema = z
     votesDown: z.number().int().min(0),
     submittedCount: z.number().int().min(0),
     totalStaff: z.number().int().min(0),
+    activeYearName: z.string().nullable(),
+    cyclesInYearCount: z.number().int().min(0),
   })
   .nullable();
 
