@@ -984,22 +984,30 @@ export default function IdeaDetailPage() {
             </>
           )}
           <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
-          <a
-            href="#comments"
-            className={cn(
-              IDEAS_HUB_ACTION_BASE,
-              "no-underline",
-              isReadOnly
-                ? IDEAS_HUB_ACTION_READONLY
-                : open
+          {isReadOnly ? (
+            <span
+              className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
+              aria-label={`Comments (${countAllComments(comments)})`}
+            >
+              <MessageSquare className="size-3.5 shrink-0" aria-hidden />
+              <span>{countAllComments(comments)}</span>
+            </span>
+          ) : (
+            <a
+              href="#comments"
+              className={cn(
+                IDEAS_HUB_ACTION_BASE,
+                "no-underline",
+                open
                   ? cn(IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")
                   : "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
-            )}
-            aria-label={`Comments (${countAllComments(comments)})`}
-          >
-            <MessageSquare className="size-3.5 shrink-0" aria-hidden />
-            <span>{countAllComments(comments)}</span>
-          </a>
+              )}
+              aria-label={`Comments (${countAllComments(comments)})`}
+            >
+              <MessageSquare className="size-3.5 shrink-0" aria-hidden />
+              <span>{countAllComments(comments)}</span>
+            </a>
+          )}
           <div className="min-w-0 flex-1" aria-hidden />
           <span
             className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_COUNT, "cursor-default")}
