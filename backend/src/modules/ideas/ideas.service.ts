@@ -405,6 +405,7 @@ export class IdeasService {
       categoryId: true as const,
       category: { select: { id: true, name: true } },
       cycleId: true as const,
+      cycle: { select: { status: true } },
       submittedById: true as const,
       submittedBy: { select: { id: true, fullName: true, email: true } },
       attachments: {
@@ -462,7 +463,10 @@ export class IdeasService {
       ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
 
       return {
-        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        items: ideas.map((idea) => ({
+          ...this.mapIdeaToResponse(idea, userId),
+          cycleStatus: idea.cycle?.status ?? null,
+        })),
         total,
       };
     }
@@ -505,7 +509,10 @@ export class IdeasService {
       const idOrder = new Map(pageIds.map((id, i) => [id, i]));
       ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
       return {
-        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        items: ideas.map((idea) => ({
+          ...this.mapIdeaToResponse(idea, userId),
+          cycleStatus: idea.cycle?.status ?? null,
+        })),
         total,
       };
     }
@@ -549,7 +556,10 @@ export class IdeasService {
       ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
 
       return {
-        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        items: ideas.map((idea) => ({
+          ...this.mapIdeaToResponse(idea, userId),
+          cycleStatus: idea.cycle?.status ?? null,
+        })),
         total,
       };
     }
@@ -598,7 +608,10 @@ export class IdeasService {
       ideas.sort((a, b) => (idOrder.get(a.id) ?? 0) - (idOrder.get(b.id) ?? 0));
 
       return {
-        items: ideas.map((idea) => this.mapIdeaToResponse(idea, userId)),
+        items: ideas.map((idea) => ({
+          ...this.mapIdeaToResponse(idea, userId),
+          cycleStatus: idea.cycle?.status ?? null,
+        })),
         total,
       };
     }
@@ -616,7 +629,10 @@ export class IdeasService {
     ]);
 
     return {
-      items: items.map((idea) => this.mapIdeaToResponse(idea, userId)),
+      items: items.map((idea) => ({
+        ...this.mapIdeaToResponse(idea, userId),
+        cycleStatus: idea.cycle?.status ?? null,
+      })),
       total,
     };
   }

@@ -46,10 +46,16 @@ import { ROUTES } from "@/config/constants";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { cn } from "@/lib/utils";
 
-type IdeaForMenu = { id: string; isAnonymous: boolean; cycleStatus?: string | null };
+export type IdeaForMenu = { id: string; isAnonymous: boolean; cycleStatus?: string | null };
+
+/** True when QA Manager has at least one usable action (Reveal Author or Delete). */
+export function hasIdeaActions(idea: IdeaForMenu): boolean {
+  return idea.isAnonymous || idea.cycleStatus === "ACTIVE";
+}
 
 export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
   const canDelete = idea.cycleStatus === "ACTIVE";
+  if (!hasIdeaActions(idea)) return null;
   const router = useRouter();
   const deleteMutation = useDeleteIdeaMutation();
   const [revealOpen, setRevealOpen] = useState(false);
@@ -79,39 +85,56 @@ export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
     });
   };
 
+  const revealOnly = idea.isAnonymous && !canDelete;
+
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className={IDEAS_ACTIONS_TRIGGER}
-            aria-label="Proposal options"
-          >
-            <MoreVertical className="size-3.5" aria-hidden />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={4} className={IDEAS_ACTIONS_MENU}>
-          {idea.isAnonymous && (
-            <DropdownMenuItem
-              onClick={handleRevealAuthor}
-              className={IDEAS_ACTIONS_ITEM}
-            >
-              <User aria-hidden />
-              Reveal Author
-            </DropdownMenuItem>
+      {revealOnly ? (
+        <button
+          type="button"
+          onClick={handleRevealAuthor}
+          className={cn(
+            "inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12px] font-medium transition-colors",
+            "text-primary hover:bg-primary/[0.08] hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           )}
-          <DropdownMenuItem
-            onClick={() => canDelete && setDeleteDialogOpen(true)}
-            className={IDEAS_ACTIONS_ITEM_DESTRUCTIVE}
-            disabled={!canDelete}
-            title={!canDelete ? "Cannot delete ideas in closed proposal cycles" : undefined}
-          >
-            <Trash2 aria-hidden />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          aria-label="Reveal author"
+        >
+          <User className="size-3.5 shrink-0" aria-hidden />
+          Reveal Author
+        </button>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className={IDEAS_ACTIONS_TRIGGER}
+              aria-label="Proposal options"
+            >
+              <MoreVertical className="size-3.5" aria-hidden />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={4} className={IDEAS_ACTIONS_MENU}>
+            {idea.isAnonymous && (
+              <DropdownMenuItem
+                onClick={handleRevealAuthor}
+                className={IDEAS_ACTIONS_ITEM}
+              >
+                <User aria-hidden />
+                Reveal Author
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem
+              onClick={() => canDelete && setDeleteDialogOpen(true)}
+              className={IDEAS_ACTIONS_ITEM_DESTRUCTIVE}
+              disabled={!canDelete}
+              title={!canDelete ? "Cannot delete ideas in closed proposal cycles" : undefined}
+            >
+              <Trash2 aria-hidden />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
 
       {/* Reveal author result — click outside or Escape to close */}
       <Dialog open={revealOpen} onOpenChange={setRevealOpen}>

@@ -76,7 +76,7 @@ import {
   Clock,
   Tag,
 } from "lucide-react";
-import { IdeaActionsMenu } from "@/components/features/qa-manager/idea-actions-menu";
+import { IdeaActionsMenu, hasIdeaActions } from "@/components/features/qa-manager/idea-actions-menu";
 
 /* ─── Constants ───────────────────────────────────────────────────────────── */
 
@@ -295,7 +295,7 @@ function IdeaCard({
             )}
           </div>
         </div>
-        {showQaManagerActions && (
+        {showQaManagerActions && hasIdeaActions({ id: idea.id, isAnonymous: idea.isAnonymous ?? false, cycleStatus: idea.cycleStatus ?? null }) && (
           <div className="shrink-0">
             <IdeaActionsMenu idea={{ id: idea.id, isAnonymous: idea.isAnonymous ?? false, cycleStatus: idea.cycleStatus ?? null }} />
           </div>
