@@ -29,6 +29,7 @@ import {
   DATE_PICKER_INPUT_CLASS,
   FORM_CHECKBOX_ACADEMIC_CLASS,
   FORM_CATEGORIES_SCROLL_AREA_CLASS,
+  DISABLED_VISUAL_CURSOR_DEFAULT_CLASS,
 } from "@/components/features/admin/constants";
 import { useCategoriesQuery } from "@/hooks/use-categories";
 import { cn } from "@/lib/utils";
@@ -192,12 +193,15 @@ export function UpdateCycleForm({
                       htmlFor={idx === 0 && !isDisabled ? `edit-cycle-cat-${c.id}` : undefined}
                       className={cn(
                         "flex items-center gap-2 text-sm",
-                        isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+                        isDisabled ? DISABLED_VISUAL_CURSOR_DEFAULT_CLASS : "cursor-pointer"
                       )}
                     >
                       <Checkbox
                         id={idx === 0 && !isDisabled ? `edit-cycle-cat-${c.id}` : undefined}
-                        className={FORM_CHECKBOX_ACADEMIC_CLASS}
+                        className={cn(
+                          FORM_CHECKBOX_ACADEMIC_CLASS,
+                          isDisabled && "disabled:cursor-default",
+                        )}
                         checked={isChecked}
                         disabled={isDisabled}
                         onCheckedChange={(checked) => {
@@ -210,7 +214,9 @@ export function UpdateCycleForm({
                           field.onChange(next);
                         }}
                       />
-                      <span className="text-foreground">{c.name}</span>
+                      <span className={isDisabled ? "text-muted-foreground/80" : "text-foreground"}>
+                        {c.name}
+                      </span>
                       {hasIdeas && isChecked && (
                         <span className="text-xs text-muted-foreground/80">
                           (has ideas)

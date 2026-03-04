@@ -463,6 +463,10 @@ export const MANAGEMENT_FOCUS_RING_CLASS = FOCUS_RING_CLASS;
 export const ACTION_BUTTON_DISABLED_BLUR_CLASS =
   "cursor-not-allowed text-muted-foreground/80 opacity-50";
 
+/** Same visual as disabled action, but cursor-default (e.g. category locked in cycle). */
+export const DISABLED_VISUAL_CURSOR_DEFAULT_CLASS =
+  "cursor-default text-muted-foreground/80 opacity-50";
+
 // ─── Table body ──────────────────────────────────────────────────────────────
 
 /** Table base wrapper (full width, collapse borders, left-aligned). */
