@@ -306,7 +306,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         collapsed={labelsCollapsed}
         isFirst={!hasRole(user.roles, "ADMIN")}
       >
-        Quality Assurance
+        Institutional QA
       </SidebarSectionLabel>
     );
     items.push(
@@ -370,7 +370,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         collapsed={labelsCollapsed}
         isFirst={!hasRole(user.roles, "ADMIN") && !hasRole(user.roles, "QA_MANAGER")}
       >
-        Quality Assurance
+        Departmental QA
       </SidebarSectionLabel>
     );
     items.push(
