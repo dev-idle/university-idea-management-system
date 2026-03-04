@@ -127,6 +127,7 @@ import {
   Activity,
   Lock,
 } from "lucide-react";
+import { IdeaActionsMenu } from "@/components/features/qa-manager/idea-actions-menu";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -879,6 +880,11 @@ export default function IdeaDetailPage() {
                 </>
               )}
             </span>
+          )}
+          {isQaManager && (
+            <div className="shrink-0">
+              <IdeaActionsMenu idea={{ id, isAnonymous: idea.isAnonymous ?? false }} />
+            </div>
           )}
         </div>
 

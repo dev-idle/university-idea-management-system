@@ -1275,6 +1275,41 @@ export class IdeasService {
   }
 
   /**
+   * Reveal the real author of an idea. QA_MANAGER only.
+   * Returns { fullName, email } when idea is anonymous; otherwise author is already visible.
+   */
+  async revealAuthor(ideaId: string): Promise<{ fullName: string | null; email: string } | null> {
+    const activeYear = await this.prisma.academicYear.findFirst({
+      where: { isActive: true },
+      select: { id: true },
+    });
+    if (!activeYear) throw new NotFoundException('Idea not found.');
+
+    const cycleIds = (
+      await this.prisma.ideaSubmissionCycle.findMany({
+        where: { academicYearId: activeYear.id },
+        select: { id: true },
+      })
+    ).map((c) => c.id);
+    if (cycleIds.length === 0) throw new NotFoundException('Idea not found.');
+
+    const idea = await this.prisma.idea.findFirst({
+      where: { id: ideaId, cycleId: { in: cycleIds } },
+      select: {
+        isAnonymous: true,
+        submittedBy: { select: { fullName: true, email: true } },
+      },
+    });
+    if (!idea) throw new NotFoundException('Idea not found.');
+
+    if (!idea.isAnonymous || !idea.submittedBy) return null;
+    return {
+      fullName: idea.submittedBy.fullName,
+      email: idea.submittedBy.email,
+    };
+  }
+
+  /**
    * Delete an idea and its Cloudinary attachments (2026 standard).
    * ADMIN only. Removes idea from DB (cascade deletes IdeaAttachment) and deletes
    * attachment files from Cloudinary when configured.

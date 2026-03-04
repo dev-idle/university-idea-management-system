@@ -75,6 +75,7 @@ import {
   Clock,
   Tag,
 } from "lucide-react";
+import { IdeaActionsMenu } from "@/components/features/qa-manager/idea-actions-menu";
 
 /* ─── Constants ───────────────────────────────────────────────────────────── */
 
@@ -215,6 +216,7 @@ function IdeaCard({
   onDwellComplete,
   votePending,
   voteDisabled,
+  showQaManagerActions,
 }: {
   idea: Idea;
   isExpanded: boolean;
@@ -223,6 +225,7 @@ function IdeaCard({
   onDwellComplete: (id: string) => void;
   votePending: boolean;
   voteDisabled?: boolean;
+  showQaManagerActions?: boolean;
 }) {
   const votes = idea.voteCounts ?? { up: 0, down: 0 };
   const myVote = idea.myVote ?? null;
@@ -293,6 +296,11 @@ function IdeaCard({
             )}
           </div>
         </div>
+        {showQaManagerActions && (
+          <div className="shrink-0">
+            <IdeaActionsMenu idea={{ id: idea.id, isAnonymous: idea.isAnonymous ?? false }} />
+          </div>
+        )}
       </div>
 
         {/* Title */}
@@ -697,6 +705,7 @@ export function IdeasHubContent() {
                     onDwellComplete={(id) => markViewedByAction(id, idea.cycleStatus ?? (hasActiveCycle && !effectiveCycleId ? "ACTIVE" : null))}
                     votePending={voteMutation.isPending}
                     voteDisabled={!interactionOpen || isReadOnly}
+                    showQaManagerActions={isQaManager}
                   />
                 ))}
               </div>

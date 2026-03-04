@@ -348,6 +348,30 @@ export function useUpdateCommentMutation() {
   });
 }
 
+/** Reveal author of anonymous idea. QA_MANAGER only. */
+export async function revealIdeaAuthor(ideaId: string): Promise<{
+  fullName: string | null;
+  email: string;
+} | null> {
+  const data = await fetchWithAuth<{ fullName: string | null; email: string } | null>(
+    `ideas/${ideaId}/author`,
+  );
+  return data;
+}
+
+/** Delete idea. QA_MANAGER only. */
+export function useDeleteIdeaMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ideaId: string): Promise<void> => {
+      await fetchWithAuth(`ideas/${ideaId}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ideas.all });
+    },
+  });
+}
+
 /** Delete own comment. STAFF only. */
 export function useDeleteCommentMutation() {
   const queryClient = useQueryClient();

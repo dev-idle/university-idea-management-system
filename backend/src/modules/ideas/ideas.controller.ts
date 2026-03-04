@@ -377,6 +377,12 @@ export class IdeasController {
     return this.ideasService.likeComment(id, commentId, user.sub, body);
   }
 
+  @Get(':id/author')
+  @Roles('QA_MANAGER')
+  revealAuthor(@Param('id', ParseUUIDPipe) id: string) {
+    return this.ideasService.revealAuthor(id);
+  }
+
   @Get(':id')
   @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   findOne(
