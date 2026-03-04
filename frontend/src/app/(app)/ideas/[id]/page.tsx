@@ -984,7 +984,7 @@ export default function IdeaDetailPage() {
             </>
           )}
           <span className="h-4 w-px shrink-0 bg-border/35" aria-hidden />
-          {isReadOnly ? (
+          {isReadOnly || !open ? (
             <span
               className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_READONLY, "inline-flex")}
               aria-label={`Comments (${countAllComments(comments)})`}
@@ -995,13 +995,7 @@ export default function IdeaDetailPage() {
           ) : (
             <a
               href="#comments"
-              className={cn(
-                IDEAS_HUB_ACTION_BASE,
-                "no-underline",
-                open
-                  ? cn(IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")
-                  : "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
-              )}
+              className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer no-underline")}
               aria-label={`Comments (${countAllComments(comments)})`}
             >
               <MessageSquare className="size-3.5 shrink-0" aria-hidden />
