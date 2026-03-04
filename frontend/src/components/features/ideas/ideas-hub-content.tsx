@@ -114,7 +114,7 @@ function fmtDateTime(d: Date | string): string {
   });
 }
 
-const COUNTDOWN_THRESHOLD_DAYS = 3;
+const COUNTDOWN_THRESHOLD_DAYS = 5;
 
 /** Returns days remaining (0 = same day, 1 = tomorrow). */
 function getDaysLeft(end: Date, now: Date): number {
@@ -138,7 +138,7 @@ function formatCountdown(ms: number): string {
   return parts.join(" ");
 }
 
-/** CTA deadline: always show deadline date/time; when ≤3 days add realtime countdown. */
+/** CTA deadline: always show deadline date/time; when ≤5 days add realtime countdown. */
 function useCtaDeadline(closesAt: string | Date | null) {
   const [now, setNow] = useState(() => new Date());
   const end = closesAt ? new Date(closesAt) : null;
@@ -163,9 +163,7 @@ function useCtaDeadline(closesAt: string | Date | null) {
   if (end <= now) return { deadline: "Submission closed", countdown: null };
 
   const days = getDaysLeft(end, now);
-  const deadlineText = days <= COUNTDOWN_THRESHOLD_DAYS
-    ? fmtDateTime(end)
-    : `Until ${fmtDate(end)}`;
+  const deadlineText = `Until ${fmtDateTime(end)}`;
   let countdownText: string | null = null;
 
   if (days <= COUNTDOWN_THRESHOLD_DAYS) {
