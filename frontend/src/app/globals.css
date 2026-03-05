@@ -362,7 +362,11 @@
 /* Left: Premium panel — impressive, professional Greenwich hero */
 .login-academic-panel {
   background:
-    radial-gradient(ellipse 120% 60% at 100% 20%, color-mix(in oklch, var(--primary) 6%, transparent) 0%, transparent 50%),
+    radial-gradient(
+      ellipse 120% 60% at 100% 20%,
+      color-mix(in oklch, var(--primary) 6%, transparent) 0%,
+      transparent 50%
+    ),
     linear-gradient(
       165deg,
       var(--background) 0%,
@@ -375,7 +379,11 @@
 
 .dark .login-academic-panel {
   background:
-    radial-gradient(ellipse 100% 50% at 95% 15%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 45%),
+    radial-gradient(
+      ellipse 100% 50% at 95% 15%,
+      color-mix(in oklch, var(--primary) 12%, transparent) 0%,
+      transparent 45%
+    ),
     linear-gradient(
       165deg,
       var(--background) 0%,
@@ -474,6 +482,9 @@
   }
 }
 
+
+/* Hover: gentle “glow” pulse — more dynamic when cursor over panel */
+
 /* Login info cards — professional design */
 .login-info-cards .login-info-card {
   cursor: default;
@@ -495,11 +506,21 @@
   animation: login-headline-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.login-headline-line-1 { animation-delay: 0ms; }
-.login-headline-line-2 { animation-delay: 100ms; }
-.login-headline-line-3 { animation-delay: 200ms; }
-.login-headline-line-4 { animation-delay: 300ms; }
-.login-headline-line-5 { animation-delay: 400ms; }
+.login-headline-line-1 {
+  animation-delay: 0ms;
+}
+.login-headline-line-2 {
+  animation-delay: 100ms;
+}
+.login-headline-line-3 {
+  animation-delay: 200ms;
+}
+.login-headline-line-4 {
+  animation-delay: 300ms;
+}
+.login-headline-line-5 {
+  animation-delay: 400ms;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .login-headline-line {
@@ -514,7 +535,11 @@
   padding-top: max(2.5rem, env(safe-area-inset-top, 0px));
   padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
   background:
-    radial-gradient(ellipse 80% 100% at 0% 50%, color-mix(in oklch, var(--background) 99%, var(--muted) 8%) 0%, transparent 55%),
+    radial-gradient(
+      ellipse 80% 100% at 0% 50%,
+      color-mix(in oklch, var(--background) 99%, var(--muted) 8%) 0%,
+      transparent 55%
+    ),
     linear-gradient(
       90deg,
       color-mix(in oklch, var(--background) 98%, var(--muted) 5%) 0%,
@@ -528,8 +553,16 @@
 @media (max-width: 767px) {
   .login-form-panel {
     background:
-      radial-gradient(ellipse 120% 80% at 50% 30%, color-mix(in oklch, var(--background) 98%, var(--muted) 12%) 0%, transparent 50%),
-      radial-gradient(ellipse 100% 60% at 80% 80%, color-mix(in oklch, var(--background) 99%, var(--primary) 4%) 0%, transparent 45%),
+      radial-gradient(
+        ellipse 120% 80% at 50% 30%,
+        color-mix(in oklch, var(--background) 98%, var(--muted) 12%) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 100% 60% at 80% 80%,
+        color-mix(in oklch, var(--background) 99%, var(--primary) 4%) 0%,
+        transparent 45%
+      ),
       var(--background);
   }
 }
@@ -554,7 +587,11 @@
 
 .dark .login-form-panel {
   background:
-    radial-gradient(ellipse 80% 100% at 0% 50%, color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 0%, transparent 55%),
+    radial-gradient(
+      ellipse 80% 100% at 0% 50%,
+      color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 0%,
+      transparent 55%
+    ),
     linear-gradient(
       90deg,
       color-mix(in oklch, var(--background) 97%, var(--primary) 3%) 0%,
@@ -567,13 +604,19 @@
 @media (max-width: 767px) {
   .dark .login-form-panel {
     background:
-      radial-gradient(ellipse 120% 80% at 50% 30%, color-mix(in oklch, var(--background) 94%, var(--primary) 8%) 0%, transparent 50%),
-      radial-gradient(ellipse 100% 60% at 80% 80%, color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 0%, transparent 45%),
+      radial-gradient(
+        ellipse 120% 80% at 50% 30%,
+        color-mix(in oklch, var(--background) 94%, var(--primary) 8%) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse 100% 60% at 80% 80%,
+        color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 0%,
+        transparent 45%
+      ),
       var(--background);
   }
 }
-
-
 
 /* Login form divider — subtle line, gradient fade at ends */
 .login-form-divider {

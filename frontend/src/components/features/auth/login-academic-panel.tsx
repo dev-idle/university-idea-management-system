@@ -18,7 +18,7 @@ import {
 export function LoginAcademicPanel() {
   return (
     <aside
-      className="login-academic-panel relative hidden min-h-screen min-h-[100dvh] flex-1 overflow-hidden md:flex"
+      className="login-academic-panel group/panel relative hidden min-h-screen min-h-[100dvh] flex-1 overflow-hidden md:flex"
       aria-hidden
     >
       {/* Ambient glow + gradient mesh */}
@@ -27,7 +27,7 @@ export function LoginAcademicPanel() {
 
       {/* Greenwich silhouette — iconic domes + building mass */}
       <div className="login-greenwich-silhouette pointer-events-none absolute inset-0" aria-hidden>
-        <svg viewBox="0 0 600 400" className="absolute -right-16 top-1/2 h-[88%] w-[92%] -translate-y-1/2 object-cover opacity-[0.5] dark:opacity-[0.35]" preserveAspectRatio="xMaxYMid slice">
+        <svg viewBox="0 0 600 400" className="login-silhouette-svg absolute -right-16 top-1/2 h-[88%] w-[92%] -translate-y-1/2 origin-right object-cover opacity-[0.5] transition-transform duration-500 ease-out group-hover/panel:scale-[1.02] dark:opacity-[0.35]" preserveAspectRatio="xMaxYMid slice">
           <defs>
             <linearGradient id="greenwich-dome-fill" x1="0%" y1="100%" x2="0%" y2="0%">
               <stop offset="0%" stopColor="rgb(40,34,75)" stopOpacity="0.05" />
@@ -67,29 +67,29 @@ export function LoginAcademicPanel() {
         <div className="relative flex flex-1 flex-col justify-center pl-2">
           <div className="relative ml-0 mr-auto w-full max-w-md pl-6 pr-12 py-10 hidden md:block">
             {/* Icons — portal features: Ideas, Submit, Share, Vote, Proposals, QA, Sparkle, Book */}
-            <div className="pointer-events-none absolute inset-0 opacity-70" aria-hidden>
-              <div className="absolute -left-2 top-[8%] flex h-8 w-8 rotate-[-6deg] items-center justify-center rounded-lg bg-amber-500/8 text-amber-600/90 dark:bg-amber-400/8 dark:text-amber-400/90">
+            <div className="pointer-events-none absolute inset-0 z-20 opacity-70" aria-hidden>
+              <div className="pointer-events-auto absolute -left-2 top-[8%] flex h-8 w-8 cursor-default rotate-[-6deg] items-center justify-center rounded-lg bg-amber-500/8 text-amber-600/90 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-amber-500/12 dark:bg-amber-400/8 dark:text-amber-400/90 dark:hover:bg-amber-400/12">
                 <Lightbulb className="text-current" size={14} weight="duotone" />
               </div>
-              <div className="absolute left-[50%] top-[-8%] flex h-9 w-9 rotate-[5deg] items-center justify-center rounded-xl bg-primary/8 text-primary/90 dark:bg-primary/12 dark:text-primary/90">
+              <div className="pointer-events-auto absolute left-[50%] top-[-8%] flex h-9 w-9 cursor-default rotate-[5deg] items-center justify-center rounded-xl bg-primary/8 text-primary/90 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-primary/12 dark:bg-primary/12 dark:text-primary/90 dark:hover:bg-primary/16">
                 <PaperPlaneRight className="text-current" size={16} weight="duotone" />
               </div>
-              <div className="absolute right-[2%] top-[20%] flex h-7 w-7 rotate-[4deg] items-center justify-center rounded-md bg-sky-500/8 text-sky-600/80 dark:bg-sky-400/8 dark:text-sky-400/80">
+              <div className="pointer-events-auto absolute right-[2%] top-[20%] flex h-7 w-7 cursor-default rotate-[4deg] items-center justify-center rounded-md bg-sky-500/8 text-sky-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-sky-500/12 dark:bg-sky-400/8 dark:text-sky-400/80 dark:hover:bg-sky-400/12">
                 <Share className="text-current" size={14} weight="duotone" />
               </div>
-              <div className="absolute left-[58%] top-[12%] flex h-8 w-8 rotate-[-8deg] items-center justify-center rounded-md bg-emerald-500/8 text-emerald-600/80 dark:bg-emerald-400/8 dark:text-emerald-400/80">
+              <div className="pointer-events-auto absolute left-[58%] top-[12%] flex h-8 w-8 cursor-default rotate-[-8deg] items-center justify-center rounded-md bg-emerald-500/8 text-emerald-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-emerald-500/12 dark:bg-emerald-400/8 dark:text-emerald-400/80 dark:hover:bg-emerald-400/12">
                 <ThumbsUp className="text-current" size={14} weight="duotone" />
               </div>
-              <div className="absolute left-[8%] bottom-[-6%] flex h-7 w-7 rotate-[6deg] items-center justify-center rounded-lg bg-violet-500/8 text-violet-600/80 dark:bg-violet-400/8 dark:text-violet-400/80">
+              <div className="pointer-events-auto absolute left-[8%] bottom-[-6%] flex h-7 w-7 cursor-default rotate-[6deg] items-center justify-center rounded-lg bg-violet-500/8 text-violet-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-violet-500/12 dark:bg-violet-400/8 dark:text-violet-400/80 dark:hover:bg-violet-400/12">
                 <FileText className="text-current" size={14} weight="duotone" />
               </div>
-              <div className="absolute right-[28%] bottom-[-5%] flex h-8 w-8 rotate-[-4deg] items-center justify-center rounded-md bg-rose-500/8 text-rose-600/80 dark:bg-rose-400/8 dark:text-rose-400/80">
+              <div className="pointer-events-auto absolute right-[28%] bottom-[-5%] flex h-8 w-8 cursor-default rotate-[-4deg] items-center justify-center rounded-md bg-rose-500/8 text-rose-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-rose-500/12 dark:bg-rose-400/8 dark:text-rose-400/80 dark:hover:bg-rose-400/12">
                 <ChatCircle className="text-current" size={14} weight="duotone" />
               </div>
-              <div className="absolute left-[46%] top-[38%] flex h-8 w-8 rotate-[3deg] items-center justify-center rounded-lg bg-indigo-500/8 text-indigo-600/80 dark:bg-indigo-400/8 dark:text-indigo-400/80">
+              <div className="pointer-events-auto absolute left-[46%] top-[38%] flex h-8 w-8 cursor-default rotate-[3deg] items-center justify-center rounded-lg bg-indigo-500/8 text-indigo-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-indigo-500/12 dark:bg-indigo-400/8 dark:text-indigo-400/80 dark:hover:bg-indigo-400/12">
                 <Sparkle className="text-current" size={14} weight="duotone" />
               </div>
-              <div className="absolute left-[28%] bottom-[2%] flex h-7 w-7 rotate-[-5deg] items-center justify-center rounded-md bg-zinc-500/8 text-zinc-600/70 dark:bg-zinc-400/8 dark:text-zinc-400/70">
+              <div className="pointer-events-auto absolute left-[28%] bottom-[2%] flex h-7 w-7 cursor-default rotate-[-5deg] items-center justify-center rounded-md bg-zinc-500/8 text-zinc-600/70 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-zinc-500/12 dark:bg-zinc-400/8 dark:text-zinc-400/70 dark:hover:bg-zinc-400/12">
                 <Book className="text-current" size={14} weight="duotone" />
               </div>
             </div>
@@ -131,8 +131,8 @@ export function LoginAcademicPanel() {
         {/* Info cards — compact, balanced, anchored lower */}
         <div className="login-info-cards mt-4 w-full max-w-md border-t border-border/40 pt-3">
           <div className="grid grid-cols-1 items-stretch gap-1.5 sm:grid-cols-3">
-            <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-200 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">
+            <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-300 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-all duration-300 ease-out group-hover:scale-[1.06] group-hover:bg-primary/16 dark:bg-primary/20 dark:group-hover:bg-primary/24">
                 <Clock className="text-current" size={12} weight="duotone" />
               </div>
               <div className="min-w-0">
@@ -144,8 +144,8 @@ export function LoginAcademicPanel() {
                 </p>
               </div>
             </div>
-            <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-200 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">
+            <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-300 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-all duration-300 ease-out group-hover:scale-[1.06] group-hover:bg-primary/16 dark:bg-primary/20 dark:group-hover:bg-primary/24">
                 <Buildings className="text-current" size={12} weight="duotone" />
               </div>
               <div className="min-w-0">
@@ -157,8 +157,8 @@ export function LoginAcademicPanel() {
                 </p>
               </div>
             </div>
-            <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-200 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">
+            <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-300 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-all duration-300 ease-out group-hover:scale-[1.06] group-hover:bg-primary/16 dark:bg-primary/20 dark:group-hover:bg-primary/24">
                 <Compass className="text-current" size={12} weight="duotone" />
               </div>
               <div className="min-w-0">

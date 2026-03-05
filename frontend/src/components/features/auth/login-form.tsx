@@ -28,7 +28,7 @@ function SubmitButton({ pending, ariaDescribedBy }: { pending: boolean; ariaDesc
     <Button
       type="submit"
       variant="default"
-      className="h-11 min-h-[2.75rem] w-full rounded-xl text-base font-medium shadow-sm transition-all duration-200 hover:shadow touch-manipulation sm:text-[15px]"
+      className="group/signin h-11 min-h-[2.75rem] w-full rounded-xl text-base font-medium shadow-sm transition-all duration-200 hover:shadow touch-manipulation sm:text-[15px]"
       disabled={pending}
       aria-busy={pending}
       aria-live="polite"
@@ -44,7 +44,7 @@ function SubmitButton({ pending, ariaDescribedBy }: { pending: boolean; ariaDesc
         </span>
       ) : (
         <span className="inline-flex items-center gap-2">
-          <LogIn className="size-4" aria-hidden />
+          <LogIn className="size-4 shrink-0" aria-hidden />
           Sign in
         </span>
       )}
@@ -129,16 +129,16 @@ export function LoginForm() {
             <Button
               type="button"
               variant="ghost"
-              size="icon-sm"
-              className="absolute right-1.5 top-1/2 size-10 min-w-[2.75rem] min-h-[2.75rem] -translate-y-1/2 rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary focus-visible:text-primary touch-manipulation sm:size-9"
+              size="icon"
+              className="absolute right-1.5 top-1/2 size-9 -translate-y-1/2 rounded-lg text-muted-foreground/80 transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary focus-visible:text-primary touch-manipulation"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               tabIndex={-1}
             >
               {showPassword ? (
-                <EyeOff className="size-4 shrink-0 text-current" aria-hidden />
+                <EyeOff className="size-4" aria-hidden />
               ) : (
-                <Eye className="size-4 shrink-0 text-current" aria-hidden />
+                <Eye className="size-4" aria-hidden />
               )}
             </Button>
           </div>
