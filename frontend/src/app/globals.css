@@ -97,8 +97,9 @@
   --header-elevation: 0 1px 2px oklch(0 0 0 / 0.02);
 
   /* --- Login (Special) --- */
-  --login-grid-line: oklch(0.45 0.02 280 / 0.04);
-  --login-radial-overlay: oklch(0 0 0 / 0.035);
+  --login-grid-line: oklch(0.45 0.02 280 / 0.035);
+  --login-radial-overlay: oklch(0 0 0 / 0.03);
+  --login-divider: oklch(0.55 0.03 280 / 0.28);
 }
 
 /* =============================================================================
@@ -143,6 +144,8 @@
   --border: oklch(0.22 0.03 280);
   --input: oklch(0.22 0.03 280);
   --ring: oklch(0.65 0.18 280);
+
+  --login-divider: oklch(0.58 0.05 280 / 0.22);
 
   --chart-1: oklch(0.62 0.14 280);
   --chart-2: oklch(0.58 0.1 175);
@@ -345,7 +348,197 @@
 }
 
 /* =============================================================================
-   LOGIN PAGE — Grid background
+   LOGIN PAGE — Split layout (2026 academic + Facebook-style)
+   ============================================================================= */
+
+.login-page-split {
+  background: var(--background);
+}
+
+/* Left: Premium panel — harmonious, balanced with right panel */
+.login-academic-panel {
+  background: linear-gradient(
+    165deg,
+    var(--background) 0%,
+    color-mix(in oklch, var(--background) 98%, var(--muted)) 45%,
+    color-mix(in oklch, var(--background) 97%, var(--muted)) 100%
+  );
+  box-shadow: inset -1px 0 0 color-mix(in oklch, var(--border) 28%, transparent);
+}
+
+.dark .login-academic-panel {
+  background: linear-gradient(
+    165deg,
+    var(--background) 0%,
+    color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 50%,
+    color-mix(in oklch, var(--background) 95%, var(--primary) 4%) 100%
+  );
+  box-shadow:
+    inset -1px 0 0 color-mix(in oklch, var(--border) 22%, transparent),
+    inset 0 0 100px oklch(0 0 0 / 0.28);
+}
+
+/* Soft orbs — subtle, balanced with right panel */
+.login-academic-orbs::before,
+.login-academic-orbs::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.14;
+}
+
+.login-academic-orbs::before {
+  width: 380px;
+  height: 380px;
+  top: -100px;
+  right: -80px;
+  background: oklch(0.93 0.03 280);
+}
+
+.login-academic-orbs::after {
+  width: 300px;
+  height: 300px;
+  bottom: 5%;
+  left: -60px;
+  background: oklch(0.945 0.025 270);
+}
+
+.dark .login-academic-orbs::before {
+  opacity: 0.2;
+  background: oklch(0.42 0.12 280);
+}
+
+.dark .login-academic-orbs::after {
+  opacity: 0.2;
+  background: oklch(0.38 0.1 200);
+}
+
+/* Greenwich campus silhouette */
+.login-greenwich-silhouette {
+  z-index: 1;
+}
+
+/* Mesh gradient overlay — smooth, harmonious with right panel */
+.login-mesh-gradient {
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 90% 20%, oklch(0.68 0.1 280 / 0.03) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 70% at 10% 80%, oklch(0.62 0.08 200 / 0.025) 0%, transparent 50%);
+}
+
+.dark .login-mesh-gradient {
+  background:
+    radial-gradient(ellipse 70% 50% at 90% 20%, oklch(0.58 0.14 280 / 0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 70% at 10% 80%, oklch(0.5 0.12 200 / 0.07) 0%, transparent 50%);
+}
+
+/* Bento grid — creative layout */
+.login-bento-grid {
+  animation: login-bento-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+@keyframes login-bento-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-bento-grid {
+    animation: none;
+  }
+}
+
+/* Login info cards — professional design */
+.login-info-cards .login-info-card {
+  cursor: default;
+}
+
+/* Login headline — text reveal effect */
+@keyframes login-headline-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-headline-line {
+  animation: login-headline-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.login-headline-line-1 { animation-delay: 0ms; }
+.login-headline-line-2 { animation-delay: 100ms; }
+.login-headline-line-3 { animation-delay: 200ms; }
+.login-headline-line-4 { animation-delay: 300ms; }
+.login-headline-line-5 { animation-delay: 400ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .login-headline-line {
+    animation: none;
+  }
+}
+
+/* Right: Form panel — harmonious, balanced with left panel */
+.login-form-panel {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--background) 98%, var(--muted) 5%) 0%,
+    var(--background) 18%,
+    var(--background) 100%
+  );
+  box-shadow: inset 1px 0 0 color-mix(in oklch, var(--border) 28%, transparent);
+}
+
+.dark .login-form-panel {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--background) 97%, var(--primary) 3%) 0%,
+    var(--background) 18%,
+    var(--background) 100%
+  );
+  box-shadow: inset 1px 0 0 color-mix(in oklch, var(--border) 22%, transparent);
+}
+
+/* Right panel content — balanced, refined layout */
+.login-form-elegant {
+  --login-section-gap: 1.5rem;
+}
+
+/* Login form divider — subtle line, gradient fade at ends */
+.login-form-divider {
+  margin-top: var(--login-section-gap, 1.5rem);
+  padding-top: 1.75rem;
+  position: relative;
+}
+
+.login-form-divider::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border) 14%,
+    var(--login-divider) 50%,
+    var(--border) 86%,
+    transparent 100%
+  );
+  opacity: 0.65;
+}
+
+/* =============================================================================
+   LOGIN PAGE — Grid background (legacy, used by loading/not-found)
    ============================================================================= */
 
 .login-page-bg {
