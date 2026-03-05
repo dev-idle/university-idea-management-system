@@ -43,7 +43,7 @@ export function LoginAcademicPanel() {
       </div>
 
       {/* Compass pattern — Prime Meridian, navigation heritage */}
-      <div className="login-compass-pattern pointer-events-none absolute inset-0 opacity-[0.32] dark:opacity-[0.08]" aria-hidden>
+      <div className="login-compass-pattern pointer-events-none absolute inset-0 opacity-[0.38] dark:opacity-[0.11]" aria-hidden>
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="login-compass" x="0" y="0" width="64" height="64" patternUnits="userSpaceOnUse">
@@ -59,13 +59,13 @@ export function LoginAcademicPanel() {
       </div>
 
       {/* Layout: logo top, content middle, cards bottom */}
-      <div className="relative z-10 flex h-full flex-col justify-between p-6 md:p-8 xl:p-10">
+      <div className="relative z-10 flex h-full flex-col justify-between px-6 pt-6 pb-5 md:px-8 md:pt-8 md:pb-6 xl:px-10 xl:pt-10 xl:pb-7">
         <div>
           <BrandLogo className="h-14 w-40 drop-shadow-sm dark:drop-shadow-[0_0_16px_rgba(255,255,255,0.25)] xl:h-16 xl:w-44" align="left" />
         </div>
 
         <div className="relative flex flex-1 flex-col justify-center pl-2">
-          <div className="relative ml-0 mr-auto w-full max-w-md pl-6 pr-12 py-12 hidden md:block">
+          <div className="relative ml-0 mr-auto w-full max-w-md pl-6 pr-12 py-10 hidden md:block">
             {/* Icons — portal features: Ideas, Submit, Share, Vote, Proposals, QA, Sparkle, Book */}
             <div className="pointer-events-none absolute inset-0 opacity-70" aria-hidden>
               <div className="absolute -left-2 top-[8%] flex h-8 w-8 rotate-[-6deg] items-center justify-center rounded-lg bg-amber-500/8 text-amber-600/90 dark:bg-amber-400/8 dark:text-amber-400/90">
@@ -94,19 +94,19 @@ export function LoginAcademicPanel() {
               </div>
             </div>
 
-            {/* Headline */}
+            {/* Headline — balanced typographic rhythm */}
             <div className="relative z-10">
               <p className="login-headline-line login-headline-line-1 text-[13px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
                 Greenwich Idea Portal
               </p>
-              <h2 className="mt-4 font-sans text-[2.15rem] font-light leading-[1.25] tracking-tight text-foreground xl:text-[2.75rem] xl:leading-[1.2]">
+              <h2 className="mt-4 font-sans text-[2.15rem] font-light leading-[1.3] tracking-tight text-foreground xl:text-[2.75rem] xl:leading-[1.25]">
                 <span className="login-headline-line login-headline-line-2 block text-muted-foreground">Discover</span>
-                <span className="login-headline-line login-headline-line-3 mt-1 block pl-6 font-semibold text-primary dark:text-primary xl:pl-8">ideas</span>
-                <span className="login-headline-line login-headline-line-4 mt-0.5 block pl-12 font-light text-foreground/90 xl:pl-16">
+                <span className="login-headline-line login-headline-line-3 mt-1.5 block pl-6 font-semibold text-primary dark:text-primary xl:pl-8">ideas</span>
+                <span className="login-headline-line login-headline-line-4 mt-1 block pl-12 font-light text-foreground/90 xl:pl-16">
                   worth sharing.
                 </span>
               </h2>
-              <p className="login-headline-line login-headline-line-5 mt-6 whitespace-nowrap pl-1 text-[14px] leading-[1.7] text-muted-foreground">
+              <p className="login-headline-line login-headline-line-5 mt-5 text-[14px] leading-[1.65] text-muted-foreground/95">
                 Submit and share ideas from Greenwich, on the Thames.
               </p>
             </div>
@@ -117,19 +117,19 @@ export function LoginAcademicPanel() {
             <p className="login-headline-line login-headline-line-1 text-[13px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
               Greenwich Idea Portal
             </p>
-            <h2 className="mt-4 font-sans text-[2.15rem] font-light leading-[1.25] tracking-tight text-foreground">
+            <h2 className="mt-4 font-sans text-[2.15rem] font-light leading-[1.3] tracking-tight text-foreground">
               <span className="login-headline-line login-headline-line-2 block text-muted-foreground">Discover</span>
-              <span className="login-headline-line login-headline-line-3 mt-1 block pl-6 font-semibold text-primary dark:text-primary">ideas</span>
-              <span className="login-headline-line login-headline-line-4 mt-0.5 block pl-12 font-light text-foreground/90">worth sharing.</span>
+              <span className="login-headline-line login-headline-line-3 mt-1.5 block pl-6 font-semibold text-primary dark:text-primary">ideas</span>
+              <span className="login-headline-line login-headline-line-4 mt-1 block pl-12 font-light text-foreground/90">worth sharing.</span>
             </h2>
-            <p className="login-headline-line login-headline-line-5 mt-6 whitespace-nowrap pl-1 text-[14px] leading-[1.7] text-muted-foreground">
+            <p className="login-headline-line login-headline-line-5 mt-5 text-[14px] leading-[1.65] text-muted-foreground/95">
               Submit and share ideas from Greenwich, on the Thames.
             </p>
           </div>
         </div>
 
-        {/* Info cards — compact, balanced */}
-        <div className="login-info-cards mt-3 w-full max-w-md border-t border-border/40 pt-3">
+        {/* Info cards — compact, balanced, anchored lower */}
+        <div className="login-info-cards mt-4 w-full max-w-md border-t border-border/40 pt-3">
           <div className="grid grid-cols-1 items-stretch gap-1.5 sm:grid-cols-3">
             <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-200 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
               <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-colors group-hover:bg-primary/15 dark:bg-primary/20 dark:group-hover:bg-primary/25">
