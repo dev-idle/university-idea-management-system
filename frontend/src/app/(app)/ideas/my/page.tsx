@@ -409,12 +409,7 @@ function IdeaRow({
         <div className="mx-1.5 h-4 w-px shrink-0 self-center bg-border/40" aria-hidden />
         <Link
           href={`${ROUTES.IDEAS}/${idea.id}#comments`}
-          className={cn(
-            IDEAS_HUB_ACTION_BASE,
-            canVote
-              ? cn(IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")
-              : "cursor-default text-muted-foreground/55 hover:bg-transparent hover:text-muted-foreground/55",
-          )}
+          className={cn(IDEAS_HUB_ACTION_BASE, IDEAS_HUB_ACTION_INACTIVE, "cursor-pointer")}
           aria-label="View proposal and comments"
         >
           <MessageSquare className="size-3.5 shrink-0" aria-hidden />
