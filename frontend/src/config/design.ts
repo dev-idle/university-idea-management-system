@@ -160,6 +160,10 @@ export const POPUP_ROUNDED_MENU = "rounded-xl";   /* Dropdown, Select, User menu
 export const POPUP_ROUNDED_MODAL = "rounded-2xl";   /* Dialog, AlertDialog */
 export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers */
 
+/** Mobile: popups must not overflow viewport. Use for Dialog, Select, Dropdown, Popover. */
+export const POPUP_MOBILE_MAX_W = "max-w-[min(calc(100vw-2rem),100%)]";
+export const POPUP_MOBILE_MAX_H = "max-h-[min(85dvh,calc(100vh-2rem))]";
+
 /** Chart colors (@theme): --color-chart-1 = categorical/bar, --color-chart-2 = temporal/line, --color-chart-3–5 = multi-series. */
 export const CHART_COLOR_CATEGORICAL = "var(--color-chart-1, oklch(0.38 0.1 280))";
 export const CHART_COLOR_TEMPORAL = "var(--color-chart-2, oklch(0.48 0.1 175))";
@@ -206,8 +210,11 @@ export const CHART_TOOLTIP_VALUE_CLASS =
 /** Main scrollable area — clean bg. */
 export const MAIN_BG = "bg-background";
 
-/** Main horizontal padding — Management (sidebar layout). */
-export const MAIN_PX = "px-5 md:px-8 lg:px-10";
+/** Main horizontal padding — Management (sidebar layout). Responsive: 1.25rem → 1.5rem (sm) → 2rem (md) → 2.5rem (lg). */
+export const MAIN_PX = "px-5 sm:px-6 md:px-8 lg:px-10";
+
+/** Mobile: safe-area-inset for notched devices. Use with pb for bottom nav clearance. */
+export const MOBILE_SAFE_BOTTOM = "pb-[env(safe-area-inset-bottom)]";
 
 /** Main vertical padding. */
 export const MAIN_PY = "py-8 md:py-10 lg:py-12";
@@ -368,13 +375,13 @@ export const IDEA_ARTICLE_BYLINE_CLASS =
 export const IDEA_ARTICLE_BYLINE_AUTHOR =
   "truncate text-[13px] font-medium text-foreground/92";
 
-/** Idea article byline — meta row (hub BYLINE_META). */
+/** Idea article byline — meta row (same as IDEAS_HUB_BYLINE_META for consistency). */
 export const IDEA_ARTICLE_BYLINE_META =
-  "mt-1 flex flex-wrap items-center gap-x-0 gap-y-1 text-[11px] text-muted-foreground/55";
+  "mt-1 flex flex-col gap-0.5 text-[11px] leading-[1.2] text-muted-foreground/55 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1 sm:gap-y-0 sm:leading-normal";
 
 /** Byline/meta vertical separator — consistent across CTA, article, hub cards. */
 export const BYLINE_META_SEP =
-  "mx-2.5 h-3 w-px shrink-0 bg-border/50";
+  "mx-1 h-3 w-px shrink-0 bg-border/50";
 
 /** Idea article body — hub card padding. */
 export const IDEA_ARTICLE_BODY_CLASS =
@@ -588,9 +595,9 @@ export const IDEA_DETAIL_VIEW_REPLIES =
 /** Attachment file name — compact, truncatable. */
 export const IDEA_ATTACHMENT_NAME = "min-w-0 truncate text-[13px] text-foreground/80";
 
-/** Idea detail: category pill — rounded pill (matches image). */
+/** Idea detail: category pill — rounded pill (matches image). Truncates long names. pl-0 aligns icon with time/attachments. */
 export const IDEA_DETAIL_CATEGORY_PILL =
-  "inline-flex items-center gap-1.5 rounded-full border border-border/35 bg-muted/[0.06] px-2.5 py-1 text-[11px] font-medium text-muted-foreground/80";
+  "inline-flex max-w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-full bg-muted/[0.06] pl-0 pr-1.5 py-0.5 text-[11px] font-medium text-muted-foreground/80 sm:py-1";
 
 // ─── Ideas Hub (/ideas) — standardized, minimal ─────────────────────────────
 //
@@ -602,9 +609,9 @@ export const IDEAS_HUB_SPACING = "space-y-8";
 /** Idea card horizontal padding (byline, content, engagement). */
 export const IDEAS_HUB_CARD_PX = "px-5 sm:px-6";
 
-/** Idea card byline — meta row (time, category). Subtle, aligned with article. */
+/** Idea card byline — meta row (time, category). Stacked per row on mobile. */
 export const IDEAS_HUB_BYLINE_META =
-  "mt-1 flex flex-wrap items-center gap-x-0 gap-y-1 text-[11px] text-muted-foreground/55";
+  "mt-1 flex flex-col gap-0.5 text-[11px] leading-[1.2] text-muted-foreground/55 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-1 sm:gap-y-0 sm:leading-normal";
 
 /** Idea card engagement row top border. */
 export const IDEAS_HUB_ENGAGEMENT_BORDER = "border-t border-border/40";
@@ -840,6 +847,12 @@ export const STAFF_CONTEXT_LABEL_CLASS =
 
 /** Role Manager page vertical rhythm (Admin, QA Manager, QA Coordinator). */
 export const MANAGEMENT_PAGE_SPACING = "space-y-10";
+
+/** Role Manager page: spacing + container. Use for Admin, QA Manager, QA Coordinator pages. */
+export const MANAGEMENT_PAGE_CLASS = `${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`;
+
+/** Dashboard stat grid — 1 col mobile, 2 md, 4 xl. Collapses sooner when shrinking. */
+export const MANAGEMENT_STAT_GRID_CLASS = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5";
 
 // ─── Focus & interaction ───────────────────────────────────────────────────
 

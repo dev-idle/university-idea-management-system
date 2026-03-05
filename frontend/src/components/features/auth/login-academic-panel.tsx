@@ -18,7 +18,7 @@ import {
 export function LoginAcademicPanel() {
   return (
     <aside
-      className="login-academic-panel relative hidden min-h-screen flex-1 overflow-hidden md:flex"
+      className="login-academic-panel relative hidden min-h-screen min-h-[100dvh] flex-1 overflow-hidden md:flex"
       aria-hidden
     >
       {/* Ambient glow + gradient mesh */}
@@ -140,7 +140,7 @@ export function LoginAcademicPanel() {
                   Meridian
                 </p>
                 <p className="mt-0.5 text-[10px] font-medium leading-snug text-foreground">
-                  0° longitude
+                  0° Longitude
                 </p>
               </div>
             </div>

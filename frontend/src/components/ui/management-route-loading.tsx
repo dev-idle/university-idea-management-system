@@ -19,8 +19,8 @@ export function ManagementRouteLoading() {
     <div className={cn(TR_LOADING_FRAME, "space-y-6", PAGE_CONTAINER_CLASS)}>
       <div className={UNIFIED_CARD_CLASS}>
         <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-          <div className={cn("h-9 w-72 animate-pulse rounded-lg border border-border/80", SKELETON_BG_INPUT)} />
-          <div className={cn("h-9 w-28 animate-pulse rounded-lg", SKELETON_BG_MEDIUM)} />
+          <div className={cn("h-9 w-full animate-pulse rounded-lg border border-border/80 sm:w-72", SKELETON_BG_INPUT)} />
+          <div className={cn("h-9 w-full animate-pulse rounded-lg sm:w-28", SKELETON_BG_MEDIUM)} />
         </div>
         <div className="min-h-[5rem]" aria-hidden />
       </div>

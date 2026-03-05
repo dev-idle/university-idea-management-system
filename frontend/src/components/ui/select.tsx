@@ -5,7 +5,7 @@ import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MENU } from "@/config/design"
+import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MENU, POPUP_MOBILE_MAX_W } from "@/config/design"
 
 function Select({
   ...props
@@ -45,7 +45,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 opacity-50" />
+        <ChevronDownIcon className="hidden size-4 opacity-50 sm:block" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -61,15 +61,18 @@ function SelectContent({
   align = "start",
   side = "bottom",
   sideOffset = 4,
+  collisionPadding = 16,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         data-slot="select-content"
+        collisionPadding={collisionPadding}
         className={cn(
           TR_MENU,
           POPUP_BG,
+          POPUP_MOBILE_MAX_W,
           "text-popover-foreground relative z-50 min-w-[8rem] origin-(--radix-select-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto",
           SELECT_CONTENT_MAX_H,
           POPUP_BORDER,
@@ -123,7 +126,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-pointer items-center gap-2 rounded-md py-2 pr-8 pl-3 text-sm outline-hidden select-none text-foreground data-[disabled]:cursor-not-allowed",
+        "relative flex min-w-0 w-full cursor-pointer items-center gap-2 rounded-md py-2 pr-8 pl-3 text-sm outline-hidden select-none text-foreground data-[disabled]:cursor-not-allowed",
         "data-[highlighted]:bg-muted/[0.22] data-[highlighted]:data-[state=checked]:bg-primary/[0.08] data-[highlighted]:data-[state=checked]:text-primary",
         "data-[state=checked]:bg-primary/[0.08] data-[state=checked]:text-primary",
         "[&_svg:not([class*='text-'])]:text-muted-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
@@ -139,7 +142,7 @@ function SelectItem({
           <CheckIcon className="size-4" />
         </SelectPrimitive.ItemIndicator>
       </span>
-      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText className="block min-w-0 truncate">{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }

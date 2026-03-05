@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import {
+  MANAGEMENT_STAT_GRID_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
   CARD_STAT_LABEL_CLASS,
   TYPO_STAT_COORD,
@@ -40,6 +41,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function fmtDateTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -67,7 +69,7 @@ function QaCoordinatorOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) 
         <section aria-labelledby="qa-coord-cycle-heading">
           <h2 id="qa-coord-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal Cycle</h2>
           <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
               <div className="min-w-0">
                 <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
                 {activeCycleName ? (
@@ -103,7 +105,7 @@ function QaCoordinatorOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) 
         <>
           <section aria-labelledby="qa-coord-overview-heading">
             <h2 id="qa-coord-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Overview</h2>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
                 <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
                 <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
@@ -142,7 +144,7 @@ function QaCoordinatorOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) 
       ) : (
         <section aria-labelledby="qa-coord-participation-heading">
           <h2 id="qa-coord-participation-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Participation</h2>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
               <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
               <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
@@ -196,7 +198,7 @@ function QaCoordinatorEngagement() {
   const hasStats = stats !== null && stats !== undefined;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className={MANAGEMENT_STAT_GRID_CLASS}>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Comments</p>
         <p className={cn("mt-1.5 flex items-center gap-2", TYPO_STAT_COORD)}>
@@ -251,11 +253,12 @@ function formatPeriodLabel(dateStr: string, dateEndStr?: string): string {
 }
 
 function DepartmentCharts() {
+  const isMobile = useIsMobile();
   const { data: charts, isLoading } = useDepartmentChartsQuery();
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className={`${UNIFIED_CARD_CLASS} min-h-[280px] overflow-hidden p-6`}>
           <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
           <div className="mt-4 flex aspect-video items-center justify-center">
@@ -281,8 +284,23 @@ function DepartmentCharts() {
   }));
   const hasTimeData = ideasOverTime.some((d) => d.count > 0);
 
+  const ideasOverTimeMax = Math.max(0, ...ideasOverTime.map((d) => d.count));
+  const ideasOverTimeYDomain: [number, number] = (() => {
+    if (ideasOverTimeMax <= 0) return [0, 2];
+    const step = ideasOverTimeMax <= 10 ? 2 : ideasOverTimeMax <= 50 ? 5 : 10;
+    const niceMax = Math.ceil((ideasOverTimeMax + 0.5) / step) * step;
+    return [0, Math.max(niceMax, 2)];
+  })();
+  const ideasOverTimeYTicks = (() => {
+    const [, max] = ideasOverTimeYDomain;
+    const step = max <= 10 ? 2 : max <= 50 ? 5 : 10;
+    const ticks: number[] = [];
+    for (let i = 0; i <= max; i += step) ticks.push(i);
+    return ticks;
+  })();
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div
         className={`${UNIFIED_CARD_CLASS} overflow-hidden p-6 ${TR_CHART_ENTRANCE}`}
         style={{ animationDelay: "0ms" }}
@@ -290,67 +308,48 @@ function DepartmentCharts() {
         <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
         <div className="mt-4 aspect-video">
           {hasCategoryData ? (
-            <div className="flex h-full w-full items-stretch gap-4">
-              <ChartContainer config={CHART_CONFIG_CATEGORY} className="min-w-0 flex-1 !aspect-auto">
-                <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-                  <ChartTooltip
-                    content={
-                      <ChartTooltipContent
-                        indicator="line"
-                        className={CHART_TOOLTIP_CLASS}
-                        labelClassName={CHART_TOOLTIP_LABEL_CLASS}
-                        nameKey="value"
-                        labelFormatter={(_val, payload) => {
-                          const categoryName = payload?.[0]?.payload?.name ?? payload?.[0]?.name;
-                          const str = typeof categoryName === "string" ? categoryName : String(categoryName ?? "");
-                          return str.length > 36 ? `${str.slice(0, 33)}…` : str;
-                        }}
-                      />
-                    }
-                    cursor
-                  />
-                  <Pie
-                    data={pieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="50%"
-                    outerRadius="85%"
-                    paddingAngle={0}
-                    isAnimationActive={true}
-                    animationDuration={500}
-                    animationEasing="ease-out"
-                  >
-                    {pieData.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length]}
-                        stroke="var(--background)"
-                        strokeWidth={3}
-                      />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-              <div className="flex shrink-0 flex-col justify-center gap-1.5 border-l border-border/40 pl-4">
-                {pieData.map((d, i) => (
-                  <div
-                    key={d.name}
-                    className="flex items-center gap-2 text-[11px]"
-                  >
-                    <span
-                      className="size-2 shrink-0 rounded-[2px]"
-                      style={{ backgroundColor: INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length] }}
-                      aria-hidden
+            <ChartContainer config={CHART_CONFIG_CATEGORY} className="h-full w-full !aspect-auto">
+              <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      indicator="line"
+                      className={CHART_TOOLTIP_CLASS}
+                      labelClassName={CHART_TOOLTIP_LABEL_CLASS}
+                      nameKey="value"
+                      labelFormatter={(_val, payload) => {
+                        const categoryName = payload?.[0]?.payload?.name ?? payload?.[0]?.name;
+                        const str = typeof categoryName === "string" ? categoryName : String(categoryName ?? "");
+                        return str.length > 36 ? `${str.slice(0, 33)}…` : str;
+                      }}
                     />
-                    <span className="min-w-0 truncate text-muted-foreground" title={d.name}>
-                      {d.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  }
+                  cursor
+                />
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="50%"
+                  outerRadius="85%"
+                  paddingAngle={0}
+                  isAnimationActive={true}
+                  animationDuration={500}
+                  animationEasing="ease-out"
+                >
+                  {pieData.map((_, i) => (
+                    <Cell
+                      key={i}
+                      fill={INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length]}
+                      stroke="var(--background)"
+                      strokeWidth={3}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
               No ideas in this cycle
@@ -363,22 +362,23 @@ function DepartmentCharts() {
         style={{ animationDelay: "70ms" }}
       >
         <p className={CARD_STAT_LABEL_CLASS}>Ideas Over Time</p>
-        <div className="mt-4 aspect-video">
+        <div className="mt-4 aspect-video min-h-[160px]">
           {hasTimeData ? (
-            <ChartContainer config={CHART_CONFIG_TIME} className="h-full w-full">
+            <ChartContainer config={CHART_CONFIG_TIME} className="h-full w-full min-h-[160px]">
               <LineChart
                 data={ideasOverTime}
-                margin={{ left: 0, right: 12, top: 8, bottom: 8 }}
+                margin={{ left: 0, right: 12, top: 8, bottom: isMobile ? 16 : 8 }}
               >
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
                 <XAxis
                   dataKey="label"
+                  hide={isMobile}
                   tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 10 }}
                   interval="preserveStartEnd"
                 />
-                <YAxis tickLine={false} axisLine={false} width={24} tick={{ fontSize: 11 }} allowDecimals={false} />
+                <YAxis tickLine={false} axisLine={false} width={isMobile ? 32 : 24} tick={{ fontSize: 11 }} allowDecimals={false} domain={ideasOverTimeYDomain} ticks={ideasOverTimeYTicks} interval={0} />
                 <ChartTooltip
                   content={
                     <ChartTooltipContent

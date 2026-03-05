@@ -156,7 +156,7 @@ function Calendar({
           }
 
           return (
-            <ChevronDownIcon className={cn("size-4", className)} {...props} />
+            <ChevronDownIcon className={cn("hidden size-4 sm:block", className)} {...props} />
           )
         },
         DayButton: CalendarDayButton,

@@ -211,7 +211,7 @@ export function UserMenu({
             </p>
           </div>
           <ChevronDown
-            className="size-3.5 shrink-0 text-muted-foreground/60 transition-[color,transform] duration-200 group-hover:text-muted-foreground/80 group-data-[state=open]:rotate-180"
+            className="hidden size-3.5 shrink-0 text-muted-foreground/60 transition-[color,transform] duration-200 group-hover:text-muted-foreground/80 group-data-[state=open]:rotate-180 sm:block"
             aria-hidden
           />
         </button>
@@ -272,6 +272,15 @@ export function HeaderBreadcrumbs({
 
   const linkClass = `${BREADCRUMB_LINK_CLASS} cursor-pointer rounded-sm py-0.5 text-muted-foreground/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${HOVER_TRANSITION_NAV}`;
 
+  const currentOnly = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1] : null;
+  const parentItem = breadcrumbs.length >= 2 ? breadcrumbs[breadcrumbs.length - 2] : null;
+  const parentIsIdeasHub = parentItem?.label === "Ideas Hub";
+  const mobileItems = parentIsIdeasHub && parentItem && currentOnly
+    ? [parentItem, currentOnly]
+    : currentOnly
+      ? [currentOnly]
+      : [];
+
   return (
     <nav aria-label="Breadcrumb" className="min-w-0 flex-1">
       <ol className={`flex min-w-0 flex-wrap items-center gap-1.5 font-sans text-muted-foreground ${TYPO_HEADER_AND_STAT_TEXT}`}>
@@ -285,28 +294,56 @@ export function HeaderBreadcrumbs({
             </Link>
           </li>
         ) : (
-          breadcrumbs.map((item, i) => (
-            <li key={item.href || `ctx-${i}`} className="flex items-center gap-1">
-              {i > 0 && (
-                <span className="shrink-0 mx-0.5 text-muted-foreground/80" aria-hidden>
-                  /
+          <>
+            {/* Mobile: current only, or Ideas Hub + Detail when that hierarchy exists */}
+            <li className="flex min-w-0 items-center gap-1.5 sm:hidden">
+              {mobileItems.map((item, i) => (
+                <span key={item.href || i} className="flex min-w-0 items-center gap-1.5">
+                  {i > 0 && (
+                    <span className="shrink-0 text-muted-foreground/80" aria-hidden>/</span>
+                  )}
+                  {i < mobileItems.length - 1 && item.href ? (
+                    <Link href={item.href} className={cn("min-w-0 truncate", linkClass)}>
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span
+                      className={cn(
+                        "min-w-0 truncate font-medium",
+                        i === mobileItems.length - 1 && BREADCRUMB_CURRENT_CLASS
+                      )}
+                      aria-current={i === mobileItems.length - 1 ? "page" : undefined}
+                    >
+                      {item.label}
+                    </span>
+                  )}
                 </span>
-              )}
-              {item.isContext ? (
-                <span className="truncate">
-                  {item.label}
-                </span>
-              ) : i < breadcrumbs.length - 1 ? (
-                <Link href={item.href} className={cn("truncate", linkClass)}>
-                  {item.label}
-                </Link>
-              ) : (
-                <span className={cn("truncate font-medium", BREADCRUMB_CURRENT_CLASS)} aria-current="page">
-                  {item.label}
-                </span>
-              )}
+              ))}
             </li>
-          ))
+            {/* Desktop: full breadcrumb */}
+            {breadcrumbs.map((item, i) => (
+              <li key={item.href || `ctx-${i}`} className="hidden items-center gap-1 sm:flex">
+                {i > 0 && (
+                  <span className="shrink-0 mx-0.5 text-muted-foreground/80" aria-hidden>
+                    /
+                  </span>
+                )}
+                {item.isContext ? (
+                  <span className="truncate">
+                    {item.label}
+                  </span>
+                ) : i < breadcrumbs.length - 1 ? (
+                  <Link href={item.href} className={cn("truncate", linkClass)}>
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span className={cn("truncate font-medium", BREADCRUMB_CURRENT_CLASS)} aria-current="page">
+                    {item.label}
+                  </span>
+                )}
+              </li>
+            ))}
+          </>
         )}
       </ol>
     </nav>

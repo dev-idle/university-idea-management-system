@@ -28,7 +28,7 @@ function SubmitButton({ pending, ariaDescribedBy }: { pending: boolean; ariaDesc
     <Button
       type="submit"
       variant="default"
-      className="h-12 w-full rounded-xl text-[15px] font-medium shadow-sm transition-all duration-200 hover:shadow"
+      className="h-11 min-h-[2.75rem] w-full rounded-xl text-base font-medium shadow-sm transition-all duration-200 hover:shadow touch-manipulation sm:text-[15px]"
       disabled={pending}
       aria-busy={pending}
       aria-live="polite"
@@ -85,11 +85,11 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-[1.5rem]"
+      className="flex flex-col gap-5 sm:gap-6"
       noValidate
       aria-label="Sign in"
     >
-      <div className="space-y-4">
+      <div className="flex flex-col gap-3 sm:gap-4">
         <div className={FORM_DIALOG_FIELD_WRAPPER_CLASS}>
           <Label htmlFor="login-email" className="sr-only">
             Email
@@ -99,7 +99,7 @@ export function LoginForm() {
             type="email"
             autoComplete="email"
             placeholder="name@gre.ac.uk"
-            className={cn(PROFILE_INPUT_CLASS, "h-12 px-4 text-[15px]")}
+            className={cn(PROFILE_INPUT_CLASS, "h-11 min-h-[2.75rem] px-4 text-base sm:text-[15px] touch-manipulation")}
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? "login-email-error" : undefined}
             {...register("email")}
@@ -121,7 +121,7 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               placeholder="Password"
-              className={cn(PROFILE_INPUT_CLASS, PROFILE_INPUT_GROUP_HOVER_CLASS, "h-12 px-4 pr-12 text-[15px]")}
+              className={cn(PROFILE_INPUT_CLASS, PROFILE_INPUT_GROUP_HOVER_CLASS, "h-11 min-h-[2.75rem] px-4 pr-14 text-base sm:pr-12 sm:text-[15px] touch-manipulation")}
               aria-invalid={!!errors.password}
               aria-describedby={errors.password ? "login-password-error" : undefined}
               {...register("password")}
@@ -130,15 +130,15 @@ export function LoginForm() {
               type="button"
               variant="ghost"
               size="icon-sm"
-              className="absolute right-1.5 top-1/2 size-9 -translate-y-1/2 rounded-lg text-muted-foreground/80 transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary"
+              className="absolute right-1.5 top-1/2 size-10 min-w-[2.75rem] min-h-[2.75rem] -translate-y-1/2 rounded-lg text-muted-foreground transition-colors duration-200 hover:bg-primary/[0.06] hover:text-primary focus-visible:text-primary touch-manipulation sm:size-9"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
               tabIndex={-1}
             >
               {showPassword ? (
-                <EyeOff className="size-4" aria-hidden />
+                <EyeOff className="size-4 shrink-0 text-current" aria-hidden />
               ) : (
-                <Eye className="size-4" aria-hidden />
+                <Eye className="size-4 shrink-0 text-current" aria-hidden />
               )}
             </Button>
           </div>

@@ -20,6 +20,7 @@ import {
   PanelLeftOpen,
   type LucideIcon,
 } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfileQuery } from "@/hooks/use-profile";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
@@ -162,12 +163,14 @@ function NavLink({
   icon: Icon,
   isActive,
   collapsed,
+  onNavigate,
 }: {
   href: string;
   label: string;
   icon: LucideIcon;
   isActive: boolean;
   collapsed?: boolean;
+  onNavigate?: () => void;
 }) {
   const base = "group/nav relative flex items-center rounded-lg transition-colors duration-200 ease-out";
   const shapeStyle = collapsed
@@ -183,6 +186,7 @@ function NavLink({
       className={cn(base, shapeStyle, stateStyle)}
       aria-current={isActive ? "page" : undefined}
       aria-label={collapsed ? label : undefined}
+      onClick={onNavigate}
     >
       {isActive && !collapsed && (
         <motion.div
@@ -231,7 +235,7 @@ function NavLink({
   return linkContent;
 }
 
-function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labelsCollapsed: boolean }) {
+function SidebarNav({ collapsed, labelsCollapsed, onNavigate }: { collapsed: boolean; labelsCollapsed: boolean; onNavigate?: () => void }) {
   const user = useAuth().user;
   const pathname = usePathname();
 
@@ -252,6 +256,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={LayoutDashboard}
         isActive={pathname === ROUTES.ADMIN_DASHBOARD}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -260,8 +265,9 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           href={ROUTES.ADMIN_USERS}
           label="Users"
           icon={Users}
-          isActive={pathname === ROUTES.ADMIN_USERS}
-          collapsed={collapsed}
+        isActive={pathname === ROUTES.ADMIN_USERS}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
         />
       </Can>
     );
@@ -271,8 +277,9 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           href={ROUTES.ADMIN_DEPARTMENTS}
           label="Departments"
           icon={Building2}
-          isActive={pathname === ROUTES.ADMIN_DEPARTMENTS}
-          collapsed={collapsed}
+        isActive={pathname === ROUTES.ADMIN_DEPARTMENTS}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
         />
       </Can>
     );
@@ -282,8 +289,9 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           href={ROUTES.ADMIN_DEPARTMENT_MEMBERS}
           label="Department Members"
           icon={UsersRound}
-          isActive={pathname === ROUTES.ADMIN_DEPARTMENT_MEMBERS}
-          collapsed={collapsed}
+        isActive={pathname === ROUTES.ADMIN_DEPARTMENT_MEMBERS}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
         />
       </Can>
     );
@@ -293,8 +301,9 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           href={ROUTES.ADMIN_ACADEMIC_YEARS}
           label="Academic Years"
           icon={CalendarDays}
-          isActive={pathname === ROUTES.ADMIN_ACADEMIC_YEARS}
-          collapsed={collapsed}
+        isActive={pathname === ROUTES.ADMIN_ACADEMIC_YEARS}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
         />
       </Can>
     );
@@ -317,6 +326,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={LayoutDashboard}
         isActive={pathname === ROUTES.QA_MANAGER_DASHBOARD}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -327,6 +337,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={Tags}
         isActive={pathname === ROUTES.QA_MANAGER_CATEGORIES}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -337,6 +348,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={CalendarRange}
         isActive={pathname === ROUTES.QA_MANAGER_PROPOSAL_CYCLES}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -350,6 +362,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
         }
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -360,6 +373,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={Download}
         isActive={pathname === ROUTES.QA_MANAGER_EXPORT}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
   }
@@ -381,6 +395,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={LayoutDashboard}
         isActive={pathname === ROUTES.QA_COORDINATOR_DASHBOARD}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -391,6 +406,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={UsersRound}
         isActive={pathname === ROUTES.QA_COORDINATOR_DEPARTMENT}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -404,6 +420,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
           (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
         }
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
   }
@@ -429,6 +446,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={Lightbulb}
         isActive={pathname === ROUTES.IDEAS}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
     items.push(
@@ -439,6 +457,7 @@ function SidebarNav({ collapsed, labelsCollapsed }: { collapsed: boolean; labels
         icon={FolderPen}
         isActive={pathname.startsWith(ROUTES.MY_IDEAS)}
         collapsed={collapsed}
+        onNavigate={onNavigate}
       />
     );
   }
@@ -466,6 +485,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: profile } = useProfileQuery();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [labelsExpanded, setLabelsExpanded] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const justExpandedRef = useRef(false);
 
   const displayName = profile?.fullName?.trim() || user?.email || "";
@@ -506,6 +526,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     });
   }
 
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace(ROUTES.LOGIN);
@@ -543,17 +564,43 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   /* ── Management layout: [ Sidebar (full-height) | Content (Navbar + Main) ] ─ */
+  /* Mobile: sidebar becomes drawer (Sheet). Desktop: sidebar always visible. */
   return (
     <div
       className="flex h-screen overflow-hidden bg-background"
       data-sidebar={sidebarCollapsed ? "collapsed" : "expanded"}
     >
-      {/* ── Sidebar: flex flex-col h-screen — Logo | Menu | Footer ───────────── */}
+      {/* ── Mobile nav drawer: overlay from left ─────────────────────────────────────── */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent
+            side="left"
+            showCloseButton={false}
+            className="flex w-full flex-col gap-0 border-r p-0 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-[20rem]"
+          >
+            <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+            <div className={cn("flex h-16 shrink-0 items-center border-b px-4", SIDEBAR_BORDER)}>
+              <SiteBranding variant="sidebar" linkToEntry collapsed={false} />
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="ml-auto flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/[0.08] hover:text-foreground"
+                aria-label="Close menu"
+              >
+                <PanelLeftClose className="size-5" aria-hidden />
+              </button>
+            </div>
+            <div className={cn("min-h-0 flex-1 overflow-y-auto py-4", SIDEBAR_SCROLL_PX)}>
+              <SidebarNav collapsed={false} labelsCollapsed={false} onNavigate={() => setMobileMenuOpen(false)} />
+            </div>
+          </SheetContent>
+      </Sheet>
+
+      {/* ── Sidebar: hidden on mobile, visible md+ ───────────────────────────── */}
       <aside
         className={cn(
-          "flex h-screen shrink-0 flex-col border-r bg-sidebar transition-[width] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
+          "hidden md:flex h-screen shrink-0 flex-col border-r bg-sidebar transition-[width] duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
           SIDEBAR_BORDER,
-          sidebarCollapsed ? "w-16 items-center md:w-20" : "w-64 md:w-[272px]"
+          sidebarCollapsed ? "w-20 items-center" : "w-[272px]"
         )}
       >
         <SidebarHeader collapsed={sidebarCollapsed} />
@@ -616,6 +663,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           displayName={displayName}
           avatarInitial={avatarInitial}
           onLogout={handleLogout}
+          onOpenMobileMenu={() => setMobileMenuOpen(true)}
         />
         <main
           className={cn(
@@ -670,8 +718,10 @@ function StaffLayout({
         className={NAVBAR_HEADER_CLASS}
       >
         <div className={cn(NAVBAR_LEFT_BASE, "gap-4")}>
-          <SiteBranding variant="header" linkToEntry />
-          <div className={NAVBAR_DIVIDER_LEFT} aria-hidden />
+          <span className="hidden sm:flex sm:items-center">
+            <SiteBranding variant="header" linkToEntry />
+          </span>
+          <div className={cn(NAVBAR_DIVIDER_LEFT, "hidden sm:block")} aria-hidden />
           <span
             className={cn("truncate", STAFF_CONTEXT_LABEL_CLASS)}
             title={contextLabel}

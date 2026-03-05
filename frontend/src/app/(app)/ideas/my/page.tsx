@@ -166,8 +166,8 @@ function IdeaRow({
 
   return (
     <article className={IDEAS_HUB_ARTICLE_CLASS}>
-      {/* Byline + actions (top right) */}
-      <div className={cn("flex items-start justify-between gap-3", IDEAS_HUB_CARD_PX, "pt-4 pb-3 sm:pt-5")}>
+      {/* Byline + actions (top right) — matches Ideas Hub layout */}
+      <div className={cn("flex items-start gap-3", IDEAS_HUB_CARD_PX, "pt-4 pb-3 sm:pt-5")}>
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <Avatar className={IDEAS_HUB_AVATAR}>
             <AvatarFallback className="bg-muted/50 text-[11px] font-semibold text-muted-foreground/70">
@@ -187,16 +187,16 @@ function IdeaRow({
               </span>
               {idea.category?.name && (
                 <>
-                  <span className={BYLINE_META_SEP} aria-hidden />
+                  <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                   <span className={IDEA_DETAIL_CATEGORY_PILL}>
                     <Tag className="size-3 shrink-0 opacity-65" aria-hidden />
-                    {idea.category.name}
+                    <span className="min-w-0 truncate" title={idea.category.name}>{idea.category.name}</span>
                   </span>
                 </>
               )}
               {idea.attachments.length > 0 && (
                 <>
-                  <span className={BYLINE_META_SEP} aria-hidden />
+                  <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                   <span className="inline-flex items-center gap-1.5">
                     <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
                     {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
@@ -291,7 +291,7 @@ function IdeaRow({
                 aria-expanded={false}
                 aria-label="Expand to read full description"
               >
-                <ChevronDown className="size-3 shrink-0" aria-hidden />
+                <ChevronDown className="hidden size-3 shrink-0 sm:block" aria-hidden />
                 Read more
               </button>
             )}
@@ -534,7 +534,7 @@ export default function MyIdeasPage() {
       ) : (
         <>
           <div className={IDEAS_HUB_TOOLBAR}>
-            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+            <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
               {allAcademicYears.length > 0 && (
                 <Select
                   value={academicYearId || "all"}
@@ -546,7 +546,7 @@ export default function MyIdeasPage() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0 sm:w-auto sm:min-w-[9rem]")}>
                     <SelectValue placeholder="Year" />
                   </SelectTrigger>
                   <SelectContent>
@@ -569,7 +569,7 @@ export default function MyIdeasPage() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0 sm:w-auto sm:min-w-[9rem]")}>
                     <SelectValue placeholder="Cycle" />
                   </SelectTrigger>
                   <SelectContent>
@@ -591,7 +591,7 @@ export default function MyIdeasPage() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER}>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0 sm:w-auto sm:min-w-[9rem]")}>
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -605,12 +605,14 @@ export default function MyIdeasPage() {
                 </Select>
               )}
               {(allAcademicYears.length > 0 || cyclesForYear.length > 0 || categories.length > 0) && (
-                <div className={IDEAS_HUB_TOOLBAR_DIVIDER} aria-hidden />
+                <div className={cn(IDEAS_HUB_TOOLBAR_DIVIDER, "hidden sm:inline-flex")} aria-hidden />
               )}
             </div>
-            <p className={cn("shrink-0 tabular-nums", IDEAS_HUB_COUNT)}>
-              {total} proposal{total !== 1 ? "s" : ""}
-            </p>
+            {total > 0 && (
+              <p className={cn("hidden shrink-0 tabular-nums sm:block", IDEAS_HUB_COUNT)}>
+                {total} proposal{total !== 1 ? "s" : ""}
+              </p>
+            )}
           </div>
 
           <div className={IDEAS_HUB_FEED_GAP}>

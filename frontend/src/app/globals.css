@@ -351,8 +351,12 @@
    LOGIN PAGE — Split layout (2026 academic + Facebook-style)
    ============================================================================= */
 
+/* Login layout — modern viewport, safe-area, scroll */
 .login-page-split {
   background: var(--background);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Left: Premium panel — impressive, professional Greenwich hero */
@@ -503,8 +507,12 @@
   }
 }
 
-/* Right: Form panel — polished, cohesive with left hero */
+/* Right: Form panel — polished, responsive, safe-area for notched devices */
 .login-form-panel {
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  padding-top: max(2.5rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
   background:
     radial-gradient(ellipse 80% 100% at 0% 50%, color-mix(in oklch, var(--background) 99%, var(--muted) 8%) 0%, transparent 55%),
     linear-gradient(
@@ -514,6 +522,34 @@
       var(--background) 100%
     );
   box-shadow: inset 1px 0 0 color-mix(in oklch, var(--border) 28%, transparent);
+}
+
+/* Form-only view (mobile): softer, more refined atmosphere */
+@media (max-width: 767px) {
+  .login-form-panel {
+    background:
+      radial-gradient(ellipse 120% 80% at 50% 30%, color-mix(in oklch, var(--background) 98%, var(--muted) 12%) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 60% at 80% 80%, color-mix(in oklch, var(--background) 99%, var(--primary) 4%) 0%, transparent 45%),
+      var(--background);
+  }
+}
+
+@media (min-width: 640px) {
+  .login-form-panel {
+    padding-left: max(2rem, env(safe-area-inset-left, 0px));
+    padding-right: max(2rem, env(safe-area-inset-right, 0px));
+    padding-top: max(3.5rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(3.5rem, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 768px) {
+  .login-form-panel {
+    padding-left: max(3rem, env(safe-area-inset-left, 0px));
+    padding-right: max(3rem, env(safe-area-inset-right, 0px));
+    padding-top: max(4rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(4rem, env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .dark .login-form-panel {
@@ -528,16 +564,27 @@
   box-shadow: inset 1px 0 0 color-mix(in oklch, var(--border) 22%, transparent);
 }
 
-/* Right panel content — balanced, refined layout */
-.login-form-elegant {
-  --login-section-gap: 1.5rem;
+@media (max-width: 767px) {
+  .dark .login-form-panel {
+    background:
+      radial-gradient(ellipse 120% 80% at 50% 30%, color-mix(in oklch, var(--background) 94%, var(--primary) 8%) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 60% at 80% 80%, color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 0%, transparent 45%),
+      var(--background);
+  }
 }
+
+
 
 /* Login form divider — subtle line, gradient fade at ends */
 .login-form-divider {
-  margin-top: var(--login-section-gap, 1.5rem);
-  padding-top: 1.75rem;
+  padding-top: 1.5rem;
   position: relative;
+}
+
+@media (min-width: 640px) {
+  .login-form-divider {
+    padding-top: 1.75rem;
+  }
 }
 
 .login-form-divider::before {

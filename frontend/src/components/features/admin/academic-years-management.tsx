@@ -169,7 +169,7 @@ export function AcademicYearsManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <Can permission="ACADEMIC_YEARS">
         <Dialog
           open={showCreate}

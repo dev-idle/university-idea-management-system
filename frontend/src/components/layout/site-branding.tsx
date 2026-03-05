@@ -18,21 +18,35 @@ interface SiteBrandingProps {
   linkToEntry?: boolean;
   /** When true (sidebar only), show only the icon. */
   collapsed?: boolean;
+  /** When true (header only), show only icon on mobile, full logo from sm+. */
+  compactOnMobile?: boolean;
 }
 
-export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapsed = false }: SiteBrandingProps) {
+export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapsed = false, compactOnMobile = false }: SiteBrandingProps) {
   const user = useAuthStore((s) => s.user);
   const entryHref = user?.roles?.length ? getEntryRouteForRoles(user.roles) : ROUTES.LOGIN;
 
   /* ── Header (navbar): full logo — matches Sidebar height (h-9) for consistency ─ */
   if (variant === "header") {
-    const logo = <BrandLogo className="h-9" align="left" />;
+    const logo = compactOnMobile ? (
+      <>
+        <span className="flex sm:hidden" aria-hidden>
+          <BrandIcon className="size-8" />
+        </span>
+        <span className="hidden sm:block">
+          <BrandLogo className="h-9" align="left" />
+        </span>
+      </>
+    ) : (
+      <BrandLogo className="h-9" align="left" />
+    );
 
     if (linkToEntry) {
       return (
         <Link
           href={entryHref}
           className="flex cursor-pointer items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={compactOnMobile ? `${UNIVERSITY_NAME}. Go to home.` : undefined}
         >
           {logo}
         </Link>

@@ -61,9 +61,9 @@ export function formatManagementShowingRange(
   return `Showing ${start}–${end} of ${total}`;
 }
 
-/** Header bar for management card: "Showing X–Y of Z" left, actions right. */
+/** Header bar for management card: "Showing X–Y of Z" left, actions right. Unified with UNIFIED_CARD_TOOLBAR padding. */
 export const MANAGEMENT_CARD_HEADER_CLASS =
-  `flex flex-wrap items-center justify-between gap-3 min-h-12 border-b px-4 py-3.5 sm:px-6 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
+  `flex flex-wrap items-center justify-between gap-3 min-h-12 border-b px-5 py-4 sm:px-6 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
 
 /** Management card wrapper (table card). Uses shared CARD_CLASS. */
 export const MANAGEMENT_CARD_CLASS = `overflow-hidden ${CARD_CLASS} py-0`;
@@ -72,9 +72,16 @@ export const MANAGEMENT_CARD_CLASS = `overflow-hidden ${CARD_CLASS} py-0`;
 export const UNIFIED_CARD_CLASS =
   `overflow-hidden rounded-xl border bg-background shadow-[var(--shadow-card-subtle)] transition-shadow duration-200 ${MGMT_BORDER_CARD}`;
 
-/** Unified card toolbar — minimal, refined. */
+/** Unified card toolbar — minimal, refined. Mobile: stacked rows (Search, Filters, Add each full width). Desktop: inline. */
 export const UNIFIED_CARD_TOOLBAR_CLASS =
-  `flex justify-between items-center gap-4 border-b px-6 py-4 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
+  `flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-between sm:items-center sm:gap-4 border-b px-5 py-4 sm:px-6 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
+
+/** Toolbar search+filters group — stacks vertically on mobile (Search row, Filters row), inline on desktop. */
+export const TOOLBAR_SEARCH_FILTERS_GROUP =
+  "flex flex-col gap-3 w-full min-w-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:w-auto";
+
+/** Toolbar Add button — full width on mobile, auto on desktop. */
+export const TOOLBAR_ADD_MOBILE_CLASS = "w-full sm:w-auto";
 
 /** Unified search input — design: border/80, ring /[0.08]. Subtle hover, smooth transitions, respects reduced motion. */
 export const UNIFIED_SEARCH_INPUT_CLASS =
@@ -84,13 +91,13 @@ export const UNIFIED_SEARCH_INPUT_CLASS =
 export const TOOLBAR_FILTER_SELECT_TRIGGER_CLASS =
   "!h-9 w-full min-w-0 overflow-hidden rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:block [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
 
-/** Toolbar filter widths (rem-based, design scale). Search: 18rem, Dept & Role: 10rem. */
-export const TOOLBAR_SEARCH_WIDTH = "w-72";       /* 18rem */
-export const TOOLBAR_FILTER_DEPT_WIDTH = "w-40";  /* 10rem, same as Role */
-export const TOOLBAR_FILTER_ROLE_WIDTH = "w-40";  /* 10rem */
+/** Toolbar filter widths (rem-based, design scale). Search: full on mobile, 18rem on sm+. Dept & Role: full on mobile, 10rem on sm+. */
+export const TOOLBAR_SEARCH_WIDTH = "w-full min-w-0 sm:w-72";
+export const TOOLBAR_FILTER_DEPT_WIDTH = "w-full sm:w-40";  /* full on mobile, 10rem on sm+ */
+export const TOOLBAR_FILTER_ROLE_WIDTH = "w-full sm:w-40";  /* full on mobile, 10rem on sm+ */
 
-/** Toolbar vertical divider — separates Search from filter selects. */
-export const TOOLBAR_FILTER_DIVIDER = "h-9 w-px shrink-0 self-center bg-border/40";
+/** Toolbar vertical divider — separates Search from filter selects. Hidden on mobile when stacked. */
+export const TOOLBAR_FILTER_DIVIDER = "hidden h-9 w-px shrink-0 self-center bg-border/40 sm:block";
 
 /** Sculpted modal overlay (matches TR_OVERLAY 240ms). */
 export const DIALOG_OVERLAY_SCULPTED_CLASS =
@@ -163,6 +170,9 @@ export const TABLE_ACTIONS_CELL_CLASS = "px-6 py-4 text-right";
 /** Pagination footer (minimal, aligned with table). */
 export const PAGINATION_FOOTER_CLASS =
   `flex items-center justify-end border-t px-4 py-3 sm:px-6 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
+
+/** Table scroll wrapper — horizontal scroll on mobile when table overflows. */
+export const MANAGEMENT_TABLE_OVERFLOW_CLASS = "overflow-x-auto";
 
 /** "Showing X–Y of Z" badge inside search input. Design: muted-foreground/80. */
 export const SHOWING_RANGE_BADGE_CLASS =
@@ -363,9 +373,9 @@ export const FORM_ACTIONS_DIALOG_CLASS = FORM_ACTIONS_CLASS;
 /** Primary submit button (aligned with design FORM_SUBMIT_BUTTON_CLASS). */
 export const FORM_BUTTON_CLASS = FORM_SUBMIT_BUTTON_CLASS;
 
-/** Toolbar Add/Cancel button — h-8, refined. */
+/** Toolbar Add/Cancel button — h-8, refined. Full width on mobile. */
 export const TOOLBAR_ADD_BUTTON_BASE_CLASS =
-  "h-8 shrink-0 rounded-lg cursor-pointer gap-2 px-3 text-sm font-medium transition-all duration-200 active:scale-[0.98]";
+  `h-8 shrink-0 rounded-lg cursor-pointer gap-2 px-3 text-sm font-medium transition-all duration-200 active:scale-[0.98] ${TOOLBAR_ADD_MOBILE_CLASS}`;
 
 /** Toolbar Add button — primary variant when not toggled. */
 export const TOOLBAR_ADD_BUTTON_PRIMARY_CLASS =

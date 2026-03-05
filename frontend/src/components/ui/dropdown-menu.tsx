@@ -5,7 +5,7 @@ import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MENU } from "@/config/design"
+import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_SHADOW, POPUP_ROUNDED_MENU, POPUP_MOBILE_MAX_W } from "@/config/design"
 
 function DropdownMenu({
   ...props
@@ -35,6 +35,7 @@ function DropdownMenuTrigger({
 function DropdownMenuContent({
   className,
   sideOffset = 4,
+  collisionPadding = 16,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
@@ -42,7 +43,8 @@ function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
-        className={cn(TR_MENU, POPUP_BG, "text-popover-foreground z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto p-1.5", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
+        collisionPadding={collisionPadding}
+        className={cn(TR_MENU, POPUP_BG, POPUP_MOBILE_MAX_W, "text-popover-foreground z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto p-1.5", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>
@@ -72,7 +74,7 @@ function DropdownMenuItem({
       data-inset={inset}
       data-variant={variant}
       className={cn(
-        "focus:bg-primary/[0.06] focus:text-primary data-[highlighted]:bg-primary/[0.06] data-[highlighted]:text-primary data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/[0.08] data-[variant=destructive]:data-[highlighted]:bg-destructive/[0.08] dark:data-[variant=destructive]:focus:bg-destructive/20 dark:data-[variant=destructive]:data-[highlighted]:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:data-[highlighted]:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground/80 relative flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-sm outline-hidden select-none transition-colors duration-200 ease-out data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "focus:bg-primary/[0.06] focus:text-primary data-[highlighted]:bg-primary/[0.06] data-[highlighted]:text-primary data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/[0.08] data-[variant=destructive]:data-[highlighted]:bg-destructive/[0.08] dark:data-[variant=destructive]:focus:bg-destructive/20 dark:data-[variant=destructive]:data-[highlighted]:bg-destructive/20 data-[variant=destructive]:focus:text-destructive data-[variant=destructive]:data-[highlighted]:text-destructive data-[variant=destructive]:*:[svg]:!text-destructive [&_svg:not([class*='text-'])]:text-muted-foreground/80 relative flex min-w-0 cursor-pointer items-center gap-2 overflow-hidden rounded-md px-2.5 py-2 text-sm outline-hidden select-none transition-colors duration-200 ease-out data-[disabled]:pointer-events-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 data-[inset]:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&>span:not([data-slot=dropdown-menu-shortcut])]:min-w-0 [&>span:not([data-slot=dropdown-menu-shortcut])]:truncate",
         className
       )}
       {...props}

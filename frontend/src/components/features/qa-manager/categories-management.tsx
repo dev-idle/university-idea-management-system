@@ -146,7 +146,7 @@ export function CategoriesManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {isQaManager && (
         <Dialog
           open={showCreate}

@@ -87,6 +87,7 @@ import {
   PAGE_CONTAINER_CLASS,
 } from "@/config/design";
 import { ROUTES } from "@/config/constants";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { getAvatarInitial, cn } from "@/lib/utils";
 
 const GENDER_NONE = "__none__";
@@ -208,6 +209,7 @@ function EditableDisplayName({
 export function ProfileContent() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { data: profile, isLoading, error } = useProfileQuery();
 
   const updateProfileMutation = useMutation({
@@ -337,12 +339,26 @@ export function ProfileContent() {
               primaryClass={staffLayout ? PROFILE_STAFF_SM_PRIMARY_CLASS : undefined}
             />
             <p className={PROFILE_METADATA_CLASS}>{profile.email}</p>
-            <p className={PROFILE_METADATA_CLASS}>
-              {roleLabel}
+            <p
+              className={cn(
+                PROFILE_METADATA_CLASS,
+                "flex flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-center"
+              )}
+            >
+              <span className="min-w-0 truncate" title={isMobile ? roleLabel : undefined}>
+                {roleLabel}
+              </span>
               {profile.department?.name && (
                 <>
-                  <span className="mx-1.5 text-muted-foreground/80" aria-hidden>|</span>
-                  {profile.department.name}
+                  <span className="hidden shrink-0 mx-1.5 text-muted-foreground/80 sm:inline" aria-hidden>
+                    |
+                  </span>
+                  <span
+                    className="min-w-0 truncate"
+                    title={isMobile ? profile.department.name : undefined}
+                  >
+                    {profile.department.name}
+                  </span>
                 </>
               )}
             </p>
@@ -357,7 +373,7 @@ export function ProfileContent() {
               <User className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               Personal information
             </CardTitle>
-            <CardAction>
+            <CardAction className="hidden sm:flex">
               <Button
                 form="edit-profile-form"
                 type="submit"
@@ -515,6 +531,27 @@ export function ProfileContent() {
                       </FormItem>
                     )}
                   />
+                </div>
+                <div className="block sm:hidden">
+                  <Button
+                    form="edit-profile-form"
+                    type="submit"
+                    disabled={updateProfileMutation.isPending}
+                    aria-busy={updateProfileMutation.isPending}
+                    className="h-11 w-full rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-[var(--shadow-card-subtle)] transition-all duration-200 hover:bg-primary/95 disabled:opacity-50"
+                  >
+                    {updateProfileMutation.isPending ? (
+                      <span className="inline-flex items-center justify-center gap-1.5">
+                        <span
+                          className={LOADING_SPINNER_ON_PRIMARY_SM_CLASS}
+                          aria-hidden
+                        />
+                        Saving…
+                      </span>
+                    ) : (
+                      "Save changes"
+                    )}
+                  </Button>
                 </div>
               </form>
             </Form>

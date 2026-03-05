@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import {
+  MANAGEMENT_STAT_GRID_CLASS,
   DASHBOARD_SECTION_HEADING_CLASS,
+} from "@/config/design";
+import {
   CARD_STAT_LABEL_CLASS,
   TYPO_STAT_COORD,
   TYPO_STAT_BASE_COORD,
@@ -24,6 +27,7 @@ import { getRoleLabel, type Role } from "@/lib/rbac";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, UserCog, Users, ChevronRight } from "lucide-react";
 import { ROUTES } from "@/config/constants";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
   const cycleStats = stats.activeYearCycleStats;
@@ -35,7 +39,7 @@ function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
     !stats.activeAcademicYear ? "—" : totalActivated > 0 ? `${totalActivated}` : "None";
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className={MANAGEMENT_STAT_GRID_CLASS}>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
         <p className={CARD_STAT_LABEL_CLASS}>Total users</p>
         <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{stats.totalUsers}</p>
@@ -72,7 +76,7 @@ function AdminUsersByRole({ stats }: { stats: AdminDashboardStats }) {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className={MANAGEMENT_STAT_GRID_CLASS}>
       {roles
         .sort((a, b) => roleOrder[a] - roleOrder[b])
         .map((role) => {
@@ -91,6 +95,7 @@ function AdminUsersByRole({ stats }: { stats: AdminDashboardStats }) {
 }
 
 function DepartmentComplianceSection({ stats }: { stats: AdminDashboardStats }) {
+  const isMobile = useIsMobile();
   const applicable = stats.departmentCompliance.filter((d) => !d.isExcluded);
   const nonCompliant = applicable.filter((d) => d.status !== "ok");
   const totalApplicable = applicable.length;
@@ -138,45 +143,52 @@ function DepartmentComplianceSection({ stats }: { stats: AdminDashboardStats }) 
           </div>
 
           <ul className={cn("divide-y", MGMT_DIVIDE)} role="list">
-            {nonCompliant.map((d) => (
-              <li
-                key={d.id}
-                className={cn(
-                  "flex flex-wrap items-center justify-between gap-4 px-6 py-3.5 transition-colors",
-                  MGMT_BG_ROW_HOVER
-                )}
-              >
-                <span className="min-w-0 truncate text-sm text-foreground/92">
-                  {d.name}
-                </span>
-                <div className="flex items-center gap-2">
+            {nonCompliant.map((d) => {
+              const qcLabel = d.hasQaCoordinator ? "QA Coordinator" : "No QA Coordinator";
+              const staffLabel = d.staffCount === 0 ? "No staff" : `${d.staffCount} staff`;
+              return (
+                <li
+                  key={d.id}
+                  className={cn(
+                    "flex flex-col gap-2 px-6 py-3.5 transition-colors sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4",
+                    MGMT_BG_ROW_HOVER
+                  )}
+                >
                   <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5",
-                      d.hasQaCoordinator
-                        ? STATUS_BADGE_INACTIVE_CLASS
-                        : STATUS_BADGE_ACTIVE_WARM_CLASS
-                    )}
+                    className="min-w-0 truncate text-sm text-foreground/92"
+                    title={isMobile ? d.name : undefined}
                   >
-                    <UserCog className="size-3.5 shrink-0" aria-hidden />
-                    {d.hasQaCoordinator ? "QA Coordinator" : "No QA Coordinator"}
+                    {d.name}
                   </span>
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-1.5",
-                      d.staffCount > 0
-                        ? STATUS_BADGE_INACTIVE_CLASS
-                        : STATUS_BADGE_ACTIVE_WARM_CLASS
-                    )}
-                  >
-                    <Users className="size-3.5 shrink-0" aria-hidden />
-                    {d.staffCount === 0
-                      ? "No staff"
-                      : `${d.staffCount} staff`}
-                  </span>
-                </div>
-              </li>
-            ))}
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
+                    <span
+                      className={cn(
+                        "inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden",
+                        d.hasQaCoordinator
+                          ? STATUS_BADGE_INACTIVE_CLASS
+                          : STATUS_BADGE_ACTIVE_WARM_CLASS
+                      )}
+                      title={isMobile ? qcLabel : undefined}
+                    >
+                      <UserCog className="size-3.5 shrink-0" aria-hidden />
+                      <span className="min-w-0 truncate">{qcLabel}</span>
+                    </span>
+                    <span
+                      className={cn(
+                        "inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden",
+                        d.staffCount > 0
+                          ? STATUS_BADGE_INACTIVE_CLASS
+                          : STATUS_BADGE_ACTIVE_WARM_CLASS
+                      )}
+                      title={isMobile ? staffLabel : undefined}
+                    >
+                      <Users className="size-3.5 shrink-0" aria-hidden />
+                      <span className="min-w-0 truncate">{staffLabel}</span>
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </>
       )}

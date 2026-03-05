@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminDashboardContent } from "@/components/features/admin/dashboard";
-import { PAGE_CONTAINER_CLASS } from "@/config/design";
+import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Administration",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminDashboardPage() {
   return (
-    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
+    <div className={MANAGEMENT_PAGE_CLASS}>
       <AdminDashboardContent />
     </div>
   );

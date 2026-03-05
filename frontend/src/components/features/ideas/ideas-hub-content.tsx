@@ -75,6 +75,7 @@ import {
   FileText,
   Clock,
   Tag,
+  Hourglass,
 } from "lucide-react";
 import { IdeaActionsMenu, hasIdeaActions } from "@/components/features/qa-manager/idea-actions-menu";
 
@@ -184,15 +185,18 @@ function CtaCompose({ closesAt }: { closesAt: string | Date | null }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className={cn(IDEAS_HUB_CTA_TITLE, "transition-colors duration-200 group-hover/cta:text-primary")}>Share a proposal</p>
-          <p className={cn(IDEAS_HUB_CTA_SUBTITLE, "flex flex-wrap items-center gap-x-0 gap-y-0 sm:gap-x-0")}>
+          <p className={cn(IDEAS_HUB_CTA_SUBTITLE, "flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-0")}>
             <span className="inline-flex items-center gap-1.5">
               <Clock className="size-3 shrink-0 opacity-55" aria-hidden />
               <span>{deadline}</span>
             </span>
             {countdown && (
               <>
-                <span className={BYLINE_META_SEP} aria-hidden />
-                <span className="tabular-nums">{countdown} left</span>
+                <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
+                <span className="inline-flex items-center gap-1.5">
+                  <Hourglass className="size-3 shrink-0 opacity-55" aria-hidden />
+                  <span className="tabular-nums">{countdown} left</span>
+                </span>
               </>
             )}
           </p>
@@ -277,16 +281,16 @@ function IdeaCard({
             </span>
             {idea.category?.name && (
               <>
-                <span className={BYLINE_META_SEP} aria-hidden />
+                <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                 <span className={IDEA_DETAIL_CATEGORY_PILL}>
                   <Tag className="size-3 shrink-0 opacity-65" aria-hidden />
-                  {idea.category.name}
+                  <span className="min-w-0 truncate" title={idea.category.name}>{idea.category.name}</span>
                 </span>
               </>
             )}
             {idea.attachments.length > 0 && (
               <>
-                <span className={BYLINE_META_SEP} aria-hidden />
+                <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                 <span className="inline-flex items-center gap-1.5">
                   <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
                   {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
@@ -333,7 +337,7 @@ function IdeaCard({
                 aria-expanded={false}
                 aria-label="Expand to read full description"
               >
-                <ChevronDown className="size-3 shrink-0" aria-hidden />
+                <ChevronDown className="hidden size-3 shrink-0 sm:block" aria-hidden />
                 Read more
               </button>
             )}
@@ -566,7 +570,7 @@ export function IdeasHubContent() {
 
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
       <div className={IDEAS_HUB_TOOLBAR}>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+        <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
           {(isQaCoordinator || isQaManager) && departments.length > 0 && (
             <Select
               value={departmentId || "all"}
@@ -576,7 +580,10 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER_COORDINATOR}>
+              <SelectTrigger className={cn(
+                isQaCoordinator || isQaManager ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER,
+                "w-full min-w-0 sm:w-auto sm:min-w-[9rem]",
+              )}>
                 <SelectValue placeholder="Department" />
               </SelectTrigger>
               <SelectContent>
@@ -600,7 +607,10 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
+              <SelectTrigger className={cn(
+                isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER,
+                "w-full min-w-0 sm:w-auto sm:min-w-[10rem]",
+              )}>
                 <SelectValue placeholder="Cycle" />
               </SelectTrigger>
               <SelectContent>
@@ -622,7 +632,10 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER}>
+              <SelectTrigger className={cn(
+                isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER,
+                "w-full min-w-0 sm:w-auto sm:min-w-[9rem]",
+              )}>
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
@@ -636,7 +649,7 @@ export function IdeasHubContent() {
             </Select>
           )}
           {!isQaCoordinator && !isQaManager && (closedCycles.length > 0 || departments.length > 0 || categories.length > 0) && (
-            <div className={IDEAS_HUB_TOOLBAR_DIVIDER} aria-hidden />
+            <div className={cn(IDEAS_HUB_TOOLBAR_DIVIDER, "hidden sm:inline-flex")} aria-hidden />
           )}
           {(isQaCoordinator || isQaManager) ? (
             <Select
@@ -647,7 +660,10 @@ export function IdeasHubContent() {
                 setExpandedId(null);
               }}
             >
-              <SelectTrigger className={IDEAS_HUB_SELECT_TRIGGER_COORDINATOR} aria-label="Sort by">
+              <SelectTrigger className={cn(
+                IDEAS_HUB_SELECT_TRIGGER_COORDINATOR,
+                "w-full min-w-0 sm:w-auto sm:min-w-[10rem]",
+              )} aria-label="Sort by">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -659,29 +675,52 @@ export function IdeasHubContent() {
               </SelectContent>
             </Select>
           ) : (
-            <nav className="flex items-center gap-1" aria-label="Sort by">
-              {VIEW_TABS.map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => {
-                    setSort(tab.value);
+            <>
+              <div className="sm:hidden">
+                <Select
+                  value={sort}
+                  onValueChange={(v) => {
+                    setSort(v as ViewMode);
                     setPage(1);
                     setExpandedId(null);
                   }}
-                  className={cn(
-                    IDEAS_HUB_TAB_BASE,
-                    sort === tab.value ? IDEAS_HUB_TAB_ACTIVE : IDEAS_HUB_TAB_INACTIVE,
-                  )}
                 >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0")} aria-label="Sort by">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VIEW_TABS.map((tab) => (
+                      <SelectItem key={tab.value} value={tab.value}>
+                        {tab.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <nav className="hidden items-center gap-1 sm:flex" aria-label="Sort by">
+                {VIEW_TABS.map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => {
+                      setSort(tab.value);
+                      setPage(1);
+                      setExpandedId(null);
+                    }}
+                    className={cn(
+                      IDEAS_HUB_TAB_BASE,
+                      sort === tab.value ? IDEAS_HUB_TAB_ACTIVE : IDEAS_HUB_TAB_INACTIVE,
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+            </>
           )}
         </div>
         {total > 0 && (
-          <p className={cn("shrink-0 tabular-nums", IDEAS_HUB_COUNT)}>
+          <p className={cn("hidden shrink-0 tabular-nums sm:block", IDEAS_HUB_COUNT)}>
             {total} proposal{total !== 1 ? "s" : ""}
           </p>
         )}

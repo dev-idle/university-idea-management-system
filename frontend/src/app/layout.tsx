@@ -14,6 +14,10 @@ export const metadata: Metadata = {
 
 /** Theme colors aligned with design-system primary (Greenwich purple/indigo). */
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#28224B" },
     { media: "(prefers-color-scheme: dark)", color: "#1a1535" },

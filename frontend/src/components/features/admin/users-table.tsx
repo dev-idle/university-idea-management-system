@@ -29,6 +29,7 @@ import {
   ACTION_BUTTON_DISABLED_BLUR_CLASS,
   STATUS_BADGE_ACTIVE_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
+  MANAGEMENT_TABLE_OVERFLOW_CLASS,
   DIALOG_CONTENT_SCULPTED_CLASS,
   DIALOG_OVERLAY_SCULPTED_CLASS,
   DIALOG_HEADER_SCULPTED_CLASS,
@@ -120,7 +121,7 @@ export function UsersTable({ users, isRefetching, hasActiveSearch = false, depar
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="overflow-x-auto">
+      <div className={MANAGEMENT_TABLE_OVERFLOW_CLASS}>
         <table className={TABLE_BASE_CLASS}>
           <thead>
             <tr className={TABLE_HEAD_ROW_CLASS}>

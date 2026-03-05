@@ -24,6 +24,22 @@ export function timeAgo(d: Date | string): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
+/** Short relative time for mobile (e.g. "3m", "2h", "1d"). */
+export function timeAgoShort(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  const s = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (s < 60) return "now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  const day = Math.floor(h / 24);
+  if (day < 7) return `${day}d`;
+  const w = Math.floor(day / 7);
+  if (w < 5) return `${w}w`;
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 /** Display format for academic year: 2025-2026 → 2025 - 2026 */
 export function formatAcademicYearDisplay(name: string): string {
   if (!name || typeof name !== "string") return name;

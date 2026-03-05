@@ -270,7 +270,7 @@ export function SubmissionCyclesManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <AlertDialog
         open={!!cycleToDeactivate}
         onOpenChange={(open) => !open && setCycleToDeactivate(null)}

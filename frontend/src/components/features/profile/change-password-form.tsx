@@ -127,7 +127,7 @@ export function ChangePasswordForm({ staffLayout = false }: ChangePasswordFormPr
           <KeyRound className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           Change password
         </CardTitle>
-        <CardAction>
+        <CardAction className="hidden sm:flex">
           <Button
             form="change-password-form"
             type="submit"
@@ -215,30 +215,51 @@ export function ChangePasswordForm({ staffLayout = false }: ChangePasswordFormPr
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="confirmNewPassword"
-              render={({ field }) => (
-                <FormItem className={PROFILE_FORM_ITEM_CLASS}>
-                  <FormLabel className={PROFILE_LABEL_CLASS}>
-                    Confirm new password
-                  </FormLabel>
-                  <FormControl>
-                    <PasswordInputWithToggle
-                      type={showConfirm ? "text" : "password"}
-                      autoComplete="new-password"
-                      placeholder="••••••••"
-                      className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-11`}
-                      aria-invalid={!!errors.confirmNewPassword}
-                      show={showConfirm}
-                      onToggle={() => setShowConfirm((p) => !p)}
-                      {...field}
+                <FormField
+                  control={form.control}
+                  name="confirmNewPassword"
+                  render={({ field }) => (
+                    <FormItem className={PROFILE_FORM_ITEM_CLASS}>
+                      <FormLabel className={PROFILE_LABEL_CLASS}>
+                        Confirm new password
+                      </FormLabel>
+                      <FormControl>
+                        <PasswordInputWithToggle
+                          type={showConfirm ? "text" : "password"}
+                          autoComplete="new-password"
+                          placeholder="••••••••"
+                          className={`${PROFILE_INPUT_CLASS} ${PROFILE_INPUT_GROUP_HOVER_CLASS} pr-11`}
+                          aria-invalid={!!errors.confirmNewPassword}
+                          show={showConfirm}
+                          onToggle={() => setShowConfirm((p) => !p)}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            <div className="block sm:hidden">
+              <Button
+                form="change-password-form"
+                type="submit"
+                disabled={isSubmitting}
+                aria-busy={isSubmitting}
+                className="h-11 w-full rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-[var(--shadow-card-subtle)] transition-all duration-200 hover:bg-primary/95 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <span className="inline-flex items-center justify-center gap-1.5">
+                    <span
+                      className={LOADING_SPINNER_ON_PRIMARY_SM_CLASS}
+                      aria-hidden
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    Updating…
+                  </span>
+                ) : (
+                  "Update password"
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>

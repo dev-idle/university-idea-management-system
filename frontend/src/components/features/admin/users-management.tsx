@@ -106,7 +106,7 @@ export function AdminUsersManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <Can permission="USERS">
         <Dialog
           open={showCreate}

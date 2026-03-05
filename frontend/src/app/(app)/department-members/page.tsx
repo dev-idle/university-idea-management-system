@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DepartmentMembersContent } from "@/components/features/department-members/department-members-content";
 import { DepartmentMembersRedirect } from "@/components/features/department-members/department-members-redirect";
 import { buildPageTitle } from "@/config/constants";
-import { PAGE_CONTAINER_CLASS } from "@/config/design";
+import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: buildPageTitle("Department Members"),
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function DepartmentMembersPage() {
   return (
     <DepartmentMembersRedirect>
-      <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
+      <div className={MANAGEMENT_PAGE_CLASS}>
         <DepartmentMembersContent />
       </div>
     </DepartmentMembersRedirect>

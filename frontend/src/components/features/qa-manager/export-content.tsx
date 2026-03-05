@@ -158,7 +158,7 @@ export function ExportContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <section aria-labelledby="export-heading">
         <h2 id="export-heading" className={SECTION_LABEL_CLASS}>
           Export by proposal cycle

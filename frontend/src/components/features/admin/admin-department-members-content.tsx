@@ -12,6 +12,7 @@ import {
   UNIFIED_SEARCH_INPUT_CLASS,
   SHOWING_RANGE_BADGE_CLASS,
   TOOLBAR_SEARCH_WIDTH,
+  TOOLBAR_SEARCH_FILTERS_GROUP,
   TOOLBAR_FILTER_DEPT_WIDTH,
   TOOLBAR_FILTER_ROLE_WIDTH,
   TOOLBAR_FILTER_DIVIDER,
@@ -174,10 +175,10 @@ export function AdminDepartmentMembersContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <div className={UNIFIED_CARD_CLASS}>
         <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className={TOOLBAR_SEARCH_FILTERS_GROUP}>
             <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
               <Search
                 className={cn(
@@ -243,7 +244,7 @@ export function AdminDepartmentMembersContent() {
               </Select>
             ) : null}
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 shrink-0">
+          <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
             <Users className="size-3.5 shrink-0" aria-hidden />
             {`${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
           </span>

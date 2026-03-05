@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ExportContent } from "@/components/features/qa-manager/export-content";
-import { PAGE_CONTAINER_CLASS } from "@/config/design";
+import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Export Data",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function QaManagerExportPage() {
   return (
-    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
+    <div className={MANAGEMENT_PAGE_CLASS}>
       <ExportContent />
     </div>
   );

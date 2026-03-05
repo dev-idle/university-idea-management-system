@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CategoriesManagement } from "@/components/features/qa-manager/categories-management";
-import { PAGE_CONTAINER_CLASS } from "@/config/design";
+import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Categories",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function QaManagerCategoriesPage() {
   return (
-    <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
+    <div className={MANAGEMENT_PAGE_CLASS}>
       <CategoriesManagement />
     </div>
   );

@@ -126,7 +126,7 @@ function DatePickerMonthCaption(props: {
         className="flex flex-1 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1.5 py-1 text-[12px] font-medium tracking-tight text-foreground transition-colors duration-200 hover:bg-muted/[0.06] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/[0.08]"
       >
         <span className="truncate">{caption}</span>
-        <ChevronDownIcon className="size-3 shrink-0 text-muted-foreground/80" strokeWidth={2} />
+        <ChevronDownIcon className="hidden size-3 shrink-0 text-muted-foreground/80 sm:block" strokeWidth={2} />
       </button>
       <button
         type="button"

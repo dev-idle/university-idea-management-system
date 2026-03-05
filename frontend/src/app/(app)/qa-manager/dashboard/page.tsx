@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { QaManagerDashboardContent } from "@/components/features/qa-manager/qa-manager-dashboard-content";
-import { PAGE_CONTAINER_CLASS } from "@/config/design";
+import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function QaManagerDashboardPage() {
   return (
-    <div className={`space-y-8 ${PAGE_CONTAINER_CLASS}`}>
+    <div className={MANAGEMENT_PAGE_CLASS}>
       <QaManagerDashboardContent />
     </div>
   );

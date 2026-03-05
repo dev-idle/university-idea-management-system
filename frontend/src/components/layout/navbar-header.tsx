@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Menu } from "lucide-react";
 import { getEntryRouteForRoles, ROUTES } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { hasRole } from "@/lib/rbac";
@@ -25,6 +25,8 @@ interface NavbarHeaderProps {
   displayName: string;
   avatarInitial: string;
   onLogout: () => Promise<void>;
+  /** When provided, shows hamburger to open mobile nav drawer. */
+  onOpenMobileMenu?: () => void;
 }
 
 /**
@@ -36,6 +38,7 @@ export function NavbarHeader({
   displayName,
   avatarInitial,
   onLogout,
+  onOpenMobileMenu,
 }: NavbarHeaderProps) {
   const pathname = usePathname();
   const showNotification = !hasRole(user.roles, "ADMIN") && !hasRole(user.roles, "QA_MANAGER");
@@ -44,6 +47,16 @@ export function NavbarHeader({
   return (
     <header className={NAVBAR_HEADER_CLASS}>
       <div className={NAVBAR_LEFT_BASE}>
+        {onOpenMobileMenu && (
+          <button
+            type="button"
+            onClick={onOpenMobileMenu}
+            className="-ml-1 flex size-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
+            aria-label="Open menu"
+          >
+            <Menu className="size-5" aria-hidden />
+          </button>
+        )}
         <HeaderBreadcrumbs
           pathname={pathname}
           user={user}

@@ -13,13 +13,14 @@ import {
   useLikeCommentMutation,
 } from "@/hooks/use-ideas";
 import { useIdeaViewTracker } from "@/hooks/use-idea-view-tracker";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useProfileQuery } from "@/hooks/use-profile";
 import { useAuthStore } from "@/stores/auth.store";
 import { hasRole } from "@/lib/rbac";
 import { ROUTES, buildPageTitle } from "@/config/constants";
 import { fetchWithAuthResponse } from "@/lib/api/client";
 import type { IdeaComment } from "@/lib/schemas/ideas.schema";
-import { getAvatarInitial, getCommentDisplayInfo, cn, timeAgo } from "@/lib/utils";
+import { getAvatarInitial, getCommentDisplayInfo, cn, timeAgo, timeAgoShort } from "@/lib/utils";
 import { getErrorMessage, ERROR_FALLBACK_FORM } from "@/lib/errors";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ import {
   IDEA_DETAIL_FORM_FOOTER,
   IDEA_DETAIL_CATEGORY_PILL,
   BYLINE_META_SEP,
+  IDEA_ARTICLE_BYLINE_META,
   IDEA_DETAIL_REPLY_FORM,
   IDEA_DETAIL_COMMENT_ROW_ROOT,
   IDEA_DETAIL_COMMENT_ROW_ROOT_NOT_FIRST,
@@ -356,6 +358,7 @@ function CommentItem({
   deleteMutation: ReturnType<typeof useDeleteCommentMutation>;
   likeMutation: ReturnType<typeof useLikeCommentMutation>;
 }) {
+  const isMobile = useIsMobile();
   const { displayName, avatarInitial } = getCommentDisplayInfo(comment);
   const isReplying = replyingToId === comment.id;
   const isEditing = editingId === comment.id;
@@ -434,16 +437,33 @@ function CommentItem({
               >
                 <div className="flex flex-nowrap items-center justify-between gap-2">
                   <div className={cn(IDEA_DETAIL_COMMENT_HEADER_ROW, "min-w-0 flex-1")}>
-                    <span className={cn(IDEA_DETAIL_COMMENT_AUTHOR, displayName === "Anonymous" && "italic text-muted-foreground/80")}>
-                      {displayName}
-                    </span>
-                    <span className={IDEA_DETAIL_COMMENT_META_SEP} aria-hidden>·</span>
-                    <time className={IDEA_DETAIL_COMMENT_META}>{timeAgo(comment.createdAt)}</time>
+                    {isMobile ? (
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <span className={cn(IDEA_DETAIL_COMMENT_AUTHOR, displayName === "Anonymous" && "italic text-muted-foreground/80")}>
+                            {displayName}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">{displayName}</TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className={cn(IDEA_DETAIL_COMMENT_AUTHOR, displayName === "Anonymous" && "italic text-muted-foreground/80")}>
+                        {displayName}
+                      </span>
+                    )}
+                    <span className={cn(IDEA_DETAIL_COMMENT_META_SEP, "hidden sm:inline")} aria-hidden>·</span>
+                    <time className={IDEA_DETAIL_COMMENT_META} dateTime={new Date(comment.createdAt).toISOString()}>
+                      <span className="sm:hidden">{timeAgoShort(comment.createdAt)}</span>
+                      <span className="hidden sm:inline">{timeAgo(comment.createdAt)}</span>
+                    </time>
                     {comment.updatedAt &&
                       new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 2000 && (
                       <>
-                        <span className={IDEA_DETAIL_COMMENT_META_SEP} aria-hidden>·</span>
-                        <span className={cn(IDEA_DETAIL_EDITED_LABEL, "shrink-0")}>edited</span>
+                        <span className={cn(IDEA_DETAIL_COMMENT_META_SEP, "hidden sm:inline")} aria-hidden>·</span>
+                        <span className={cn(IDEA_DETAIL_EDITED_LABEL, "shrink-0")}>
+                          <span className="sm:hidden">(ed)</span>
+                          <span className="hidden sm:inline">edited</span>
+                        </span>
                       </>
                     )}
                   </div>
@@ -854,17 +874,17 @@ export default function IdeaDetailPage() {
             <span className={cn("block truncate", IDEAS_HUB_AUTHOR, idea.isAnonymous && "italic")}>
               {idea.isAnonymous ? "Anonymous" : authorLabel}
             </span>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-0 gap-y-1 text-[11px]">
-              <span className="inline-flex items-center gap-1.5 text-muted-foreground/55">
+            <div className={IDEA_ARTICLE_BYLINE_META}>
+              <span className="inline-flex items-center gap-1.5">
                 <Clock className="size-3 shrink-0 opacity-50" aria-hidden />
                 <time dateTime={new Date(idea.createdAt).toISOString()}>{timeAgo(idea.createdAt)}</time>
               </span>
               {idea.category?.name && (
                 <>
-                  <span className={BYLINE_META_SEP} aria-hidden />
+                  <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                   <span className={IDEA_DETAIL_CATEGORY_PILL}>
                     <Tag className="size-3 shrink-0 opacity-65" aria-hidden />
-                    {idea.category.name}
+                    <span className="min-w-0 truncate" title={idea.category.name}>{idea.category.name}</span>
                   </span>
                 </>
               )}

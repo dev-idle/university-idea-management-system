@@ -395,14 +395,18 @@ export function SubmitIdeaForm({
             </div>
           </div>
 
-          <div className={cn("space-y-2", isFullPage && "group min-w-0")}>
-            <Label htmlFor="idea-attachments-trigger" className={cn("flex cursor-pointer items-center gap-2", labelClass)}>
-              <FileText className="size-4 shrink-0 text-muted-foreground/65" aria-hidden />
-              Supporting documents
-            </Label>
-            <p className={hintClass}>
-              PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
-            </p>
+          <div className={cn("flex flex-col items-start gap-2", isFullPage && "group min-w-0")}>
+            <div className="flex min-w-0 items-start gap-2">
+              <FileText className="size-4 mt-0.5 shrink-0 text-muted-foreground/65" aria-hidden />
+              <div className="min-w-0 flex-1">
+                <Label htmlFor="idea-attachments-trigger" className={cn("cursor-pointer", labelClass)}>
+                  Supporting documents
+                </Label>
+                <p className={cn(hintClass, "mt-1")}>
+                  PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
+                </p>
+              </div>
+            </div>
             {uploadParamsStatus === "error" && (
               <p className="text-[11px] text-warning/90" role="alert">
                 Upload currently unavailable.
@@ -420,22 +424,25 @@ export function SubmitIdeaForm({
                   onChange={handleFileSelect}
                   disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
                 />
-                <Button
-                  id="idea-attachments-trigger"
-                  type="button"
-                  variant="outline"
-                  size="default"
-                  className="h-10 gap-2 rounded-xl border border-border/80 font-medium transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
-                >
-                  {uploading ? (
-                    <span className={LOADING_SPINNER_CLASS} aria-hidden />
-                  ) : (
-                    <Paperclip className="size-4" aria-hidden />
-                  )}
-                  {uploading ? "Uploading…" : "Add document"}
-                </Button>
+                <div className="flex items-start gap-2">
+                  <div className="w-4 shrink-0" aria-hidden />
+                  <Button
+                    id="idea-attachments-trigger"
+                    type="button"
+                    variant="outline"
+                    size="default"
+                    className="h-10 w-fit gap-2 self-start rounded-xl border border-border/80 font-medium transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
+                  >
+                    {uploading ? (
+                      <span className={LOADING_SPINNER_CLASS} aria-hidden />
+                    ) : (
+                      <Paperclip className="size-4" aria-hidden />
+                    )}
+                    {uploading ? "Uploading…" : "Add document"}
+                  </Button>
+                </div>
                 {uploadError && (
                   <p className={FORM_FIELD_ERROR_CLASS} role="alert">
                     {uploadError}
@@ -464,7 +471,7 @@ export function SubmitIdeaForm({
           Terms and Conditions
         </p>
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-2">
             <div className="flex items-center gap-3">
               <Checkbox
                 id="idea-terms"
@@ -479,17 +486,20 @@ export function SubmitIdeaForm({
                 I accept the Terms and Conditions
               </Label>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="h-auto gap-1.5 p-0 text-xs font-normal text-muted-foreground/80 underline-offset-2 hover:text-foreground/90 hover:underline focus-visible:ring-0"
-                >
-                  <FileText className="size-3.5 shrink-0 opacity-70" aria-hidden />
-                  View terms
-                </Button>
-              </DialogTrigger>
+            <div className="flex w-full items-start gap-3 sm:w-auto">
+              <div className="w-[15px] shrink-0 sm:hidden" aria-hidden />
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="xs"
+                    className="h-auto !min-h-0 w-fit gap-1.5 self-start !p-0 !px-0 text-xs font-normal text-muted-foreground/80 underline-offset-2 hover:text-foreground/90 hover:underline focus-visible:ring-0"
+                  >
+                    <FileText className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                    View terms
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="max-h-[85vh] max-w-lg flex flex-col gap-0 p-0 overflow-hidden">
                 <DialogHeader className="shrink-0 border-b border-border/40 px-5 py-3.5 pr-10">
                   <DialogTitle className="text-base font-semibold">
@@ -510,6 +520,7 @@ export function SubmitIdeaForm({
               </DialogContent>
             </Dialog>
           </div>
+        </div>
           {errors.termsAccepted && (
             <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.termsAccepted.message}

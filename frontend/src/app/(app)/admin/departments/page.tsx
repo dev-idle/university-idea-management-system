@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { DepartmentsManagement } from "@/components/features/admin/departments-management";
-import { PAGE_CONTAINER_CLASS } from "@/config/design";
+import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
   title: "Department Management",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminDepartmentsPage() {
   return (
-    <div className={`space-y-6 ${PAGE_CONTAINER_CLASS}`}>
+    <div className={MANAGEMENT_PAGE_CLASS}>
       <DepartmentsManagement />
     </div>
   );

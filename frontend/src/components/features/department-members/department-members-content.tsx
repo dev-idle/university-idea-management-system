@@ -169,7 +169,7 @@ export function DepartmentMembersContent() {
               ⌘K
             </kbd>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80">
+          <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
             <Users className="size-3.5 shrink-0" aria-hidden />
             {`${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
           </span>
