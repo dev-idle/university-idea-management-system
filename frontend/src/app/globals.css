@@ -355,63 +355,71 @@
   background: var(--background);
 }
 
-/* Left: Premium panel — harmonious, balanced with right panel */
+/* Left: Premium panel — impressive, professional Greenwich hero */
 .login-academic-panel {
-  background: linear-gradient(
-    165deg,
-    var(--background) 0%,
-    color-mix(in oklch, var(--background) 98%, var(--muted)) 45%,
-    color-mix(in oklch, var(--background) 97%, var(--muted)) 100%
-  );
+  background:
+    radial-gradient(ellipse 120% 60% at 100% 20%, color-mix(in oklch, var(--primary) 6%, transparent) 0%, transparent 50%),
+    linear-gradient(
+      165deg,
+      var(--background) 0%,
+      color-mix(in oklch, var(--background) 98%, var(--muted)) 35%,
+      color-mix(in oklch, var(--background) 96%, var(--muted)) 70%,
+      color-mix(in oklch, var(--background) 95%, var(--primary) 3%) 100%
+    );
   box-shadow: inset -1px 0 0 color-mix(in oklch, var(--border) 28%, transparent);
 }
 
 .dark .login-academic-panel {
-  background: linear-gradient(
-    165deg,
-    var(--background) 0%,
-    color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 50%,
-    color-mix(in oklch, var(--background) 95%, var(--primary) 4%) 100%
-  );
+  background:
+    radial-gradient(ellipse 100% 50% at 95% 15%, color-mix(in oklch, var(--primary) 12%, transparent) 0%, transparent 45%),
+    linear-gradient(
+      165deg,
+      var(--background) 0%,
+      color-mix(in oklch, var(--background) 94%, var(--primary) 8%) 40%,
+      color-mix(in oklch, var(--background) 92%, var(--primary) 6%) 75%,
+      color-mix(in oklch, var(--background) 90%, var(--primary) 5%) 100%
+    );
   box-shadow:
     inset -1px 0 0 color-mix(in oklch, var(--border) 22%, transparent),
-    inset 0 0 100px oklch(0 0 0 / 0.28);
+    inset 0 0 140px oklch(0 0 0 / 0.35);
 }
 
-/* Soft orbs — subtle, balanced with right panel */
+/* Ambient orbs — impressive, atmospheric depth */
 .login-academic-orbs::before,
 .login-academic-orbs::after {
   content: "";
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.14;
+  filter: blur(100px);
+  will-change: transform;
 }
 
 .login-academic-orbs::before {
-  width: 380px;
-  height: 380px;
-  top: -100px;
-  right: -80px;
-  background: oklch(0.93 0.03 280);
+  width: 420px;
+  height: 420px;
+  top: -120px;
+  right: -100px;
+  background: oklch(0.7 0.08 280);
+  opacity: 0.2;
 }
 
 .login-academic-orbs::after {
-  width: 300px;
-  height: 300px;
-  bottom: 5%;
-  left: -60px;
-  background: oklch(0.945 0.025 270);
+  width: 340px;
+  height: 340px;
+  bottom: 0%;
+  left: -80px;
+  background: oklch(0.72 0.06 260);
+  opacity: 0.16;
 }
 
 .dark .login-academic-orbs::before {
-  opacity: 0.2;
-  background: oklch(0.42 0.12 280);
+  background: oklch(0.45 0.18 280);
+  opacity: 0.35;
 }
 
 .dark .login-academic-orbs::after {
-  opacity: 0.2;
-  background: oklch(0.38 0.1 200);
+  background: oklch(0.4 0.14 200);
+  opacity: 0.28;
 }
 
 /* Greenwich campus silhouette */
@@ -419,18 +427,25 @@
   z-index: 1;
 }
 
-/* Mesh gradient overlay — smooth, harmonious with right panel */
+/* Compass pattern — fine grid, Prime Meridian motif */
+.login-compass-pattern {
+  z-index: 0;
+}
+
+/* Mesh gradient overlay — professional depth, Greenwich brand accent */
 .login-mesh-gradient {
   z-index: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 90% 20%, oklch(0.68 0.1 280 / 0.03) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 70% at 10% 80%, oklch(0.62 0.08 200 / 0.025) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 55% at 95% 15%, oklch(0.55 0.12 280 / 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 65% 60% at 85% 85%, oklch(0.6 0.1 200 / 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse 50% 40% at 0% 50%, oklch(0.65 0.08 270 / 0.04) 0%, transparent 40%);
 }
 
 .dark .login-mesh-gradient {
   background:
-    radial-gradient(ellipse 70% 50% at 90% 20%, oklch(0.58 0.14 280 / 0.1) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 70% at 10% 80%, oklch(0.5 0.12 200 / 0.07) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 55% at 95% 15%, oklch(0.55 0.18 280 / 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 65% 60% at 85% 85%, oklch(0.5 0.14 200 / 0.12) 0%, transparent 45%),
+    radial-gradient(ellipse 50% 40% at 0% 50%, oklch(0.52 0.1 270 / 0.08) 0%, transparent 40%);
 }
 
 /* Bento grid — creative layout */
@@ -488,24 +503,28 @@
   }
 }
 
-/* Right: Form panel — harmonious, balanced with left panel */
+/* Right: Form panel — polished, cohesive with left hero */
 .login-form-panel {
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--background) 98%, var(--muted) 5%) 0%,
-    var(--background) 18%,
-    var(--background) 100%
-  );
+  background:
+    radial-gradient(ellipse 80% 100% at 0% 50%, color-mix(in oklch, var(--background) 99%, var(--muted) 8%) 0%, transparent 55%),
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--background) 98%, var(--muted) 5%) 0%,
+      var(--background) 20%,
+      var(--background) 100%
+    );
   box-shadow: inset 1px 0 0 color-mix(in oklch, var(--border) 28%, transparent);
 }
 
 .dark .login-form-panel {
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--background) 97%, var(--primary) 3%) 0%,
-    var(--background) 18%,
-    var(--background) 100%
-  );
+  background:
+    radial-gradient(ellipse 80% 100% at 0% 50%, color-mix(in oklch, var(--background) 96%, var(--primary) 5%) 0%, transparent 55%),
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--background) 97%, var(--primary) 3%) 0%,
+      var(--background) 20%,
+      var(--background) 100%
+    );
   box-shadow: inset 1px 0 0 color-mix(in oklch, var(--border) 22%, transparent);
 }
 

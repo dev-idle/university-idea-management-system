@@ -25,24 +25,25 @@ export function LoginAcademicPanel() {
       <div className="login-academic-orbs pointer-events-none absolute inset-0 overflow-hidden" aria-hidden />
       <div className="login-mesh-gradient pointer-events-none absolute inset-0" aria-hidden />
 
-      {/* Greenwich silhouette */}
-      <div className="login-greenwich-silhouette pointer-events-none absolute inset-0 opacity-70 dark:opacity-40" aria-hidden>
-        <svg viewBox="0 0 600 400" className="absolute -right-20 top-1/2 h-[85%] w-[90%] -translate-y-1/2 object-cover opacity-60 dark:opacity-50" preserveAspectRatio="xMaxYMid slice">
+      {/* Greenwich silhouette — iconic domes + building mass */}
+      <div className="login-greenwich-silhouette pointer-events-none absolute inset-0" aria-hidden>
+        <svg viewBox="0 0 600 400" className="absolute -right-16 top-1/2 h-[88%] w-[92%] -translate-y-1/2 object-cover opacity-[0.5] dark:opacity-[0.35]" preserveAspectRatio="xMaxYMid slice">
           <defs>
             <linearGradient id="greenwich-dome-fill" x1="0%" y1="100%" x2="0%" y2="0%">
-              <stop offset="0%" stopColor="rgb(55,65,81)" stopOpacity="0.06" />
-              <stop offset="100%" stopColor="rgb(55,65,81)" stopOpacity="0.14" />
+              <stop offset="0%" stopColor="rgb(40,34,75)" stopOpacity="0.05" />
+              <stop offset="50%" stopColor="rgb(40,34,75)" stopOpacity="0.11" />
+              <stop offset="100%" stopColor="rgb(40,34,75)" stopOpacity="0.2" />
             </linearGradient>
           </defs>
           <ellipse cx="380" cy="90" rx="75" ry="55" fill="url(#greenwich-dome-fill)" />
           <ellipse cx="520" cy="85" rx="70" ry="52" fill="url(#greenwich-dome-fill)" />
           <path fill="url(#greenwich-dome-fill)" d="M250 400 V200 L280 170 L320 150 L380 140 L440 150 L480 170 L520 200 L550 400 Z" />
-          <path fill="url(#greenwich-dome-fill)" opacity="0.7" d="M270 400 V220 L350 180 L450 180 L530 220 V400 Z" />
+          <path fill="url(#greenwich-dome-fill)" opacity="0.75" d="M270 400 V220 L350 180 L450 180 L530 220 V400 Z" />
         </svg>
       </div>
 
-      {/* Compass pattern */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.28] dark:opacity-[0.06]" aria-hidden>
+      {/* Compass pattern — Prime Meridian, navigation heritage */}
+      <div className="login-compass-pattern pointer-events-none absolute inset-0 opacity-[0.32] dark:opacity-[0.08]" aria-hidden>
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="login-compass" x="0" y="0" width="64" height="64" patternUnits="userSpaceOnUse">
