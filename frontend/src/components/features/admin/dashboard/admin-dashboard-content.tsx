@@ -41,7 +41,7 @@ function AdminOverview({ stats }: { stats: AdminDashboardStats }) {
         <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{stats.totalUsers}</p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-        <p className={CARD_STAT_LABEL_CLASS}>Departments</p>
+        <p className={CARD_STAT_LABEL_CLASS}>Total departments</p>
         <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{stats.departmentCount}</p>
       </div>
       <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
