@@ -874,13 +874,15 @@ export class IdeasService {
   async createComment(ideaId: string, userId: string, body: CreateCommentBody) {
     await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
 
+    let parentCommentAuthorId: string | null = null;
     if (body.parentCommentId) {
       const parent = await this.prisma.ideaComment.findFirst({
         where: { id: body.parentCommentId, ideaId },
-        select: { id: true, parentCommentId: true },
+        select: { id: true, parentCommentId: true, userId: true },
       });
       if (!parent)
         throw new BadRequestException('Parent comment not found or does not belong to this idea.');
+      parentCommentAuthorId = parent.userId;
     }
 
     const comment = await this.prisma.ideaComment.create({
@@ -905,21 +907,36 @@ export class IdeasService {
       },
     });
 
-    // Emit event for multi-channel notifications (Email + In-app) — only for top-level comments to idea author
+    const isAnonymous = body.isAnonymous ?? false;
+    const displayName =
+      isAnonymous ? 'Anonymous' : comment.user.fullName?.trim() || comment.user.email;
+
+    // Emit event for top-level comments → notify idea author
     const recipientId = comment.idea.submittedById;
     if (recipientId && recipientId !== userId && !body.parentCommentId) {
-      const isAnonymous = body.isAnonymous ?? false;
-      const commenterDisplayName = isAnonymous
-        ? 'Anonymous'
-        : comment.user.fullName?.trim() || comment.user.email;
       this.eventEmitter.emit(EVENTS.COMMENT_CREATED, {
         type: 'comment.created',
         ideaId,
         ideaTitle: comment.idea.title,
         commentId: comment.id,
         recipientUserId: recipientId,
-        commenterDisplayName,
+        commenterDisplayName: displayName,
         commenterEmail: isAnonymous ? undefined : comment.user.email,
+        isAnonymous,
+      });
+    }
+
+    // Emit event for replies → notify parent comment author (Staff A or C replied to my comment)
+    if (body.parentCommentId && parentCommentAuthorId && parentCommentAuthorId !== userId) {
+      this.eventEmitter.emit(EVENTS.COMMENT_REPLIED, {
+        type: 'comment.replied',
+        ideaId,
+        ideaTitle: comment.idea.title,
+        commentId: comment.id,
+        parentCommentId: body.parentCommentId,
+        recipientUserId: parentCommentAuthorId,
+        replierDisplayName: displayName,
+        replierEmail: isAnonymous ? undefined : comment.user.email,
         isAnonymous,
       });
     }

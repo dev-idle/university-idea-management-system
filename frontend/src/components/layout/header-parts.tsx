@@ -8,7 +8,7 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { TYPO_LABEL, TYPO_NAV, TYPO_HEADER_AND_STAT_TEXT, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE } from "@/config/design";
+import { TYPO_LABEL, TYPO_NAV, TYPO_HEADER_AND_STAT_TEXT, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE, NAVBAR_TRIGGER_CLASS } from "@/config/design";
 import {
   PROFILE_AVATAR_FALLBACK_CLASS,
   BREADCRUMB_LINK_CLASS,
@@ -118,9 +118,9 @@ export function getBreadcrumbs(
   return items;
 }
 
-/** Shared icon button for top app bars — size-8, rounded-lg, cursor pointer. */
+/** Shared icon button for top app bars — size-8, rounded-lg. */
 const HEADER_ICON_CLASS =
-  `inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg ${HOVER_TRANSITION_NAV} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background`;
+  `inline-flex size-8 shrink-0 items-center justify-center rounded-lg ${NAVBAR_TRIGGER_CLASS}`;
 
 export function HeaderIconButton({
   icon: Icon,
@@ -192,8 +192,8 @@ export function UserMenu({
           type="button"
           className={
             isPill
-              ? `group flex cursor-pointer items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.05] focus-visible:outline-none focus-visible:ring-0`
-              : `group flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${HOVER_TRANSITION_NAV} hover:bg-muted/[0.03] focus-visible:outline-none focus-visible:ring-0`
+              ? `group flex items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${NAVBAR_TRIGGER_CLASS} hover:bg-muted/[0.05] focus-visible:ring-0`
+              : `group flex items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${NAVBAR_TRIGGER_CLASS} hover:bg-muted/[0.03] focus-visible:ring-0`
           }
         >
           <Avatar className={isPill ? "size-8 shrink-0" : "shrink-0"}>

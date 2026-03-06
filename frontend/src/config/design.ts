@@ -823,6 +823,50 @@ export const NAVBAR_ACTION_GROUP =
 export const NAVBAR_DIVIDER_VERTICAL =
   "ml-0.5 mr-1.5 hidden h-5 w-px shrink-0 md:block bg-border/40";
 
+// ─── Notification dropdown — minimal, aligned with popup scale ─────────────────
+
+/** Notification popover width. */
+export const NOTIFICATION_POPOVER_W = "w-[352px]";
+
+/** Notification header — minimal toolbar. */
+export const NOTIFICATION_HEADER_CLASS =
+  "flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3 bg-muted/[0.02]";
+
+/** Navbar interactive trigger — bell, user menu. Cursor pointer + hover. */
+export const NAVBAR_TRIGGER_CLASS =
+  "cursor-pointer transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+/** Notification header title — text-sm, foreground/90. */
+export const NOTIFICATION_HEADER_TITLE = "text-sm font-medium text-foreground/90";
+
+/** Notification row — design: muted/[0.06] hover light. */
+export const NOTIFICATION_ROW_CLASS =
+  "flex w-full cursor-pointer items-start gap-3 border-b border-border/40 px-4 py-3 text-left transition-colors duration-200 hover:bg-muted/[0.06] first:rounded-t-xl last:rounded-b-xl last:border-b-0";
+
+/** Notification row unread — design: primary/[0.06] accent. */
+export const NOTIFICATION_ROW_UNREAD_CLASS = "bg-primary/[0.06]";
+
+/** Notification row read — neutral. */
+export const NOTIFICATION_ROW_READ_CLASS = "";
+
+/** Notification icon container — minimal. */
+export const NOTIFICATION_ICON_CLASS =
+  "flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70";
+
+/** Notification icon unread — primary tint. */
+export const NOTIFICATION_ICON_UNREAD_CLASS = "text-primary/80";
+
+/** Notification row message — unread: font-medium foreground/92. */
+export const NOTIFICATION_ROW_MESSAGE_UNREAD = "text-sm font-medium text-foreground/92";
+
+/** Notification empty state — aligned with IDEAS_HUB_EMPTY_ICON. */
+export const NOTIFICATION_EMPTY_CLASS =
+  "flex min-h-[12rem] flex-col items-center justify-center gap-2 px-6 py-10";
+
+/** Notification badge — compact, slightly lower for balance. */
+export const NOTIFICATION_BADGE_CLASS =
+  "absolute -right-0.5 top-0 flex h-3.5 min-w-[0.9375rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background";
+
 /** Navbar left-section divider (e.g. between branding and context label) — shorter. */
 export const NAVBAR_DIVIDER_LEFT = "h-4 w-px shrink-0 bg-border/40";
 

@@ -58,6 +58,18 @@ If you use **Neon** (or any connection pooler) and see **P1002** (advisory lock 
 
 Alternatively, derive the direct URL from your pooled URL by removing `-pooler` from the host (e.g. `ep-xxx-pooler.region.aws.neon.tech` → `ep-xxx.region.aws.neon.tech`).
 
+### Redis & notifications (Email + In-app)
+
+To enable notification emails and in-app notifications:
+
+1. Set `REDIS_ENABLED=true` (or `1`).
+2. Set `REDIS_URL` — e.g. `rediss://default:PASSWORD@ENDPOINT.upstash.io:6379` for Upstash, or `redis://localhost:6379` for local Redis.
+3. Configure SMTP (e.g. `SMTP_*` or `MAIL_*` vars) so emails can be sent.
+
+When Redis is disabled, notifications (email and in-app) are not sent. Export jobs use a DB-based queue and do not require Redis.
+
+**Upstash billing:** The queue is tuned for low command usage (`stalledInterval` 5 min, `drainDelay` 10 s, `removeOnComplete`, limited failed-job retention).
+
 ## Compile and run the project
 
 ```bash

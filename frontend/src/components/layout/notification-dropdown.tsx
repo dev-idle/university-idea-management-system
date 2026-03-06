@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Bell } from "lucide-react";
+import { Bell, BellOff, MessageSquare } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   useNotificationsQuery,
@@ -18,18 +18,88 @@ import {
   type Notification,
 } from "@/hooks/use-notifications";
 import {
-  HOVER_TRANSITION_NAV,
   TYPO_BODY_SM,
   TYPO_CAPTION,
-  MGMT_BORDER_DIVIDER,
-  MGMT_BG_TOOLBAR,
-  MGMT_BG_ROW_HOVER,
-  MGMT_BORDER_ROW,
   NAVBAR_ICON_SIZE,
+  NAVBAR_TRIGGER_CLASS,
+  IDEAS_HUB_EMPTY_ICON,
+  LOADING_STATE_WRAPPER_CLASS,
+  NOTIFICATION_POPOVER_W,
+  NOTIFICATION_HEADER_CLASS,
+  NOTIFICATION_HEADER_TITLE,
+  NOTIFICATION_ROW_CLASS,
+  NOTIFICATION_ROW_UNREAD_CLASS,
+  NOTIFICATION_ROW_READ_CLASS,
+  NOTIFICATION_ROW_MESSAGE_UNREAD,
+  NOTIFICATION_EMPTY_CLASS,
+  NOTIFICATION_BADGE_CLASS,
 } from "@/config/design";
 import { LoadingState } from "@/components/ui/loading-state";
 import { env } from "@/config/env";
 import { cn } from "@/lib/utils";
+
+/** Extract author initial from message: idea, comment, reply. */
+function getAuthorInitial(type: string, message: string): string | null {
+  if (type === "idea.submitted") {
+    const m = message.match(/from (.+?) needs/);
+    if (!m) return null;
+    return m[1] === "Anonymous" ? "?" : m[1].charAt(0).toUpperCase();
+  }
+  if (type === "comment.added") {
+    const m = message.match(/^(.+?) commented/);
+    if (!m) return null;
+    return m[1] === "Anonymous" ? "?" : m[1].charAt(0).toUpperCase();
+  }
+  if (type === "comment.replied") {
+    const m = message.match(/^(.+?) replied/);
+    if (!m) return null;
+    return m[1] === "Anonymous" ? "?" : m[1].charAt(0).toUpperCase();
+  }
+  return null;
+}
+
+/** Circular avatar or MessageSquare for comment/reply. */
+function NotificationTypeIcon({
+  type,
+  message,
+  isUnread,
+}: {
+  type: string;
+  message: string;
+  isUnread?: boolean;
+}) {
+  const showMessageSquare =
+    (type === "comment.added" || type === "comment.replied") &&
+    !message.startsWith("Anonymous");
+  if (showMessageSquare) {
+    return (
+      <span
+        className={cn(
+          "flex size-8 items-center justify-center rounded-lg",
+          isUnread ? "text-primary/80" : "text-muted-foreground/70"
+        )}
+      >
+        <MessageSquare className="size-[14px]" aria-hidden />
+      </span>
+    );
+  }
+  const initial = getAuthorInitial(type, message);
+  if (initial) {
+    return (
+      <Avatar className="size-8 shrink-0" size="default">
+        <AvatarFallback
+          className={cn(
+            "text-xs font-semibold",
+            isUnread ? "bg-primary/10 text-primary" : "bg-muted/80 text-muted-foreground"
+          )}
+        >
+          {initial}
+        </AvatarFallback>
+      </Avatar>
+    );
+  }
+  return <Bell className="size-[14px]" aria-hidden />;
+}
 
 /** Resolve link to client path: relative path or same-origin pathname. */
 function getNavigatePath(link: string | null): string | null {
@@ -46,8 +116,8 @@ function getNavigatePath(link: string | null): string | null {
   }
 }
 
-const HEADER_ICON_CLASS =
-  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+const NOTIFICATION_TRIGGER_ICON_CLASS =
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg";
 
 function formatRelativeTime(iso: string): string {
   try {
@@ -80,23 +150,26 @@ function NotificationRow({
       type="button"
       onClick={handleClick}
       className={cn(
-        "w-full text-left border-b px-4 py-3 transition-colors duration-200 first:rounded-t-xl last:rounded-b-xl last:border-b-0",
-        MGMT_BORDER_ROW,
-        MGMT_BG_ROW_HOVER,
-        !item.isRead && "bg-primary/[0.03]"
+        NOTIFICATION_ROW_CLASS,
+        item.isRead ? NOTIFICATION_ROW_READ_CLASS : NOTIFICATION_ROW_UNREAD_CLASS
       )}
     >
-      <p
-        className={cn(
-          "line-clamp-2",
-          item.isRead ? TYPO_BODY_SM : "text-sm font-medium text-foreground/92"
-        )}
-      >
-        {item.message}
-      </p>
-      <span className={cn("mt-1 block", TYPO_CAPTION)}>
-        {formatRelativeTime(item.createdAt)}
+      <span className="flex shrink-0 items-center">
+        <NotificationTypeIcon type={item.type} message={item.message} isUnread={!item.isRead} />
       </span>
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "line-clamp-2 leading-snug",
+            item.isRead ? TYPO_BODY_SM : NOTIFICATION_ROW_MESSAGE_UNREAD
+          )}
+        >
+          {item.message}
+        </p>
+        <span className={cn("mt-0.5 block", TYPO_CAPTION)}>
+          {formatRelativeTime(item.createdAt)}
+        </span>
+      </div>
     </button>
   );
 }
@@ -106,9 +179,12 @@ interface NotificationDropdownProps {
   variant?: "pill" | "standalone";
 }
 
+const TOOLTIP_SUPPRESS_MS = 600;
+
 export function NotificationDropdown({ variant = "standalone" }: NotificationDropdownProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [suppressTooltip, setSuppressTooltip] = useState(false);
 
   const { data: notifications, isLoading } = useNotificationsQuery({
     enabled: open,
@@ -118,10 +194,12 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
 
   const handleNavigate = (link: string | null) => {
     setOpen(false);
+    setSuppressTooltip(true);
     const path = getNavigatePath(link);
     if (!path) return;
     if (path.startsWith("/")) {
       router.push(path);
+      setTimeout(() => setSuppressTooltip(false), TOOLTIP_SUPPRESS_MS);
     } else {
       window.location.href = path;
     }
@@ -130,20 +208,17 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
   const triggerContent = (
     <span
       className={cn(
-        HEADER_ICON_CLASS,
-        HOVER_TRANSITION_NAV,
+        NOTIFICATION_TRIGGER_ICON_CLASS,
+        NAVBAR_TRIGGER_CLASS,
         "relative text-muted-foreground/55 hover:text-foreground/80",
         open && "text-foreground/90"
       )}
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
     >
-      <Bell className={NAVBAR_ICON_SIZE} aria-hidden />
+      <Bell className={NAVBAR_ICON_SIZE} aria-hidden strokeWidth={1.75} />
       {unreadCount > 0 && (
         <span
-          className={cn(
-            "absolute right-0 top-0 flex items-center justify-center rounded-full bg-primary text-[10px] font-semibold leading-none text-primary-foreground",
-            unreadCount > 9 ? "min-w-[1.125rem] px-1 py-0.5" : "size-4"
-          )}
+          className={cn(NOTIFICATION_BADGE_CLASS, unreadCount > 9 && "px-1")}
           aria-hidden
         >
           {unreadCount > 9 ? "9+" : unreadCount}
@@ -154,15 +229,15 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <Tooltip delayDuration={0}>
+      <Tooltip delayDuration={0} {...(open || suppressTooltip ? { open: false } : {})}>
         <TooltipTrigger asChild>
           <PopoverTrigger asChild>
             <button
               type="button"
               className={cn(
-                "cursor-pointer",
+                NAVBAR_TRIGGER_CLASS,
                 variant === "pill" &&
-                  "flex size-8 shrink-0 items-center justify-center rounded-lg"
+                  "flex size-8 shrink-0 items-center justify-center rounded-lg hover:bg-muted/[0.05]"
               )}
             >
               {triggerContent}
@@ -171,34 +246,34 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
         </TooltipTrigger>
         <TooltipContent side="bottom">Notifications</TooltipContent>
       </Tooltip>
-      <PopoverContent align="end" sideOffset={8} className="w-[360px] p-0">
-        <div
-          className={cn(
-            "border-b px-4 py-3",
-            MGMT_BORDER_DIVIDER,
-            MGMT_BG_TOOLBAR
+      <PopoverContent
+        align="end"
+        side="bottom"
+        sideOffset={12}
+        className={cn(NOTIFICATION_POPOVER_W, "p-0 overflow-hidden")}
+      >
+        <div className={NOTIFICATION_HEADER_CLASS}>
+          <h3 className={NOTIFICATION_HEADER_TITLE}>Notifications</h3>
+          {unreadCount > 0 && (
+            <span className={TYPO_CAPTION}>{unreadCount} unread</span>
           )}
-        >
-          <h3 className="text-sm font-semibold text-foreground/95">
-            Notifications
-          </h3>
         </div>
-        <ScrollArea className="max-h-[min(320px,60vh)]">
+        <div className="scrollbar-thin-stable max-h-[min(19rem,60vh)] overflow-y-auto overscroll-contain">
           {isLoading ? (
-            <div className="flex min-h-[8rem] items-center justify-center py-8">
+            <div className={LOADING_STATE_WRAPPER_CLASS}>
               <LoadingState compact />
             </div>
           ) : !notifications?.length ? (
-            <div
-              className={cn(
-                "flex min-h-[8rem] flex-col items-center justify-center gap-1 px-4 py-8",
-                TYPO_BODY_SM
-              )}
-            >
-              No notifications yet
+            <div className={NOTIFICATION_EMPTY_CLASS}>
+              <span className={IDEAS_HUB_EMPTY_ICON}>
+                <BellOff className="size-5 text-muted-foreground/45" strokeWidth={1.25} />
+              </span>
+              <p className={cn("text-center", TYPO_BODY_SM)}>
+                No notifications yet
+              </p>
             </div>
           ) : (
-            <div className="py-1">
+            <div className="py-0.5">
               {notifications.map((item) => (
                 <NotificationRow
                   key={item.id}
@@ -209,7 +284,7 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </PopoverContent>
     </Popover>
   );

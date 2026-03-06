@@ -11,7 +11,10 @@ import { NotificationQueueService } from './notification-queue.service';
 import { NotificationNoopQueueService } from './notification-noop-queue.service';
 import { NotificationEventsListener } from './notification-events.listener';
 
-/** Redis enabled only when REDIS_ENABLED=true|1. Default: off. */
+/**
+ * Redis enabled only when REDIS_ENABLED=true|1. Default: off.
+ * Read at load time (process.env) — .env is loaded before modules bootstrap.
+ */
 const REDIS_ENABLED =
   process.env.REDIS_ENABLED === 'true' || process.env.REDIS_ENABLED === '1';
 
@@ -28,6 +31,7 @@ export class NotificationModule {
               const url = new URL(
                 redisUrl.replace(/^rediss?:\/\//, 'https://'),
               );
+              // Upstash: host, port, password, tls; maxRetriesPerRequest: null required for BullMQ
               return {
                 connection: {
                   host: url.hostname || 'localhost',

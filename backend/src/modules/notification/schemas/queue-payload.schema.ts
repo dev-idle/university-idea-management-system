@@ -48,13 +48,35 @@ export const commentCreatedPayloadSchema = z.object({
   isAnonymous: z.boolean().default(false),
 });
 
+export const commentRepliedPayloadSchema = z.object({
+  type: z.literal('comment.replied'),
+  ideaId: z.string().uuid(),
+  ideaTitle: z
+    .string()
+    .min(1)
+    .max(500)
+    .transform((s) => s.trim()),
+  commentId: z.string().uuid(),
+  parentCommentId: z.string().uuid(),
+  recipientUserId: z.string().uuid(),
+  replierDisplayName: z
+    .string()
+    .min(1)
+    .max(255)
+    .transform((s) => s.trim()),
+  replierEmail: z.string().email().optional(),
+  isAnonymous: z.boolean().default(false),
+});
+
 export const notificationJobPayloadSchema = z.discriminatedUnion('type', [
   ideaCreatedPayloadSchema,
   commentCreatedPayloadSchema,
+  commentRepliedPayloadSchema,
 ]);
 
 export type IdeaCreatedPayload = z.infer<typeof ideaCreatedPayloadSchema>;
 export type CommentCreatedPayload = z.infer<typeof commentCreatedPayloadSchema>;
+export type CommentRepliedPayload = z.infer<typeof commentRepliedPayloadSchema>;
 export type NotificationJobPayload = z.infer<
   typeof notificationJobPayloadSchema
 >;

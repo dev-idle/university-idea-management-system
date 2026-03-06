@@ -245,21 +245,21 @@ model RefreshToken {
 }
 
 model ExportJob {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId        String   @db.Uuid
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  cycleId       String   @db.Uuid
+  id            String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String              @db.Uuid
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycleId       String              @db.Uuid
   cycle         IdeaSubmissionCycle @relation(fields: [cycleId], references: [id], onDelete: Restrict)
-  type          String   @db.VarChar(20)
-  status        String   @db.VarChar(20)
-  progress      Int      @default(0)
-  cloudinaryUrl String?  @db.VarChar(1024)
-  fileName      String?  @db.VarChar(512)
-  error         String?  @db.Text
+  type          String              @db.VarChar(20)
+  status        String              @db.VarChar(20)
+  progress      Int                 @default(0)
+  cloudinaryUrl String?             @db.VarChar(1024)
+  fileName      String?             @db.VarChar(512)
+  error         String?             @db.Text
   startedAt     DateTime?
   completedAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
   @@index([userId])
   @@index([cycleId])

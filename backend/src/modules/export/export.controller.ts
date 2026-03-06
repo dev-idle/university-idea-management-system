@@ -103,7 +103,7 @@ export class ExportController {
     const { Readable } = await import('node:stream');
     if (fetchRes.body) {
       const nodeStream = Readable.fromWeb(
-        fetchRes.body as import('node:stream').web.ReadableStream<Uint8Array>,
+        fetchRes.body as import('node:stream/web').ReadableStream<Uint8Array>,
       );
       nodeStream.pipe(res);
     } else {

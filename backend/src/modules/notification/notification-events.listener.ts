@@ -5,6 +5,7 @@ import { NotificationQueueService } from './notification-queue.service';
 import type {
   IdeaCreatedPayload,
   CommentCreatedPayload,
+  CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
 
 /**
@@ -23,5 +24,10 @@ export class NotificationEventsListener {
   @OnEvent(EVENTS.COMMENT_CREATED)
   async handleCommentCreated(payload: CommentCreatedPayload): Promise<void> {
     await this.queue.addCommentCreated(payload);
+  }
+
+  @OnEvent(EVENTS.COMMENT_REPLIED)
+  async handleCommentReplied(payload: CommentRepliedPayload): Promise<void> {
+    await this.queue.addCommentReplied(payload);
   }
 }

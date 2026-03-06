@@ -5,6 +5,7 @@ import { EVENTS, NOTIFICATION_QUEUE, QUEUE_JOB_OPTIONS } from './constants';
 import type {
   IdeaCreatedPayload,
   CommentCreatedPayload,
+  CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
 
 @Injectable()
@@ -17,5 +18,9 @@ export class NotificationQueueService {
 
   async addCommentCreated(payload: CommentCreatedPayload): Promise<void> {
     await this.queue.add(EVENTS.COMMENT_CREATED, payload, QUEUE_JOB_OPTIONS);
+  }
+
+  async addCommentReplied(payload: CommentRepliedPayload): Promise<void> {
+    await this.queue.add(EVENTS.COMMENT_REPLIED, payload, QUEUE_JOB_OPTIONS);
   }
 }

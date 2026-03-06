@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type {
   IdeaCreatedPayload,
   CommentCreatedPayload,
+  CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
 
 /**
@@ -15,6 +16,10 @@ export class NotificationNoopQueueService {
   }
 
   async addCommentCreated(_payload: CommentCreatedPayload): Promise<void> {
+    // No-op: Redis disabled
+  }
+
+  async addCommentReplied(_payload: CommentRepliedPayload): Promise<void> {
     // No-op: Redis disabled
   }
 }

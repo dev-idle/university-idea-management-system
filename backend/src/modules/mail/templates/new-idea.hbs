@@ -5,55 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New idea – Review required</title>
 </head>
-<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;line-height:1.6;color:#334155;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+<body style="margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#fafbfc;line-height:1.6;color:#1e293b;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafbfc;padding:40px 20px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fff;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+          <tr><td style="height:3px;background:#28224B;font-size:0;">&nbsp;</td></tr>
           <tr>
-            <td style="padding:28px 36px;background:#28224B;border-bottom:3px solid #3d3585;">
-              <h1 style="margin:0;color:#fff;font-size:20px;font-weight:600;letter-spacing:-0.02em;">New idea submitted</h1>
-              <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Requires your review</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:32px 36px;">
-              <p style="margin:0 0 20px;color:#475569;font-size:15px;">A new idea has been submitted and needs your review.</p>
-              <div style="background:#f8fafc;border-radius:10px;padding:20px 24px;margin:0 0 24px;border-left:4px solid #28224B;">
-                <p style="margin:0 0 6px;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Idea title</p>
-                <p style="margin:0;color:#0f172a;font-size:17px;font-weight:600;">{{ideaTitle}}</p>
-                <p style="margin:14px 0 0;color:#64748b;font-size:14px;line-height:1.5;">
-                  <strong style="color:#475569;">Submitted by:</strong>
-                  {{#if isAnonymous}}
-                    Anonymous
-                  {{else}}
-                    {{submitterDisplayName}}{{#if submitterEmail}} <span style="color:#64748b;">({{submitterEmail}})</span>{{/if}}
-                  {{/if}}
-                </p>
-                {{#if departmentName}}
-                <p style="margin:8px 0 0;color:#64748b;font-size:14px;"><strong style="color:#475569;">Department:</strong> {{departmentName}}</p>
-                {{/if}}
-              </div>
-              {{#if hasAttachments}}
-              <p style="margin:0 0 10px;color:#475569;font-size:13px;font-weight:500;">Supporting documents</p>
-              <ul style="margin:0 0 24px;padding:0;list-style:none;">
-                {{#each attachmentLinks}}
-                <li style="margin:6px 0;"><a href="{{secureUrl}}" style="color:#28224B;text-decoration:none;font-size:14px;" target="_blank" rel="noopener">↗ {{fileName}}</a></li>
-                {{/each}}
-              </ul>
-              {{/if}}
-              <table role="presentation" cellpadding="0" cellspacing="0">
+            <td style="padding:28px 36px 36px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
                 <tr>
-                  <td style="border-radius:10px;background:#28224B;">
-                    <a href="{{ideaLink}}" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;color:#fff!important;font-size:14px;font-weight:600;text-decoration:none;">View idea & review</a>
+                  <td style="width:44px;height:44px;background:#28224B;background-color:rgba(40,34,75,0.08);border-radius:10px;text-align:center;vertical-align:middle;" valign="middle" align="center">
+                    <span style="font-size:20px;line-height:44px;">💡</span>
+                  </td>
+                  <td style="padding-left:14px;vertical-align:middle;" valign="middle">
+                    <p style="margin:0 0 2px;font-size:12px;font-weight:500;color:#64748b;letter-spacing:0.04em;text-transform:uppercase;">Review required</p>
+                    <h1 style="margin:0;font-size:18px;font-weight:600;color:#0f172a;letter-spacing:-0.01em;">New idea submitted</h1>
                   </td>
                 </tr>
               </table>
+              <p style="margin:0 0 20px;font-size:15px;color:#475569;line-height:1.5;">A new idea has been submitted and needs your review.</p>
+              <div style="background:#f8fafc;border-radius:8px;padding:20px;margin:0 0 28px;border:1px solid #f1f5f9;">
+                <p style="margin:0 0 8px;color:#64748b;font-size:12px;font-weight:500;">Idea</p>
+                <p style="margin:0 0 12px;color:#0f172a;font-size:15px;font-weight:500;">{{ideaTitle}}</p>
+                <p style="margin:0 0 4px;color:#64748b;font-size:13px;">Submitted by {{#if isAnonymous}}Anonymous{{else}}{{submitterDisplayName}}{{#if submitterEmail}} <span style="color:#94a3b8;">{{submitterEmail}}</span>{{/if}}{{/if}}</p>
+                {{#if departmentName}}
+                <p style="margin:8px 0 0;color:#64748b;font-size:13px;">{{departmentName}}</p>
+                {{/if}}
+              </div>
+              {{#if hasAttachments}}
+              <p style="margin:0 0 8px;font-size:13px;font-weight:500;color:#475569;">Attachments</p>
+              <ul style="margin:0 0 24px;padding:0;list-style:none;">
+                {{#each attachmentLinks}}
+                <li style="margin:4px 0;"><a href="{{secureUrl}}" style="color:#28224B;text-decoration:none;font-size:14px;" target="_blank" rel="noopener">{{fileName}}</a></li>
+                {{/each}}
+              </ul>
+              {{/if}}
+              <a href="{{ideaLink}}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 20px;background:#28224B;color:#fff!important;font-size:14px;font-weight:500;text-decoration:none;border-radius:8px;">View idea & review</a>
             </td>
           </tr>
           <tr>
-            <td style="padding:18px 36px;background:#f8fafc;border-top:1px solid #e2e8f0;">
-              <p style="margin:0;color:#94a3b8;font-size:12px;">Greenwich University — Idea Management System</p>
+            <td style="padding:0 36px 28px;">
+              <p style="margin:0;color:#94a3b8;font-size:12px;">Greenwich University · Idea Management System</p>
             </td>
           </tr>
         </table>

@@ -10,15 +10,17 @@ import {
   MAIL_SUBJECTS,
   NOTIFICATION_QUEUE,
   NOTIFICATION_TYPES,
+  WORKER_OPTIONS_UPSTASH,
 } from './constants';
 import {
   notificationJobPayloadSchema,
   type IdeaCreatedPayload,
   type CommentCreatedPayload,
+  type CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
 import { maskEmailForLog } from './utils/pii-mask.util';
 
-@Processor(NOTIFICATION_QUEUE)
+@Processor(NOTIFICATION_QUEUE, WORKER_OPTIONS_UPSTASH)
 export class NotificationProcessor extends WorkerHost {
   private readonly logger = new Logger(NotificationProcessor.name);
   private readonly isProduction: boolean;
@@ -45,8 +47,10 @@ export class NotificationProcessor extends WorkerHost {
 
     if (payload.type === 'idea.created') {
       await this.handleIdeaCreated(payload);
-    } else {
+    } else if (payload.type === 'comment.created') {
       await this.handleCommentCreated(payload);
+    } else {
+      await this.handleCommentReplied(payload);
     }
   }
 
@@ -120,6 +124,7 @@ export class NotificationProcessor extends WorkerHost {
     const {
       ideaId,
       ideaTitle,
+      commentId,
       recipientUserId,
       commenterDisplayName,
       commenterEmail,
@@ -133,7 +138,7 @@ export class NotificationProcessor extends WorkerHost {
 
     if (!recipient) return;
 
-    const ideaLink = this.buildIdeaLink(ideaId);
+    const ideaLink = this.buildIdeaLink(ideaId, commentId);
     const displayName = isAnonymous ? 'Anonymous' : commenterDisplayName;
     const message = `${displayName} commented on your idea "${ideaTitle}".`;
 
@@ -158,6 +163,56 @@ export class NotificationProcessor extends WorkerHost {
     } catch (err) {
       this.logger.error(
         `Failed to send comment notification: ${err instanceof Error ? err.message : String(err)}`,
+        { recipientId: recipient.id },
+      );
+    }
+  }
+
+  private async handleCommentReplied(
+    payload: CommentRepliedPayload,
+  ): Promise<void> {
+    const {
+      ideaId,
+      ideaTitle,
+      commentId,
+      recipientUserId,
+      replierDisplayName,
+      replierEmail,
+      isAnonymous = false,
+    } = payload;
+
+    const recipient = await this.prisma.user.findUnique({
+      where: { id: recipientUserId, isActive: true },
+      select: { id: true, email: true },
+    });
+
+    if (!recipient) return;
+
+    const ideaLink = this.buildIdeaLink(ideaId, commentId);
+    const displayName = isAnonymous ? 'Anonymous' : replierDisplayName;
+    const message = `${displayName} replied to your comment on "${ideaTitle}".`;
+
+    try {
+      await this.sendEmailAndCreateNotification({
+        to: recipient.email,
+        userId: recipient.id,
+        subject: MAIL_SUBJECTS.COMMENT_REPLIED,
+        template: 'new-reply',
+        context: {
+          ideaTitle,
+          replierDisplayName,
+          replierEmail: isAnonymous ? undefined : replierEmail,
+          ideaLink,
+          isAnonymous,
+        },
+        message,
+        link: ideaLink,
+        type: NOTIFICATION_TYPES.COMMENT_REPLIED,
+        label: 'Comment replied',
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to send reply notification: ${err instanceof Error ? err.message : String(err)}`,
         { recipientId: recipient.id },
       );
     }
@@ -229,10 +284,11 @@ export class NotificationProcessor extends WorkerHost {
     }
   }
 
-  private buildIdeaLink(ideaId: string): string {
+  private buildIdeaLink(ideaId: string, commentId?: string): string {
     const base =
       this.config.get<string>('FRONTEND_URL') ?? DEFAULT_FRONTEND_URL;
-    return `${base.replace(/\/$/, '')}/ideas/${ideaId}`;
+    const path = `${base.replace(/\/$/, '')}/ideas/${ideaId}`;
+    return commentId ? `${path}#comment-${commentId}` : path;
   }
 
   private logMailtrapUrl(label: string, to: string): void {

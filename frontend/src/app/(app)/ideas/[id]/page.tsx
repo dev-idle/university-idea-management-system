@@ -153,6 +153,14 @@ function findCommentById(comments: IdeaComment[], id: string): IdeaComment | und
   return undefined;
 }
 
+/** True if targetId exists in comment's reply subtree (not the comment itself). */
+function commentRepliesContainId(comment: IdeaComment, targetId: string): boolean {
+  for (const r of comment.replies ?? []) {
+    if (r.id === targetId || commentRepliesContainId(r, targetId)) return true;
+  }
+  return false;
+}
+
 /* ─── Main comment form ("Commenting as" + input + Anonymous) ───────────────── */
 
 function MainCommentForm({
@@ -307,6 +315,7 @@ function CommentItem({
   parentDisplayName,
   parentCommentId,
   targetedCommentId,
+  initialRepliesExpanded = false,
   replyingToId,
   replyContent,
   replyAnonymous,
@@ -337,6 +346,7 @@ function CommentItem({
   parentDisplayName?: string;
   parentCommentId?: string;
   targetedCommentId: string | null;
+  initialRepliesExpanded?: boolean;
   replyingToId: string | null;
   replyContent: string;
   replyAnonymous: boolean;
@@ -364,7 +374,7 @@ function CommentItem({
   const isEditing = editingId === comment.id;
   const replyCount = countAllComments(comment.replies ?? []);
   const shouldCollapseReplies = replyCount > 0;
-  const [repliesExpanded, setRepliesExpanded] = useState(false);
+  const [repliesExpanded, setRepliesExpanded] = useState(initialRepliesExpanded);
   const replyFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -633,6 +643,7 @@ function CommentItem({
                 parentDisplayName={getCommentDisplayInfo(comment).displayName}
                 parentCommentId={comment.id}
                 targetedCommentId={targetedCommentId}
+                initialRepliesExpanded={targetedCommentId != null && commentRepliesContainId(r, targetedCommentId)}
                 replyingToId={replyingToId}
                 replyContent={replyContent}
                 replyAnonymous={replyAnonymous}
@@ -751,6 +762,18 @@ export default function IdeaDetailPage() {
       if (timeoutId) clearTimeout(timeoutId);
     };
   }, []);
+
+  // Scroll to and highlight comment when navigating from notification (e.g. #comment-xxx)
+  useEffect(() => {
+    if (!targetedCommentId || comments.length === 0 || typeof window === "undefined") return;
+    const el = document.getElementById(`comment-${targetedCommentId}`);
+    if (el) {
+      const t = setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 350);
+      return () => clearTimeout(t);
+    }
+  }, [comments, targetedCommentId]);
 
   if (!id) return null;
   if (status === "error") throw error;
@@ -1080,6 +1103,7 @@ export default function IdeaDetailPage() {
                       depth={1}
                       isFirstReply={idx === 0}
                       targetedCommentId={targetedCommentId}
+                      initialRepliesExpanded={targetedCommentId != null && commentRepliesContainId(c, targetedCommentId)}
                       replyingToId={replyingToId}
                       replyContent={replyContent}
                       replyAnonymous={replyAnonymous}
