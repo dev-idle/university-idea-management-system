@@ -4,7 +4,7 @@ import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
-import { TR_MENU, POPUP_BG, POPUP_BORDER, POPUP_ROUNDED_SM } from "@/config/design"
+import { TOOLTIP_CONTENT_CLASS } from "@/config/design"
 
 function TooltipProvider({
   delayDuration = 0,
@@ -38,6 +38,7 @@ function TooltipTrigger({
 function TooltipContent({
   className,
   sideOffset = 6,
+  collisionPadding = 16,
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
@@ -46,7 +47,8 @@ function TooltipContent({
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
         sideOffset={sideOffset}
-        className={cn(TR_MENU, POPUP_BG, "text-popover-foreground z-50 w-fit max-w-[min(calc(100vw-2rem),20rem)] origin-(--radix-tooltip-content-transform-origin) cursor-default px-2.5 py-1.5 text-[11px] font-normal leading-relaxed text-foreground/90", POPUP_BORDER, POPUP_ROUNDED_SM, "shadow-[var(--shadow-card-hover)]", className)}
+        collisionPadding={collisionPadding}
+        className={cn(TOOLTIP_CONTENT_CLASS, className)}
         {...props}
       >
         {children}

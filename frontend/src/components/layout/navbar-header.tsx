@@ -51,7 +51,7 @@ export function NavbarHeader({
           <button
             type="button"
             onClick={onOpenMobileMenu}
-            className="-ml-1 flex size-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
+            className="-ml-1 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:hidden"
             aria-label="Open menu"
           >
             <Menu className="size-5" aria-hidden />

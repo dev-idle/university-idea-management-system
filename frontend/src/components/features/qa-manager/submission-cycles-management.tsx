@@ -555,7 +555,7 @@ export function SubmissionCyclesManagement() {
                                   {c.categories.length}
                                 </span>
                               </TooltipTrigger>
-                              <TooltipContent side="top" className="max-w-xs">
+                              <TooltipContent side="top">
                                 {c.categories.length === 0 ? (
                                   "None assigned"
                                 ) : (

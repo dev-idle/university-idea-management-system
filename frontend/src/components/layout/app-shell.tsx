@@ -583,7 +583,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="ml-auto flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/[0.08] hover:text-foreground"
+                className="ml-auto flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/[0.08] hover:text-foreground"
                 aria-label="Close menu"
               >
                 <PanelLeftClose className="size-5" aria-hidden />

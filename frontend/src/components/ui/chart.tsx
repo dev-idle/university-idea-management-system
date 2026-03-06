@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
-import { CHART_TOOLTIP_VALUE_CLASS } from "@/config/design"
+import { CHART_TOOLTIP_CLASS, CHART_TOOLTIP_VALUE_CLASS } from "@/config/design"
 import { CHART_THEME_SELECTORS } from "@/config/theme"
 import { cn } from "@/lib/utils"
 
@@ -177,7 +177,8 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "border-border/55 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
+        CHART_TOOLTIP_CLASS,
+        "grid min-w-[8rem] items-start gap-1.5",
         className
       )}
     >

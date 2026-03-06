@@ -22,7 +22,6 @@ import {
   INSIGHTS_DONUT_COLORS,
   CHART_COLOR_CATEGORICAL,
   CHART_COLOR_TEMPORAL,
-  CHART_TOOLTIP_CLASS,
   CHART_TOOLTIP_LABEL_CLASS,
   TR_CHART_ENTRANCE,
 } from "@/config/design";
@@ -306,52 +305,78 @@ function DepartmentCharts() {
         style={{ animationDelay: "0ms" }}
       >
         <p className={CARD_STAT_LABEL_CLASS}>Ideas by Category</p>
-        <div className="mt-4 aspect-video">
+        <div className="mt-5 min-h-[200px]">
           {hasCategoryData ? (
-            <ChartContainer config={CHART_CONFIG_CATEGORY} className="h-full w-full !aspect-auto">
-              <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      indicator="line"
-                      className={CHART_TOOLTIP_CLASS}
-                      labelClassName={CHART_TOOLTIP_LABEL_CLASS}
-                      nameKey="value"
-                      labelFormatter={(_val, payload) => {
-                        const categoryName = payload?.[0]?.payload?.name ?? payload?.[0]?.name;
-                        const str = typeof categoryName === "string" ? categoryName : String(categoryName ?? "");
-                        return str.length > 36 ? `${str.slice(0, 33)}…` : str;
-                      }}
+            <div className={cn("flex", isMobile ? "flex-col gap-0" : "flex-row items-center gap-3")}>
+              <div className={cn("min-w-0 flex-1 min-h-[180px]", isMobile ? "h-60" : "h-72 min-h-[220px]")}>
+                <ChartContainer config={CHART_CONFIG_CATEGORY} className="h-full w-full !aspect-auto">
+                  <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          indicator="line"
+                          labelClassName={CHART_TOOLTIP_LABEL_CLASS}
+                          nameKey="value"
+                          labelFormatter={(_val, payload) => {
+                            const categoryName = payload?.[0]?.payload?.name ?? payload?.[0]?.name;
+                            const str = typeof categoryName === "string" ? categoryName : String(categoryName ?? "");
+                            return str.length > 36 ? `${str.slice(0, 33)}…` : str;
+                          }}
+                        />
+                      }
+                      cursor
                     />
-                  }
-                  cursor
-                />
-                <Pie
-                  data={pieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius="50%"
-                  outerRadius="85%"
-                  paddingAngle={0}
-                  isAnimationActive={true}
-                  animationDuration={500}
-                  animationEasing="ease-out"
-                >
-                  {pieData.map((_, i) => (
-                    <Cell
-                      key={i}
-                      fill={INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length]}
-                      stroke="var(--background)"
-                      strokeWidth={3}
-                    />
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius="45%"
+                      outerRadius="85%"
+                      paddingAngle={1}
+                      minAngle={2}
+                      isAnimationActive={true}
+                      animationDuration={500}
+                      animationEasing="ease-out"
+                    >
+                      {pieData.map((_, i) => (
+                        <Cell
+                          key={i}
+                          fill={INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length]}
+                          stroke="var(--background)"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+              </div>
+              {!isMobile && (
+                <div className="shrink-0 flex flex-col gap-1 py-0 md:w-36">
+                  {pieData.map((d, i) => (
+                    <Tooltip key={d.name} delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <div className="flex min-w-0 cursor-default items-center gap-1">
+                          <span
+                            className="size-2 shrink-0 rounded-[2px]"
+                            style={{
+                              backgroundColor: INSIGHTS_DONUT_COLORS[i % INSIGHTS_DONUT_COLORS.length],
+                            }}
+                          />
+                          <span className={cn("min-w-0 truncate text-[11px] text-muted-foreground")}>
+                            {d.name}
+                          </span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{d.name}</TooltipContent>
+                    </Tooltip>
                   ))}
-                </Pie>
-              </PieChart>
-            </ChartContainer>
+                </div>
+              )}
+            </div>
           ) : (
-            <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
+            <div className={`flex aspect-video items-center justify-center ${TYPO_BODY_SM}`}>
               No ideas in this cycle
             </div>
           )}
@@ -383,7 +408,6 @@ function DepartmentCharts() {
                   content={
                     <ChartTooltipContent
                       indicator="line"
-                      className={CHART_TOOLTIP_CLASS}
                       labelClassName={CHART_TOOLTIP_LABEL_CLASS}
                     />
                   }
