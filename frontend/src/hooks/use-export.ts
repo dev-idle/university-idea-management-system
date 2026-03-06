@@ -4,6 +4,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchWithAuth, fetchWithAuthResponse } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 
+const POLL_INTERVAL_PENDING_MS = 2000;
+const POLL_INTERVAL_PROCESSING_MS = 500;
+
+function parseExportError(res: Response, text: string): string {
+  try {
+    const json = JSON.parse(text) as { message?: string };
+    if (typeof json?.message === "string") return json.message;
+  } catch {
+    /* ignore */
+  }
+  return text || `Download failed (${res.status})`;
+}
+
 export interface ExportableCycle {
   id: string;
   name: string | null;
@@ -17,7 +30,7 @@ export interface ExportTriggerResponse {
 }
 
 export interface ExportStatusResponse {
-  status: "waiting" | "active" | "processing" | "completed" | "failed";
+  status: "pending" | "waiting" | "active" | "processing" | "completed" | "failed";
   progress?: number;
   error?: string;
 }
@@ -34,7 +47,7 @@ export function useExportableCyclesQuery(options?: { enabled?: boolean }) {
   });
 }
 
-export type ExportType = "csv" | "documents";
+export type ExportType = "full";
 
 /** Trigger export job for a cycle. Returns jobId. */
 export function useExportTriggerMutation() {
@@ -64,17 +77,23 @@ export function useExportStatusQuery(jobId: string | null, options?: { enabled?:
     enabled: (options?.enabled !== false) && !!jobId,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      if (status === "processing" || status === "active" || status === "waiting") {
-        return 2000;
+      const progress = query.state.data?.progress ?? 0;
+      if (status === "completed" || status === "failed") return false;
+      if (status === "processing" || status === "active" || progress >= 99) {
+        return POLL_INTERVAL_PROCESSING_MS;
       }
-      return false;
+      return POLL_INTERVAL_PENDING_MS;
     },
   });
 }
 
-/** Download export file (proxied from Cloudinary with proper filename). */
+/** Download export file (streamed from backend, proper filename via Content-Disposition). */
 export async function downloadExport(jobId: string): Promise<void> {
   const res = await fetchWithAuthResponse(`export/${jobId}/download`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(parseExportError(res, text));
+  }
   const blob = await res.blob();
   const disposition = res.headers.get("Content-Disposition");
   const match = disposition?.match(/filename="?([^";\n]+)"?/);
@@ -83,6 +102,10 @@ export async function downloadExport(jobId: string): Promise<void> {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.setAttribute("download", filename);
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 500);
 }

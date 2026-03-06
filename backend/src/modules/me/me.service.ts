@@ -9,6 +9,7 @@ import {
   verifyPassword,
   hashPassword,
 } from '../../common/crypto/password.util';
+import { EXPORT_EXCLUDED_DEPARTMENT_NAMES } from '../export/export.constants';
 
 /** Safe profile shape: no password, no internal IDs beyond required. */
 export interface MeProfile {
@@ -171,6 +172,56 @@ export class MeService {
       department: me.department,
       members,
     };
+  }
+
+  /**
+   * Get departments (excluding IT Services and QA Office) with active QA Coordinator per department.
+   * QA Manager only. Read-only.
+   */
+  async getDepartmentMembersQaManager(): Promise<
+    Array<{
+      department: { id: string; name: string };
+      qaCoordinator: {
+        id: string;
+        fullName: string | null;
+        email: string;
+      } | null;
+    }>
+  > {
+    const excludedSet = new Set<string>(EXPORT_EXCLUDED_DEPARTMENT_NAMES);
+    const departments = await this.prisma.department.findMany({
+      where: { name: { notIn: Array.from(excludedSet) } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+
+    const qaCoordinators = await this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        departmentId: { in: departments.map((d) => d.id) },
+        role: { name: 'QA_COORDINATOR' },
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        departmentId: true,
+      },
+    });
+    const qcByDept = new Map<string | null, (typeof qaCoordinators)[0]>();
+    for (const qc of qaCoordinators) {
+      if (qc.departmentId) qcByDept.set(qc.departmentId, qc);
+    }
+
+    return departments.map((d) => {
+      const qc = qcByDept.get(d.id);
+      return {
+        department: d,
+        qaCoordinator: qc
+          ? { id: qc.id, fullName: qc.fullName ?? null, email: qc.email }
+          : null,
+      };
+    });
   }
 
   /**

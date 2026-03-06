@@ -4,7 +4,8 @@
  */
 export function escapeCsvValue(value: unknown): string {
   if (value == null || value === '') return '';
-  const s = String(value);
+  const s = String(value).trim();
+  if (s === '') return '';
   // Formula injection: escape leading = + - @ \
   const first = s.charAt(0);
   if (

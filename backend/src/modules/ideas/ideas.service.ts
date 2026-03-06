@@ -1114,6 +1114,17 @@ export class IdeasService {
       );
     }
 
+    const attachments = body.attachments ?? [];
+    const fileNames = attachments.map((a) => a.fileName);
+    const duplicateName = fileNames.find((name, i) =>
+      fileNames.some((n, j) => j !== i && n.toLowerCase() === name.toLowerCase()),
+    );
+    if (duplicateName) {
+      throw new BadRequestException(
+        `Duplicate file name "${duplicateName}". Each attachment must have a unique file name.`,
+      );
+    }
+
     const trimmedTitle = body.title.trim();
     const existingWithSameTitle = await this.prisma.idea.findFirst({
       where: {
@@ -1138,7 +1149,7 @@ export class IdeasService {
         isAnonymous: body.isAnonymous,
         termsAcceptedAt: new Date(),
         attachments: {
-          create: (body.attachments ?? []).map((a) => ({
+          create: attachments.map((a) => ({
             cloudinaryPublicId: a.cloudinaryPublicId,
             secureUrl: a.secureUrl,
             fileName: a.fileName,
@@ -1742,6 +1753,18 @@ export class IdeasService {
     const count = await this.prisma.ideaAttachment.count({ where: { ideaId } });
     if (count >= 10) {
       throw new BadRequestException('Maximum 10 attachments allowed per idea.');
+    }
+
+    const duplicate = await this.prisma.ideaAttachment.findFirst({
+      where: {
+        ideaId,
+        fileName: { equals: body.fileName, mode: 'insensitive' },
+      },
+    });
+    if (duplicate) {
+      throw new BadRequestException(
+        `An attachment named "${body.fileName}" already exists for this idea. Please use a different file name.`,
+      );
     }
 
     await this.prisma.ideaAttachment.create({

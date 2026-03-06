@@ -15,7 +15,7 @@ import {
   Tags,
   Lightbulb,
   FolderPen,
-  Download,
+  FileOutput,
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
@@ -353,14 +353,11 @@ function SidebarNav({ collapsed, labelsCollapsed, onNavigate }: { collapsed: boo
     );
     items.push(
       <NavLink
-        key={ROUTES.QA_MANAGER_IDEAS}
-        href={ROUTES.QA_MANAGER_IDEAS}
-        label="Ideas Hub"
-        icon={Lightbulb}
-        isActive={
-          pathname === ROUTES.QA_MANAGER_IDEAS ||
-          (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
-        }
+        key={ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS}
+        href={ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS}
+        label="Department Members"
+        icon={UsersRound}
+        isActive={pathname === ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS}
         collapsed={collapsed}
         onNavigate={onNavigate}
       />
@@ -370,8 +367,22 @@ function SidebarNav({ collapsed, labelsCollapsed, onNavigate }: { collapsed: boo
         key={ROUTES.QA_MANAGER_EXPORT}
         href={ROUTES.QA_MANAGER_EXPORT}
         label="Export Data"
-        icon={Download}
+        icon={FileOutput}
         isActive={pathname === ROUTES.QA_MANAGER_EXPORT}
+        collapsed={collapsed}
+        onNavigate={onNavigate}
+      />
+    );
+    items.push(
+      <NavLink
+        key={ROUTES.QA_MANAGER_IDEAS}
+        href={ROUTES.QA_MANAGER_IDEAS}
+        label="Ideas Hub"
+        icon={Lightbulb}
+        isActive={
+          pathname === ROUTES.QA_MANAGER_IDEAS ||
+          (pathname.startsWith(`${ROUTES.IDEAS}/`) && !pathname.startsWith(ROUTES.MY_IDEAS))
+        }
         collapsed={collapsed}
         onNavigate={onNavigate}
       />

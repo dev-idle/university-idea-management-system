@@ -77,7 +77,7 @@ function DatePickerDayButton({
     <button
       ref={ref}
       type="button"
-      data-day={day.date.toLocaleDateString()}
+      data-day={day.date.toLocaleDateString("en-US")}
       data-selected-single={isSelected}
       data-today={modifiers.today}
       className={cn(

@@ -34,9 +34,12 @@ import {
 import { useCategoriesQuery } from "@/hooks/use-categories";
 import { cn } from "@/lib/utils";
 
-function dateToDatetimeLocal(d: Date): string {
+function dateToDatetimeLocal(d: Date | string | null | undefined): string {
+  if (d == null) return "";
+  const date = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(date.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 interface UpdateCycleFormProps {

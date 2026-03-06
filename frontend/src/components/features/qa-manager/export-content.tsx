@@ -1,254 +1,316 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  UNIFIED_CARD_CLASS,
+  UNIFIED_CARD_TOOLBAR_CLASS,
+  UNIFIED_SEARCH_INPUT_CLASS,
+  TOOLBAR_SEARCH_WIDTH,
+  SHOWING_RANGE_BADGE_CLASS,
+  TABLE_BASE_CLASS,
+  TABLE_HEAD_ROW_CLASS,
+  TABLE_HEAD_CELL_CLASS,
+  TABLE_HEAD_CELL_ACTIONS_CLASS,
+  TABLE_ROW_CLASS,
+  TABLE_CELL_CLASS,
+  TABLE_CELL_NAME_CLASS,
+  TABLE_EMPTY_CELL_CLASS,
+  TABLE_ACTIONS_CELL_CLASS,
+  TABLE_ACTIONS_MIN_W_2,
+  TABLE_ACTIONS_WRAPPER_CLASS,
+  ACTION_BUTTON_EDIT_CLASS,
+  ACTION_BUTTON_DISABLED_BLUR_CLASS,
+} from "@/components/features/admin/constants";
 import {
-  SECTION_LABEL_CLASS,
-  FOCUS_RING_CLASS,
-} from "@/config/design";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useExportableCyclesQuery,
   useExportTriggerMutation,
   useExportStatusQuery,
   downloadExport,
   type ExportableCycle,
-  type ExportType,
 } from "@/hooks/use-export";
-import { Download, Loader2, FileSpreadsheet, FileArchive, AlertCircle } from "lucide-react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { Download, Loader2, AlertCircle, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-function formatCycleLabel(c: ExportableCycle): string {
-  const name = c.name || "Unnamed";
-  const closed = new Date(c.interactionClosesAt).toLocaleDateString();
-  return `${name} (${c.academicYearName}) — closed ${closed} · ${c.ideaCount} ideas`;
-}
+const SEARCH_DEBOUNCE_MS = 350;
 
-function ExportAction({
-  type,
-  label,
-  description,
-  icon: Icon,
-  selectedCycleId,
-  cycles,
-  cyclesLoading,
-  onTrigger,
-  onDownload,
-  isTriggerPending,
-  jobId,
-  statusQuery,
-}: {
-  type: ExportType;
-  label: string;
-  description: string;
-  icon: React.ElementType;
-  selectedCycleId: string | null;
-  cycles: ExportableCycle[];
-  cyclesLoading: boolean;
-  onTrigger: () => void;
-  onDownload: () => void;
-  isTriggerPending: boolean;
-  jobId: string | null;
-  statusQuery: ReturnType<typeof useExportStatusQuery>;
-}) {
-  const status = statusQuery.data?.status;
-  const isProcessing =
-    status === "processing" || status === "active" || status === "waiting" || isTriggerPending;
-
-  return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3">
-        <div className="rounded-lg bg-primary/10 p-2">
-          <Icon className="size-4 text-primary" aria-hidden />
-        </div>
-        <div>
-          <p className="text-sm font-medium">{label}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
-        </div>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {status === "completed" ? (
-          <Button
-            onClick={onDownload}
-            size="sm"
-            className="gap-1.5"
-            aria-label={`Download ${label}`}
-          >
-            <Download className="size-4" aria-hidden />
-            Download
-          </Button>
-        ) : (
-          <Button
-            onClick={onTrigger}
-            disabled={isProcessing || !selectedCycleId || cycles.length === 0 || cyclesLoading}
-            size="sm"
-            className="gap-1.5"
-            aria-label={label}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-                {status === "processing" || status === "active" ? "Preparing…" : "Starting…"}
-              </>
-            ) : (
-              <>
-                <Download className="size-4" aria-hidden />
-                Generate
-              </>
-            )}
-          </Button>
-        )}
-        {statusQuery.data?.progress != null &&
-          status !== "completed" &&
-          status !== "failed" && (
-            <span className="text-xs text-muted-foreground">
-              {Math.round(statusQuery.data.progress ?? 0)}%
-            </span>
-          )}
-      </div>
-    </div>
-  );
+function formatClosedDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function ExportContent() {
-  const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
-  const [jobIdCsv, setJobIdCsv] = useState<string | null>(null);
-  const [jobIdDocuments, setJobIdDocuments] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch] = useDebouncedValue(
+    searchInput,
+    SEARCH_DEBOUNCE_MS,
+  );
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [exportingCycleId, setExportingCycleId] = useState<string | null>(null);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        e.stopPropagation();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handler, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", handler, { capture: true });
+  }, []);
 
   const cyclesQuery = useExportableCyclesQuery();
   const triggerMutation = useExportTriggerMutation();
-  const statusCsv = useExportStatusQuery(jobIdCsv, { enabled: !!jobIdCsv });
-  const statusDocuments = useExportStatusQuery(jobIdDocuments, { enabled: !!jobIdDocuments });
+  const statusQuery = useExportStatusQuery(jobId, { enabled: !!jobId });
 
   const cycles = cyclesQuery.data ?? [];
-  const error = triggerMutation.error?.message ?? statusCsv.data?.error ?? statusDocuments.data?.error;
-  const [pendingType, setPendingType] = useState<ExportType | null>(null);
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.trim();
+    if (!q) return cycles;
+    const lower = q.toLowerCase();
+    return cycles.filter(
+      (c) =>
+        (c.name?.toLowerCase().includes(lower) ?? false) ||
+        c.academicYearName.toLowerCase().includes(lower),
+    );
+  }, [cycles, debouncedSearch]);
+  const status = statusQuery.data?.status;
+  const isProcessing =
+    status === "processing" ||
+    status === "active" ||
+    status === "waiting" ||
+    status === "pending" ||
+    triggerMutation.isPending;
 
-  const handleTrigger = (type: ExportType) => {
-    if (!selectedCycleId) return;
-    triggerMutation.reset();
-    if (type === "csv") setJobIdCsv(null);
-    else setJobIdDocuments(null);
-    setPendingType(type);
+  const error =
+    downloadError ??
+    triggerMutation.error?.message ??
+    statusQuery.data?.error;
+
+  const handleTrigger = (cycleId: string) => {
+    setDownloadError(null);
+    setJobId(null);
+    setExportingCycleId(cycleId);
     triggerMutation.mutate(
-      { cycleId: selectedCycleId, type },
+      { cycleId, type: "full" },
       {
-        onSuccess: (data) => {
-          if (type === "csv") setJobIdCsv(data.jobId);
-          else setJobIdDocuments(data.jobId);
-        },
-        onSettled: () => setPendingType(null),
-      }
+        onSuccess: (data) => setJobId(data.jobId),
+      },
     );
   };
 
-  const handleDownload = async (jobId: string | null) => {
-    if (!jobId) return;
-    try {
-      await downloadExport(jobId);
-    } catch (e) {
-      console.error("Download failed:", e);
+  const downloadingRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      status === "completed" &&
+      jobId &&
+      !downloadingRef.current
+    ) {
+      downloadingRef.current = true;
+      downloadExport(jobId)
+        .then(() => {
+          setJobId(null);
+          setExportingCycleId(null);
+        })
+        .catch((e) => {
+          setDownloadError(e instanceof Error ? e.message : "Download failed");
+        })
+        .finally(() => {
+          downloadingRef.current = false;
+        });
     }
-  };
+  }, [status, jobId]);
 
   return (
-    <div className="space-y-10">
-      <section aria-labelledby="export-heading">
-        <h2 id="export-heading" className={SECTION_LABEL_CLASS}>
-          Export by proposal cycle
-        </h2>
-        <Card className={`mt-3 ${FOCUS_RING_CLASS}`}>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Export data and documents</CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              Select a closed proposal cycle. Download data (CSV) and documents (ZIP) separately.
-              Available only after the final comment closure date.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {error && (
-              <div
-                className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
-                role="alert"
-              >
-                <AlertCircle className="size-4 shrink-0 mt-0.5" aria-hidden />
-                <span>{error}</span>
-              </div>
-            )}
+    <div className="space-y-6">
+      {error && (
+        <div
+          className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-3.5 text-sm text-destructive sm:px-6"
+          role="alert"
+        >
+          <AlertCircle className="size-4 shrink-0 mt-0.5" aria-hidden />
+          <span>{error}</span>
+        </div>
+      )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Proposal cycle</label>
-              <Select
-                value={selectedCycleId ?? ""}
-                onValueChange={(v) => setSelectedCycleId(v || null)}
-                disabled={cyclesQuery.isLoading}
-              >
-                <SelectTrigger
-                  aria-label="Select proposal cycle to export"
-                  className="max-w-md"
-                >
-                  <SelectValue
-                    placeholder={
-                      cycles.length === 0
-                        ? "No exportable cycles"
-                        : "Choose a cycle…"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {cycles.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {formatCycleLabel(c)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {cycles.length === 0 && !cyclesQuery.isLoading && (
-                <p className="text-xs text-muted-foreground">
-                  No closed cycles. Export is allowed after the final comment closure date.
-                </p>
+      <div className={UNIFIED_CARD_CLASS}>
+        <div className={UNIFIED_CARD_TOOLBAR_CLASS}>
+          <div className={cn("relative", TOOLBAR_SEARCH_WIDTH)}>
+            <Search
+              className={cn(
+                "pointer-events-none absolute left-3.5 top-1/2 h-[17px] w-[17px] -translate-y-1/2 text-muted-foreground/80 transition-opacity duration-200 ease-out motion-reduce:transition-none",
+                searchInput !== debouncedSearch && "opacity-60",
               )}
-            </div>
+              aria-hidden
+            />
+            <input
+              ref={searchInputRef}
+              type="search"
+              role="searchbox"
+              aria-label="Search exportable cycles"
+              placeholder="Search by name or year…"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className={UNIFIED_SEARCH_INPUT_CLASS}
+            />
+            <kbd className={SHOWING_RANGE_BADGE_CLASS} aria-hidden>
+              ⌘K
+            </kbd>
+          </div>
+        </div>
 
-            <div className="space-y-3 pt-2">
-              <ExportAction
-                type="csv"
-                label="Download data (CSV)"
-                description="Ideas, comments, votes, users, and related data in CSV files."
-                icon={FileSpreadsheet}
-                selectedCycleId={selectedCycleId}
-                cycles={cycles}
-                cyclesLoading={cyclesQuery.isLoading}
-                onTrigger={() => handleTrigger("csv")}
-                onDownload={() => handleDownload(jobIdCsv)}
-                isTriggerPending={pendingType === "csv"}
-                jobId={jobIdCsv}
-                statusQuery={statusCsv}
-              />
-              <ExportAction
-                type="documents"
-                label="Download documents (ZIP)"
-                description="All uploaded supporting documents for ideas in this cycle."
-                icon={FileArchive}
-                selectedCycleId={selectedCycleId}
-                cycles={cycles}
-                cyclesLoading={cyclesQuery.isLoading}
-                onTrigger={() => handleTrigger("documents")}
-                onDownload={() => handleDownload(jobIdDocuments)}
-                isTriggerPending={pendingType === "documents"}
-                jobId={jobIdDocuments}
-                statusQuery={statusDocuments}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+        {cyclesQuery.isLoading ? (
+          <div className="flex min-h-[8rem] items-center justify-center px-6 py-10">
+            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <TooltipProvider delayDuration={300}>
+            <div className="overflow-x-auto">
+            <table className={TABLE_BASE_CLASS}>
+              <thead>
+                <tr className={TABLE_HEAD_ROW_CLASS}>
+                  <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                    Cycle
+                  </th>
+                  <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                    Academic year
+                  </th>
+                  <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                    Closed
+                  </th>
+                  <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                    Ideas
+                  </th>
+                  <th
+                    scope="col"
+                    className={cn(
+                      TABLE_ACTIONS_MIN_W_2,
+                      TABLE_HEAD_CELL_ACTIONS_CLASS,
+                    )}
+                  >
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className={TABLE_EMPTY_CELL_CLASS}>
+                      <p className="font-sans text-sm font-medium text-foreground">
+                        {debouncedSearch.trim()
+                          ? "No matching cycles."
+                          : "No exportable cycles."}
+                      </p>
+                      <p className="mt-1.5 font-sans text-xs text-muted-foreground/80">
+                        {debouncedSearch.trim()
+                          ? "Try another search."
+                          : "Export is available after the final comment closure date."}
+                      </p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((c) => {
+                    const isThisExporting =
+                      exportingCycleId === c.id && isProcessing;
+
+                    return (
+                      <tr key={c.id} className={TABLE_ROW_CLASS}>
+                        <td className={TABLE_CELL_NAME_CLASS}>
+                          {c.name ?? "—"}
+                        </td>
+                        <td className={TABLE_CELL_CLASS}>
+                          {c.academicYearName}
+                        </td>
+                        <td
+                          className={cn(
+                            TABLE_CELL_CLASS,
+                            "text-muted-foreground",
+                          )}
+                        >
+                          {formatClosedDate(c.interactionClosesAt)}
+                        </td>
+                        <td
+                          className={cn(
+                            TABLE_CELL_CLASS,
+                            "tabular-nums",
+                          )}
+                        >
+                          {c.ideaCount}
+                        </td>
+                        <td
+                          className={cn(
+                            TABLE_ACTIONS_MIN_W_2,
+                            TABLE_ACTIONS_CELL_CLASS,
+                          )}
+                        >
+                          <div className={TABLE_ACTIONS_WRAPPER_CLASS}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex shrink-0">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    className={
+                                      isProcessing && !isThisExporting
+                                        ? ACTION_BUTTON_DISABLED_BLUR_CLASS
+                                        : ACTION_BUTTON_EDIT_CLASS
+                                    }
+                                    disabled={
+                                      isProcessing && !isThisExporting
+                                    }
+                                    onClick={() => handleTrigger(c.id)}
+                                    aria-label={`Export ${c.name ?? c.academicYearName}`}
+                                  >
+                                    {isThisExporting ? (
+                                      <Loader2
+                                        className="size-4 animate-spin"
+                                        aria-hidden
+                                      />
+                                    ) : (
+                                      <Download
+                                        className="size-4"
+                                        aria-hidden
+                                      />
+                                    )}
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top">
+                                {isThisExporting
+                                  ? statusQuery.data?.progress != null
+                                    ? `Preparing… ${Math.round(statusQuery.data.progress)}%`
+                                    : "Preparing…"
+                                  : "Export"}
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          </TooltipProvider>
+        )}
+      </div>
     </div>
   );
 }

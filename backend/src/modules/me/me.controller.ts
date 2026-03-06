@@ -45,6 +45,26 @@ export class MeController {
   }
 
   /**
+   * GET /me/department-members-qa-manager — QA Manager only. Returns departments (excluding IT Services and
+   * Quality Assurance Office) with active QA Coordinator per department. Read-only.
+   */
+  @Get('department-members-qa-manager')
+  @UseGuards(RolesGuard)
+  @Roles('QA_MANAGER')
+  getDepartmentMembersQaManager(): Promise<
+    Array<{
+      department: { id: string; name: string };
+      qaCoordinator: {
+        id: string;
+        fullName: string | null;
+        email: string;
+      } | null;
+    }>
+  > {
+    return this.meService.getDepartmentMembersQaManager();
+  }
+
+  /**
    * GET /me/department-stats — QA Coordinator only. Returns aggregate stats for ideas from the department
    * in the active academic year: totalIdeas, totalComments, totalViews, votesUp, votesDown.
    * Returns null if user has no department.

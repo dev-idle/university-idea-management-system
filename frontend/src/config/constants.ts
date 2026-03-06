@@ -40,6 +40,8 @@ export const ROUTES = {
   QA_MANAGER_PROPOSAL_CYCLES: "/qa-manager/proposal-cycles",
   /** QA Manager export (CSV + ZIP after closure). */
   QA_MANAGER_EXPORT: "/qa-manager/export",
+  /** QA Manager: Department Members (departments + active QA Coordinator, read-only). */
+  QA_MANAGER_DEPARTMENT_MEMBERS: "/qa-manager/department-members",
   /** QA Manager: Ideas Hub (read-only, no vote/comment/view). */
   QA_MANAGER_IDEAS: "/qa-manager/ideas",
   /** QA Coordinator → /qa-coordinator/dashboard. */
@@ -87,7 +89,7 @@ export function getEntryRouteForRoles(roles: string[] | undefined): string {
 /** Path prefixes/routes allowed per role (UX-only; backend enforces). Each user has one role. */
 const ROLE_ALLOWED_PATHS: Record<Role, string[]> = {
   ADMIN: ["/admin", "/profile"],
-  QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/proposal-cycles", "/qa-manager/export", "/qa-manager/ideas", "/profile", "/ideas"],
+  QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/proposal-cycles", "/qa-manager/export", "/qa-manager/department-members", "/qa-manager/ideas", "/profile", "/ideas"],
   QA_COORDINATOR: ["/qa-coordinator", "/profile", "/ideas", "/department-members"],
   STAFF: ["/ideas", "/profile"],
 };

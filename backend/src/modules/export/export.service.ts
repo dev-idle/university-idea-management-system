@@ -5,14 +5,17 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { ExportQueueService } from './export-queue.service';
+
+const STATUS = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+} as const;
 
 @Injectable()
 export class ExportService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly queue: ExportQueueService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /** List cycles past interactionClosesAt (exportable). Any status: CLOSED, ACTIVE, or DRAFT. */
   async listExportableCycles(): Promise<
@@ -47,12 +50,16 @@ export class ExportService {
     }));
   }
 
-  /** Validate cycle is exportable (interactionClosesAt passed). Throws if not. */
+  /** Validate cycle is exportable (interactionClosesAt passed, has ideas). Throws if not. */
   private async assertCycleExportable(cycleId: string): Promise<void> {
     const now = new Date();
     const cycle = await this.prisma.ideaSubmissionCycle.findUnique({
       where: { id: cycleId },
-      select: { id: true, interactionClosesAt: true },
+      select: {
+        id: true,
+        interactionClosesAt: true,
+        _count: { select: { ideas: true } },
+      },
     });
     if (!cycle) {
       throw new NotFoundException('Proposal cycle not found.');
@@ -62,17 +69,30 @@ export class ExportService {
         'Export is only available after the final comment closure date has passed.',
       );
     }
+    if (cycle._count.ideas === 0) {
+      throw new BadRequestException(
+        'This cycle has no ideas. Export requires at least one idea.',
+      );
+    }
   }
 
-  /** Trigger export job for a specific cycle and type (csv | documents). */
+  /** Trigger export job for a specific cycle. Returns jobId for status/download polling. */
   async triggerExport(
     userId: string,
     cycleId: string,
-    type: 'csv' | 'documents',
+    type: 'full',
   ): Promise<{ jobId: string }> {
     await this.assertCycleExportable(cycleId);
-    const job = await this.queue.addExportJob(userId, cycleId, type);
-    return { jobId: job.id! };
+    const job = await this.prisma.exportJob.create({
+      data: {
+        userId,
+        cycleId,
+        type,
+        status: STATUS.PENDING,
+        progress: 0,
+      },
+    });
+    return { jobId: job.id };
   }
 
   /** Get job status. Verifies user owns the job. */
@@ -80,63 +100,57 @@ export class ExportService {
     jobId: string,
     userId: string,
   ): Promise<{ status: string; progress?: number; error?: string }> {
-    const job = await this.queue.getJob(jobId);
+    const job = await this.prisma.exportJob.findUnique({
+      where: { id: jobId },
+    });
     if (!job) {
       throw new NotFoundException('Export job not found or expired.');
     }
-    const data = job.data as {
-      userId: string;
-      cycleId?: string;
-      type?: string;
-    };
-    if (data.userId !== userId) {
+    if (job.userId !== userId) {
       throw new ForbiddenException('Access denied.');
     }
 
-    const state = await job.getState();
-    const failedReason = job.failedReason;
-
-    if (state === 'completed') {
+    if (job.status === STATUS.COMPLETED) {
       return { status: 'completed' };
     }
-    if (state === 'failed') {
+    if (job.status === STATUS.FAILED) {
       return {
         status: 'failed',
-        error: failedReason ?? 'Export failed.',
+        error: job.error ?? 'Export failed.',
       };
     }
-    const progress = job.progress as number | undefined;
     return {
-      status: state === 'active' ? 'processing' : state,
-      progress: typeof progress === 'number' ? progress : undefined,
+      status:
+        job.status === STATUS.PROCESSING ? 'processing' : job.status,
+      progress: job.progress,
     };
   }
 
-  /** Get export result (Cloudinary URL). Verifies user owns the job. */
+  /** Get export result (Cloudinary URL and filename). Verifies user owns the job. */
   async getExportResult(
     jobId: string,
     userId: string,
   ): Promise<{ cloudinaryUrl: string; fileName: string }> {
-    const job = await this.queue.getJob(jobId);
+    const job = await this.prisma.exportJob.findUnique({
+      where: { id: jobId },
+    });
     if (!job) {
       throw new NotFoundException('Export job not found or expired.');
     }
-    const data = job.data as { userId: string };
-    if (data.userId !== userId) {
+    if (job.userId !== userId) {
       throw new ForbiddenException('Access denied.');
     }
-    const state = await job.getState();
-    if (state !== 'completed') {
+    if (job.status !== STATUS.COMPLETED) {
       throw new BadRequestException(
-        `Export not ready. Current status: ${state}.`,
+        `Export not ready. Current status: ${job.status}.`,
       );
     }
-    const result = job.returnvalue as
-      | { cloudinaryUrl: string; fileName: string }
-      | undefined;
-    if (!result?.cloudinaryUrl || !result?.fileName) {
+    if (!job.cloudinaryUrl || !job.fileName) {
       throw new NotFoundException('Export file not found.');
     }
-    return result;
+    return {
+      cloudinaryUrl: job.cloudinaryUrl,
+      fileName: job.fileName,
+    };
   }
 }

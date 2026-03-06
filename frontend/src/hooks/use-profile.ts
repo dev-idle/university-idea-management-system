@@ -6,12 +6,14 @@ import { queryKeys } from "@/lib/query/keys";
 import {
   profileSchema,
   departmentMembersSchema,
+  departmentMembersQaManagerSchema,
   departmentStatsSchema,
   departmentChartsSchema,
   qaManagerStatsSchema,
   qaManagerChartsSchema,
   type Profile,
   type DepartmentMembers,
+  type DepartmentMembersQaManager,
   type DepartmentStats,
   type DepartmentCharts,
   type QaManagerStats,
@@ -73,6 +75,30 @@ export function useDepartmentMembersQuery(options?: { enabled?: boolean }) {
     queryFn: async () => {
       const data = await fetchWithAuth<unknown>("me/department-members");
       return parseDepartmentMembers(data);
+    },
+    enabled: options?.enabled !== false && isAuthenticated,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+function parseDepartmentMembersQaManager(data: unknown): DepartmentMembersQaManager {
+  const parsed = departmentMembersQaManagerSchema.safeParse(data);
+  if (!parsed.success) throw new Error("Invalid department members QA Manager response");
+  return parsed.data;
+}
+
+/**
+ * TanStack Query: fetch GET /me/department-members-qa-manager (QA Manager only).
+ * Departments (excl. IT Services, QA Office) with active QA Coordinator per department.
+ */
+export function useQaManagerDepartmentMembersQuery(options?: { enabled?: boolean }) {
+  const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+
+  return useQuery({
+    queryKey: queryKeys.profile.departmentMembersQaManager(),
+    queryFn: async () => {
+      const data = await fetchWithAuth<unknown>("me/department-members-qa-manager");
+      return parseDepartmentMembersQaManager(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,
     staleTime: 2 * 60 * 1000,

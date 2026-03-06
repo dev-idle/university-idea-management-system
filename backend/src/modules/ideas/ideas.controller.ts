@@ -15,6 +15,7 @@ import {
   HttpStatus,
   BadRequestException,
   StreamableFile,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -54,6 +55,8 @@ import { likeCommentBodySchema, type LikeCommentBody } from './dto/like-comment.
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STAFF', 'ADMIN', 'QA_MANAGER', 'QA_COORDINATOR')
 export class IdeasController {
+  private readonly logger = new Logger(IdeasController.name);
+
   constructor(
     private readonly ideasService: IdeasService,
     private readonly cloudinary: CloudinaryService,
@@ -141,7 +144,12 @@ export class IdeasController {
     }
     const res = await fetch(body.secureUrl);
     if (!res.ok) {
-      throw new BadRequestException('Unable to load attachment.');
+      this.logger.warn(
+        `Cloudinary fetch failed for preview: ${res.status} ${res.statusText}`,
+      );
+      throw new BadRequestException(
+        `Unable to load attachment. (HTTP ${res.status})`,
+      );
     }
     const buffer = Buffer.from(await res.arrayBuffer());
     const disposition = `inline; filename="${body.fileName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
@@ -164,7 +172,12 @@ export class IdeasController {
       await this.ideasService.getAttachmentForStream(attachmentId);
     const res = await fetch(secureUrl);
     if (!res.ok) {
-      throw new BadRequestException('Unable to load attachment.');
+      this.logger.warn(
+        `Cloudinary fetch failed for attachment ${attachmentId}: ${res.status} ${res.statusText}`,
+      );
+      throw new BadRequestException(
+        `Unable to load attachment. File may have been removed from storage. (HTTP ${res.status})`,
+      );
     }
     const buffer = Buffer.from(await res.arrayBuffer());
     const disposition = `inline; filename="${fileName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
@@ -187,7 +200,12 @@ export class IdeasController {
       await this.ideasService.getAttachmentForStream(attachmentId);
     const res = await fetch(secureUrl);
     if (!res.ok) {
-      throw new BadRequestException('Unable to load attachment.');
+      this.logger.warn(
+        `Cloudinary fetch failed for attachment ${attachmentId}: ${res.status} ${res.statusText}`,
+      );
+      throw new BadRequestException(
+        `Unable to load attachment. File may have been removed from storage. (HTTP ${res.status})`,
+      );
     }
     const buffer = Buffer.from(await res.arrayBuffer());
     const disposition = `attachment; filename="${fileName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;

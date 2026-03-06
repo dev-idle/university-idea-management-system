@@ -6,7 +6,7 @@ import {
   Param,
   UseGuards,
   Res,
-  StreamableFile,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -73,14 +73,14 @@ export class ExportController {
   }
 
   /**
-   * Download export file. Proxies from Cloudinary with Content-Disposition for proper filename.
+   * Download export file. Streams from Cloudinary to client (avoids buffering large files in memory).
    */
   @Get(':id/download')
   async download(
     @Param(new ZodValidationPipe(jobIdParamSchema)) params: { id: string },
     @CurrentUser() user: AccessTokenPayload,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+    @Res() res: Response,
+  ): Promise<void> {
     const sub = user.sub;
     if (!sub) {
       throw new Error('User ID missing');
@@ -89,14 +89,26 @@ export class ExportController {
       await this.exportService.getExportResult(params.id, sub);
     const fetchRes = await fetch(cloudinaryUrl);
     if (!fetchRes.ok) {
-      throw new Error('Export file unavailable');
+      throw new ServiceUnavailableException(
+        'Export file temporarily unavailable. Please try again shortly.',
+      );
     }
-    const buffer = Buffer.from(await fetchRes.arrayBuffer());
     const disposition = `attachment; filename="${fileName.replace(/"/g, '\\"')}"`;
     res.set({
       'Content-Type': 'application/zip',
       'Content-Disposition': disposition,
+      'Cache-Control': 'no-store',
     });
-    return new StreamableFile(buffer);
+
+    const { Readable } = await import('node:stream');
+    if (fetchRes.body) {
+      const nodeStream = Readable.fromWeb(
+        fetchRes.body as import('node:stream').web.ReadableStream<Uint8Array>,
+      );
+      nodeStream.pipe(res);
+    } else {
+      const buffer = Buffer.from(await fetchRes.arrayBuffer());
+      res.send(buffer);
+    }
   }
 }

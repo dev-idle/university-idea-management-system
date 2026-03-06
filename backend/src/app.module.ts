@@ -77,7 +77,7 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
     CloudinaryModule,
     MailModule,
     NotificationModule.forRoot(),
-    ExportModule.forRoot(),
+    ExportModule,
   ],
   providers: [
     {

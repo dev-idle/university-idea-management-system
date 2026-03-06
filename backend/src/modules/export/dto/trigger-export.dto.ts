@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const EXPORT_TYPES = ['csv', 'documents'] as const;
+export const EXPORT_TYPES = ['full'] as const;
 export type ExportType = (typeof EXPORT_TYPES)[number];
 
 export const triggerExportBodySchema = z.object({

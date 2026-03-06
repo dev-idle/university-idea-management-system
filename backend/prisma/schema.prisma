@@ -19,28 +19,29 @@ model Role {
 }
 
 model User {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email         String         @unique
-  fullName      String?        @db.VarChar(255)
-  phone         String?        @unique @db.VarChar(30)
-  address       String?        @db.Text
-  gender        String?        @db.VarChar(50)
-  dateOfBirth   DateTime?      @db.Date
-  passwordHash  String
-  isActive      Boolean        @default(true)
-  roleId        String         @db.Uuid
-  role          Role           @relation(fields: [roleId], references: [id], onDelete: Restrict)
-  departmentId  String?        @db.Uuid
-  department    Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  refreshTokens RefreshToken[]
-  ideas         Idea[]
-  ideaVotes     IdeaVote[]
+  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String            @unique
+  fullName         String?           @db.VarChar(255)
+  phone            String?           @unique @db.VarChar(30)
+  address          String?           @db.Text
+  gender           String?           @db.VarChar(50)
+  dateOfBirth      DateTime?         @db.Date
+  passwordHash     String
+  isActive         Boolean           @default(true)
+  roleId           String            @db.Uuid
+  role             Role              @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  departmentId     String?           @db.Uuid
+  department       Department?       @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  refreshTokens    RefreshToken[]
+  exportJobs       ExportJob[]
+  ideas            Idea[]
+  ideaVotes        IdeaVote[]
   ideaComments     IdeaComment[]
   ideaCommentLikes IdeaCommentLike[]
-  ideaViews     IdeaView[]
-  notifications Notification[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  ideaViews        IdeaView[]
+  notifications    Notification[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@index([roleId])
   @@index([departmentId])
@@ -50,7 +51,7 @@ model User {
 model Notification {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String   @db.Uuid
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type      String   @db.VarChar(50)
   message   String   @db.Text
   link      String?  @db.VarChar(512)
@@ -136,14 +137,14 @@ model IdeaVote {
 }
 
 model IdeaComment {
-  id               String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ideaId           String            @db.Uuid
-  idea             Idea              @relation(fields: [ideaId], references: [id], onDelete: Cascade)
-  userId           String            @db.Uuid
-  user             User              @relation(fields: [userId], references: [id], onDelete: Restrict)
-  parentCommentId  String?           @db.Uuid
-  parentComment    IdeaComment?      @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
-  replies         IdeaComment[]      @relation("CommentReplies")
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ideaId          String            @db.Uuid
+  idea            Idea              @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  userId          String            @db.Uuid
+  user            User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  parentCommentId String?           @db.Uuid
+  parentComment   IdeaComment?      @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies         IdeaComment[]     @relation("CommentReplies")
   content         String            @db.Text
   isAnonymous     Boolean           @default(false)
   createdAt       DateTime          @default(now())
@@ -194,6 +195,7 @@ model IdeaSubmissionCycle {
   isLocked               Boolean         @default(false)
   wasEverClosed          Boolean         @default(false)
   cycleCategories        CycleCategory[]
+  exportJobs             ExportJob[]
   ideas                  Idea[]
   createdAt              DateTime        @default(now())
   updatedAt              DateTime        @updatedAt
@@ -240,4 +242,27 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model ExportJob {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @db.Uuid
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycleId       String   @db.Uuid
+  cycle         IdeaSubmissionCycle @relation(fields: [cycleId], references: [id], onDelete: Restrict)
+  type          String   @db.VarChar(20)
+  status        String   @db.VarChar(20)
+  progress      Int      @default(0)
+  cloudinaryUrl String?  @db.VarChar(1024)
+  fileName      String?  @db.VarChar(512)
+  error         String?  @db.Text
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([cycleId])
+  @@index([status])
+  @@index([status, createdAt])
 }

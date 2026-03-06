@@ -98,6 +98,24 @@ export const departmentStatsSchema = z
 
 export type DepartmentStats = z.infer<typeof departmentStatsSchema>;
 
+/** GET /me/department-members-qa-manager response — QA Manager only. Departments (excl. IT/QA) with active QC. */
+export const departmentMembersQaManagerSchema = z.array(
+  z.object({
+    department: z.object({ id: z.string(), name: z.string() }),
+    qaCoordinator: z
+      .object({
+        id: z.string(),
+        fullName: z.string().nullable(),
+        email: z.string().email(),
+      })
+      .nullable(),
+  })
+);
+
+export type DepartmentMembersQaManager = z.infer<
+  typeof departmentMembersQaManagerSchema
+>;
+
 /** GET /me/qa-manager-stats response — QA Manager only. Active year, excludes IT/QA departments. */
 export const qaManagerStatsSchema = z.object({
   totalIdeas: z.number().int().min(0),
