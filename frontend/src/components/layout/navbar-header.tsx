@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { hasRole } from "@/lib/rbac";
 import {
   NAVBAR_ACTION_GROUP,
+  NAVBAR_ACTION_GROUP_NOTIFICATION_ONLY,
   NAVBAR_DIVIDER_VERTICAL,
   NAVBAR_HEADER_CLASS,
   NAVBAR_LEFT_BASE,
@@ -67,7 +68,13 @@ export function NavbarHeader({
 
       <div className={cn(NAVBAR_RIGHT_BASE, NAVBAR_RIGHT_GAP)}>
         {hasLeftActions && (
-          <div className={NAVBAR_ACTION_GROUP}>
+          <div
+            className={
+              showNotification && !hasRole(user.roles, "STAFF")
+                ? NAVBAR_ACTION_GROUP_NOTIFICATION_ONLY
+                : NAVBAR_ACTION_GROUP
+            }
+          >
             {hasRole(user.roles, "STAFF") && (
               <HeaderIconButton
                 icon={Lightbulb}

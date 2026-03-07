@@ -822,6 +822,10 @@ export const NAVBAR_RIGHT_GAP = "gap-3";
 export const NAVBAR_ACTION_GROUP =
   "flex items-center gap-2 rounded-lg bg-muted/[0.015] p-1.5";
 
+/** Navbar icon group when only notification (QA Coordinator) — min-width + justify-end so bell aligns with Staff. */
+export const NAVBAR_ACTION_GROUP_NOTIFICATION_ONLY =
+  "flex min-w-[7.5rem] justify-end items-center gap-2 rounded-lg bg-muted/[0.015] p-1.5";
+
 /** Navbar vertical divider — symmetric margins, subtle. Hidden on mobile. */
 export const NAVBAR_DIVIDER_VERTICAL =
   "mx-1 hidden h-5 w-px shrink-0 md:block bg-border/40";
