@@ -8,7 +8,7 @@ import {
   Settings,
   type LucideIcon,
 } from "lucide-react";
-import { TYPO_LABEL, TYPO_NAV, TYPO_HEADER_AND_STAT_TEXT, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE, NAVBAR_TRIGGER_CLASS } from "@/config/design";
+import { TYPO_LABEL, TYPO_NAV, TYPO_HEADER_AND_STAT_TEXT, HOVER_TRANSITION_NAV, NAVBAR_ICON_SIZE, NAVBAR_TRIGGER_CLASS, TR_CHEVRON_ROTATE } from "@/config/design";
 import {
   PROFILE_AVATAR_FALLBACK_CLASS,
   BREADCRUMB_LINK_CLASS,
@@ -38,6 +38,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   categories: "Categories",
   "submission-cycles": "Proposal Cycles",
   "proposal-cycles": "Proposal Cycles",
+  export: "Export Data",
   "qa-coordinator": "QA Coordinator",
   ideas: "Ideas Hub",
   new: "New",
@@ -114,6 +115,19 @@ export function getBreadcrumbs(
         ? "Proposal"
         : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
     items.push({ href, label });
+  }
+  // QA Manager sub-routes: parent "QA Manager" links to Dashboard (matches sidebar Nav).
+  // Skip when on dashboard itself to avoid duplicate keys (both items would have same href).
+  const isQaManagerDashboard =
+    pathname === "/qa-manager/dashboard" || pathname.startsWith("/qa-manager/dashboard/");
+  if (
+    pathname.startsWith("/qa-manager/") &&
+    pathname !== "/qa-manager" &&
+    !isQaManagerDashboard &&
+    items.length >= 2 &&
+    items[0].href === "/qa-manager"
+  ) {
+    items[0] = { href: ROUTES.QA_MANAGER_DASHBOARD, label: "QA Manager" };
   }
   return items;
 }
@@ -211,7 +225,7 @@ export function UserMenu({
             </p>
           </div>
           <ChevronDown
-            className="hidden size-3.5 shrink-0 text-muted-foreground/60 transition-[color,transform] duration-200 group-hover:text-muted-foreground/80 group-data-[state=open]:rotate-180 sm:block"
+            className={cn("hidden size-3.5 shrink-0 text-muted-foreground/60 group-hover:text-muted-foreground/80 sm:block", TR_CHEVRON_ROTATE)}
             aria-hidden
           />
         </button>
@@ -298,7 +312,7 @@ export function HeaderBreadcrumbs({
             {/* Mobile: current only, or Ideas Hub + Detail when that hierarchy exists */}
             <li className="flex min-w-0 items-center gap-1.5 sm:hidden">
               {mobileItems.map((item, i) => (
-                <span key={item.href || i} className="flex min-w-0 items-center gap-1.5">
+                <span key={`crumb-${i}`} className="flex min-w-0 items-center gap-1.5">
                   {i > 0 && (
                     <span className="shrink-0 text-muted-foreground/80" aria-hidden>/</span>
                   )}
@@ -322,7 +336,7 @@ export function HeaderBreadcrumbs({
             </li>
             {/* Desktop: full breadcrumb */}
             {breadcrumbs.map((item, i) => (
-              <li key={item.href || `ctx-${i}`} className="hidden items-center gap-1 sm:flex">
+              <li key={`${item.href}-${i}`} className="hidden items-center gap-1 sm:flex">
                 {i > 0 && (
                   <span className="shrink-0 mx-0.5 text-muted-foreground/80" aria-hidden>
                     /

@@ -152,6 +152,10 @@ export const TR_LOADING_FRAME = "animate-in fade-in-0 duration-[200ms]";
 export const TR_CHART_ENTRANCE =
   "animate-in fade-in-0 slide-in-from-bottom-1 duration-[420ms] ease-out fill-mode-both";
 
+/** Chevron rotate (User menu, Select filter) — 200ms ease-out, rotate-180 when open. Sync across all dropdowns. */
+export const TR_CHEVRON_ROTATE =
+  "transition-[color,transform] duration-200 ease-out data-[state=open]:rotate-180 group-data-[state=open]:rotate-180";
+
 /** Popup/Overlay UI — unified: User menu, Add dialogs, Action dialogs, Select, Tooltip. */
 export const POPUP_BG = "bg-popover";
 export const POPUP_BORDER = "border border-border/55";
@@ -725,13 +729,26 @@ export const IDEAS_HUB_COUNT = "text-[11px] text-muted-foreground/45";
 export const IDEAS_HUB_TOOLBAR =
   "flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-border/30";
 
-/** Ideas Hub filter/select trigger — clean, balanced. Unified focus. */
-export const IDEAS_HUB_SELECT_TRIGGER =
-  "relative flex h-8 w-[9rem] min-w-[9rem] items-center rounded-lg border border-border/80 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
+/** Ideas Hub filter/select trigger — fixed size, subtle colors, text-independent.
+ *  Height/icon/padding fixed; text truncates. Colors: muted bg, soft border. */
+const IDEAS_HUB_SELECT_TRIGGER_BASE =
+  "relative flex h-9 min-h-9 min-w-0 overflow-hidden items-center rounded-lg border border-border/50 bg-muted/[0.06] pl-3 pr-9 text-xs font-medium text-foreground/90 transition-colors duration-200 hover:border-border/60 hover:bg-muted/[0.08] focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/[0.06] focus-visible:ring-offset-1 focus-visible:outline-none [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:whitespace-nowrap [&_[data-slot=select-value]]:pr-4 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:size-3.5 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/50";
 
-/** Ideas Hub filter trigger — larger for QA Coordinator (Department/Category). */
+/** Ideas Hub filter trigger — unified width (10.5rem). */
+export const IDEAS_HUB_SELECT_TRIGGER =
+  `${IDEAS_HUB_SELECT_TRIGGER_BASE} w-[10.5rem] min-w-[10.5rem]`;
+
+/** Ideas Hub filter trigger — same as standard (10.5rem). */
 export const IDEAS_HUB_SELECT_TRIGGER_COORDINATOR =
-  "relative flex h-8 min-w-[10rem] w-[10rem] items-center rounded-lg border border-border/80 bg-muted/[0.02] pl-3 pr-8 text-xs font-medium text-foreground transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 focus-visible:outline-none [&_[data-slot=select-value]]:block [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:flex-1 [&_[data-slot=select-value]]:truncate [&_[data-slot=select-value]]:pr-5 [&_[data-slot=select-value]]:text-left [&>svg]:absolute [&>svg]:right-2.5 [&>svg]:top-1/2 [&>svg]:-translate-y-1/2 [&>svg]:shrink-0 [&>svg]:text-muted-foreground/55";
+  `${IDEAS_HUB_SELECT_TRIGGER_BASE} w-[10.5rem] min-w-[10.5rem]`;
+
+/** Responsive override for filter trigger — full width on mobile, 10.5rem on desktop. */
+export const IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE =
+  "w-full min-w-0 sm:w-[10.5rem] sm:min-w-[10.5rem] sm:max-w-[10.5rem]";
+
+/** Responsive override for coordinator filter trigger — same as standard. */
+export const IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE =
+  "w-full min-w-0 sm:w-[10.5rem] sm:min-w-[10.5rem] sm:max-w-[10.5rem]";
 
 /** Ideas Hub toolbar divider (vertical). */
 export const IDEAS_HUB_TOOLBAR_DIVIDER = "h-3 w-px shrink-0 bg-border/25";

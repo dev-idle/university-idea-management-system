@@ -69,6 +69,7 @@ import {
   IDEAS_HUB_EMPTY_ICON,
   IDEAS_HUB_TOOLBAR,
   IDEAS_HUB_SELECT_TRIGGER,
+  IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
   IDEAS_HUB_TOOLBAR_DIVIDER,
   IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
@@ -448,7 +449,7 @@ export default function MyIdeasPage() {
   const selectedCycle = cycleId ? allCycles.find((c) => c.id === cycleId) : null;
   const categories = selectedCycle?.categories ?? [];
 
-  const { data, status, error } = useMyIdeasQuery(
+  const { data, status, error, isFetching } = useMyIdeasQuery(
     {
       page,
       limit: PAGE_SIZE,
@@ -509,8 +510,8 @@ export default function MyIdeasPage() {
         </ol>
       </nav>
 
-      {status === "pending" ? (
-        <div className="flex flex-col items-center py-20">
+      {status === "pending" && !data ? (
+        <div className="flex min-h-[280px] flex-col items-center justify-center py-20">
           <LoadingState compact />
         </div>
       ) : !ideas.length ? (
@@ -546,7 +547,7 @@ export default function MyIdeasPage() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0 sm:w-auto sm:min-w-[9rem]")}>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)}>
                     <SelectValue placeholder="Year" />
                   </SelectTrigger>
                   <SelectContent>
@@ -569,7 +570,7 @@ export default function MyIdeasPage() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0 sm:w-auto sm:min-w-[9rem]")}>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)}>
                     <SelectValue placeholder="Cycle" />
                   </SelectTrigger>
                   <SelectContent>
@@ -591,7 +592,7 @@ export default function MyIdeasPage() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0 sm:w-auto sm:min-w-[9rem]")}>
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)}>
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -615,7 +616,13 @@ export default function MyIdeasPage() {
             )}
           </div>
 
-          <div className={IDEAS_HUB_FEED_GAP}>
+          <div
+            className={cn(
+              IDEAS_HUB_FEED_GAP,
+              "min-h-[200px] transition-opacity duration-200",
+              isFetching && "opacity-70 pointer-events-none",
+            )}
+          >
             {ideas.map((idea) => (
               <IdeaRow
                 key={idea.id}

@@ -61,6 +61,8 @@ import {
   IDEAS_HUB_TOOLBAR,
   IDEAS_HUB_SELECT_TRIGGER,
   IDEAS_HUB_SELECT_TRIGGER_COORDINATOR,
+  IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
+  IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE,
   IDEAS_HUB_TOOLBAR_DIVIDER,
   IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
@@ -514,6 +516,7 @@ export function IdeasHubContent() {
     data: listData,
     status: ideasStatus,
     error: ideasError,
+    isFetching: ideasFetching,
   } = useIdeasQuery(
     {
       page,
@@ -582,7 +585,7 @@ export function IdeasHubContent() {
             >
               <SelectTrigger className={cn(
                 isQaCoordinator || isQaManager ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER,
-                "w-full min-w-0 sm:w-auto sm:min-w-[9rem]",
+                isQaCoordinator || isQaManager ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE : IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
               )}>
                 <SelectValue placeholder="Department" />
               </SelectTrigger>
@@ -609,7 +612,7 @@ export function IdeasHubContent() {
             >
               <SelectTrigger className={cn(
                 isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER,
-                "w-full min-w-0 sm:w-auto sm:min-w-[10rem]",
+                isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE : IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
               )}>
                 <SelectValue placeholder="Cycle" />
               </SelectTrigger>
@@ -634,7 +637,7 @@ export function IdeasHubContent() {
             >
               <SelectTrigger className={cn(
                 isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR : IDEAS_HUB_SELECT_TRIGGER,
-                "w-full min-w-0 sm:w-auto sm:min-w-[9rem]",
+                isReadOnly ? IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE : IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
               )}>
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -662,7 +665,7 @@ export function IdeasHubContent() {
             >
               <SelectTrigger className={cn(
                 IDEAS_HUB_SELECT_TRIGGER_COORDINATOR,
-                "w-full min-w-0 sm:w-auto sm:min-w-[10rem]",
+                IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE,
               )} aria-label="Sort by">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -685,7 +688,7 @@ export function IdeasHubContent() {
                     setExpandedId(null);
                   }}
                 >
-                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, "w-full min-w-0")} aria-label="Sort by">
+                  <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)} aria-label="Sort by">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
                   <SelectContent>
@@ -728,7 +731,7 @@ export function IdeasHubContent() {
 
       {/* ── Feed ──────────────────────────────────────────────────────── */}
       {(ctxStatus === "pending" || ideasStatus === "pending") && !listData ? (
-            <div className="flex flex-col items-center py-20">
+            <div className="flex min-h-[280px] flex-col items-center justify-center py-20">
               <LoadingState compact />
             </div>
       ) : !ideas.length ? (
@@ -749,7 +752,13 @@ export function IdeasHubContent() {
             </div>
       ) : (
         <>
-          <div className={IDEAS_HUB_FEED_GAP}>
+          <div
+            className={cn(
+              IDEAS_HUB_FEED_GAP,
+              "min-h-[200px] transition-opacity duration-200",
+              ideasFetching && "opacity-70 pointer-events-none",
+            )}
+          >
                 {ideas.map((idea) => (
                   <IdeaCard
                     key={idea.id}

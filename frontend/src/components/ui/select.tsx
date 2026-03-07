@@ -38,14 +38,14 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "border-border/80 data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 aria-invalid:border-destructive/80 aria-invalid:ring-destructive/10 dark:aria-invalid:ring-destructive/15 dark:bg-input/30 hover:bg-primary/[0.06] flex cursor-pointer w-fit items-center justify-between gap-2 rounded-lg border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "border-border/80 data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 aria-invalid:border-destructive/80 aria-invalid:ring-destructive/10 dark:aria-invalid:ring-destructive/15 dark:bg-input/30 hover:bg-primary/[0.06] flex cursor-pointer w-fit items-center justify-between gap-2 rounded-lg border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&>svg]:transition-transform [&>svg]:duration-200 [&>svg]:ease-out data-[state=open]:[&>svg]:rotate-180",
         className
       )}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="hidden size-4 opacity-50 sm:block" />
+        <ChevronDownIcon className="size-4 opacity-50" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -53,6 +53,8 @@ function SelectTrigger({
 
 /** Max height for select dropdown — ~6 items, then scroll. */
 const SELECT_CONTENT_MAX_H = "max-h-[min(14rem,var(--radix-select-content-available-height,80vh))]";
+/** Max width — prevents overflow on long text, truncate applies. */
+const SELECT_CONTENT_MAX_W = "max-w-[min(21rem,90vw)]";
 
 function SelectContent({
   className,
@@ -73,6 +75,7 @@ function SelectContent({
           TR_MENU,
           POPUP_BG,
           POPUP_MOBILE_MAX_W,
+          SELECT_CONTENT_MAX_W,
           "text-popover-foreground relative z-50 min-w-[8rem] origin-(--radix-select-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto",
           SELECT_CONTENT_MAX_H,
           POPUP_BORDER,

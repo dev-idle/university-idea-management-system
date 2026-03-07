@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { Search, Users } from "lucide-react";
+import { ChevronDown, Search, Users } from "lucide-react";
 import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -28,6 +28,7 @@ import {
   TABLE_EMPTY_HINT_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
   TOOLBAR_FILTER_SELECT_TRIGGER_CLASS,
+  TOOLBAR_FILTER_CHEVRON_CLASS,
   MANAGEMENT_PAGE_SIZE,
   MANAGEMENT_PAGINATION_MIN_TOTAL,
 } from "./constants";
@@ -210,12 +211,13 @@ export function AdminDepartmentMembersContent() {
             <div className={TOOLBAR_FILTER_DIVIDER} aria-hidden />
             <Select value={selectedDeptId} onValueChange={setDeptId}>
               <SelectTrigger
-                className={cn(TOOLBAR_FILTER_SELECT_TRIGGER_CLASS, TOOLBAR_FILTER_DEPT_WIDTH)}
+                className={cn(TOOLBAR_FILTER_SELECT_TRIGGER_CLASS, TOOLBAR_FILTER_DEPT_WIDTH, "[&>svg:first-of-type]:hidden")}
                 title={selectedDeptName || undefined}
               >
                 <SelectValue placeholder="Department" />
+                <ChevronDown className={TOOLBAR_FILTER_CHEVRON_CLASS} aria-hidden />
               </SelectTrigger>
-              <SelectContent className="max-w-[min(24rem,90vw)]">
+              <SelectContent>
                 {departments.map((d) => (
                   <SelectItem key={d.id} value={d.id} title={d.name}>
                     <span className="block truncate" title={d.name}>
@@ -228,10 +230,11 @@ export function AdminDepartmentMembersContent() {
             {selectedDeptId ? (
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger
-                  className={cn(TOOLBAR_FILTER_SELECT_TRIGGER_CLASS, TOOLBAR_FILTER_ROLE_WIDTH)}
+                  className={cn(TOOLBAR_FILTER_SELECT_TRIGGER_CLASS, TOOLBAR_FILTER_ROLE_WIDTH, "[&>svg:first-of-type]:hidden")}
                   title={roleFilter === "all" ? "All" : getRoleLabel(roleFilter as Role)}
                 >
                   <SelectValue placeholder="Role" />
+                  <ChevronDown className={TOOLBAR_FILTER_CHEVRON_CLASS} aria-hidden />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All</SelectItem>

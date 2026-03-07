@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { fetchWithAuth } from "@/lib/api/client";
 import { queryKeys } from "@/lib/query/keys";
 import type {
@@ -106,6 +106,7 @@ export function useIdeasQuery(params?: IdeasListParams, options?: { enabled?: bo
       return parseIdeasPaginated(data);
     },
     enabled: options?.enabled !== false,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -598,6 +599,7 @@ export function useMyIdeasQuery(
       return parseOwnIdeasPaginated(data);
     },
     enabled: options?.enabled !== false,
+    placeholderData: keepPreviousData,
     refetchInterval: (query) => getMyIdeasRefetchInterval(query.state.data),
   });
 }

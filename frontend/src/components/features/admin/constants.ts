@@ -83,18 +83,22 @@ export const TOOLBAR_SEARCH_FILTERS_GROUP =
 /** Toolbar Add button — full width on mobile, auto on desktop. */
 export const TOOLBAR_ADD_MOBILE_CLASS = "w-full sm:w-auto";
 
-/** Unified search input — design: border/80, ring /[0.08]. Subtle hover, smooth transitions, respects reduced motion. */
+/** Unified search input — muted bg, soft border. Aligned with Ideas Hub filter for consistency. */
 export const UNIFIED_SEARCH_INPUT_CLASS =
-  "h-9 w-full rounded-xl border border-border/80 bg-muted/[0.03] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-[color,background-color,border-color,box-shadow] duration-200 ease-out hover:border-border/90 focus:border-primary/80 focus:bg-background focus:ring-1 focus:ring-primary/[0.08] motion-reduce:transition-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
+  "h-9 w-full rounded-xl border border-border/50 bg-muted/[0.06] py-2.5 pl-10 pr-11 font-sans text-sm text-foreground placeholder:text-muted-foreground/80 outline-none transition-[color,background-color,border-color,box-shadow] duration-200 ease-out hover:border-border/60 hover:bg-muted/[0.08] focus:border-primary/50 focus:bg-muted/[0.08] focus:ring-1 focus:ring-primary/[0.06] focus:ring-offset-1 motion-reduce:transition-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden";
 
-/** Toolbar filter select — h-9, matches UNIFIED_SEARCH_INPUT. For filter bars (Search + Selects). */
+/** Chevron icon for toolbar filter select — positioned, rotation from parent data-state. */
+export const TOOLBAR_FILTER_CHEVRON_CLASS =
+  "pointer-events-none absolute right-2.5 top-1/2 size-3.5 shrink-0 -translate-y-1/2 text-muted-foreground opacity-80 transition-transform duration-200 ease-out";
+
+/** Toolbar filter select — muted bg, soft border, fixed width. Chevron icon + rotate animation when open. */
 export const TOOLBAR_FILTER_SELECT_TRIGGER_CLASS =
-  "!h-9 w-full min-w-0 overflow-hidden rounded-xl border border-border/80 bg-background px-3 py-2 text-sm text-foreground shadow-xs transition-colors duration-200 outline-none hover:border-primary/30 focus-visible:border-primary/80 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:block [&>[data-slot=select-value]]:truncate data-[placeholder]:text-muted-foreground/80";
+  "relative !h-9 w-full min-w-0 rounded-xl border border-border/50 bg-muted/[0.06] px-3 pr-9 py-2 text-sm text-foreground transition-colors duration-200 outline-none hover:border-border/60 hover:bg-muted/[0.08] focus-visible:border-primary/50 focus-visible:ring-1 focus-visible:ring-primary/[0.06] focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 [&>[data-slot=select-value]]:min-w-0 [&>[data-slot=select-value]]:block [&>[data-slot=select-value]]:truncate [&>[data-slot=select-value]]:whitespace-nowrap data-[placeholder]:text-muted-foreground/80 [&_svg]:!block [&_svg]:absolute [&_svg]:right-2.5 [&_svg]:top-1/2 [&_svg]:-translate-y-1/2 [&_svg]:size-3.5 [&_svg]:shrink-0 [&_svg]:opacity-80 [&_svg]:text-muted-foreground [&_svg]:transition-transform [&_svg]:duration-200 [&_svg]:ease-out data-[state=open]:[&_svg]:rotate-180";
 
-/** Toolbar filter widths (rem-based, design scale). Search: full on mobile, 18rem on sm+. Dept & Role: full on mobile, 10rem on sm+. */
+/** Toolbar filter widths — fixed 10.5rem on desktop for consistency. */
 export const TOOLBAR_SEARCH_WIDTH = "w-full min-w-0 sm:w-72";
-export const TOOLBAR_FILTER_DEPT_WIDTH = "w-full sm:w-40";  /* full on mobile, 10rem on sm+ */
-export const TOOLBAR_FILTER_ROLE_WIDTH = "w-full sm:w-40";  /* full on mobile, 10rem on sm+ */
+export const TOOLBAR_FILTER_DEPT_WIDTH = "w-full min-w-0 sm:w-[10.5rem] sm:min-w-[10.5rem] sm:max-w-[10.5rem]";
+export const TOOLBAR_FILTER_ROLE_WIDTH = "w-full min-w-0 sm:w-[10.5rem] sm:min-w-[10.5rem] sm:max-w-[10.5rem]";
 
 /** Toolbar vertical divider — separates Search from filter selects. Hidden on mobile when stacked. */
 export const TOOLBAR_FILTER_DIVIDER = "hidden h-9 w-px shrink-0 self-center bg-border/40 sm:block";
