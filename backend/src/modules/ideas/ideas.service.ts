@@ -1386,7 +1386,12 @@ export class IdeasService {
         // Log but do not block DB delete; orphaned Cloudinary assets can be cleaned later
       }
     }
-    await this.prisma.idea.delete({ where: { id: ideaId } });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.notification.deleteMany({
+        where: { link: { contains: `ideas/${ideaId}` } },
+      });
+      await tx.idea.delete({ where: { id: ideaId } });
+    });
   }
 
   /**
@@ -1737,7 +1742,12 @@ export class IdeasService {
       }
     }
 
-    await this.prisma.idea.delete({ where: { id: ideaId } });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.notification.deleteMany({
+        where: { link: { contains: `ideas/${ideaId}` } },
+      });
+      await tx.idea.delete({ where: { id: ideaId } });
+    });
   }
 
   /**

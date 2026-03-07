@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
 import {
   useIdeaQuery,
   useIdeaCommentsQuery,
@@ -776,7 +776,13 @@ export default function IdeaDetailPage() {
   }, [comments, targetedCommentId]);
 
   if (!id) return null;
-  if (status === "error") throw error;
+  if (status === "error") {
+    const msg = error?.message ?? "";
+    if (msg.includes("404") || msg.includes("Idea not found")) {
+      notFound();
+    }
+    throw error;
+  }
   if (status === "pending" || !idea) {
     return (
       <div className={PAGE_CONTAINER_CLASS}>

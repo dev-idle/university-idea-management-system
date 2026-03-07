@@ -806,31 +806,38 @@ export const NAVBAR_HEADER_CLASS =
 /** Navbar left section base — flex-1, min-w-0 for truncation. */
 export const NAVBAR_LEFT_BASE = "flex min-w-0 flex-1 items-center";
 
+/** Navbar left section gap — between hamburger/branding and breadcrumbs/context. */
+export const NAVBAR_LEFT_GAP = "gap-3";
+
 /** Navbar right section base — icon group + divider + user menu. */
 export const NAVBAR_RIGHT_BASE = "flex shrink-0 items-center";
 
 /** Navbar icon size — unified 16.5px for Ideas Hub, My Ideas, Notifications. */
 export const NAVBAR_ICON_SIZE = "size-[16.5px]";
 
-/** Navbar right section: gap between icon group and user menu. */
-export const NAVBAR_RIGHT_GAP = "gap-2";
+/** Navbar right section: gap between icon group, divider, user menu. Balanced spacing. */
+export const NAVBAR_RIGHT_GAP = "gap-3";
 
-/** Navbar icon group — shared by Staff & Role Manager. Subtle container for nav icons. */
+/** Navbar icon group — shared by Staff & Role Manager. Refined padding. */
 export const NAVBAR_ACTION_GROUP =
-  "flex items-center gap-2 rounded-lg bg-muted/[0.015] p-1";
+  "flex items-center gap-2 rounded-lg bg-muted/[0.015] p-1.5";
 
-/** Navbar vertical divider (between icon group and user menu) — centered between bell and User. */
+/** Navbar vertical divider — symmetric margins, subtle. Hidden on mobile. */
 export const NAVBAR_DIVIDER_VERTICAL =
-  "ml-0.5 mr-1.5 hidden h-5 w-px shrink-0 md:block bg-border/40";
+  "mx-1 hidden h-5 w-px shrink-0 md:block bg-border/40";
 
 // ─── Notification dropdown — minimal, aligned with popup scale ─────────────────
 
 /** Notification popover width. */
 export const NOTIFICATION_POPOVER_W = "w-[352px]";
 
-/** Notification header — minimal toolbar. */
+/** Notification header — aligned with User Menu (border/40, px-4). */
 export const NOTIFICATION_HEADER_CLASS =
-  "flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3 bg-muted/[0.02]";
+  "flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3";
+
+/** Notification list — scroll at 5+ items (~4 rows visible), thin scrollbar. */
+export const NOTIFICATION_LIST_CLASS =
+  "scrollbar-thin-stable overflow-y-auto overscroll-contain rounded-b-xl max-h-[18rem]";
 
 /** Navbar interactive trigger — bell, user menu. Cursor pointer + hover. */
 export const NAVBAR_TRIGGER_CLASS =
@@ -839,29 +846,36 @@ export const NAVBAR_TRIGGER_CLASS =
 /** Notification header title — text-sm, foreground/90. */
 export const NOTIFICATION_HEADER_TITLE = "text-sm font-medium text-foreground/90";
 
-/** Notification row — design: muted/[0.06] hover light. */
-export const NOTIFICATION_ROW_CLASS =
-  "flex w-full cursor-pointer items-start gap-3 border-b border-border/40 px-4 py-3 text-left transition-colors duration-200 hover:bg-muted/[0.06] first:rounded-t-xl last:rounded-b-xl last:border-b-0";
+/** Notification list items container — gap between items, px-4 aligned with header. */
+export const NOTIFICATION_LIST_ITEMS_CLASS =
+  "flex flex-col gap-2 px-4 py-2";
 
-/** Notification row unread — design: primary/[0.06] accent. */
-export const NOTIFICATION_ROW_UNREAD_CLASS = "bg-primary/[0.06]";
+/** Notification row — minimal, rounded, px-4 aligned with list. */
+export const NOTIFICATION_ROW_CLASS =
+  "flex w-full cursor-pointer items-start gap-3 rounded-lg px-4 py-2.5 text-left transition-colors duration-200 ease-out hover:bg-muted/[0.05]";
+
+/** Notification row unread — subtle tint, minimal. Design: primary/[0.04]. */
+export const NOTIFICATION_ROW_UNREAD_CLASS = "bg-primary/[0.04]";
 
 /** Notification row read — neutral. */
 export const NOTIFICATION_ROW_READ_CLASS = "";
 
-/** Notification icon container — minimal. */
-export const NOTIFICATION_ICON_CLASS =
-  "flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70";
-
-/** Notification icon unread — primary tint. */
-export const NOTIFICATION_ICON_UNREAD_CLASS = "text-primary/80";
-
 /** Notification row message — unread: font-medium foreground/92. */
 export const NOTIFICATION_ROW_MESSAGE_UNREAD = "text-sm font-medium text-foreground/92";
 
-/** Notification empty state — aligned with IDEAS_HUB_EMPTY_ICON. */
+/** Notification empty state — compact, px-4 aligned with list. */
 export const NOTIFICATION_EMPTY_CLASS =
-  "flex min-h-[12rem] flex-col items-center justify-center gap-2 px-6 py-10";
+  "flex min-h-[10rem] flex-col items-center justify-center gap-2 px-4 py-8";
+
+/** Notification popover sideOffset — matches User Menu (8). */
+export const NOTIFICATION_POPOVER_OFFSET = 8;
+
+/** Notification trigger icon — size-8, rounded-lg, aligned with navbar icons. */
+export const NOTIFICATION_TRIGGER_ICON_CLASS =
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg";
+
+/** Notification bell icon — larger than NAVBAR_ICON_SIZE to balance tall menu. */
+export const NOTIFICATION_ICON_SIZE = "size-[18px]";
 
 /** Notification badge — compact, slightly lower for balance. */
 export const NOTIFICATION_BADGE_CLASS =
@@ -886,6 +900,9 @@ export const STAFF_PILL_GROUP_CLASS = NAVBAR_ACTION_GROUP;
 
 /** Staff main max-width — narrow, ideas-focused. */
 export const STAFF_MAIN_MAX_W = "max-w-4xl";
+
+/** Staff navbar left gap — branding, divider, context. Refined. */
+export const STAFF_NAVBAR_LEFT_GAP = "gap-3";
 
 /** Staff context label (active year) — subtle, nav-level. */
 export const STAFF_CONTEXT_LABEL_CLASS =

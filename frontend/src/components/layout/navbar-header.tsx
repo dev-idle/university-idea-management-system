@@ -10,6 +10,7 @@ import {
   NAVBAR_DIVIDER_VERTICAL,
   NAVBAR_HEADER_CLASS,
   NAVBAR_LEFT_BASE,
+  NAVBAR_LEFT_GAP,
   NAVBAR_RIGHT_BASE,
   NAVBAR_RIGHT_GAP,
 } from "@/config/design";
@@ -46,7 +47,7 @@ export function NavbarHeader({
 
   return (
     <header className={NAVBAR_HEADER_CLASS}>
-      <div className={NAVBAR_LEFT_BASE}>
+      <div className={cn(NAVBAR_LEFT_BASE, NAVBAR_LEFT_GAP)}>
         {onOpenMobileMenu && (
           <button
             type="button"

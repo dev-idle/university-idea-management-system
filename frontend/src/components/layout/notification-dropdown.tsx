@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, BellOff, MessageSquare } from "lucide-react";
+import { Bell, BellOff } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
@@ -20,13 +20,17 @@ import {
 import {
   TYPO_BODY_SM,
   TYPO_CAPTION,
-  NAVBAR_ICON_SIZE,
+  NOTIFICATION_ICON_SIZE,
   NAVBAR_TRIGGER_CLASS,
   IDEAS_HUB_EMPTY_ICON,
   LOADING_STATE_WRAPPER_CLASS,
   NOTIFICATION_POPOVER_W,
+  NOTIFICATION_POPOVER_OFFSET,
   NOTIFICATION_HEADER_CLASS,
   NOTIFICATION_HEADER_TITLE,
+  NOTIFICATION_TRIGGER_ICON_CLASS,
+  NOTIFICATION_LIST_CLASS,
+  NOTIFICATION_LIST_ITEMS_CLASS,
   NOTIFICATION_ROW_CLASS,
   NOTIFICATION_ROW_UNREAD_CLASS,
   NOTIFICATION_ROW_READ_CLASS,
@@ -38,27 +42,20 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { env } from "@/config/env";
 import { cn } from "@/lib/utils";
 
-/** Extract author initial from message: idea, comment, reply. */
+const AUTHOR_PATTERNS: Record<string, RegExp> = {
+  "idea.submitted": /from (.+?) needs/,
+  "comment.added": /^(.+?) commented/,
+  "comment.replied": /^(.+?) replied/,
+};
+
 function getAuthorInitial(type: string, message: string): string | null {
-  if (type === "idea.submitted") {
-    const m = message.match(/from (.+?) needs/);
-    if (!m) return null;
-    return m[1] === "Anonymous" ? "?" : m[1].charAt(0).toUpperCase();
-  }
-  if (type === "comment.added") {
-    const m = message.match(/^(.+?) commented/);
-    if (!m) return null;
-    return m[1] === "Anonymous" ? "?" : m[1].charAt(0).toUpperCase();
-  }
-  if (type === "comment.replied") {
-    const m = message.match(/^(.+?) replied/);
-    if (!m) return null;
-    return m[1] === "Anonymous" ? "?" : m[1].charAt(0).toUpperCase();
-  }
-  return null;
+  const m = AUTHOR_PATTERNS[type]?.exec(message);
+  if (!m) return null;
+  const name = m[1];
+  return name === "Anonymous" ? "?" : name.charAt(0).toUpperCase();
 }
 
-/** Circular avatar or MessageSquare for comment/reply. */
+/** Circular avatar: initial (identified) or "?" (anonymous). Matches Coordinator style. */
 function NotificationTypeIcon({
   type,
   message,
@@ -68,29 +65,16 @@ function NotificationTypeIcon({
   message: string;
   isUnread?: boolean;
 }) {
-  const showMessageSquare =
-    (type === "comment.added" || type === "comment.replied") &&
-    !message.startsWith("Anonymous");
-  if (showMessageSquare) {
-    return (
-      <span
-        className={cn(
-          "flex size-8 items-center justify-center rounded-lg",
-          isUnread ? "text-primary/80" : "text-muted-foreground/70"
-        )}
-      >
-        <MessageSquare className="size-[14px]" aria-hidden />
-      </span>
-    );
-  }
   const initial = getAuthorInitial(type, message);
   if (initial) {
     return (
-      <Avatar className="size-8 shrink-0" size="default">
+      <Avatar className="size-7 shrink-0">
         <AvatarFallback
           className={cn(
             "text-xs font-semibold",
-            isUnread ? "bg-primary/10 text-primary" : "bg-muted/80 text-muted-foreground"
+            isUnread
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary/15 text-primary"
           )}
         >
           {initial}
@@ -115,9 +99,6 @@ function getNavigatePath(link: string | null): string | null {
     return null;
   }
 }
-
-const NOTIFICATION_TRIGGER_ICON_CLASS =
-  "inline-flex size-8 shrink-0 items-center justify-center rounded-lg";
 
 function formatRelativeTime(iso: string): string {
   try {
@@ -215,7 +196,7 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
       )}
       aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
     >
-      <Bell className={NAVBAR_ICON_SIZE} aria-hidden strokeWidth={1.75} />
+      <Bell className={NOTIFICATION_ICON_SIZE} aria-hidden strokeWidth={1.75} />
       {unreadCount > 0 && (
         <span
           className={cn(NOTIFICATION_BADGE_CLASS, unreadCount > 9 && "px-1")}
@@ -249,16 +230,16 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
       <PopoverContent
         align="end"
         side="bottom"
-        sideOffset={12}
+        sideOffset={NOTIFICATION_POPOVER_OFFSET}
         className={cn(NOTIFICATION_POPOVER_W, "p-0 overflow-hidden")}
       >
         <div className={NOTIFICATION_HEADER_CLASS}>
           <h3 className={NOTIFICATION_HEADER_TITLE}>Notifications</h3>
           {unreadCount > 0 && (
-            <span className={TYPO_CAPTION}>{unreadCount} unread</span>
+            <span className={cn(TYPO_CAPTION, "text-muted-foreground/85")}>{unreadCount} unread</span>
           )}
         </div>
-        <div className="scrollbar-thin-stable max-h-[min(19rem,60vh)] overflow-y-auto overscroll-contain">
+        <div className={NOTIFICATION_LIST_CLASS}>
           {isLoading ? (
             <div className={LOADING_STATE_WRAPPER_CLASS}>
               <LoadingState compact />
@@ -266,14 +247,14 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
           ) : !notifications?.length ? (
             <div className={NOTIFICATION_EMPTY_CLASS}>
               <span className={IDEAS_HUB_EMPTY_ICON}>
-                <BellOff className="size-5 text-muted-foreground/45" strokeWidth={1.25} />
+                <BellOff className="size-5 text-muted-foreground/40" strokeWidth={1.25} />
               </span>
-              <p className={cn("text-center", TYPO_BODY_SM)}>
+              <p className={cn("text-center text-muted-foreground/85", TYPO_BODY_SM)}>
                 No notifications yet
               </p>
             </div>
           ) : (
-            <div className="py-0.5">
+            <div className={NOTIFICATION_LIST_ITEMS_CLASS}>
               {notifications.map((item) => (
                 <NotificationRow
                   key={item.id}

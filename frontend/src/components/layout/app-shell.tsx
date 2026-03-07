@@ -65,6 +65,7 @@ import {
   NAVBAR_RIGHT_GAP,
   STAFF_PILL_GROUP_CLASS,
   STAFF_MAIN_MAX_W,
+  STAFF_NAVBAR_LEFT_GAP,
   STAFF_CONTEXT_LABEL_CLASS,
   SIDEBAR_LABELS_EXPAND_DELAY_MS,
   SIDEBAR_BORDER,
@@ -728,7 +729,7 @@ function StaffLayout({
       <header
         className={NAVBAR_HEADER_CLASS}
       >
-        <div className={cn(NAVBAR_LEFT_BASE, "gap-4")}>
+        <div className={cn(NAVBAR_LEFT_BASE, STAFF_NAVBAR_LEFT_GAP)}>
           <span className="hidden sm:flex sm:items-center">
             <SiteBranding variant="header" linkToEntry />
           </span>

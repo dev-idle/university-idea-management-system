@@ -224,6 +224,7 @@ function EditIdeaForm({
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [hasAttachmentChanges, setHasAttachmentChanges] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -285,6 +286,7 @@ function EditIdeaForm({
         }
         const ref = await uploadFileViaBackend(file);
         await addAttachmentMutation.mutateAsync({ ideaId: id, body: ref });
+        setHasAttachmentChanges(true);
         if (attachments.length + i + 1 >= MAX_ATTACHMENTS) break;
       }
     } catch (err) {
@@ -307,6 +309,7 @@ function EditIdeaForm({
         ideaId: id,
         attachmentId,
       });
+      setHasAttachmentChanges(true);
     } catch {
       // error shown inline
     }
@@ -535,7 +538,7 @@ function EditIdeaForm({
           {!closed && (
             <Button
               type="submit"
-              disabled={updateMutation.isPending || !isDirty}
+              disabled={updateMutation.isPending || (!isDirty && !hasAttachmentChanges)}
               className={FORM_SUBMIT_BUTTON_CLASS}
             >
               {updateMutation.isPending ? "Saving…" : "Save changes"}

@@ -192,7 +192,7 @@ export function UserMenu({
           type="button"
           className={
             isPill
-              ? `group flex items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${NAVBAR_TRIGGER_CLASS} hover:bg-muted/[0.05] focus-visible:ring-0`
+              ? `group flex h-10 shrink-0 items-center gap-2 rounded-full bg-muted/[0.02] pl-1 pr-2 py-1 ${NAVBAR_TRIGGER_CLASS} hover:bg-muted/[0.05] focus-visible:ring-0`
               : `group flex items-center gap-3 rounded-lg px-2 py-1.5 pr-2 ${NAVBAR_TRIGGER_CLASS} hover:bg-muted/[0.03] focus-visible:ring-0`
           }
         >
@@ -218,7 +218,7 @@ export function UserMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        sideOffset={8}
+        sideOffset={4}
         className="w-64 overflow-hidden p-0"
       >
         <div className="border-b border-border/40 px-4 py-3.5">
