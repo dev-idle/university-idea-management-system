@@ -771,14 +771,14 @@ export class IdeasService {
       userId: string;
       parentCommentId: string | null;
       user?: { id: string; fullName: string | null; email: string };
-      likes?: { userId: string; value: string }[];
+      reactions?: { userId: string; value: string }[];
     },
     currentUserId?: string,
   ) {
-    const upCount = c.likes?.filter((l) => l.value === 'up').length ?? 0;
-    const downCount = c.likes?.filter((l) => l.value === 'down').length ?? 0;
+    const upCount = c.reactions?.filter((l) => l.value === 'up').length ?? 0;
+    const downCount = c.reactions?.filter((l) => l.value === 'down').length ?? 0;
     const myReaction = currentUserId
-      ? (c.likes?.find((l) => l.userId === currentUserId)?.value as 'up' | 'down' | undefined) ?? null
+      ? (c.reactions?.find((l) => l.userId === currentUserId)?.value as 'up' | 'down' | undefined) ?? null
       : null;
     const isOwn = currentUserId && c.userId === currentUserId;
     return {
@@ -837,13 +837,13 @@ export class IdeasService {
         userId: true,
         parentCommentId: true,
         user: { select: { id: true, fullName: true, email: true } },
-        likes: { select: { userId: true, value: true } },
+        reactions: { select: { userId: true, value: true } },
       },
     });
 
     const mapped = comments.map((c) =>
       this.mapCommentToApi(
-        { ...c, likes: c.likes as { userId: string; value: string }[] },
+        { ...c, reactions: c.reactions as { userId: string; value: string }[] },
         userId,
       ),
     );
@@ -903,7 +903,7 @@ export class IdeasService {
         parentCommentId: true,
         user: { select: { id: true, fullName: true, email: true } },
         idea: { select: { title: true, submittedById: true } },
-        likes: { select: { userId: true, value: true } },
+        reactions: { select: { userId: true, value: true } },
       },
     });
 
@@ -942,7 +942,7 @@ export class IdeasService {
     }
 
     return this.mapCommentToApi(
-      { ...comment, likes: (comment.likes ?? []) as { userId: string; value: string }[] },
+      { ...comment, reactions: (comment.reactions ?? []) as { userId: string; value: string }[] },
       userId,
     );
   }
@@ -978,11 +978,11 @@ export class IdeasService {
         userId: true,
         parentCommentId: true,
         user: { select: { id: true, fullName: true, email: true } },
-        likes: { select: { userId: true, value: true } },
+        reactions: { select: { userId: true, value: true } },
       },
     });
     return this.mapCommentToApi(
-      { ...updated, likes: updated.likes as { userId: string; value: string }[] },
+      { ...updated, reactions: updated.reactions as { userId: string; value: string }[] },
       userId,
     );
   }
@@ -1017,23 +1017,23 @@ export class IdeasService {
     });
     if (!comment) throw new NotFoundException('Comment not found.');
 
-    const existing = await this.prisma.ideaCommentLike.findUnique({
+    const existing = await this.prisma.ideaCommentReaction.findUnique({
       where: { commentId_userId: { commentId, userId } },
     });
 
     if (existing) {
       if (existing.value === body.value) {
-        await this.prisma.ideaCommentLike.delete({
+        await this.prisma.ideaCommentReaction.delete({
           where: { commentId_userId: { commentId, userId } },
         });
       } else {
-        await this.prisma.ideaCommentLike.update({
+        await this.prisma.ideaCommentReaction.update({
           where: { commentId_userId: { commentId, userId } },
           data: { value: body.value },
         });
       }
     } else {
-      await this.prisma.ideaCommentLike.create({
+      await this.prisma.ideaCommentReaction.create({
         data: { commentId, userId, value: body.value },
       });
     }
@@ -1049,12 +1049,12 @@ export class IdeasService {
         userId: true,
         parentCommentId: true,
         user: { select: { id: true, fullName: true, email: true } },
-        likes: { select: { userId: true, value: true } },
+        reactions: { select: { userId: true, value: true } },
       },
     });
     if (!updated) throw new NotFoundException('Comment not found.');
     return this.mapCommentToApi(
-      { ...updated, likes: updated.likes as { userId: string; value: string }[] },
+      { ...updated, reactions: updated.reactions as { userId: string; value: string }[] },
       userId,
     );
   }

@@ -16,6 +16,8 @@ model Role {
   users     User[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("roles")
 }
 
 model User {
@@ -37,7 +39,7 @@ model User {
   ideas            Idea[]
   ideaVotes        IdeaVote[]
   ideaComments     IdeaComment[]
-  ideaCommentLikes IdeaCommentLike[]
+  ideaCommentReactions IdeaCommentReaction[]
   ideaViews        IdeaView[]
   notifications    Notification[]
   createdAt        DateTime          @default(now())
@@ -46,6 +48,7 @@ model User {
   @@index([roleId])
   @@index([departmentId])
   @@index([createdAt])
+  @@map("users")
 }
 
 model Notification {
@@ -61,6 +64,7 @@ model Notification {
   @@index([userId])
   @@index([userId, isRead])
   @@index([createdAt])
+  @@map("notifications")
 }
 
 model Department {
@@ -71,6 +75,7 @@ model Department {
   updatedAt DateTime @updatedAt
 
   @@index([name])
+  @@map("departments")
 }
 
 model AcademicYear {
@@ -85,6 +90,7 @@ model AcademicYear {
 
   @@index([startDate])
   @@index([isActive])
+  @@map("academic_years")
 }
 
 model Category {
@@ -96,6 +102,7 @@ model Category {
   updatedAt       DateTime        @updatedAt
 
   @@index([name])
+  @@map("categories")
 }
 
 model Idea {
@@ -120,6 +127,7 @@ model Idea {
   @@index([categoryId])
   @@index([cycleId])
   @@index([submittedById])
+  @@map("ideas")
 }
 
 model IdeaVote {
@@ -134,6 +142,7 @@ model IdeaVote {
   @@unique([ideaId, userId])
   @@index([ideaId])
   @@index([userId])
+  @@map("idea_votes")
 }
 
 model IdeaComment {
@@ -149,14 +158,15 @@ model IdeaComment {
   isAnonymous     Boolean           @default(false)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  likes           IdeaCommentLike[]
+  reactions IdeaCommentReaction[]
 
   @@index([ideaId])
   @@index([userId])
   @@index([parentCommentId])
+  @@map("idea_comments")
 }
 
-model IdeaCommentLike {
+model IdeaCommentReaction {
   id        String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   commentId String      @db.Uuid
   comment   IdeaComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
@@ -168,6 +178,7 @@ model IdeaCommentLike {
   @@unique([commentId, userId])
   @@index([commentId])
   @@index([userId])
+  @@map("idea_comment_reactions")
 }
 
 model IdeaAttachment {
@@ -182,6 +193,7 @@ model IdeaAttachment {
   createdAt          DateTime @default(now())
 
   @@index([ideaId])
+  @@map("idea_attachments")
 }
 
 model IdeaSubmissionCycle {
@@ -202,6 +214,7 @@ model IdeaSubmissionCycle {
 
   @@index([academicYearId])
   @@index([status])
+  @@map("idea_submission_cycles")
 }
 
 model CycleCategory {
@@ -216,6 +229,7 @@ model CycleCategory {
   @@unique([cycleId, categoryId])
   @@index([cycleId])
   @@index([categoryId])
+  @@map("cycle_categories")
 }
 
 model IdeaView {
@@ -229,6 +243,7 @@ model IdeaView {
   @@index([ideaId])
   @@index([userId])
   @@index([ideaId, userId, createdAt])
+  @@map("idea_views")
 }
 
 model RefreshToken {
@@ -242,6 +257,7 @@ model RefreshToken {
 
   @@index([userId])
   @@index([expiresAt])
+  @@map("refresh_tokens")
 }
 
 model ExportJob {
@@ -265,4 +281,5 @@ model ExportJob {
   @@index([cycleId])
   @@index([status])
   @@index([status, createdAt])
+  @@map("export_jobs")
 }

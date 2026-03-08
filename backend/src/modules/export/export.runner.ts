@@ -289,7 +289,7 @@ export class ExportRunner {
             include: {
               user: { select: { email: true, fullName: true } },
               idea: { select: { title: true } },
-              likes: { select: { value: true } },
+              reactions: { select: { value: true } },
             },
             orderBy: { createdAt: 'asc' },
           })
@@ -309,8 +309,8 @@ export class ExportRunner {
         'Comment Updated At',
       ],
       comments.map((r) => {
-        const likeCount = r.likes.filter((l) => l.value === 'up').length;
-        const dislikeCount = r.likes.filter((l) => l.value === 'down').length;
+        const likeCount = r.reactions.filter((l) => l.value === 'up').length;
+        const dislikeCount = r.reactions.filter((l) => l.value === 'down').length;
         return [
           r.id,
           r.ideaId,
