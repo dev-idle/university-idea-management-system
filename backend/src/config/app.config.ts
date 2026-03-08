@@ -44,6 +44,7 @@ export function configureApp(
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Disposition'],
   });
 
   if (enableShutdownHooks) {

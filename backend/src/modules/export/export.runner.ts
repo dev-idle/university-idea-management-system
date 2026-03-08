@@ -58,8 +58,6 @@ export class ExportRunner {
     if (!cycle) {
       throw new Error(`Proposal cycle ${cycleId} not found.`);
     }
-    const yearSlug =
-      cycle?.academicYear?.name?.replace(/[^a-zA-Z0-9]/g, '-') ?? 'unknown';
     const cycleSlug = (cycle?.name ?? cycleId.slice(0, 8)).replace(
       /[^a-zA-Z0-9]/g,
       '-',
@@ -103,7 +101,7 @@ export class ExportRunner {
         publicId,
       );
 
-      const fileName = `Ideas_Export_${yearSlug}_${cycleSlug}_${dateStr}.zip`;
+      const fileName = `${cycleSlug}_${dateStr}.zip`;
 
       await onProgress(100);
       return { cloudinaryUrl: secureUrl, fileName };
