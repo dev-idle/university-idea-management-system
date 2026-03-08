@@ -750,6 +750,10 @@ export const IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE =
 export const IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE =
   "w-full min-w-0 sm:w-[10.5rem] sm:min-w-[10.5rem] sm:max-w-[10.5rem]";
 
+/** Filter/toolbar Select dropdown — min = trigger width; if text overflows, grow up to 24rem; beyond that, truncate. Excludes add/edit popups. */
+export const FILTER_SELECT_CONTENT_CLASS =
+  "!min-w-[var(--radix-select-trigger-width)] !w-max !max-w-[min(24rem,calc(100vw-2rem))]";
+
 /** Ideas Hub toolbar divider (vertical). */
 export const IDEAS_HUB_TOOLBAR_DIVIDER = "h-3 w-px shrink-0 bg-border/25";
 

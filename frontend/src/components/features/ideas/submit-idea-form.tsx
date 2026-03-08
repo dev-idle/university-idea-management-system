@@ -91,14 +91,20 @@ function AttachmentRow({
   return (
     <li className="flex flex-col gap-1 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]">
       <div className="flex min-w-0 items-center justify-between gap-3">
-        <Tooltip delayDuration={300}>
-          <TooltipTrigger asChild>
-            <span className="min-w-0 truncate cursor-default text-[13px] text-foreground/80">
-              {att.fileName}
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="top">{att.fileName}</TooltipContent>
-        </Tooltip>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <FileText
+            className="size-4 shrink-0 text-muted-foreground/65"
+            aria-hidden
+          />
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <span className="min-w-0 truncate cursor-default text-[13px] text-foreground/80">
+                {att.fileName}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top">{att.fileName}</TooltipContent>
+          </Tooltip>
+        </div>
         <div className="flex shrink-0 items-center gap-0.5">
           <Button
             type="button"
@@ -395,14 +401,17 @@ export function SubmitIdeaForm({
             </div>
           </div>
 
-          <div className={cn("flex flex-col items-start gap-2", isFullPage && "group min-w-0")}>
-            <div className="flex min-w-0 items-start gap-2">
-              <FileText className="size-4 mt-0.5 shrink-0 text-muted-foreground/65" aria-hidden />
-              <div className="min-w-0 flex-1">
-                <Label htmlFor="idea-attachments-trigger" className={cn("cursor-pointer", labelClass)}>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <FileText className="size-4 shrink-0 mt-0.5 text-muted-foreground/65" aria-hidden />
+              <div className="min-w-0 flex-1 space-y-1">
+                <Label
+                  htmlFor="idea-attachments-trigger"
+                  className="cursor-pointer text-[13px] font-medium text-foreground/92"
+                >
                   Supporting documents
                 </Label>
-                <p className={cn(hintClass, "mt-1")}>
+                <p className="text-xs leading-relaxed text-muted-foreground/80">
                   PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
                 </p>
               </div>
@@ -424,42 +433,39 @@ export function SubmitIdeaForm({
                   onChange={handleFileSelect}
                   disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
                 />
-                <div className="flex items-start gap-2">
-                  <div className="w-4 shrink-0" aria-hidden />
-                  <Button
-                    id="idea-attachments-trigger"
-                    type="button"
-                    variant="outline"
-                    size="default"
-                    className="h-10 w-fit gap-2 self-start rounded-xl border border-border/80 font-medium transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
-                  >
-                    {uploading ? (
-                      <span className={LOADING_SPINNER_CLASS} aria-hidden />
-                    ) : (
-                      <Paperclip className="size-4" aria-hidden />
-                    )}
-                    {uploading ? "Uploading…" : "Add document"}
-                  </Button>
-                </div>
+                <Button
+                  id="idea-attachments-trigger"
+                  type="button"
+                  variant="outline"
+                  size="default"
+                  className="h-10 gap-2 rounded-xl border border-border/80 font-medium transition-colors duration-200 hover:border-primary/30 hover:bg-muted/[0.04] focus-visible:outline-none focus-visible:border-primary/70 focus-visible:ring-1 focus-visible:ring-primary/[0.08] focus-visible:ring-offset-1"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading || attachments.length >= MAX_ATTACHMENTS}
+                >
+                  {uploading ? (
+                    <span className={LOADING_SPINNER_CLASS} aria-hidden />
+                  ) : (
+                    <Paperclip className="size-4" aria-hidden />
+                  )}
+                  {uploading ? "Uploading…" : "Add document"}
+                </Button>
                 {uploadError && (
                   <p className={FORM_FIELD_ERROR_CLASS} role="alert">
                     {uploadError}
                   </p>
                 )}
-                {attachments.length > 0 && (
-                  <ul className="mt-3 space-y-1.5">
-                    {attachments.map((att, index) => (
-                      <AttachmentRow
-                        key={`${att.cloudinaryPublicId}-${index}`}
-                        att={att}
-                        onRemove={() => removeAttachment(index)}
-                      />
-                    ))}
-                  </ul>
-                )}
               </>
+            )}
+            {attachments.length > 0 && (
+              <ul className="mt-3 space-y-1.5">
+                {attachments.map((att, index) => (
+                  <AttachmentRow
+                    key={`${att.cloudinaryPublicId}-${index}`}
+                    att={att}
+                    onRemove={() => removeAttachment(index)}
+                  />
+                ))}
+              </ul>
             )}
           </div>
         </div>

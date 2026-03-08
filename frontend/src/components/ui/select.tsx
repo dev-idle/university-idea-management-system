@@ -75,14 +75,17 @@ function SelectContent({
           TR_MENU,
           POPUP_BG,
           POPUP_MOBILE_MAX_W,
-          SELECT_CONTENT_MAX_W,
-          "text-popover-foreground relative z-50 min-w-[8rem] origin-(--radix-select-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto",
+          position === "popper"
+            ? "w-[var(--radix-select-trigger-width)] max-w-[min(var(--radix-select-trigger-width),calc(100vw-2rem))]"
+            : SELECT_CONTENT_MAX_W,
+          "text-popover-foreground relative z-50 origin-(--radix-select-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto",
           SELECT_CONTENT_MAX_H,
           POPUP_BORDER,
           POPUP_ROUNDED_MENU,
           POPUP_SHADOW,
-          position === "popper" &&
-            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          position === "popper"
+            ? "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1"
+            : "min-w-[8rem]",
           className
         )}
         position={position}
@@ -96,7 +99,7 @@ function SelectContent({
           className={cn(
             "p-1.5",
             position === "popper" &&
-              "w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+              "w-full scroll-my-1"
           )}
         >
           {children}

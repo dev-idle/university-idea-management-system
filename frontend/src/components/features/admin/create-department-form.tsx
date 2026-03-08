@@ -96,7 +96,7 @@ export function CreateDepartmentForm({
           id="name"
           type="text"
           autoComplete="organization"
-          placeholder="e.g. Computer Science"
+          placeholder="e.g. Information Technology Department"
           className={isDialog ? FORM_DIALOG_INPUT_CLASS : FORM_CARD_INPUT_CLASS}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? "name-error" : undefined}

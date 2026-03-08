@@ -448,16 +448,20 @@ function EditIdeaForm({
 
           {/* Attachments */}
           <div className="space-y-2">
-            <Label
-              htmlFor="edit-attachments-trigger"
-              className="flex cursor-pointer items-center gap-2 text-[13px] font-medium text-foreground/92"
-            >
-              <FileText className="size-4 shrink-0 text-muted-foreground/65" aria-hidden />
-              Supporting documents
-            </Label>
-            <p className="text-xs leading-relaxed text-muted-foreground/80">
-              PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
-            </p>
+            <div className="flex gap-2">
+              <FileText className="size-4 shrink-0 mt-0.5 text-muted-foreground/65" aria-hidden />
+              <div className="min-w-0 flex-1 space-y-1">
+                <Label
+                  htmlFor="edit-attachments-trigger"
+                  className="cursor-pointer text-[13px] font-medium text-foreground/92"
+                >
+                  Supporting documents
+                </Label>
+                <p className="text-xs leading-relaxed text-muted-foreground/80">
+                  PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
+                </p>
+              </div>
+            </div>
             {uploadParamsStatus === "error" && (
               <p className="text-[11px] text-warning/90" role="alert">
                 Upload currently unavailable.

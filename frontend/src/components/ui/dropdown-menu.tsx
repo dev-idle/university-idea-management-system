@@ -44,7 +44,7 @@ function DropdownMenuContent({
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
-        className={cn(TR_MENU, POPUP_BG, POPUP_MOBILE_MAX_W, "text-popover-foreground z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto p-1.5", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
+        className={cn(TR_MENU, POPUP_BG, POPUP_MOBILE_MAX_W, "text-popover-foreground z-50 max-h-[var(--radix-dropdown-menu-content-available-height,80vh)] min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) cursor-default overflow-x-hidden overflow-y-auto p-1.5", POPUP_BORDER, POPUP_ROUNDED_MENU, POPUP_SHADOW, className)}
         {...props}
       />
     </DropdownMenuPrimitive.Portal>

@@ -87,10 +87,12 @@ export function CreateCycleForm({
     handleSubmit,
     setError,
     setValue,
+    clearErrors,
     watch,
     formState: { errors },
   } = useForm<CreateCycleFormValues>({
     resolver: zodResolver(createCycleFormSchema),
+    mode: "onSubmit",
     defaultValues: {
       name: "",
       academicYearId: "",
@@ -108,7 +110,8 @@ export function CreateCycleForm({
     d.setDate(d.getDate() + 14);
     const timePart = ideaSubmissionClosesAt.split("T")[1]?.slice(0, 5);
     const time = timePart ?? "23:59";
-    setValue("interactionClosesAt", toDatetimeLocal(d, time), { shouldValidate: true });
+    setValue("interactionClosesAt", toDatetimeLocal(d, time), { shouldValidate: false });
+    clearErrors("interactionClosesAt");
   }
 
   async function onSubmit(data: CreateCycleFormValues) {

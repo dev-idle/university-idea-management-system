@@ -419,7 +419,7 @@ function QaManagerCharts() {
             </ChartContainer>
           ) : (
             <div className={`flex h-full items-center justify-center ${TYPO_BODY_SM}`}>
-              No department data in this cycle
+              No ideas in this cycle
             </div>
           )}
         </div>

@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getRoleLabel, type Role } from "@/lib/rbac";
-import { TYPO_BODY_SM } from "@/config/design";
+import { TYPO_BODY_SM, FILTER_SELECT_CONTENT_CLASS } from "@/config/design";
 import { cn, getAvatarInitial } from "@/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 350;
@@ -218,7 +218,7 @@ export function AdminDepartmentMembersContent() {
                 <SelectValue placeholder="Department" />
                 <ChevronDown className={TOOLBAR_FILTER_CHEVRON_CLASS} aria-hidden />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                 {departments.map((d) => (
                   <SelectItem key={d.id} value={d.id} title={d.name}>
                     <span className="block truncate" title={d.name}>
@@ -237,7 +237,7 @@ export function AdminDepartmentMembersContent() {
                   <SelectValue placeholder="Role" />
                   <ChevronDown className={TOOLBAR_FILTER_CHEVRON_CLASS} aria-hidden />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                   <SelectItem value="all">All</SelectItem>
                   {rolesInSelectedDept.map((r) => (
                     <SelectItem key={r} value={r} title={getRoleLabel(r as Role)}>

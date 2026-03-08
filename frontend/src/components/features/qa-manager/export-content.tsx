@@ -33,7 +33,6 @@ import {
   useExportTriggerMutation,
   useExportStatusQuery,
   downloadExport,
-  type ExportableCycle,
 } from "@/hooks/use-export";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Download, Loader2, AlertCircle, Search } from "lucide-react";
@@ -77,17 +76,18 @@ export function ExportContent() {
   const triggerMutation = useExportTriggerMutation();
   const statusQuery = useExportStatusQuery(jobId, { enabled: !!jobId });
 
-  const cycles = cyclesQuery.data ?? [];
   const filtered = useMemo(() => {
+    const cycles = cyclesQuery.data ?? [];
+    const withIdeas = cycles.filter((c) => (c.ideaCount ?? 0) > 0);
     const q = debouncedSearch.trim();
-    if (!q) return cycles;
+    if (!q) return withIdeas;
     const lower = q.toLowerCase();
-    return cycles.filter(
+    return withIdeas.filter(
       (c) =>
         (c.name?.toLowerCase().includes(lower) ?? false) ||
         c.academicYearName.toLowerCase().includes(lower),
     );
-  }, [cycles, debouncedSearch]);
+  }, [cyclesQuery.data, debouncedSearch]);
   const status = statusQuery.data?.status;
   const isProcessing =
     status === "processing" ||

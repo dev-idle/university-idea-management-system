@@ -74,10 +74,12 @@ export function UpdateCycleForm({
     handleSubmit,
     setError,
     setValue,
+    clearErrors,
     watch,
     formState: { errors },
   } = useForm<UpdateCycleFormValues>({
     resolver: zodResolver(updateCycleFormSchema) as Resolver<UpdateCycleFormValues>,
+    mode: "onSubmit",
     defaultValues: {
       name: (cycle.name ?? "").trim() || "",
       categoryIds: cycle.categories.map((c) => c.id),
@@ -105,7 +107,8 @@ export function UpdateCycleForm({
     const time = timePart ?? "23:59";
     const pad = (n: number) => String(n).padStart(2, "0");
     const str = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${time}`;
-    setValue("interactionClosesAt", str, { shouldValidate: true });
+    setValue("interactionClosesAt", str, { shouldValidate: false });
+    clearErrors("interactionClosesAt");
   }
 
   async function onSubmit(data: UpdateCycleFormValues) {

@@ -71,6 +71,7 @@ import {
   IDEAS_HUB_SELECT_TRIGGER,
   IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
   IDEAS_HUB_TOOLBAR_DIVIDER,
+  FILTER_SELECT_CONTENT_CLASS,
   IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
 import {
@@ -550,7 +551,7 @@ export default function MyIdeasPage() {
                   <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)}>
                     <SelectValue placeholder="Year" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                     <SelectItem value="all">All years</SelectItem>
                     {allAcademicYears.map((y) => (
                       <SelectItem key={y.id} value={y.id}>
@@ -573,7 +574,7 @@ export default function MyIdeasPage() {
                   <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)}>
                     <SelectValue placeholder="Cycle" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                     <SelectItem value="all">All cycles</SelectItem>
                     {cyclesForYear.map((c) => (
                       <SelectItem key={c.id} value={c.id}>
@@ -595,7 +596,7 @@ export default function MyIdeasPage() {
                   <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)}>
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                     <SelectItem value="all">All categories</SelectItem>
                     {categories.map((c) => (
                       <SelectItem key={c.id} value={c.id}>

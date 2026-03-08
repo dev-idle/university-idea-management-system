@@ -63,6 +63,7 @@ import {
   IDEAS_HUB_SELECT_TRIGGER_COORDINATOR,
   IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE,
   IDEAS_HUB_SELECT_TRIGGER_COORDINATOR_RESPONSIVE,
+  FILTER_SELECT_CONTENT_CLASS,
   IDEAS_HUB_TOOLBAR_DIVIDER,
   IDEA_DETAIL_CATEGORY_PILL,
 } from "@/config/design";
@@ -589,7 +590,7 @@ export function IdeasHubContent() {
               )}>
                 <SelectValue placeholder="Department" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                 <SelectItem value="all">All departments</SelectItem>
                 {departments.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
@@ -616,7 +617,7 @@ export function IdeasHubContent() {
               )}>
                 <SelectValue placeholder="Cycle" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                 <SelectItem value="all">All cycles</SelectItem>
                 {closedCycles.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
@@ -641,7 +642,7 @@ export function IdeasHubContent() {
               )}>
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                 <SelectItem value="all">All categories</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
@@ -669,7 +670,7 @@ export function IdeasHubContent() {
               )} aria-label="Sort by">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                 {VIEW_TABS.map((tab) => (
                   <SelectItem key={tab.value} value={tab.value}>
                     {tab.label}
@@ -691,7 +692,7 @@ export function IdeasHubContent() {
                   <SelectTrigger className={cn(IDEAS_HUB_SELECT_TRIGGER, IDEAS_HUB_SELECT_TRIGGER_RESPONSIVE)} aria-label="Sort by">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
                     {VIEW_TABS.map((tab) => (
                       <SelectItem key={tab.value} value={tab.value}>
                         {tab.label}

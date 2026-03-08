@@ -31,6 +31,7 @@ export class ExportService {
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
       where: {
         interactionClosesAt: { lte: now },
+        academicYear: { isActive: true },
       },
       select: {
         id: true,

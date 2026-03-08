@@ -36,7 +36,7 @@ export function IdeasByCategoryChart({
   animationDelay = "140ms",
 }: IdeasByCategoryChartProps) {
   const isMobile = useIsMobile();
-  const hasData = data.length > 0;
+  const hasData = data.some((d) => (d.value ?? 0) > 0);
 
   return (
     <div

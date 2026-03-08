@@ -51,9 +51,11 @@ export function CreateAcademicYearForm({
     setValue,
     getValues,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm<CreateAcademicYearFormValues>({
     resolver: zodResolver(createAcademicYearFormSchema),
+    mode: "onSubmit",
     defaultValues: {
       name: "",
       startDate: "",
@@ -218,9 +220,8 @@ export function CreateAcademicYearForm({
                 const startVal = getValues("startDate");
                 if (startVal) {
                   const { formatted } = computeEndDateFromStart(startVal);
-                  setValue("endDate", formatted, {
-                    shouldValidate: true,
-                  });
+                  setValue("endDate", formatted, { shouldValidate: false });
+                  clearErrors("endDate");
                 }
               }}
               className="text-xs text-muted-foreground/80 transition-colors duration-200 hover:text-primary hover:bg-primary/[0.06] rounded-md px-2 py-1 -ml-2"
