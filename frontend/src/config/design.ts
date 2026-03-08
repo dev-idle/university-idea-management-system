@@ -492,7 +492,7 @@ export const IDEA_DETAIL_THREAD_LINE =
   "absolute left-[17px] top-[54px] bottom-0 w-px bg-border/25 pointer-events-none";
 
 /** Idea detail: avatar — root & reply. */
-export const IDEA_DETAIL_COMMENT_AVATAR = "size-9 shrink-0 rounded-full";
+export const IDEA_DETAIL_COMMENT_AVATAR = "size-10 shrink-0 rounded-full";
 
 /** Idea detail: comment bubble — header + body only. overflow-visible so rounded corners aren't clipped. */
 export const IDEA_DETAIL_COMMENT_BUBBLE =
@@ -590,8 +590,8 @@ export const IDEA_DETAIL_REPLY_FORM_INPUT = IDEA_DETAIL_INPUT;
 export const IDEA_DETAIL_REPLY_FORM_FOOTER = IDEA_DETAIL_FORM_FOOTER;
 export const IDEA_DETAIL_REPLY_SEND_BTN = IDEA_DETAIL_SEND_BTN;
 
-/** Idea detail: replies — pl-12 indent (avatar+gap), stretch so edit/reply forms fill width. overflow-visible avoids clipping. */
-export const IDEA_DETAIL_REPLIES_SPACING = "pl-12 flex flex-col items-stretch gap-3 overflow-visible";
+/** Idea detail: replies — pl-[52px] aligns "View replies" with comment bubble (avatar 40px + gap 12px). -mt-1 pulls closer. */
+export const IDEA_DETAIL_REPLIES_SPACING = "pl-[52px] -mt-1 flex flex-col items-stretch gap-3 overflow-visible";
 
 /** Idea detail: replies at depth 2+ — no extra indent, keeps width consistent (prevents reply 4+ overflow). */
 export const IDEA_DETAIL_REPLIES_SPACING_FLAT = "flex flex-col items-stretch gap-3 overflow-visible";

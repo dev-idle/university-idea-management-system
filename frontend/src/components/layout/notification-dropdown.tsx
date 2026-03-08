@@ -204,8 +204,20 @@ export function NotificationDropdown({ variant = "standalone" }: NotificationDro
     setSuppressTooltip(true);
     const path = getNavigatePath(link);
     if (!path) return;
+
     if (path.startsWith("/")) {
-      router.push(path);
+      const hashIdx = path.indexOf("#");
+      const pathname = hashIdx >= 0 ? path.slice(0, hashIdx) : path;
+      const hash = hashIdx >= 0 ? path.slice(hashIdx) : "";
+      const samePage =
+        typeof window !== "undefined" && window.location.pathname === pathname;
+
+      if (samePage && hash) {
+        window.location.hash = hash;
+        window.dispatchEvent(new HashChangeEvent("hashchange"));
+      } else {
+        router.push(path);
+      }
       setTimeout(() => setSuppressTooltip(false), TOOLTIP_SUPPRESS_MS);
     } else {
       window.location.href = path;

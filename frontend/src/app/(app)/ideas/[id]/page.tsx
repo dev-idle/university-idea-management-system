@@ -377,6 +377,10 @@ function CommentItem({
   const [repliesExpanded, setRepliesExpanded] = useState(initialRepliesExpanded);
   const replyFormRef = useRef<HTMLDivElement>(null);
 
+  if (initialRepliesExpanded && !repliesExpanded) {
+    setRepliesExpanded(true);
+  }
+
   useEffect(() => {
     if (!isReplying || !open) return;
     const handleClickOutside = (e: MouseEvent) => {
@@ -406,7 +410,7 @@ function CommentItem({
       <div className={rowClass}>
         <div className="flex shrink-0 flex-col items-center">
           <Avatar className={IDEA_DETAIL_COMMENT_AVATAR}>
-            <AvatarFallback className="bg-muted/50 text-[11px] text-muted-foreground/80">
+            <AvatarFallback className="bg-muted/50 text-[13px] font-medium text-muted-foreground/80">
               {avatarInitial}
             </AvatarFallback>
           </Avatar>
@@ -746,7 +750,7 @@ export default function IdeaDetailPage() {
           window.history.replaceState(null, "", window.location.pathname + window.location.search);
           setTargetedCommentId(null);
           timeoutId = null;
-        }, 2000);
+        }, 3000);
       } else {
         setTargetedCommentId(null);
         if (timeoutId) {
@@ -763,16 +767,26 @@ export default function IdeaDetailPage() {
     };
   }, []);
 
-  // Scroll to and highlight comment when navigating from notification (e.g. #comment-xxx)
   useEffect(() => {
     if (!targetedCommentId || comments.length === 0 || typeof window === "undefined") return;
-    const el = document.getElementById(`comment-${targetedCommentId}`);
-    if (el) {
-      const t = setTimeout(() => {
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 25;
+
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = document.getElementById(`comment-${targetedCommentId}`);
+      if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 350);
-      return () => clearTimeout(t);
-    }
+        return;
+      }
+      if (++attempts < maxAttempts) {
+        setTimeout(tryScroll, 80);
+      }
+    };
+
+    const initialDelay = setTimeout(tryScroll, 150);
+    return () => { cancelled = true; clearTimeout(initialDelay); };
   }, [comments, targetedCommentId]);
 
   if (!id) return null;
