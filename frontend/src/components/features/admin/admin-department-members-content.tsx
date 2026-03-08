@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { ChevronDown, Search, Users } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -26,6 +26,7 @@ import {
   TABLE_EMPTY_CELL_CLASS,
   TABLE_EMPTY_PRIMARY_CLASS,
   TABLE_EMPTY_HINT_CLASS,
+  STATUS_BADGE_ACTIVE_CLASS,
   STATUS_BADGE_INACTIVE_CLASS,
   TOOLBAR_FILTER_SELECT_TRIGGER_CLASS,
   TOOLBAR_FILTER_CHEVRON_CLASS,
@@ -247,8 +248,7 @@ export function AdminDepartmentMembersContent() {
               </Select>
             ) : null}
           </div>
-          <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
-            <Users className="size-3.5 shrink-0" aria-hidden />
+          <span className="inline-flex w-full items-center justify-center rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
             {`${totalFiltered} ${totalFiltered === 1 ? "member" : "members"}`}
           </span>
         </div>
@@ -266,12 +266,15 @@ export function AdminDepartmentMembersContent() {
                 <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
                   Role
                 </th>
+                <th scope="col" className={TABLE_HEAD_CELL_CLASS}>
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody>
               {paginatedUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className={TABLE_EMPTY_CELL_CLASS}>
+                  <td colSpan={4} className={TABLE_EMPTY_CELL_CLASS}>
                     <p className={TABLE_EMPTY_PRIMARY_CLASS}>
                       {departments.length === 0
                         ? "No departments."
@@ -304,9 +307,12 @@ export function AdminDepartmentMembersContent() {
                         {u.email}
                       </span>
                     </td>
+                    <td className={cn(TABLE_CELL_CLASS, "py-3.5")}>
+                      {getRoleLabel((u.roles?.[0] ?? "STAFF") as Role)}
+                    </td>
                     <td className={cn(TABLE_CELL_STATUS_CLASS, "py-3.5")}>
-                      <span className={STATUS_BADGE_INACTIVE_CLASS}>
-                        {getRoleLabel((u.roles?.[0] ?? "STAFF") as Role)}
+                      <span className={u.isActive ? STATUS_BADGE_ACTIVE_CLASS : STATUS_BADGE_INACTIVE_CLASS}>
+                        {u.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
                   </tr>

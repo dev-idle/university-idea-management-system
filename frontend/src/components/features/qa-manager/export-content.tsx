@@ -172,6 +172,11 @@ export function ExportContent() {
               ⌘K
             </kbd>
           </div>
+          {!cyclesQuery.isLoading && (
+            <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
+              {filtered.length} {filtered.length === 1 ? "cycle" : "cycles"}
+            </span>
+          )}
         </div>
 
         {cyclesQuery.isLoading ? (

@@ -3,7 +3,7 @@ import { QaManagerDepartmentMembersContent } from "@/components/features/qa-mana
 import { MANAGEMENT_PAGE_CLASS } from "@/config/design";
 
 export const metadata: Metadata = {
-  title: "Department Members",
+  title: "Departments",
   description:
     "View departments (excl. IT Services and QA Office) with their active QA Coordinator. Read-only.",
 };

@@ -123,7 +123,7 @@ function formatNotificationMessage(message: string, type: string): string {
       message = message.replace(`"${title}"`, `"${truncated}"`);
     }
   }
-  // idea.submitted: staff8@gre.ac.uk → staff8 (cleaner, chuẩn mực)
+  // idea.submitted: staff8@gre.ac.uk → staff8 (cleaner, polished)
   if (type === "idea.submitted") {
     const fromMatch = message.match(/ from (.+?) needs your review\./);
     if (fromMatch?.[1]?.includes("@")) {

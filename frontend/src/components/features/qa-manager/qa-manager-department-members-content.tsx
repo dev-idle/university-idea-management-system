@@ -25,7 +25,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useQaManagerDepartmentMembersQuery } from "@/hooks/use-profile";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
-import { Search, UsersRound } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn, getAvatarInitial } from "@/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 350;
@@ -124,8 +124,7 @@ export function QaManagerDepartmentMembersContent() {
             ⌘K
           </kbd>
         </div>
-        <span className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
-          <UsersRound className="size-3.5 shrink-0" aria-hidden />
+        <span className="inline-flex w-full items-center justify-center rounded-md border border-border/40 bg-muted/[0.04] px-2.5 py-1 font-sans text-xs font-medium text-muted-foreground/80 sm:w-auto sm:justify-start">
           {`${totalFiltered} ${totalFiltered === 1 ? "department" : "departments"}`}
         </span>
       </div>

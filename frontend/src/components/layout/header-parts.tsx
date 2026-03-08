@@ -109,11 +109,12 @@ export function getBreadcrumbs(
   let href = "";
   for (const seg of segments) {
     href += `/${seg}`;
-    const label =
+    let label =
       SEGMENT_LABELS[seg] ??
       (seg.match(/^[0-9a-f-]{36}$/i)
         ? "Proposal"
         : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+    if (href === ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS) label = "Departments";
     items.push({ href, label });
   }
   // QA Manager sub-routes: parent "QA Manager" links to Dashboard (matches sidebar Nav).

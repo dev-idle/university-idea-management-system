@@ -356,8 +356,8 @@ function SidebarNav({ collapsed, labelsCollapsed, onNavigate }: { collapsed: boo
       <NavLink
         key={ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS}
         href={ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS}
-        label="Department Members"
-        icon={UsersRound}
+        label="Departments"
+        icon={Building2}
         isActive={pathname === ROUTES.QA_MANAGER_DEPARTMENT_MEMBERS}
         collapsed={collapsed}
         onNavigate={onNavigate}
