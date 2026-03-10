@@ -258,7 +258,7 @@ export function CreateUserForm({
           )}
         </div>
 
-        <div className={fieldWrapperClass}>
+        <div className={`${fieldWrapperClass} sm:col-span-2`}>
           <Label htmlFor="departmentId" className={labelClass}>
             Department
           </Label>
