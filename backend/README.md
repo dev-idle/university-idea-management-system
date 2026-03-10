@@ -70,7 +70,7 @@ When Redis is disabled, notifications (email and in-app) are not sent. Export jo
 
 **Brevo SMTP:** Get credentials at [app.brevo.com/settings/keys/smtp](https://app.brevo.com/settings/keys/smtp) — use SMTP login + SMTP key (not API key). Verify sender/domain in Brevo; set `SMTP_FROM` to a verified address.
 
-**Upstash billing:** The queue is tuned for low command usage (`stalledInterval` 5 min, `drainDelay` 10 s, `removeOnComplete`, limited failed-job retention).
+**Redis options:** (1) **Redis Cloud** (free, 100 ops/sec) — for daily dev/demo; create at [app.redislabs.com](https://app.redislabs.com), set eviction to `noeviction`. (2) **Upstash** (500K commands/month, 10K ops/sec burst) — for important demos; swap `REDIS_URL` in `.env`. (3) **Docker** — `redis://localhost:6379` when running Redis in a container. The queue is tuned for low command usage (`stalledInterval` 5 min, `drainDelay` 10 s, `removeOnComplete`, limited failed-job retention).
 
 ## Compile and run the project
 
