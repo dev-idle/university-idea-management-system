@@ -11,8 +11,10 @@ import type { PrismaClient } from '@generated/prisma';
 const FIXED_ROLES = ['ADMIN', 'QA_MANAGER', 'QA_COORDINATOR', 'STAFF'] as const;
 const DEFAULT_ADMIN_EMAIL = 'admin@gre.ac.uk';
 const DEFAULT_ADMIN_PASSWORD = 'ChangeMeInProduction';
-const DEFAULT_DEPARTMENT_NAME =
-  'IT Services / System Administration Department';
+const DEFAULT_DEPARTMENT_NAMES = [
+  'IT Services / System Administration Department',
+  'Quality Assurance Office',
+] as const;
 
 async function seedRoles(prisma: PrismaClient): Promise<Map<string, string>> {
   const roleIds = new Map<string, string>();
@@ -28,19 +30,21 @@ async function seedRoles(prisma: PrismaClient): Promise<Map<string, string>> {
   return roleIds;
 }
 
-async function seedDefaultDepartment(
+async function seedDefaultDepartments(
   prisma: PrismaClient,
 ): Promise<string | null> {
-  const existing = await prisma.department.findFirst({
-    where: { name: DEFAULT_DEPARTMENT_NAME },
-    select: { id: true },
-  });
-  if (existing) return existing.id;
-  const department = await prisma.department.create({
-    data: { name: DEFAULT_DEPARTMENT_NAME },
-    select: { id: true },
-  });
-  return department.id;
+  let firstDepartmentId: string | null = null;
+  for (const name of DEFAULT_DEPARTMENT_NAMES) {
+    const existing = await prisma.department.findFirst({
+      where: { name },
+      select: { id: true },
+    });
+    const id = existing
+      ? existing.id
+      : (await prisma.department.create({ data: { name }, select: { id: true } })).id;
+    if (firstDepartmentId == null) firstDepartmentId = id;
+  }
+  return firstDepartmentId;
 }
 
 async function seedAdminUser(
@@ -92,8 +96,8 @@ export async function runSeed(): Promise<void> {
   try {
     const roleIds = await seedRoles(prisma);
     console.log('Seed: roles upserted:', [...roleIds.keys()]);
-    const departmentId = await seedDefaultDepartment(prisma);
-    console.log('Seed: default department:', DEFAULT_DEPARTMENT_NAME);
+    const departmentId = await seedDefaultDepartments(prisma);
+    console.log('Seed: default departments:', [...DEFAULT_DEPARTMENT_NAMES]);
     await seedAdminUser(prisma, roleIds, departmentId);
     const email = process.env.ADMIN_SEED_EMAIL?.trim() || DEFAULT_ADMIN_EMAIL;
     console.log('Seed: admin user upserted:', email);
