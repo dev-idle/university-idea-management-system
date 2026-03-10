@@ -43,10 +43,14 @@ export const queryKeys = {
     all: ["api", "me"] as const,
     me: () => [...queryKeys.profile.all, "me"] as const,
     departmentMembers: () => [...queryKeys.profile.all, "department-members"] as const,
-    departmentStats: () => [...queryKeys.profile.all, "department-stats"] as const,
-    departmentCharts: () => [...queryKeys.profile.all, "department-charts"] as const,
-    qaManagerStats: () => [...queryKeys.profile.all, "qa-manager-stats"] as const,
-    qaManagerCharts: () => [...queryKeys.profile.all, "qa-manager-charts"] as const,
+    departmentStats: (cycleId?: string) =>
+      [...queryKeys.profile.all, "department-stats", cycleId ?? null] as const,
+    departmentCharts: (cycleId?: string) =>
+      [...queryKeys.profile.all, "department-charts", cycleId ?? null] as const,
+    qaManagerStats: (cycleId?: string) =>
+      [...queryKeys.profile.all, "qa-manager-stats", cycleId ?? null] as const,
+    qaManagerCharts: (cycleId?: string) =>
+      [...queryKeys.profile.all, "qa-manager-charts", cycleId ?? null] as const,
     departmentMembersQaManager: () =>
       [...queryKeys.profile.all, "department-members-qa-manager"] as const,
   },

@@ -1,6 +1,7 @@
 "use client";
 
-import { MessageSquare, Eye, ThumbsUp, ThumbsDown } from "lucide-react";
+import { useState, useMemo } from "react";
+import { MessageSquare, Eye, ThumbsUp, ThumbsDown, ChevronDown } from "lucide-react";
 import {
   Line,
   LineChart,
@@ -19,8 +20,14 @@ import {
   CHART_COLOR_TEMPORAL,
   CHART_TOOLTIP_LABEL_CLASS,
   TR_CHART_ENTRANCE,
+  FILTER_SELECT_CONTENT_CLASS,
 } from "@/config/design";
-import { UNIFIED_CARD_CLASS } from "../admin/constants";
+import {
+  UNIFIED_CARD_CLASS,
+  TOOLBAR_FILTER_SELECT_TRIGGER_CLASS,
+  TOOLBAR_FILTER_CHEVRON_CLASS,
+  TOOLBAR_FILTER_ROLE_WIDTH,
+} from "../admin/constants";
 import { formatAcademicYearDisplay } from "../admin/academic-years.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -37,49 +44,108 @@ import { Progress } from "@/components/ui/progress";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { fmtDateTime, formatPeriodLabel, type ClosedCycle } from "../shared/dashboard-utils";
 
-function fmtDateTime(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-function QaCoordinatorOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) {
+function QaCoordinatorOverview({
+  hasActiveCycle,
+  cycleId,
+  closedCycles,
+  effectiveCycleId,
+  onCycleChange,
+}: {
+  hasActiveCycle: boolean;
+  cycleId?: string | null;
+  closedCycles: ClosedCycle[];
+  effectiveCycleId: string | null;
+  onCycleChange: (id: string | null) => void;
+}) {
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
-  const { data: stats } = useDepartmentStatsQuery();
+  const { data: stats } = useDepartmentStatsQuery({
+    cycleId: hasActiveCycle ? undefined : cycleId,
+  });
 
-  const activeCycleName = ideasContext?.activeCycleName ?? null;
-  const submissionClosesAt = ideasContext?.submissionClosesAt ?? null;
-  const interactionClosesAt = ideasContext?.interactionClosesAt ?? null;
+  const selectedCycle = effectiveCycleId
+    ? closedCycles.find((c) => c.id === effectiveCycleId)
+    : null;
+
+  const displayName = hasActiveCycle
+    ? (ideasContext?.activeCycleName ?? null)
+    : (selectedCycle?.name ?? null);
+  const submissionClosesAt = hasActiveCycle
+    ? (ideasContext?.submissionClosesAt ?? null)
+    : (selectedCycle?.ideaSubmissionClosesAt ?? null);
+  const interactionClosesAt = hasActiveCycle
+    ? (ideasContext?.interactionClosesAt ?? null)
+    : (selectedCycle?.interactionClosesAt ?? null);
+
+  const showProposalCycleSection = hasActiveCycle || closedCycles.length > 0;
   const hasStats = stats !== null && stats !== undefined;
 
   return (
     <div className="flex flex-col gap-10">
-      {hasActiveCycle ? (
+      {showProposalCycleSection && (
         <section aria-labelledby="qa-coord-cycle-heading">
-          <h2 id="qa-coord-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal Cycle</h2>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 id="qa-coord-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+              Proposal Cycle
+            </h2>
+            {!hasActiveCycle && closedCycles.length > 0 && (
+              <Select
+                value={effectiveCycleId ?? ""}
+                onValueChange={(v) => onCycleChange(v || null)}
+              >
+                <SelectTrigger
+                  className={cn(
+                    TOOLBAR_FILTER_SELECT_TRIGGER_CLASS,
+                    TOOLBAR_FILTER_ROLE_WIDTH,
+                    "[&>svg:first-of-type]:hidden",
+                  )}
+                  aria-label="Select proposal cycle"
+                >
+                  <SelectValue placeholder="Select a cycle" />
+                  <ChevronDown className={TOOLBAR_FILTER_CHEVRON_CLASS} aria-hidden />
+                </SelectTrigger>
+                <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
+                  {closedCycles.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
           <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-              <div className="min-w-0">
-                <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
-                {activeCycleName ? (
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
-                        {activeCycleName}
-                      </p>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">{activeCycleName}</TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
-                )}
-              </div>
+            <div
+              className={cn(
+                "grid gap-x-8 gap-y-6",
+                hasActiveCycle ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2",
+              )}
+            >
+              {hasActiveCycle && (
+                <div className="min-w-0">
+                  <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
+                  {displayName ? (
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
+                          {displayName}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{displayName}</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
+                  )}
+                </div>
+              )}
               <div className="min-w-0">
                 <p className={CARD_STAT_LABEL_CLASS}>Submission deadline</p>
                 <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
@@ -95,82 +161,48 @@ function QaCoordinatorOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) 
             </div>
           </div>
         </section>
-      ) : null}
-      {!hasActiveCycle ? (
-        <>
-          <section aria-labelledby="qa-coord-overview-heading">
-            <h2 id="qa-coord-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Overview</h2>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-                <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  {hasStats ? formatAcademicYearDisplay(stats.activeYearName ?? ideasContext?.activeAcademicYear?.name ?? "") || "—" : "—"}
-                </p>
-              </div>
-              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-                <p className={CARD_STAT_LABEL_CLASS}>Total proposal cycles</p>
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  {hasStats ? stats.cyclesInYearCount : "—"}
-                </p>
-              </div>
-              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-                <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  <QaCoordinatorStatValue select="totalIdeas" />
-                </p>
-              </div>
-            </div>
-          </section>
-          <section aria-labelledby="qa-coord-participation-heading">
-            <h2 id="qa-coord-participation-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Participation rate</h2>
-            <div className="mt-4">
-              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-                <p className={CARD_STAT_LABEL_CLASS}>Members participated</p>
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  <QaCoordinatorParticipationValue />
-                </p>
-                <div className="mt-2.5">
-                  <QaCoordinatorParticipationProgress />
-                </div>
-              </div>
-            </div>
-          </section>
-        </>
-      ) : (
-        <section aria-labelledby="qa-coord-participation-heading">
-          <h2 id="qa-coord-participation-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Participation</h2>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-              <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
-              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                <QaCoordinatorStatValue select="totalIdeas" />
-              </p>
-            </div>
-            <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-              <p className={CARD_STAT_LABEL_CLASS}>Participation rate</p>
-              <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                <QaCoordinatorParticipationValue />
-              </p>
-              <div className="mt-2.5">
-                <QaCoordinatorParticipationProgress />
-              </div>
+      )}
+      <section aria-labelledby="qa-coord-overview-heading">
+        <h2 id="qa-coord-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+          Overview
+        </h2>
+        <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+              {hasStats ? formatAcademicYearDisplay(stats.activeYearName ?? ideasContext?.activeAcademicYear?.name ?? "") || "—" : "—"}
+            </p>
+          </div>
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+              <QaCoordinatorStatValue cycleId={hasActiveCycle ? undefined : cycleId} select="totalIdeas" />
+            </p>
+          </div>
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Participation rate</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+              <QaCoordinatorParticipationValue cycleId={hasActiveCycle ? undefined : cycleId} />
+            </p>
+            <div className="mt-2.5">
+              <QaCoordinatorParticipationProgress cycleId={hasActiveCycle ? undefined : cycleId} />
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   );
 }
 
-function QaCoordinatorStatValue({ select }: { select: "totalIdeas" }) {
-  const { data: stats } = useDepartmentStatsQuery();
+function QaCoordinatorStatValue({ select, cycleId }: { select: "totalIdeas"; cycleId?: string | null }) {
+  const { data: stats } = useDepartmentStatsQuery({ cycleId });
   const hasStats = stats !== null && stats !== undefined;
   if (select === "totalIdeas") return <>{hasStats ? stats.totalIdeas : "—"}</>;
   return null;
 }
 
-function QaCoordinatorParticipationValue() {
-  const { data: stats } = useDepartmentStatsQuery();
+function QaCoordinatorParticipationValue({ cycleId }: { cycleId?: string | null }) {
+  const { data: stats } = useDepartmentStatsQuery({ cycleId });
   const hasStats = stats !== null && stats !== undefined;
   const totalStaff = stats?.totalStaff ?? 0;
   const submittedCount = stats?.submittedCount ?? 0;
@@ -178,8 +210,8 @@ function QaCoordinatorParticipationValue() {
   return <>{submittedCount} / {totalStaff} members</>;
 }
 
-function QaCoordinatorParticipationProgress() {
-  const { data: stats } = useDepartmentStatsQuery();
+function QaCoordinatorParticipationProgress({ cycleId }: { cycleId?: string | null }) {
+  const { data: stats } = useDepartmentStatsQuery({ cycleId });
   const hasStats = stats !== null && stats !== undefined;
   const totalStaff = stats?.totalStaff ?? 0;
   const submittedCount = stats?.submittedCount ?? 0;
@@ -188,8 +220,8 @@ function QaCoordinatorParticipationProgress() {
   return <Progress value={rate} className="h-2" />;
 }
 
-function QaCoordinatorEngagement() {
-  const { data: stats } = useDepartmentStatsQuery();
+function QaCoordinatorEngagement({ cycleId }: { cycleId?: string | null }) {
+  const { data: stats } = useDepartmentStatsQuery({ cycleId });
   const hasStats = stats !== null && stats !== undefined;
 
   return (
@@ -230,23 +262,9 @@ const CHART_CONFIG_TIME = {
   count: { label: "Ideas", color: CHART_COLOR_TEMPORAL },
 } as const;
 
-function formatPeriodLabel(dateStr: string, dateEndStr?: string): string {
-  const parse = (s: string) => {
-    const m = String(s ?? "").slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return null;
-    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
-  };
-  const start = parse(dateStr);
-  const end = dateEndStr ? parse(dateEndStr) : start ? (() => { const d = new Date(start); d.setDate(d.getDate() + 4); return d; })() : null;
-  if (!start || Number.isNaN(start.getTime()) || !end || Number.isNaN(end.getTime())) return dateStr || "—";
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-  return start.getTime() === end.getTime() ? fmt(start) : `${fmt(start)} – ${fmt(end)}`;
-}
-
-function DepartmentCharts() {
+function DepartmentCharts({ cycleId }: { cycleId?: string | null }) {
   const isMobile = useIsMobile();
-  const { data: charts, isLoading } = useDepartmentChartsQuery();
+  const { data: charts, isLoading } = useDepartmentChartsQuery({ cycleId });
 
   if (isLoading) {
     return (
@@ -348,25 +366,46 @@ function DepartmentCharts() {
 export function QaCoordinatorDashboardContent() {
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
   const hasActiveCycle = Boolean(ideasContext?.activeCycleName);
+  const closedCycles = useMemo(
+    () => ideasContext?.closedCyclesForYear ?? [],
+    [ideasContext?.closedCyclesForYear],
+  );
+
+  const defaultCycleId = closedCycles[0]?.id ?? null;
+  const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
+
+  const effectiveCycleId =
+    selectedCycleId && closedCycles.some((c) => c.id === selectedCycleId)
+      ? selectedCycleId
+      : defaultCycleId;
+
+  const cycleIdForQueries = hasActiveCycle ? undefined : effectiveCycleId;
+  const showInsights = hasActiveCycle || (effectiveCycleId && closedCycles.length > 0);
 
   return (
     <div className="space-y-10">
-      <QaCoordinatorOverview hasActiveCycle={hasActiveCycle} />
+      <QaCoordinatorOverview
+        hasActiveCycle={hasActiveCycle}
+        cycleId={cycleIdForQueries}
+        closedCycles={closedCycles}
+        effectiveCycleId={effectiveCycleId}
+        onCycleChange={setSelectedCycleId}
+      />
       <section aria-labelledby="qa-coord-engagement-heading">
         <h2 id="qa-coord-engagement-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Engagement
         </h2>
         <div className="mt-4">
-          <QaCoordinatorEngagement />
+          <QaCoordinatorEngagement cycleId={cycleIdForQueries} />
         </div>
       </section>
-      {hasActiveCycle && (
+      {showInsights && (
         <section aria-labelledby="qa-coord-charts-heading">
           <h2 id="qa-coord-charts-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
             Insights
           </h2>
           <div className="mt-4">
-            <DepartmentCharts />
+            <DepartmentCharts cycleId={cycleIdForQueries} />
           </div>
         </section>
       )}

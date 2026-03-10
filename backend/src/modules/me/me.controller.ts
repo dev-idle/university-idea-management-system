@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Query } from '@nestjs/common';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { MeService, type MeProfile } from './me.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -74,6 +74,7 @@ export class MeController {
   @Roles('QA_COORDINATOR')
   getDepartmentStats(
     @CurrentUser() payload: AccessTokenPayload,
+    @Query('cycleId') cycleId?: string,
   ): Promise<{
     totalIdeas: number;
     totalComments: number;
@@ -81,19 +82,22 @@ export class MeController {
     votesUp: number;
     votesDown: number;
   } | null> {
-    return this.meService.getDepartmentStats(payload.sub);
+    return this.meService.getDepartmentStats(payload.sub, cycleId);
   }
 
   /**
    * GET /me/qa-manager-stats — QA Manager only. Org-wide stats for active year:
    * totalIdeas, totalComments, totalViews, votesUp, votesDown, participatingDepartments.
    * Excludes IT Services and Quality Assurance Office departments.
+   * When no active cycle: optional cycleId to show a specific cycle; defaults to cycle with
+   * most recent interactionClosesAt and >= 1 idea.
    */
   @Get('qa-manager-stats')
   @UseGuards(RolesGuard)
   @Roles('QA_MANAGER')
   getQaManagerStats(
     @CurrentUser() payload: AccessTokenPayload,
+    @Query('cycleId') cycleId?: string,
   ): Promise<{
     totalIdeas: number;
     totalComments: number;
@@ -101,19 +105,22 @@ export class MeController {
     votesUp: number;
     votesDown: number;
     totalDepartments: number;
-  }> {
-    return this.meService.getQaManagerStats(payload.sub);
+  }  > {
+    return this.meService.getQaManagerStats(payload.sub, cycleId);
   }
 
   /**
    * GET /me/qa-manager-charts — QA Manager only. Chart data: submission rate per department,
    * ideas over time, ideas per department, ideas by category. Excludes IT Services and QA Office.
+   * When no active cycle: optional cycleId to show a specific cycle; defaults to cycle with
+   * most recent interactionClosesAt and >= 1 idea.
    */
   @Get('qa-manager-charts')
   @UseGuards(RolesGuard)
   @Roles('QA_MANAGER')
   getQaManagerCharts(
     @CurrentUser() payload: AccessTokenPayload,
+    @Query('cycleId') cycleId?: string,
   ): Promise<{
     submissionRatePerDepartment: Array<{
       departmentName: string;
@@ -125,7 +132,7 @@ export class MeController {
     ideasPerDepartment: Array<{ departmentName: string; count: number }>;
     ideasByCategory: Array<{ categoryName: string; count: number }>;
   }> {
-    return this.meService.getQaManagerCharts(payload.sub);
+    return this.meService.getQaManagerCharts(payload.sub, cycleId);
   }
 
   /**
@@ -137,11 +144,12 @@ export class MeController {
   @Roles('QA_COORDINATOR')
   getDepartmentCharts(
     @CurrentUser() payload: AccessTokenPayload,
+    @Query('cycleId') cycleId?: string,
   ): Promise<{
     ideasByCategory: Array<{ categoryName: string; count: number }>;
     ideasOverTime: Array<{ date: string; count: number }>;
   } | null> {
-    return this.meService.getDepartmentCharts(payload.sub);
+    return this.meService.getDepartmentCharts(payload.sub, cycleId);
   }
 
   /**

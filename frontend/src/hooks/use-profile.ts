@@ -108,14 +108,23 @@ export function useQaManagerDepartmentMembersQuery(options?: { enabled?: boolean
 /**
  * TanStack Query: fetch GET /me/department-stats (QA Coordinator only).
  * Returns null if user has no department. Stats scope: active academic year.
+ * When no active cycle: pass cycleId to show stats for a specific cycle.
  */
-export function useDepartmentStatsQuery(options?: { enabled?: boolean }) {
+export function useDepartmentStatsQuery(options?: {
+  enabled?: boolean;
+  cycleId?: string | null;
+}) {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+  const cycleId = options?.cycleId;
 
   return useQuery({
-    queryKey: queryKeys.profile.departmentStats(),
+    queryKey: queryKeys.profile.departmentStats(cycleId ?? undefined),
     queryFn: async () => {
-      const data = await fetchWithAuth<unknown>("me/department-stats");
+      const url =
+        cycleId && cycleId.trim()
+          ? `me/department-stats?cycleId=${encodeURIComponent(cycleId)}`
+          : "me/department-stats";
+      const data = await fetchWithAuth<unknown>(url);
       return parseDepartmentStats(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,
@@ -132,14 +141,23 @@ function parseQaManagerStats(data: unknown): QaManagerStats {
 /**
  * TanStack Query: fetch GET /me/qa-manager-stats (QA Manager only).
  * Org-wide stats for active year; excludes IT Services and Quality Assurance Office.
+ * When no active cycle: pass cycleId to show stats for a specific cycle.
  */
-export function useQaManagerStatsQuery(options?: { enabled?: boolean }) {
+export function useQaManagerStatsQuery(options?: {
+  enabled?: boolean;
+  cycleId?: string | null;
+}) {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+  const cycleId = options?.cycleId;
 
   return useQuery({
-    queryKey: queryKeys.profile.qaManagerStats(),
+    queryKey: queryKeys.profile.qaManagerStats(cycleId ?? undefined),
     queryFn: async () => {
-      const data = await fetchWithAuth<unknown>("me/qa-manager-stats");
+      const url =
+        cycleId && cycleId.trim()
+          ? `me/qa-manager-stats?cycleId=${encodeURIComponent(cycleId)}`
+          : "me/qa-manager-stats";
+      const data = await fetchWithAuth<unknown>(url);
       return parseQaManagerStats(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,
@@ -156,14 +174,23 @@ function parseQaManagerCharts(data: unknown): QaManagerCharts {
 /**
  * TanStack Query: fetch GET /me/qa-manager-charts (QA Manager only).
  * Chart data: submission rate per department, ideas over time, ideas per department, ideas by category.
+ * When no active cycle: pass cycleId to show charts for a specific cycle.
  */
-export function useQaManagerChartsQuery(options?: { enabled?: boolean }) {
+export function useQaManagerChartsQuery(options?: {
+  enabled?: boolean;
+  cycleId?: string | null;
+}) {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+  const cycleId = options?.cycleId;
 
   return useQuery({
-    queryKey: queryKeys.profile.qaManagerCharts(),
+    queryKey: queryKeys.profile.qaManagerCharts(cycleId ?? undefined),
     queryFn: async () => {
-      const data = await fetchWithAuth<unknown>("me/qa-manager-charts");
+      const url =
+        cycleId && cycleId.trim()
+          ? `me/qa-manager-charts?cycleId=${encodeURIComponent(cycleId)}`
+          : "me/qa-manager-charts";
+      const data = await fetchWithAuth<unknown>(url);
       return parseQaManagerCharts(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,
@@ -174,14 +201,23 @@ export function useQaManagerChartsQuery(options?: { enabled?: boolean }) {
 /**
  * TanStack Query: fetch GET /me/department-charts (QA Coordinator only).
  * Returns chart data: ideas by category, ideas over time (daily, 30 days before closure).
+ * When no active cycle: pass cycleId to show charts for a specific cycle.
  */
-export function useDepartmentChartsQuery(options?: { enabled?: boolean }) {
+export function useDepartmentChartsQuery(options?: {
+  enabled?: boolean;
+  cycleId?: string | null;
+}) {
   const isAuthenticated = useAuthStore((s) => !!s.accessToken);
+  const cycleId = options?.cycleId;
 
   return useQuery({
-    queryKey: queryKeys.profile.departmentCharts(),
+    queryKey: queryKeys.profile.departmentCharts(cycleId ?? undefined),
     queryFn: async () => {
-      const data = await fetchWithAuth<unknown>("me/department-charts");
+      const url =
+        cycleId && cycleId.trim()
+          ? `me/department-charts?cycleId=${encodeURIComponent(cycleId)}`
+          : "me/department-charts";
+      const data = await fetchWithAuth<unknown>(url);
       return parseDepartmentCharts(data);
     },
     enabled: options?.enabled !== false && isAuthenticated,

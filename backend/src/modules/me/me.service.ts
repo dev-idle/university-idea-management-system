@@ -229,7 +229,10 @@ export class MeService {
    * submittedCount (staff who submitted ≥1 idea in cycle), totalStaff.
    * Scope: active academic year. Returns null if user has no department.
    */
-  async getDepartmentStats(userId: string): Promise<{
+  async getDepartmentStats(
+    userId: string,
+    cycleId?: string,
+  ): Promise<{
     totalIdeas: number;
     totalComments: number;
     totalViews: number;
@@ -274,13 +277,35 @@ export class MeService {
 
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
       where: { academicYearId: activeYear.id },
-      select: { id: true, status: true },
+      select: { id: true, status: true, interactionClosesAt: true },
     });
     const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
-    const cycleIds =
-      activeCycle != null
-        ? [activeCycle.id]
-        : cycles.map((c) => c.id);
+    let cycleIds: string[];
+
+    if (activeCycle != null) {
+      cycleIds = [activeCycle.id];
+    } else {
+      const cyclesWithIdeas = await this.prisma.ideaSubmissionCycle.findMany({
+        where: {
+          academicYearId: activeYear.id,
+          ideas: {
+            some: {
+              submittedBy: {
+                departmentId: { not: null },
+                department: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+              },
+            },
+          },
+        },
+        select: { id: true, interactionClosesAt: true },
+        orderBy: { interactionClosesAt: 'desc' },
+      });
+      if (cycleId && cyclesWithIdeas.some((c) => c.id === cycleId)) {
+        cycleIds = [cycleId];
+      } else {
+        cycleIds = cyclesWithIdeas.length > 0 ? [cyclesWithIdeas[0]!.id] : [];
+      }
+    }
 
     const cyclesWithIdeasCount = await this.prisma.ideaSubmissionCycle.count({
       where: {
@@ -454,8 +479,13 @@ export class MeService {
    * Get QA Manager dashboard stats: total ideas, comments, views, votes (up/down),
    * total departments. Total departments = all departments excluding IT Services and QA Office.
    * Scope: active academic year for ideas/comments/votes.
+   * When no active cycle: optional cycleId; defaults to cycle with most recent interactionClosesAt
+   * and >= 1 idea (excluding IT/QA departments).
    */
-  async getQaManagerStats(userId: string): Promise<{
+  async getQaManagerStats(
+    userId: string,
+    cycleId?: string,
+  ): Promise<{
     totalIdeas: number;
     totalComments: number;
     totalViews: number;
@@ -487,13 +517,35 @@ export class MeService {
 
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
       where: { academicYearId: activeYear.id },
-      select: { id: true, status: true },
+      select: { id: true, status: true, interactionClosesAt: true },
     });
     const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
-    const cycleIds =
-      activeCycle != null
-        ? [activeCycle.id]
-        : cycles.map((c) => c.id);
+    let cycleIds: string[];
+
+    if (activeCycle != null) {
+      cycleIds = [activeCycle.id];
+    } else {
+      const cyclesWithIdeas = await this.prisma.ideaSubmissionCycle.findMany({
+        where: {
+          academicYearId: activeYear.id,
+          ideas: {
+            some: {
+              submittedBy: {
+                departmentId: { not: null },
+                department: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+              },
+            },
+          },
+        },
+        select: { id: true, interactionClosesAt: true },
+        orderBy: { interactionClosesAt: 'desc' },
+      });
+      if (cycleId && cyclesWithIdeas.some((c) => c.id === cycleId)) {
+        cycleIds = [cycleId];
+      } else {
+        cycleIds = cyclesWithIdeas.length > 0 ? [cyclesWithIdeas[0]!.id] : [];
+      }
+    }
 
     const cyclesWithIdeasCount = await this.prisma.ideaSubmissionCycle.count({
       where: {
@@ -573,7 +625,10 @@ export class MeService {
    * Get department chart data for QA Coordinator: ideas by category, ideas over time.
    * Scope: active academic year. Returns null if user has no department.
    */
-  async getDepartmentCharts(userId: string): Promise<{
+  async getDepartmentCharts(
+    userId: string,
+    cycleId?: string,
+  ): Promise<{
     ideasByCategory: Array<{ categoryName: string; count: number }>;
     ideasOverTime: Array<{ date: string; dateEnd: string; count: number }>;
     closureDate: string | null;
@@ -594,14 +649,47 @@ export class MeService {
 
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
       where: { academicYearId: activeYear.id },
-      select: { id: true, ideaSubmissionClosesAt: true, status: true },
+      select: {
+        id: true,
+        ideaSubmissionClosesAt: true,
+        interactionClosesAt: true,
+        status: true,
+      },
       orderBy: { ideaSubmissionClosesAt: 'desc' },
     });
     const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
-    const cyclesToUse =
-      activeCycle != null
-        ? [activeCycle]
-        : cycles.filter((c) => c.status === 'CLOSED');
+    let cyclesToUse: typeof cycles;
+
+    if (activeCycle != null) {
+      cyclesToUse = [activeCycle];
+    } else {
+      const cyclesWithIdeas = await this.prisma.ideaSubmissionCycle.findMany({
+        where: {
+          academicYearId: activeYear.id,
+          ideas: {
+            some: {
+              submittedBy: {
+                departmentId: { not: null },
+                department: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+          ideaSubmissionClosesAt: true,
+          interactionClosesAt: true,
+          status: true,
+        },
+        orderBy: { interactionClosesAt: 'desc' },
+      });
+      if (cycleId && cyclesWithIdeas.some((c) => c.id === cycleId)) {
+        const picked = cyclesWithIdeas.find((c) => c.id === cycleId);
+        cyclesToUse = picked ? [picked] : cyclesWithIdeas.slice(0, 1);
+      } else {
+        cyclesToUse = cyclesWithIdeas.slice(0, 1);
+      }
+    }
     const cycleIds = cyclesToUse.map((c) => c.id);
     if (cycleIds.length === 0) {
       return { ideasByCategory: [], ideasOverTime: [], closureDate: null };
@@ -680,8 +768,13 @@ export class MeService {
    * Get QA Manager chart data: submission rate per department, ideas over time,
    * ideas per department, ideas by category. Excludes IT Services and QA Office.
    * Scope: active academic year.
+   * When no active cycle: optional cycleId; defaults to cycle with most recent interactionClosesAt
+   * and >= 1 idea (excluding IT/QA departments).
    */
-  async getQaManagerCharts(userId: string): Promise<{
+  async getQaManagerCharts(
+    userId: string,
+    cycleId?: string,
+  ): Promise<{
     submissionRatePerDepartment: Array<{
       departmentName: string;
       submittedCount: number;
@@ -707,14 +800,49 @@ export class MeService {
 
     const cycles = await this.prisma.ideaSubmissionCycle.findMany({
       where: { academicYearId: activeYear.id },
-      select: { id: true, ideaSubmissionClosesAt: true, status: true },
+      select: {
+        id: true,
+        ideaSubmissionClosesAt: true,
+        interactionClosesAt: true,
+        status: true,
+      },
       orderBy: { ideaSubmissionClosesAt: 'desc' },
     });
     const activeCycle = cycles.find((c) => c.status === 'ACTIVE');
-    const cyclesToUse =
-      activeCycle != null
-        ? [activeCycle]
-        : cycles.filter((c) => c.status === 'CLOSED');
+    let cyclesToUse: typeof cycles;
+
+    if (activeCycle != null) {
+      cyclesToUse = [activeCycle];
+    } else {
+      const cyclesWithIdeas = await this.prisma.ideaSubmissionCycle.findMany({
+        where: {
+          academicYearId: activeYear.id,
+          ideas: {
+            some: {
+              submittedBy: {
+                departmentId: { not: null },
+                department: {
+                  name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+                },
+              },
+            },
+          },
+        },
+        select: {
+          id: true,
+          ideaSubmissionClosesAt: true,
+          interactionClosesAt: true,
+          status: true,
+        },
+        orderBy: { interactionClosesAt: 'desc' },
+      });
+      if (cycleId && cyclesWithIdeas.some((c) => c.id === cycleId)) {
+        const picked = cyclesWithIdeas.find((c) => c.id === cycleId);
+        cyclesToUse = picked ? [picked] : cyclesWithIdeas.slice(0, 1);
+      } else {
+        cyclesToUse = cyclesWithIdeas.slice(0, 1);
+      }
+    }
     const cycleIds = cyclesToUse.map((c) => c.id);
     if (cycleIds.length === 0) {
       return {

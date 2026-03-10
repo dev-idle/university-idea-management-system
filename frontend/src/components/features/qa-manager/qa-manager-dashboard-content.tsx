@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { MessageSquare, Eye, ThumbsUp, ThumbsDown, ChevronRight } from "lucide-react";
+import { MessageSquare, Eye, ThumbsUp, ThumbsDown, ChevronRight, ChevronDown } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -25,8 +26,14 @@ import {
   CHART_TOOLTIP_LABEL_CLASS,
   CHART_TOOLTIP_VALUE_CLASS,
   TR_CHART_ENTRANCE,
+  FILTER_SELECT_CONTENT_CLASS,
 } from "@/config/design";
-import { UNIFIED_CARD_CLASS } from "../admin/constants";
+import {
+  UNIFIED_CARD_CLASS,
+  TOOLBAR_FILTER_SELECT_TRIGGER_CLASS,
+  TOOLBAR_FILTER_CHEVRON_CLASS,
+  TOOLBAR_FILTER_ROLE_WIDTH,
+} from "../admin/constants";
 import { formatAcademicYearDisplay } from "../admin/academic-years.utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQaManagerStatsQuery, useQaManagerChartsQuery } from "@/hooks/use-profile";
@@ -39,57 +46,108 @@ import {
 } from "@/components/ui/chart";
 import { IdeasByCategoryChart } from "../shared/ideas-by-category-chart";
 import { LoadingState } from "@/components/ui/loading-state";
-function fmtDate(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleDateString("en-US", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { fmtDateTime, formatPeriodLabel, type ClosedCycle } from "../shared/dashboard-utils";
 
-function fmtDateTime(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+function QaManagerOverview({
+  hasActiveCycle,
+  cycleId,
+  closedCycles,
+  effectiveCycleId,
+  onCycleChange,
+}: {
+  hasActiveCycle: boolean;
+  cycleId?: string | null;
+  closedCycles: ClosedCycle[];
+  effectiveCycleId: string | null;
+  onCycleChange: (id: string | null) => void;
+}) {
+  const { data: stats } = useQaManagerStatsQuery({
+    cycleId: hasActiveCycle ? undefined : cycleId,
   });
-}
-
-function QaManagerOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) {
-  const { data: stats } = useQaManagerStatsQuery();
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
 
-  const activeCycleName = ideasContext?.activeCycleName ?? null;
-  const submissionClosesAt = ideasContext?.submissionClosesAt ?? null;
-  const interactionClosesAt = ideasContext?.interactionClosesAt ?? null;
+  const selectedCycle = effectiveCycleId
+    ? closedCycles.find((c) => c.id === effectiveCycleId)
+    : null;
+
+  const displayName = hasActiveCycle
+    ? (ideasContext?.activeCycleName ?? null)
+    : (selectedCycle?.name ?? null);
+  const submissionClosesAt = hasActiveCycle
+    ? (ideasContext?.submissionClosesAt ?? null)
+    : (selectedCycle?.ideaSubmissionClosesAt ?? null);
+  const interactionClosesAt = hasActiveCycle
+    ? (ideasContext?.interactionClosesAt ?? null)
+    : (selectedCycle?.interactionClosesAt ?? null);
+
+  const showProposalCycleSection = hasActiveCycle || closedCycles.length > 0;
   const hasStats = stats !== null && stats !== undefined;
 
   return (
     <div className="flex flex-col gap-10">
-      {hasActiveCycle ? (
+      {showProposalCycleSection && (
         <section aria-labelledby="qa-manager-cycle-heading">
-          <h2 id="qa-manager-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Proposal Cycle</h2>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 id="qa-manager-cycle-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
+              Proposal Cycle
+            </h2>
+            {!hasActiveCycle && closedCycles.length > 0 && (
+              <Select
+                value={effectiveCycleId ?? ""}
+                onValueChange={(v) => onCycleChange(v || null)}
+              >
+                <SelectTrigger
+                  className={cn(
+                    TOOLBAR_FILTER_SELECT_TRIGGER_CLASS,
+                    TOOLBAR_FILTER_ROLE_WIDTH,
+                    "[&>svg:first-of-type]:hidden",
+                  )}
+                  aria-label="Select proposal cycle"
+                >
+                  <SelectValue placeholder="Select a cycle" />
+                  <ChevronDown className={TOOLBAR_FILTER_CHEVRON_CLASS} aria-hidden />
+                </SelectTrigger>
+                <SelectContent className={FILTER_SELECT_CONTENT_CLASS}>
+                  {closedCycles.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
           <div className={`mt-4 ${UNIFIED_CARD_CLASS} px-6 py-6`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-              <div className="min-w-0">
-                <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
-                {activeCycleName ? (
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
-                        {activeCycleName}
-                      </p>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">{activeCycleName}</TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
-                )}
-              </div>
+            <div
+              className={cn(
+                "grid gap-x-8 gap-y-6",
+                hasActiveCycle ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2",
+              )}
+            >
+              {hasActiveCycle && (
+                <div className="min-w-0">
+                  <p className={CARD_STAT_LABEL_CLASS}>Cycle name</p>
+                  {displayName ? (
+                    <Tooltip delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <p className={`mt-1.5 min-w-0 truncate cursor-default ${TYPO_STAT_COORD}`}>
+                          {displayName}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{displayName}</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>—</p>
+                  )}
+                </div>
+              )}
               <div className="min-w-0">
                 <p className={CARD_STAT_LABEL_CLASS}>Submission deadline</p>
                 <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
@@ -105,26 +163,16 @@ function QaManagerOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) {
             </div>
           </div>
         </section>
-      ) : null}
+      )}
       <section aria-labelledby="qa-manager-overview-heading">
         <h2 id="qa-manager-overview-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>Overview</h2>
-        <div className={cn("mt-4", MANAGEMENT_STAT_GRID_CLASS, hasActiveCycle && "xl:grid-cols-2")}>
-          {!hasActiveCycle && (
-            <>
-              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-                <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  {hasStats && stats.activeYearName ? formatAcademicYearDisplay(stats.activeYearName) : "—"}
-                </p>
-              </div>
-              <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
-                <p className={CARD_STAT_LABEL_CLASS}>Total proposal cycles</p>
-                <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
-                  {hasStats ? stats.cyclesInYearCount : "—"}
-                </p>
-              </div>
-            </>
-          )}
+        <div className="mt-4 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
+            <p className={CARD_STAT_LABEL_CLASS}>Active academic year</p>
+            <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>
+              {hasStats && stats.activeYearName ? formatAcademicYearDisplay(stats.activeYearName) : "—"}
+            </p>
+          </div>
           <div className={`${UNIFIED_CARD_CLASS} px-6 py-4 min-w-0`}>
             <p className={CARD_STAT_LABEL_CLASS}>Total ideas</p>
             <p className={`mt-1.5 ${TYPO_STAT_COORD}`}>{hasStats ? stats.totalIdeas : "—"}</p>
@@ -148,8 +196,8 @@ function QaManagerOverview({ hasActiveCycle }: { hasActiveCycle: boolean }) {
   );
 }
 
-function QaManagerEngagement() {
-  const { data: stats } = useQaManagerStatsQuery();
+function QaManagerEngagement({ cycleId }: { cycleId?: string | null }) {
+  const { data: stats } = useQaManagerStatsQuery({ cycleId });
   const hasStats = stats !== null && stats !== undefined;
 
   return (
@@ -186,20 +234,6 @@ function QaManagerEngagement() {
   );
 }
 
-function formatPeriodLabel(dateStr: string, dateEndStr?: string): string {
-  const parse = (s: string) => {
-    const m = String(s ?? "").slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return null;
-    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
-  };
-  const start = parse(dateStr);
-  const end = dateEndStr ? parse(dateEndStr) : start ? (() => { const d = new Date(start); d.setDate(d.getDate() + 4); return d; })() : null;
-  if (!start || Number.isNaN(start.getTime()) || !end || Number.isNaN(end.getTime())) return dateStr || "—";
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-  return start.getTime() === end.getTime() ? fmt(start) : `${fmt(start)} – ${fmt(end)}`;
-}
-
 const CHART_CONFIG_RATE = {
   rate: { label: "Submission rate (%)", color: INSIGHTS_RATE_CONTRAST },
   count: { label: "Ideas", color: INSIGHTS_RATE_CONTRAST }, /* alias for cursor --color-rate */
@@ -211,9 +245,9 @@ const CHART_CONFIG_DEPT = {
   count: { label: "Ideas", color: INSIGHTS_BAR_COLOR },
 } as const;
 
-function QaManagerCharts() {
+function QaManagerCharts({ cycleId }: { cycleId?: string | null }) {
   const isMobile = useIsMobile();
-  const { data: charts, isLoading } = useQaManagerChartsQuery();
+  const { data: charts, isLoading } = useQaManagerChartsQuery({ cycleId });
 
   if (isLoading) {
     return (
@@ -546,17 +580,17 @@ function HighlightIdeaCard({
   );
 }
 
-function QaManagerHighlight() {
+function QaManagerHighlight({ cycleId }: { cycleId?: string | null }) {
   const { data: popular, isLoading: popularLoading } = useIdeasQuery(
-    { sort: "mostPopular", limit: 5 },
+    { sort: "mostPopular", limit: 5, cycleId: cycleId ?? undefined },
     { enabled: true }
   );
   const { data: mostComments, isLoading: commentsLoading } = useIdeasQuery(
-    { sort: "mostComments", limit: 5 },
+    { sort: "mostComments", limit: 5, cycleId: cycleId ?? undefined },
     { enabled: true }
   );
   const { data: mostViewed, isLoading: viewedLoading } = useIdeasQuery(
-    { sort: "mostViewed", limit: 5 },
+    { sort: "mostViewed", limit: 5, cycleId: cycleId ?? undefined },
     { enabled: true }
   );
 
@@ -654,29 +688,50 @@ function QaManagerHighlight() {
 export function QaManagerDashboardContent() {
   const { data: ideasContext } = useIdeasContextQuery({ enabled: true });
   const hasActiveCycle = Boolean(ideasContext?.activeCycleName);
+  const closedCycles = useMemo(
+    () => ideasContext?.closedCyclesForYear ?? [],
+    [ideasContext?.closedCyclesForYear],
+  );
+
+  const defaultCycleId = closedCycles[0]?.id ?? null;
+  const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
+
+  const effectiveCycleId =
+    selectedCycleId && closedCycles.some((c) => c.id === selectedCycleId)
+      ? selectedCycleId
+      : defaultCycleId;
+
+  const cycleIdForQueries = hasActiveCycle ? undefined : effectiveCycleId;
+  const showInsights = hasActiveCycle || (effectiveCycleId && closedCycles.length > 0);
 
   return (
     <div className="space-y-10">
-      <QaManagerOverview hasActiveCycle={hasActiveCycle} />
+      <QaManagerOverview
+        hasActiveCycle={hasActiveCycle}
+        cycleId={cycleIdForQueries}
+        closedCycles={closedCycles}
+        effectiveCycleId={effectiveCycleId}
+        onCycleChange={setSelectedCycleId}
+      />
       <section aria-labelledby="qa-manager-engagement-heading">
         <h2 id="qa-manager-engagement-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
           Engagement
         </h2>
         <div className="mt-4">
-          <QaManagerEngagement />
+          <QaManagerEngagement cycleId={cycleIdForQueries} />
         </div>
       </section>
-      {hasActiveCycle && (
+      {showInsights && (
         <section aria-labelledby="qa-manager-charts-heading">
           <h2 id="qa-manager-charts-heading" className={DASHBOARD_SECTION_HEADING_CLASS}>
             Insights
           </h2>
           <div className="mt-4">
-            <QaManagerCharts />
+            <QaManagerCharts cycleId={cycleIdForQueries} />
           </div>
         </section>
       )}
-      <QaManagerHighlight />
+      <QaManagerHighlight cycleId={cycleIdForQueries} />
     </div>
   );
 }

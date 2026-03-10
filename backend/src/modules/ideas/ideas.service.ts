@@ -139,13 +139,20 @@ export class IdeasService {
     let closedCyclesForYear: Array<{
       id: string;
       name: string;
+      ideaSubmissionClosesAt: Date;
+      interactionClosesAt: Date;
       categories: Array<{ id: string; name: string }>;
       departments: Array<{ id: string; name: string }>;
     }> = [];
     if (activeYear && !hasActiveCycle) {
       const allCycles = await this.prisma.ideaSubmissionCycle.findMany({
         where: allCyclesInYearWhere(activeYear.id),
-        select: { id: true, name: true },
+        select: {
+          id: true,
+          name: true,
+          ideaSubmissionClosesAt: true,
+          interactionClosesAt: true,
+        },
         orderBy: { interactionClosesAt: 'desc' },
       });
       const cycleIdsWithIdeas = await this.prisma.idea.groupBy({
@@ -168,6 +175,8 @@ export class IdeasService {
         closedCyclesForYear.push({
           id: c.id,
           name: c.name ?? 'Unnamed',
+          ideaSubmissionClosesAt: c.ideaSubmissionClosesAt,
+          interactionClosesAt: c.interactionClosesAt,
           categories: cycleCategories.map((cc) => cc.category),
           departments,
         });
