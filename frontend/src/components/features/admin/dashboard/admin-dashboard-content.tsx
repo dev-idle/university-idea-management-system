@@ -115,7 +115,7 @@ function DepartmentComplianceSection({ stats }: { stats: AdminDashboardStats }) 
             </div>
             <div>
               <p className={CARD_STAT_LABEL_CLASS}>All compliant</p>
-              <p className={`mt-0.5 ${TYPO_STAT_COORD}`}>
+              <p className="mt-0.5 text-sm text-foreground/85">
                 {totalApplicable} department{totalApplicable === 1 ? "" : "s"} meet the rules
               </p>
             </div>
