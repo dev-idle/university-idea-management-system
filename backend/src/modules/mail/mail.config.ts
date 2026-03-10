@@ -7,7 +7,7 @@ const DEFAULT_FROM = '"UIMS System" <noreply@gre.ac.uk>';
 /**
  * Mailer config — 2026 standard.
  * - Port 587 + STARTTLS (secure: false) — recommended over 465.
- * - Supports MAIL_* (Mailtrap) and SMTP_* env vars.
+ * - Supports SMTP_* and MAIL_* env vars (Brevo, Gmail, or any SMTP provider).
  */
 export function getMailerOptions(config: ConfigService) {
   const host =

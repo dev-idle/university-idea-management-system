@@ -48,4 +48,3 @@ export const WORKER_OPTIONS_UPSTASH = {
 } as const;
 
 export const DEFAULT_FRONTEND_URL = 'http://localhost:3000';
-export const DEFAULT_MAILTRAP_URL = 'https://mailtrap.io/inboxes';

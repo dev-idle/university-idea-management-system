@@ -6,7 +6,6 @@ import { type Job } from 'bullmq';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import {
   DEFAULT_FRONTEND_URL,
-  DEFAULT_MAILTRAP_URL,
   MAIL_SUBJECTS,
   NOTIFICATION_QUEUE,
   NOTIFICATION_TYPES,
@@ -254,7 +253,7 @@ export class NotificationProcessor extends WorkerHost {
       data: { userId, type, message, link },
     });
 
-    this.logMailtrapUrl(label, to);
+    this.logMailSent(label, to);
   }
 
   private logResults(
@@ -291,11 +290,11 @@ export class NotificationProcessor extends WorkerHost {
     return commentId ? `${path}#comment-${commentId}` : path;
   }
 
-  private logMailtrapUrl(label: string, to: string): void {
+  private logMailSent(label: string, to: string): void {
     if (this.isProduction) return;
 
-    const url =
-      this.config.get<string>('MAILTRAP_INBOX_URL') ?? DEFAULT_MAILTRAP_URL;
-    this.logger.log(`[Mail] ${label} → ${to} | View at: ${url}`);
+    const inboxUrl = this.config.get<string>('MAILTRAP_INBOX_URL');
+    const suffix = inboxUrl ? ` | View at: ${inboxUrl}` : '';
+    this.logger.log(`[Mail] ${label} → ${to}${suffix}`);
   }
 }

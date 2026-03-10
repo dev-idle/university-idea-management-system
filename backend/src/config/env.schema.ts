@@ -44,12 +44,12 @@ export const envSchema = z
     SMTP_USER: z.string().optional(),
     SMTP_PASS: z.string().optional(),
     SMTP_FROM: z.string().email().optional(),
-    /** Mail (MailerModule): alternative env keys for Mailtrap. */
+    /** Mail (MailerModule): alternative env keys for Brevo and other providers. */
     MAIL_HOST: z.string().min(1).optional(),
     MAIL_PORT: z.coerce.number().int().positive().optional(),
     MAIL_USER: z.string().optional(),
     MAIL_PASS: z.string().optional(),
-    /** Mailtrap inbox URL to view sent emails (e.g. https://mailtrap.io/inboxes/xxx/messages). */
+    /** Optional: inbox URL for viewing sent emails in dev (e.g. Mailtrap). Not used by Brevo. */
     MAILTRAP_INBOX_URL: z.string().url().optional(),
     /** Frontend base URL for notification links. */
     FRONTEND_URL: z.string().url().optional(),

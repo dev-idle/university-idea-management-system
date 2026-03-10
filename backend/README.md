@@ -68,6 +68,8 @@ To enable notification emails and in-app notifications:
 
 When Redis is disabled, notifications (email and in-app) are not sent. Export jobs use a DB-based queue and do not require Redis.
 
+**Brevo SMTP:** Get credentials at [app.brevo.com/settings/keys/smtp](https://app.brevo.com/settings/keys/smtp) — use SMTP login + SMTP key (not API key). Verify sender/domain in Brevo; set `SMTP_FROM` to a verified address.
+
 **Upstash billing:** The queue is tuned for low command usage (`stalledInterval` 5 min, `drainDelay` 10 s, `removeOnComplete`, limited failed-job retention).
 
 ## Compile and run the project
