@@ -292,7 +292,11 @@ export class MeService {
             some: {
               submittedBy: {
                 departmentId: { not: null },
-                department: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+                department: {
+                  name: {
+                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                  },
+                },
               },
             },
           },
@@ -303,7 +307,7 @@ export class MeService {
       if (cycleId && cyclesWithIdeas.some((c) => c.id === cycleId)) {
         cycleIds = [cycleId];
       } else {
-        cycleIds = cyclesWithIdeas.length > 0 ? [cyclesWithIdeas[0]!.id] : [];
+        cycleIds = cyclesWithIdeas.length > 0 ? [cyclesWithIdeas[0].id] : [];
       }
     }
 
@@ -315,7 +319,9 @@ export class MeService {
             submittedBy: {
               departmentId: { not: null },
               department: {
-                name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+                name: {
+                  notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                },
               },
             },
           },
@@ -352,29 +358,36 @@ export class MeService {
       cycleId: { in: cycleIds },
     };
 
-    const [totalIdeas, totalComments, totalViews, votesUp, votesDown, submittersGroup, totalStaff] =
-      await Promise.all([
-        this.prisma.idea.count({ where: ideaWhere }),
-        this.prisma.ideaComment.count({
-          where: { idea: ideaWhere },
-        }),
-        this.prisma.ideaView.count({
-          where: { idea: ideaWhere },
-        }),
-        this.prisma.ideaVote.count({
-          where: { idea: ideaWhere, value: 'up' },
-        }),
-        this.prisma.ideaVote.count({
-          where: { idea: ideaWhere, value: 'down' },
-        }),
-        this.prisma.idea.groupBy({
-          by: ['submittedById'],
-          where: { ...ideaWhereExclQc, submittedById: { not: null } },
-        }),
-        this.prisma.user.count({
-          where: staffWhere,
-        }),
-      ]);
+    const [
+      totalIdeas,
+      totalComments,
+      totalViews,
+      votesUp,
+      votesDown,
+      submittersGroup,
+      totalStaff,
+    ] = await Promise.all([
+      this.prisma.idea.count({ where: ideaWhere }),
+      this.prisma.ideaComment.count({
+        where: { idea: ideaWhere },
+      }),
+      this.prisma.ideaView.count({
+        where: { idea: ideaWhere },
+      }),
+      this.prisma.ideaVote.count({
+        where: { idea: ideaWhere, value: 'up' },
+      }),
+      this.prisma.ideaVote.count({
+        where: { idea: ideaWhere, value: 'down' },
+      }),
+      this.prisma.idea.groupBy({
+        by: ['submittedById'],
+        where: { ...ideaWhereExclQc, submittedById: { not: null } },
+      }),
+      this.prisma.user.count({
+        where: staffWhere,
+      }),
+    ]);
 
     const submittedCount = submittersGroup.length;
 
@@ -501,7 +514,9 @@ export class MeService {
     });
     if (!activeYear) {
       const totalDepartments = await this.prisma.department.count({
-        where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+        where: {
+          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+        },
       });
       return {
         totalIdeas: 0,
@@ -532,7 +547,11 @@ export class MeService {
             some: {
               submittedBy: {
                 departmentId: { not: null },
-                department: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+                department: {
+                  name: {
+                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                  },
+                },
               },
             },
           },
@@ -543,7 +562,7 @@ export class MeService {
       if (cycleId && cyclesWithIdeas.some((c) => c.id === cycleId)) {
         cycleIds = [cycleId];
       } else {
-        cycleIds = cyclesWithIdeas.length > 0 ? [cyclesWithIdeas[0]!.id] : [];
+        cycleIds = cyclesWithIdeas.length > 0 ? [cyclesWithIdeas[0].id] : [];
       }
     }
 
@@ -555,7 +574,9 @@ export class MeService {
             submittedBy: {
               departmentId: { not: null },
               department: {
-                name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+                name: {
+                  notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                },
               },
             },
           },
@@ -565,7 +586,9 @@ export class MeService {
 
     if (cycleIds.length === 0) {
       const totalDepartments = await this.prisma.department.count({
-        where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+        where: {
+          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+        },
       });
       return {
         totalIdeas: 0,
@@ -589,25 +612,33 @@ export class MeService {
       },
     };
 
-    const [totalIdeas, totalComments, totalViews, votesUp, votesDown, totalDepartments] =
-      await Promise.all([
-        this.prisma.idea.count({ where: ideaWhere }),
-        this.prisma.ideaComment.count({
-          where: { idea: ideaWhere },
-        }),
-        this.prisma.ideaView.count({
-          where: { idea: ideaWhere },
-        }),
-        this.prisma.ideaVote.count({
-          where: { idea: ideaWhere, value: 'up' },
-        }),
-        this.prisma.ideaVote.count({
-          where: { idea: ideaWhere, value: 'down' },
-        }),
-        this.prisma.department.count({
-          where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
-        }),
-      ]);
+    const [
+      totalIdeas,
+      totalComments,
+      totalViews,
+      votesUp,
+      votesDown,
+      totalDepartments,
+    ] = await Promise.all([
+      this.prisma.idea.count({ where: ideaWhere }),
+      this.prisma.ideaComment.count({
+        where: { idea: ideaWhere },
+      }),
+      this.prisma.ideaView.count({
+        where: { idea: ideaWhere },
+      }),
+      this.prisma.ideaVote.count({
+        where: { idea: ideaWhere, value: 'up' },
+      }),
+      this.prisma.ideaVote.count({
+        where: { idea: ideaWhere, value: 'down' },
+      }),
+      this.prisma.department.count({
+        where: {
+          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+        },
+      }),
+    ]);
 
     return {
       totalIdeas,
@@ -670,7 +701,11 @@ export class MeService {
             some: {
               submittedBy: {
                 departmentId: { not: null },
-                department: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+                department: {
+                  name: {
+                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                  },
+                },
               },
             },
           },
@@ -695,7 +730,7 @@ export class MeService {
       return { ideasByCategory: [], ideasOverTime: [], closureDate: null };
     }
 
-    const cycleForClosure = cyclesToUse[0]!;
+    const cycleForClosure = cyclesToUse[0];
     const closureDate = cycleForClosure.ideaSubmissionClosesAt;
     const ideaWhereAll = {
       submittedBy: { departmentId: me.departmentId },
@@ -744,11 +779,16 @@ export class MeService {
         count: countByCategoryId.get(cat.id) ?? 0,
       });
     }
-    ideasByCategory.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+    ideasByCategory.sort((a, b) =>
+      a.categoryName.localeCompare(b.categoryName),
+    );
 
     const uncategorizedCount = countByCategoryId.get('__uncategorized__') ?? 0;
     if (uncategorizedCount > 0) {
-      ideasByCategory.push({ categoryName: 'Uncategorized', count: uncategorizedCount });
+      ideasByCategory.push({
+        categoryName: 'Uncategorized',
+        count: uncategorizedCount,
+      });
     }
 
     const ideasOverTime = MeService.buildIdeasOverTimeBuckets(
@@ -822,7 +862,9 @@ export class MeService {
               submittedBy: {
                 departmentId: { not: null },
                 department: {
-                  name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+                  name: {
+                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                  },
                 },
               },
             },
@@ -854,7 +896,9 @@ export class MeService {
     }
 
     const depts = await this.prisma.department.findMany({
-      where: { name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] } },
+      where: {
+        name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+      },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     });
@@ -871,12 +915,8 @@ export class MeService {
       },
     };
 
-    const cycleForClosure = cyclesToUse[0]!;
-    const closureDate = cycleForClosure.ideaSubmissionClosesAt;
     const maxClosure = new Date(
-      Math.max(
-        ...cyclesToUse.map((c) => c.ideaSubmissionClosesAt.getTime()),
-      ),
+      Math.max(...cyclesToUse.map((c) => c.ideaSubmissionClosesAt.getTime())),
     );
 
     const [cycleCategories, ideasForCharts, staffByDept, byCategoryRows] =
@@ -919,7 +959,8 @@ export class MeService {
     const submittersByDeptId = new Map<string, Set<string>>();
     for (const idea of ideasForCharts) {
       const submitter = idea.submittedBy;
-      if (!submitter?.departmentId || submitter.role?.name === 'QA_COORDINATOR') continue;
+      if (!submitter?.departmentId || submitter.role?.name === 'QA_COORDINATOR')
+        continue;
       const deptId = submitter.departmentId;
       if (!submittersByDeptId.has(deptId)) {
         submittersByDeptId.set(deptId, new Set());
@@ -943,7 +984,10 @@ export class MeService {
     for (const dept of depts) {
       const totalStaff = staffCountByDept.get(dept.id) ?? 0;
       const submittedCount = submittersByDeptId.get(dept.id)?.size ?? 0;
-      const rate = totalStaff > 0 ? Math.round((submittedCount / totalStaff) * 1000) / 10 : 0;
+      const rate =
+        totalStaff > 0
+          ? Math.round((submittedCount / totalStaff) * 1000) / 10
+          : 0;
       submissionRatePerDepartment.push({
         departmentName: dept.name,
         submittedCount,
@@ -981,15 +1025,22 @@ export class MeService {
         count: countByCategoryId.get(cat.id) ?? 0,
       });
     }
-    ideasByCategory.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+    ideasByCategory.sort((a, b) =>
+      a.categoryName.localeCompare(b.categoryName),
+    );
     const uncategorizedCount = countByCategoryId.get('__uncategorized__') ?? 0;
     if (uncategorizedCount > 0) {
-      ideasByCategory.push({ categoryName: 'Uncategorized', count: uncategorizedCount });
+      ideasByCategory.push({
+        categoryName: 'Uncategorized',
+        count: uncategorizedCount,
+      });
     }
 
     const firstSubmission =
       ideasForCharts.length > 0
-        ? new Date(Math.min(...ideasForCharts.map((i) => i.createdAt.getTime())))
+        ? new Date(
+            Math.min(...ideasForCharts.map((i) => i.createdAt.getTime())),
+          )
         : null;
     const windowStart = firstSubmission
       ? MeService.normalizeToStartOfDay(firstSubmission)

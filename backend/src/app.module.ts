@@ -55,13 +55,20 @@ import { RequestIdInterceptor } from './common/interceptors/request-id.intercept
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       global: true,
-      useFactory: (config: ConfigService) =>
-        ({
-          secret: config.get<string>('JWT_SECRET') ?? 'change-me-in-production',
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('JWT_SECRET');
+        if (!secret) {
+          throw new Error(
+            'JWT_SECRET is required. Set it in your environment.',
+          );
+        }
+        return {
+          secret,
           signOptions: {
             expiresIn: config.get<string>('JWT_ACCESS_EXPIRES') ?? '15m',
           },
-        }) as JwtModuleOptions,
+        } as JwtModuleOptions;
+      },
       inject: [ConfigService],
     }),
     PrismaModule,

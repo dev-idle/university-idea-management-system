@@ -19,7 +19,7 @@ import { getRolesWithPermission } from '../constants/roles';
 export class PermissionsGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(
       REQUIRED_PERMISSION_KEY,
       [context.getHandler(), context.getClass()],

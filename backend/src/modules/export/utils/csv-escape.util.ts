@@ -4,7 +4,13 @@
  */
 export function escapeCsvValue(value: unknown): string {
   if (value == null || value === '') return '';
-  const s = String(value).trim();
+  let raw: string;
+  if (typeof value === 'object') {
+    raw = JSON.stringify(value);
+  } else {
+    raw = String(value as string | number | boolean | symbol | bigint);
+  }
+  const s = raw.trim();
   if (s === '') return '';
   // Formula injection: escape leading = + - @ \
   const first = s.charAt(0);

@@ -5,6 +5,7 @@
 export {
   API_PREFIX,
   DEFAULT_PORT,
+  getAuthCookiePath,
   configureApp,
   type ConfigureAppOptions,
 } from './app.config';

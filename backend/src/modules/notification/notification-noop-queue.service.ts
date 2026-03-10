@@ -11,15 +11,18 @@ import type {
  */
 @Injectable()
 export class NotificationNoopQueueService {
-  async addIdeaCreated(_payload: IdeaCreatedPayload): Promise<void> {
-    // No-op: Redis disabled
+  addIdeaCreated(payload: IdeaCreatedPayload): Promise<void> {
+    void payload;
+    return Promise.resolve();
   }
 
-  async addCommentCreated(_payload: CommentCreatedPayload): Promise<void> {
-    // No-op: Redis disabled
+  addCommentCreated(payload: CommentCreatedPayload): Promise<void> {
+    void payload;
+    return Promise.resolve();
   }
 
-  async addCommentReplied(_payload: CommentRepliedPayload): Promise<void> {
-    // No-op: Redis disabled
+  addCommentReplied(payload: CommentRepliedPayload): Promise<void> {
+    void payload;
+    return Promise.resolve();
   }
 }

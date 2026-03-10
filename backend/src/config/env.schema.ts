@@ -12,7 +12,9 @@ export const envSchema = z
     PORT: z.coerce.number().int().positive().default(3001),
     DATABASE_URL: z.string().url(),
     API_PREFIX: z.string().min(1).default('api'),
-    JWT_SECRET: z.string().min(1).optional(),
+    /** API version segment (e.g. "1" → /api/v1/). Used for versioning and cookie path. */
+    API_VERSION: z.string().min(1).default('1'),
+    JWT_SECRET: z.string().min(1),
     JWT_ACCESS_EXPIRES: z.string().default('15m'),
     JWT_REFRESH_EXPIRES: z.string().default('7d'),
     COOKIE_REFRESH_NAME: z.string().min(1).default('refreshToken'),
@@ -53,12 +55,24 @@ export const envSchema = z
     MAILTRAP_INBOX_URL: z.string().url().optional(),
     /** Frontend base URL for notification links. */
     FRONTEND_URL: z.string().url().optional(),
+    /** Sentry DSN for error monitoring. When unset, Sentry is disabled. */
+    SENTRY_DSN: z.string().url().optional(),
+    /** Sentry traces sample rate (0–1). Optional. */
+    SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
+    /** Sentry environment name. When unset, uses NODE_ENV. */
+    SENTRY_ENVIRONMENT: z.string().min(1).optional(),
+    /** Upload: comma-separated allowed MIME types. When unset, uses built-in safe defaults. */
+    UPLOAD_ALLOWED_MIME_TYPES: z.string().optional(),
   })
   .refine(
     (data) =>
       data.NODE_ENV !== 'production' ||
-      (data.JWT_SECRET != null && data.JWT_SECRET.length > 0),
-    { message: 'JWT_SECRET is required in production', path: ['JWT_SECRET'] },
+      (data.CORS_ORIGINS != null && data.CORS_ORIGINS.trim().length > 0),
+    {
+      message:
+        'CORS_ORIGINS is required in production (comma-separated allowed origins)',
+      path: ['CORS_ORIGINS'],
+    },
   );
 
 export type Env = z.infer<typeof envSchema>;

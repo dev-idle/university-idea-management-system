@@ -132,7 +132,14 @@ export class ExportRunner {
 
   private async addCsvFiles(
     archive: archiver.Archiver,
-    cycle: { id: string; name: string | null; ideaSubmissionClosesAt: Date; interactionClosesAt: Date; status: string; academicYear: { name: string } },
+    cycle: {
+      id: string;
+      name: string | null;
+      ideaSubmissionClosesAt: Date;
+      interactionClosesAt: Date;
+      status: string;
+      academicYear: { name: string };
+    },
     cycleId: string,
     onProgress: ProgressCallback,
   ): Promise<void> {
@@ -196,7 +203,14 @@ export class ExportRunner {
   }
 
   private async buildCycleCsvData(
-    cycle: { id: string; name: string | null; ideaSubmissionClosesAt: Date; interactionClosesAt: Date; status: string; academicYear: { name: string } },
+    cycle: {
+      id: string;
+      name: string | null;
+      ideaSubmissionClosesAt: Date;
+      interactionClosesAt: Date;
+      status: string;
+      academicYear: { name: string };
+    },
     cycleId: string,
   ): Promise<Record<string, string>> {
     const result: Record<string, string> = {};
@@ -310,7 +324,9 @@ export class ExportRunner {
       ],
       comments.map((r) => {
         const likeCount = r.reactions.filter((l) => l.value === 'up').length;
-        const dislikeCount = r.reactions.filter((l) => l.value === 'down').length;
+        const dislikeCount = r.reactions.filter(
+          (l) => l.value === 'down',
+        ).length;
         return [
           r.id,
           r.ideaId,

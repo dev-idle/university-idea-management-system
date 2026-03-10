@@ -30,9 +30,7 @@ export class MeController {
   @Get('department-members')
   @UseGuards(RolesGuard)
   @Roles('QA_COORDINATOR')
-  getDepartmentMembers(
-    @CurrentUser() payload: AccessTokenPayload,
-  ): Promise<{
+  getDepartmentMembers(@CurrentUser() payload: AccessTokenPayload): Promise<{
     department: { id: string; name: string };
     members: Array<{
       id: string;
@@ -105,7 +103,7 @@ export class MeController {
     votesUp: number;
     votesDown: number;
     totalDepartments: number;
-  }  > {
+  }> {
     return this.meService.getQaManagerStats(payload.sub, cycleId);
   }
 

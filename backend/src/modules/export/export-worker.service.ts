@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { ExportRunner } from './export.runner';
 
@@ -15,9 +20,7 @@ const STATUS = {
  * No Redis required. Runs on an interval when the app is up.
  */
 @Injectable()
-export class ExportWorkerService
-  implements OnModuleInit, OnModuleDestroy
-{
+export class ExportWorkerService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(ExportWorkerService.name);
   private intervalId: ReturnType<typeof setInterval> | null = null;
   private isProcessing = false;
@@ -28,7 +31,9 @@ export class ExportWorkerService
   ) {}
 
   onModuleInit(): void {
-    this.intervalId = setInterval(() => this.tick(), POLL_INTERVAL_MS);
+    this.intervalId = setInterval(() => {
+      void this.tick();
+    }, POLL_INTERVAL_MS);
     this.logger.log('Export worker started (DB-based, poll interval: 3s)');
   }
 
@@ -87,8 +92,7 @@ export class ExportWorkerService
 
       this.logger.debug(`Export job ${job.id} completed`);
     } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : String(err);
+      const errorMsg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Export job ${job.id} failed: ${errorMsg}`);
 
       await this.prisma.exportJob.update({

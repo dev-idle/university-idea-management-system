@@ -45,7 +45,7 @@ async function resolveCycleIdsForIdeas(
     select: { id: true, interactionClosesAt: true },
   });
   const interactionOpen = activeCycle && activeCycle.interactionClosesAt > now;
-  if (interactionOpen) return [activeCycle!.id];
+  if (interactionOpen) return [activeCycle.id];
 
   if (cycleId) {
     const cycle = await prisma.ideaSubmissionCycle.findFirst({
@@ -126,17 +126,21 @@ export class IdeasService {
     const hasActiveCycle = !!cycle && interactionOpen;
 
     let categories: Array<{ id: string; name: string }> = [];
-    let departmentsForFilter: Array<{ id: string; name: string }> = [];
+    const needsDepartments =
+      (cycle && hasActiveCycle) || (activeYear && !hasActiveCycle);
+    const departmentsForFilter = needsDepartments
+      ? await this.getAllDepartmentsForFilter()
+      : [];
+
     if (cycle && hasActiveCycle) {
       const cycleCategories = await this.prisma.cycleCategory.findMany({
         where: { cycleId: cycle.id },
         select: { category: { select: { id: true, name: true } } },
       });
       categories = cycleCategories.map((cc) => cc.category);
-      departmentsForFilter = await this.getAllDepartmentsForFilter();
     }
 
-    let closedCyclesForYear: Array<{
+    const closedCyclesForYear: Array<{
       id: string;
       name: string;
       ideaSubmissionClosesAt: Date;
@@ -171,14 +175,13 @@ export class IdeasService {
           where: { cycleId: c.id },
           select: { category: { select: { id: true, name: true } } },
         });
-        const departments = await this.getAllDepartmentsForFilter();
         closedCyclesForYear.push({
           id: c.id,
           name: c.name ?? 'Unnamed',
           ideaSubmissionClosesAt: c.ideaSubmissionClosesAt,
           interactionClosesAt: c.interactionClosesAt,
           categories: cycleCategories.map((cc) => cc.category),
-          departments,
+          departments: departmentsForFilter,
         });
       }
     }
@@ -188,7 +191,7 @@ export class IdeasService {
 
     return {
       canSubmit,
-      activeCycleId: hasActiveCycle ? cycle!.id : null,
+      activeCycleId: hasActiveCycle ? cycle.id : null,
       activeCycleName: cycle?.name ?? null,
       submissionClosesAt: cycle?.ideaSubmissionClosesAt ?? null,
       interactionClosesAt: cycle?.interactionClosesAt ?? null,
@@ -230,14 +233,20 @@ export class IdeasService {
   }
 
   private async buildMyIdeasFilterOptions(userId: string) {
-    const ideasWithCycles = await this.prisma.idea.findMany({
-      where: { submittedById: userId, cycleId: { not: null } },
-      select: { cycleId: true, cycle: { select: { academicYearId: true } } },
-      distinct: ['cycleId'],
+    const ideasWithCyclesAndCategories = await this.prisma.idea.findMany({
+      where: {
+        submittedById: userId,
+        cycleId: { not: null },
+      },
+      select: {
+        cycleId: true,
+        categoryId: true,
+        cycle: { select: { academicYearId: true } },
+      },
     });
     const yearIds = [
       ...new Set(
-        ideasWithCycles
+        ideasWithCyclesAndCategories
           .map((i) => i.cycle?.academicYearId)
           .filter((id): id is string => !!id),
       ),
@@ -251,9 +260,13 @@ export class IdeasService {
           })
         : [];
 
-    const userCycleIds = ideasWithCycles
-      .map((i) => i.cycleId)
-      .filter((id): id is string => !!id);
+    const userCycleIds = [
+      ...new Set(
+        ideasWithCyclesAndCategories
+          .map((i) => i.cycleId)
+          .filter((id): id is string => !!id),
+      ),
+    ];
     const allCycles =
       userCycleIds.length > 0
         ? await this.prisma.ideaSubmissionCycle.findMany({
@@ -263,39 +276,41 @@ export class IdeasService {
           })
         : [];
 
-    const allCyclesForFilter: Array<{
-      id: string;
-      name: string;
-      academicYearId: string;
-      categories: Array<{ id: string; name: string }>;
-    }> = [];
-    for (const c of allCycles) {
-      const userCategoryIds = await this.prisma.idea.findMany({
-        where: {
-          submittedById: userId,
-          cycleId: c.id,
-          categoryId: { not: null },
-        },
-        select: { categoryId: true },
-        distinct: ['categoryId'],
-      });
-      const ids = userCategoryIds
-        .map((i) => i.categoryId)
-        .filter((id): id is string => !!id);
-      const categories =
-        ids.length > 0
-          ? await this.prisma.category.findMany({
-              where: { id: { in: ids } },
-              select: { id: true, name: true },
-            })
-          : [];
-      allCyclesForFilter.push({
+    const cycleToCategoryIds = new Map<string, Set<string>>();
+    for (const i of ideasWithCyclesAndCategories) {
+      if (i.cycleId && i.categoryId) {
+        const set = cycleToCategoryIds.get(i.cycleId) ?? new Set();
+        set.add(i.categoryId);
+        cycleToCategoryIds.set(i.cycleId, set);
+      }
+    }
+    const allCategoryIds = [
+      ...new Set([...cycleToCategoryIds.values()].flatMap((s) => [...s])),
+    ];
+    const categoriesMap =
+      allCategoryIds.length > 0
+        ? new Map(
+            (
+              await this.prisma.category.findMany({
+                where: { id: { in: allCategoryIds } },
+                select: { id: true, name: true },
+              })
+            ).map((cat) => [cat.id, cat] as const),
+          )
+        : new Map<string, { id: string; name: string }>();
+
+    const allCyclesForFilter = allCycles.map((c) => {
+      const ids = [...(cycleToCategoryIds.get(c.id) ?? [])];
+      const categories = ids
+        .map((id) => categoriesMap.get(id))
+        .filter((cat): cat is { id: string; name: string } => !!cat);
+      return {
         id: c.id,
         name: c.name ?? 'Unnamed',
         academicYearId: c.academicYearId,
         categories,
-      });
-    }
+      };
+    });
     return { allAcademicYearsForFilter, allCyclesForFilter };
   }
 
@@ -328,7 +343,7 @@ export class IdeasService {
     },
     userId?: string,
   ) {
-    let voteCounts = { up: 0, down: 0 };
+    const voteCounts = { up: 0, down: 0 };
     let myVote: 'up' | 'down' | null = null;
     if (idea.votes) {
       for (const v of idea.votes) {
@@ -373,7 +388,12 @@ export class IdeasService {
   async findAllForActiveYear(params: {
     page?: number;
     limit?: number;
-    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments' | 'mostComments';
+    sort?:
+      | 'latest'
+      | 'mostPopular'
+      | 'mostViewed'
+      | 'latestComments'
+      | 'mostComments';
     categoryId?: string;
     cycleId?: string;
     departmentId?: string;
@@ -544,7 +564,12 @@ export class IdeasService {
         let net = 0;
         for (const v of idea.votes) net += v.value === 'up' ? 1 : -1;
         const tieBreak = net + 0.01 * idea._count.views;
-        return { id: idea.id, createdAt: idea.createdAt, comments: idea._count.comments, tieBreak };
+        return {
+          id: idea.id,
+          createdAt: idea.createdAt,
+          comments: idea._count.comments,
+          tieBreak,
+        };
       });
       scored.sort(
         (a, b) =>
@@ -689,7 +714,13 @@ export class IdeasService {
         },
         votes: { select: { value: true, userId: true } },
         _count: { select: { comments: true, views: true } },
-        cycle: { select: { status: true, ideaSubmissionClosesAt: true, interactionClosesAt: true } },
+        cycle: {
+          select: {
+            status: true,
+            ideaSubmissionClosesAt: true,
+            interactionClosesAt: true,
+          },
+        },
       },
     });
     if (!idea) throw new NotFoundException('Idea not found.');
@@ -720,7 +751,10 @@ export class IdeasService {
         id: ideaId,
         cycle: { academicYearId: activeYear.id },
       },
-      select: { id: true, cycle: { select: { status: true, interactionClosesAt: true } } },
+      select: {
+        id: true,
+        cycle: { select: { status: true, interactionClosesAt: true } },
+      },
     });
     if (!idea?.cycle) throw new NotFoundException('Idea not found.');
 
@@ -785,9 +819,13 @@ export class IdeasService {
     currentUserId?: string,
   ) {
     const upCount = c.reactions?.filter((l) => l.value === 'up').length ?? 0;
-    const downCount = c.reactions?.filter((l) => l.value === 'down').length ?? 0;
+    const downCount =
+      c.reactions?.filter((l) => l.value === 'down').length ?? 0;
     const myReaction = currentUserId
-      ? (c.reactions?.find((l) => l.userId === currentUserId)?.value as 'up' | 'down' | undefined) ?? null
+      ? ((c.reactions?.find((l) => l.userId === currentUserId)?.value as
+          | 'up'
+          | 'down'
+          | undefined) ?? null)
       : null;
     const isOwn = currentUserId && c.userId === currentUserId;
     return {
@@ -890,7 +928,9 @@ export class IdeasService {
         select: { id: true, parentCommentId: true, userId: true },
       });
       if (!parent)
-        throw new BadRequestException('Parent comment not found or does not belong to this idea.');
+        throw new BadRequestException(
+          'Parent comment not found or does not belong to this idea.',
+        );
       parentCommentAuthorId = parent.userId;
     }
 
@@ -917,8 +957,9 @@ export class IdeasService {
     });
 
     const isAnonymous = body.isAnonymous ?? false;
-    const displayName =
-      isAnonymous ? 'Anonymous' : comment.user.fullName?.trim() || comment.user.email;
+    const displayName = isAnonymous
+      ? 'Anonymous'
+      : comment.user.fullName?.trim() || comment.user.email;
 
     // Emit event for top-level comments → notify idea author
     const recipientId = comment.idea.submittedById;
@@ -936,7 +977,11 @@ export class IdeasService {
     }
 
     // Emit event for replies → notify parent comment author (Staff A or C replied to my comment)
-    if (body.parentCommentId && parentCommentAuthorId && parentCommentAuthorId !== userId) {
+    if (
+      body.parentCommentId &&
+      parentCommentAuthorId &&
+      parentCommentAuthorId !== userId
+    ) {
       this.eventEmitter.emit(EVENTS.COMMENT_REPLIED, {
         type: 'comment.replied',
         ideaId,
@@ -951,7 +996,13 @@ export class IdeasService {
     }
 
     return this.mapCommentToApi(
-      { ...comment, reactions: (comment.reactions ?? []) as { userId: string; value: string }[] },
+      {
+        ...comment,
+        reactions: (comment.reactions ?? []) as {
+          userId: string;
+          value: string;
+        }[],
+      },
       userId,
     );
   }
@@ -991,7 +1042,10 @@ export class IdeasService {
       },
     });
     return this.mapCommentToApi(
-      { ...updated, reactions: updated.reactions as { userId: string; value: string }[] },
+      {
+        ...updated,
+        reactions: updated.reactions as { userId: string; value: string }[],
+      },
       userId,
     );
   }
@@ -999,7 +1053,11 @@ export class IdeasService {
   /**
    * Delete own comment. Idea must be in active academic year and interaction window must be open.
    */
-  async deleteComment(ideaId: string, commentId: string, userId: string): Promise<void> {
+  async deleteComment(
+    ideaId: string,
+    commentId: string,
+    userId: string,
+  ): Promise<void> {
     await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
 
     const comment = await this.prisma.ideaComment.findFirst({
@@ -1017,7 +1075,12 @@ export class IdeasService {
    * Set or toggle like/dislike on a comment. Idea must be in active academic year and interaction window must be open.
    * value: 'up' = like, 'down' = dislike. Clicking same value removes; clicking opposite switches.
    */
-  async likeComment(ideaId: string, commentId: string, userId: string, body: LikeCommentBody) {
+  async likeComment(
+    ideaId: string,
+    commentId: string,
+    userId: string,
+    body: LikeCommentBody,
+  ) {
     await this.ensureIdeaInActiveYearAndInteractionOpen(ideaId);
 
     const comment = await this.prisma.ideaComment.findFirst({
@@ -1063,7 +1126,10 @@ export class IdeasService {
     });
     if (!updated) throw new NotFoundException('Comment not found.');
     return this.mapCommentToApi(
-      { ...updated, reactions: updated.reactions as { userId: string; value: string }[] },
+      {
+        ...updated,
+        reactions: updated.reactions as { userId: string; value: string }[],
+      },
       userId,
     );
   }
@@ -1143,7 +1209,9 @@ export class IdeasService {
     const attachments = body.attachments ?? [];
     const fileNames = attachments.map((a) => a.fileName);
     const duplicateName = fileNames.find((name, i) =>
-      fileNames.some((n, j) => j !== i && n.toLowerCase() === name.toLowerCase()),
+      fileNames.some(
+        (n, j) => j !== i && n.toLowerCase() === name.toLowerCase(),
+      ),
     );
     if (duplicateName) {
       throw new BadRequestException(
@@ -1332,7 +1400,9 @@ export class IdeasService {
    * Reveal the real author of an idea. QA_MANAGER only.
    * Returns { fullName, email } when idea is anonymous; otherwise author is already visible.
    */
-  async revealAuthor(ideaId: string): Promise<{ fullName: string | null; email: string } | null> {
+  async revealAuthor(
+    ideaId: string,
+  ): Promise<{ fullName: string | null; email: string } | null> {
     const activeYear = await this.prisma.academicYear.findFirst({
       where: { isActive: true },
       select: { id: true },

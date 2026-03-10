@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- Prisma client types */
 import {
   Injectable,
   BadRequestException,
@@ -99,9 +98,7 @@ export class UsersService {
             },
           });
           if (qcCount === 0) {
-            throw new BadRequestException(
-              'Department has no QA Coordinator.',
-            );
+            throw new BadRequestException('Department has no QA Coordinator.');
           }
         }
       }
@@ -223,9 +220,7 @@ export class UsersService {
             },
           });
           if (qcCount === 0) {
-            throw new BadRequestException(
-              'Department has no QA Coordinator.',
-            );
+            throw new BadRequestException('Department has no QA Coordinator.');
           }
         }
       }

@@ -13,6 +13,8 @@ export const env = {
   /** App origin for CSP and redirects. */
   NEXT_PUBLIC_APP_ORIGIN:
     getEnv("NEXT_PUBLIC_APP_ORIGIN") ?? "http://localhost:3000",
+  /** API version (must match backend API_VERSION). Default "1" → /api/v1/ */
+  NEXT_PUBLIC_API_VERSION: getEnv("NEXT_PUBLIC_API_VERSION") ?? "1",
   NODE_ENV: getEnv("NODE_ENV") ?? "development",
 } as const;
 

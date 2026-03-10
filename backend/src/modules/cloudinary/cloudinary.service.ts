@@ -19,6 +19,21 @@ const DELETE_BATCH_SIZE = 100;
 /** Max file size for proxy upload (10 MB). */
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+/** Default allowed MIME types when UPLOAD_ALLOWED_MIME_TYPES not set. */
+const DEFAULT_ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+];
+
 /** Max file size for export upload (100 MB). */
 const MAX_EXPORT_BYTES = 100 * 1024 * 1024;
 
@@ -91,6 +106,19 @@ export class CloudinaryService {
     }
   }
 
+  private getAllowedMimeTypes(): Set<string> {
+    const raw = this.config.get<string>('UPLOAD_ALLOWED_MIME_TYPES');
+    if (!raw?.trim()) {
+      return new Set(DEFAULT_ALLOWED_MIME_TYPES);
+    }
+    return new Set(
+      raw
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean),
+    );
+  }
+
   /**
    * Upload a file (buffer) to Cloudinary via server. Avoids CORS by not uploading from browser.
    * Returns attachment ref for idea creation. Used by POST /api/ideas/upload.
@@ -106,6 +134,13 @@ export class CloudinaryService {
         `File size exceeds ${MAX_UPLOAD_BYTES / 1024 / 1024} MB.`,
       );
     }
+    const normalizedMime = mimeType?.toLowerCase().split(';')[0].trim();
+    const allowedList = this.getAllowedMimeTypes();
+    if (normalizedMime && !allowedList.has(normalizedMime)) {
+      throw new BadRequestException(
+        `File type "${mimeType}" is not allowed. Configure UPLOAD_ALLOWED_MIME_TYPES for custom list.`,
+      );
+    }
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
@@ -114,7 +149,15 @@ export class CloudinaryService {
         },
         (err, result) => {
           if (err) {
-            reject(err);
+            reject(
+              new Error(
+                err instanceof Error
+                  ? err.message
+                  : typeof err === 'object' && err != null
+                    ? JSON.stringify(err)
+                    : String(err),
+              ),
+            );
             return;
           }
           if (!result?.public_id || !result?.secure_url) {
@@ -158,7 +201,15 @@ export class CloudinaryService {
         },
         (err, result) => {
           if (err) {
-            reject(err);
+            reject(
+              new Error(
+                err instanceof Error
+                  ? err.message
+                  : typeof err === 'object' && err != null
+                    ? JSON.stringify(err)
+                    : String(err),
+              ),
+            );
             return;
           }
           if (!result?.public_id || !result?.secure_url) {
@@ -190,16 +241,16 @@ export class CloudinaryService {
     const maxResults = Math.min(Math.max(1, options?.maxResults ?? 100), 500);
     const resourceType = options?.resourceType ?? 'raw';
 
-    const result = await cloudinary.api.resources({
+    const result = (await cloudinary.api.resources({
       type: 'upload',
       resource_type: resourceType,
       prefix,
       max_results: maxResults,
       next_cursor: options?.nextCursor,
-    });
+    })) as { resources?: Array<Record<string, unknown>>; next_cursor?: string };
 
     return {
-      resources: (result.resources ?? []).map((r: Record<string, unknown>) => ({
+      resources: (result.resources ?? []).map((r) => ({
         public_id: r.public_id as string,
         secure_url: r.secure_url as string,
         resource_type: (r.resource_type as string) ?? resourceType,
@@ -207,7 +258,7 @@ export class CloudinaryService {
         created_at: r.created_at as string | undefined,
         folder: r.folder as string | undefined,
       })),
-      next_cursor: result.next_cursor as string | undefined,
+      next_cursor: result.next_cursor,
     };
   }
 
@@ -229,12 +280,12 @@ export class CloudinaryService {
       );
     }
 
-    const result = await cloudinary.api.delete_resources(publicIds, {
+    const result = (await cloudinary.api.delete_resources(publicIds, {
       resource_type: resourceType,
-    });
+    })) as { deleted?: Record<string, string> };
 
     return {
-      deleted: (result.deleted as Record<string, string>) ?? {},
+      deleted: result.deleted ?? {},
     };
   }
 }

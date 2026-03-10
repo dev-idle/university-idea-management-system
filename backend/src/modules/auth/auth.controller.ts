@@ -17,9 +17,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { loginBodySchema } from './dto/login.dto';
 import type { AccessTokenPayload, AuthUser } from './auth.types';
-import { API_PREFIX } from '../../config';
-
-const AUTH_PATH = `/${API_PREFIX}/auth`;
+import { getAuthCookiePath } from '../../config';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +28,13 @@ export class AuthController {
 
   private get isProduction(): boolean {
     return this.config.get<string>('NODE_ENV') === 'production';
+  }
+
+  private get authPath(): string {
+    return getAuthCookiePath(
+      this.config.get<string>('API_PREFIX') ?? 'api',
+      this.config.get<string>('API_VERSION') ?? '1',
+    );
   }
 
   @Post('login')
@@ -50,7 +55,9 @@ export class AuthController {
     @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
   ) {
-    const token = req.cookies?.[this.authService.cookieName];
+    const token = req.cookies?.[this.authService.cookieName] as
+      | string
+      | undefined;
     const result = await this.authService.refresh(token ?? '');
     if (result.refreshToken != null) {
       this.setRefreshCookie(res, result.refreshToken);
@@ -64,7 +71,9 @@ export class AuthController {
     @Req() req: express.Request,
     @Res({ passthrough: true }) res: express.Response,
   ): Promise<void> {
-    const token = req.cookies?.[this.authService.cookieName];
+    const token = req.cookies?.[this.authService.cookieName] as
+      | string
+      | undefined;
     await this.authService.logout(token);
     this.clearRefreshCookie(res);
   }
@@ -75,14 +84,14 @@ export class AuthController {
     return this.authService.me(payload);
   }
 
-  /** HttpOnly, Secure (in production), SameSite=Strict, path-scoped to /api/auth. */
+  /** HttpOnly, Secure (in production), SameSite=Strict, path-scoped to auth routes. */
   private setRefreshCookie(res: express.Response, token: string): void {
     res.cookie(this.authService.cookieName, token, {
       httpOnly: true,
       secure: this.isProduction,
       sameSite: 'strict',
       maxAge: this.authService.cookieMaxAgeMs,
-      path: AUTH_PATH,
+      path: this.authPath,
     });
   }
 
@@ -91,7 +100,7 @@ export class AuthController {
       httpOnly: true,
       secure: this.isProduction,
       sameSite: 'strict',
-      path: AUTH_PATH,
+      path: this.authPath,
     });
   }
 }

@@ -41,7 +41,12 @@ async function seedDefaultDepartments(
     });
     const id = existing
       ? existing.id
-      : (await prisma.department.create({ data: { name }, select: { id: true } })).id;
+      : (
+          await prisma.department.create({
+            data: { name },
+            select: { id: true },
+          })
+        ).id;
     if (firstDepartmentId == null) firstDepartmentId = id;
   }
   return firstDepartmentId;

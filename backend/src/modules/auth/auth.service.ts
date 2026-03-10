@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- Prisma client types from generated adapter not fully resolved by ESLint */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
@@ -211,10 +210,13 @@ export class AuthService {
   }
 
   private verifyRefreshToken(token: string): RefreshTokenPayload {
-    const payload = this.jwt.verify<RefreshTokenPayload>(token, {
-      secret:
-        this.config.get<string>('JWT_SECRET') ?? 'change-me-in-production',
-    });
+    const secret = this.config.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new UnauthorizedException(
+        'Server misconfiguration: JWT_SECRET not set',
+      );
+    }
+    const payload = this.jwt.verify<RefreshTokenPayload>(token, { secret });
     if (payload?.type !== 'refresh' || !payload.jti || !payload.sub) {
       throw new UnauthorizedException('Invalid refresh token');
     }

@@ -132,7 +132,7 @@ export class SubmissionCyclesService {
       orderBy: { createdAt: 'desc' },
     });
     const categoryIdeaCountMap = await this.getCategoryIdeaCountMap(
-      list.map((c) => c.id)
+      list.map((c) => c.id),
     );
     return list.map((c) => this.mapCycle(c, categoryIdeaCountMap));
   }
@@ -468,30 +468,30 @@ export class SubmissionCyclesService {
 
   private mapCycle(
     row: {
-    id: string;
-    academicYearId: string;
-    name: string | null;
-    ideaSubmissionClosesAt: Date;
-    interactionClosesAt: Date;
-    status: string;
-    isLocked: boolean;
-    wasEverClosed: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    _count: { ideas: number };
-    academicYear: {
       id: string;
-      name: string;
-      startDate: Date;
-      endDate: Date | null;
-      isActive: boolean;
-    };
-    cycleCategories: Array<{
-      categoryId: string;
-      category: { id: string; name: string };
-    }>;
-  },
-  categoryIdeaCountMap?: Map<string, number>,
+      academicYearId: string;
+      name: string | null;
+      ideaSubmissionClosesAt: Date;
+      interactionClosesAt: Date;
+      status: string;
+      isLocked: boolean;
+      wasEverClosed: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+      _count: { ideas: number };
+      academicYear: {
+        id: string;
+        name: string;
+        startDate: Date;
+        endDate: Date | null;
+        isActive: boolean;
+      };
+      cycleCategories: Array<{
+        categoryId: string;
+        category: { id: string; name: string };
+      }>;
+    },
+    categoryIdeaCountMap?: Map<string, number>,
   ) {
     return {
       id: row.id,
@@ -508,8 +508,7 @@ export class SubmissionCyclesService {
       academicYear: row.academicYear,
       categories: row.cycleCategories.map((cc) => ({
         ...cc.category,
-        ideaCount:
-          categoryIdeaCountMap?.get(`${row.id}:${cc.categoryId}`) ?? 0,
+        ideaCount: categoryIdeaCountMap?.get(`${row.id}:${cc.categoryId}`) ?? 0,
       })),
     };
   }

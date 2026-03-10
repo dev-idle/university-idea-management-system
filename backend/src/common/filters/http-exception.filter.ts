@@ -1,11 +1,12 @@
 import {
   ExceptionFilter,
   Catch,
-  ArgumentsHost,
   HttpException,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import type { ArgumentsHost } from '@nestjs/common/interfaces';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 import { ConfigService } from '@nestjs/config';
 import type { Request, Response } from 'express';
 
@@ -26,6 +27,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
   constructor(private readonly config: ConfigService) {}
 
+  @SentryExceptionCaptured()
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest<Request>();

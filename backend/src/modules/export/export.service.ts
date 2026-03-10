@@ -121,8 +121,7 @@ export class ExportService {
       };
     }
     return {
-      status:
-        job.status === STATUS.PROCESSING ? 'processing' : job.status,
+      status: job.status === STATUS.PROCESSING ? 'processing' : job.status,
       progress: job.progress,
     };
   }

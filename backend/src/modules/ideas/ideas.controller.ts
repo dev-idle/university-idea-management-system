@@ -35,6 +35,10 @@ import {
   type PreviewAttachmentBody,
 } from './dto/create-idea.dto';
 import {
+  findIdeasQuerySchema,
+  type FindIdeasQuery,
+} from './dto/find-ideas-query.dto';
+import {
   updateIdeaBodySchema,
   addAttachmentBodySchema,
   type UpdateIdeaBody,
@@ -49,7 +53,10 @@ import {
   updateCommentBodySchema,
   type UpdateCommentBody,
 } from './dto/update-comment.dto';
-import { likeCommentBodySchema, type LikeCommentBody } from './dto/like-comment.dto';
+import {
+  likeCommentBodySchema,
+  type LikeCommentBody,
+} from './dto/like-comment.dto';
 
 @Controller('ideas')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -72,29 +79,19 @@ export class IdeasController {
   @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
   findAll(
     @CurrentUser() user: AccessTokenPayload,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('sort')
-    sort?: 'latest' | 'mostPopular' | 'mostViewed' | 'latestComments' | 'mostComments',
-    @Query('categoryId') categoryId?: string,
-    @Query('cycleId') cycleId?: string,
-    @Query('departmentId') departmentId?: string,
+    @Query(new ZodValidationPipe(findIdeasQuerySchema)) query: FindIdeasQuery,
   ) {
-    const { page: pageNum, limit: limitNum } = parsePagination(page, limit);
-    const sortVal =
-      sort === 'mostPopular' ||
-      sort === 'mostViewed' ||
-      sort === 'latestComments' ||
-      sort === 'mostComments'
-        ? sort
-        : 'latest';
+    const { page: pageNum, limit: limitNum } = parsePagination(
+      query.page,
+      query.limit,
+    );
     return this.ideasService.findAllForActiveYear({
       page: pageNum,
       limit: limitNum,
-      sort: sortVal,
-      categoryId: categoryId || undefined,
-      cycleId: cycleId || undefined,
-      departmentId: departmentId || undefined,
+      sort: query.sort ?? 'latest',
+      categoryId: query.categoryId,
+      cycleId: query.cycleId,
+      departmentId: query.departmentId,
       userId: user.sub,
     });
   }

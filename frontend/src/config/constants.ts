@@ -18,13 +18,20 @@ export function buildPageTitle(pageTitle: string): string {
   return `${pageTitle} | ${SITE_NAME}`;
 }
 
+import { env } from "@/config/env";
+
+/** Build API prefix from version. Must match backend routes. */
+const API_PREFIX = `api/v${env.NEXT_PUBLIC_API_VERSION}`;
+
 export const AUTH = {
   /** Cookie name for refresh token (must match backend COOKIE_REFRESH_NAME). */
   REFRESH_COOKIE_NAME: "refreshToken",
-  /** Path scope for refresh cookie (backend uses /api/auth). */
-  REFRESH_COOKIE_PATH: "/api/auth",
-  /** API prefix for backend (must match backend API_PREFIX). */
-  API_PREFIX: "api",
+  /** Path scope for refresh cookie (must match backend getAuthCookiePath). */
+  get REFRESH_COOKIE_PATH() {
+    return `/${API_PREFIX}/auth`;
+  },
+  /** API prefix for backend (must match backend: api + version). */
+  API_PREFIX,
 } as const;
 
 /** Role entry routes: one dashboard per role, no shared dashboards. */
