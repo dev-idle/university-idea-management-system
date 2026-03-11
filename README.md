@@ -8,10 +8,26 @@
 <p align="center">
   <a href="https://nestjs.com"><img src="https://img.shields.io/badge/NestJS-11-E0234E?style=flat-square&logo=nestjs" alt="NestJS"></a>
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js" alt="Next.js"></a>
+  <a href="https://nodejs.org"><img src="https://img.shields.io/badge/Node.js-24-339933?style=flat-square&logo=node.js" alt="Node"></a>
   <a href="https://www.postgresql.org"><img src="https://img.shields.io/badge/PostgreSQL-18-336791?style=flat-square&logo=postgresql" alt="PostgreSQL"></a>
   <a href="https://redis.io"><img src="https://img.shields.io/badge/Redis-8-DC382D?style=flat-square&logo=redis" alt="Redis"></a>
   <a href="https://www.docker.com"><img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker" alt="Docker"></a>
 </p>
+
+---
+
+## Tech Stack
+
+| Layer       | Technology                         | Version          |
+| ----------- | ---------------------------------- | ---------------- |
+| Backend     | NestJS                             | 11               |
+| Frontend    | Next.js                            | 16.1             |
+| UI          | React                              | 19               |
+| Runtime     | Node.js                            | 24 LTS           |
+| Database    | PostgreSQL                         | 18 (Neon/Docker) |
+| Queue       | Redis + BullMQ                     | 8 / 5            |
+| ORM         | Prisma                             | 7                |
+| Validation  | Zod                                | 3 (BE) / 4 (FE)  |
 
 ---
 
@@ -33,13 +49,13 @@
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Docker Compose                           │
-├──────────────┬──────────────┬──────────────┬────────────────────┤
-│   Frontend   │   Backend    │    Redis     │  PostgreSQL (opt)  │
-│   Next.js 16 │   NestJS 11  │    BullMQ    │  Neon / local      │
-│   :3000      │   :3001      │    :6379     │  :5432             │
-└──────────────┴──────────────┴──────────────┴────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                    Docker Compose · Node 24 LTS                               │
+├──────────────────┬──────────────────┬──────────────────┬──────────────────────┤
+│     Frontend     │     Backend      │     Redis        │     PostgreSQL       │
+│    Next.js 16    │    NestJS 11     │     BullMQ       │    Neon / local      │
+│      :3000       │      :3001       │     :6379        │       :5432          │
+└──────────────────┴──────────────────┴──────────────────┴──────────────────────┘
 ```
 
 ---
