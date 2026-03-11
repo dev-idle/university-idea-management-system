@@ -17,16 +17,16 @@
 
 ## Features
 
-| Module | Description |
-|--------|-------------|
-| **Ideas** | Submit, view, vote, comment on ideas with attachments |
-| **Departments** | Organize users by department |
-| **Academic Years** | Manage academic year boundaries |
-| **Categories** | Categorize ideas (e.g. Innovation, Research) |
-| **Submission Cycles** | Time-bound idea submission periods |
-| **Notifications** | In-app + email (BullMQ, SMTP) |
-| **Export** | CSV export of ideas and analytics |
-| **Auth** | JWT, refresh tokens, role-based access |
+| Module                | Description                                           |
+| --------------------- | ----------------------------------------------------- |
+| **Ideas**             | Submit, view, vote, comment on ideas with attachments |
+| **Departments**       | Organize users by department                          |
+| **Academic Years**    | Manage academic year boundaries                       |
+| **Categories**        | Categorize ideas (e.g. Innovation, Research)          |
+| **Submission Cycles** | Time-bound idea submission periods                    |
+| **Notifications**     | In-app + email (BullMQ, SMTP)                         |
+| **Export**            | CSV export of ideas and analytics                     |
+| **Auth**              | JWT, refresh tokens, role-based access                |
 
 ---
 
@@ -34,11 +34,11 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Docker Compose                            │
+│                        Docker Compose                           │
 ├──────────────┬──────────────┬──────────────┬────────────────────┤
-│   Frontend   │   Backend    │    Redis    │  PostgreSQL (opt)   │
-│  Next.js 16  │  NestJS 11   │  BullMQ     │  Neon / local       │
-│  :3000       │  :3001       │  :6379      │  :5432              │
+│   Frontend   │   Backend    │    Redis     │  PostgreSQL (opt)  │
+│   Next.js 16 │   NestJS 11  │    BullMQ    │  Neon / local      │
+│   :3000      │   :3001      │    :6379     │  :5432             │
 └──────────────┴──────────────┴──────────────┴────────────────────┘
 ```
 
@@ -68,14 +68,14 @@ cp .env.docker.example .env
 
 Edit `.env` and set:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `JWT_SECRET` | **Yes** | Secret key, min 32 characters |
-| `DATABASE_URL` | **Yes*** | PostgreSQL connection string (Neon or local) |
-| `DIRECT_URL` | No | Direct connection for migrations (Neon: use non-pooler host) |
-| `RUN_SEED` | No | `1` = create initial admin on first run |
-| `ADMIN_SEED_EMAIL` | With seed | Admin email |
-| `ADMIN_SEED_PASSWORD` | With seed | Admin password |
+| Variable              | Required  | Description                                                  |
+| --------------------- | --------- | ------------------------------------------------------------ |
+| `JWT_SECRET`          | **Yes**   | Secret key, min 32 characters                                |
+| `DATABASE_URL`        | **Yes\*** | PostgreSQL connection string (Neon or local)                 |
+| `DIRECT_URL`          | No        | Direct connection for migrations (Neon: use non-pooler host) |
+| `RUN_SEED`            | No        | `1` = create initial admin on first run                      |
+| `ADMIN_SEED_EMAIL`    | With seed | Admin email                                                  |
+| `ADMIN_SEED_PASSWORD` | With seed | Admin password                                               |
 
 \* Omit when using local Postgres container (see [Local PostgreSQL](#local-postgresql)).
 
@@ -89,8 +89,8 @@ First run: **5–10 minutes** (images + build).
 
 ### 4. Access
 
-| Service | URL |
-|---------|-----|
+| Service | URL                   |
+| ------- | --------------------- |
 | **App** | http://localhost:3000 |
 | **API** | http://localhost:3001 |
 
@@ -112,11 +112,11 @@ docker compose --profile local-db up -d --build
 
 Configure in `.env` for full functionality:
 
-| Service | Variables | Purpose |
-|---------|------------|---------|
-| **Cloudinary** | `CLOUDINARY_*` | Idea attachments, export storage |
-| **SMTP (Brevo)** | `SMTP_*` | Notification emails |
-| **Sentry** | `SENTRY_DSN` | Error monitoring |
+| Service          | Variables      | Purpose                          |
+| ---------------- | -------------- | -------------------------------- |
+| **Cloudinary**   | `CLOUDINARY_*` | Idea attachments, export storage |
+| **SMTP (Brevo)** | `SMTP_*`       | Notification emails              |
+| **Sentry**       | `SENTRY_DSN`   | Error monitoring                 |
 
 ---
 
@@ -138,24 +138,24 @@ university-idea-management-system/
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `docker compose up -d --build` | Start all services |
-| `docker compose logs -f` | Follow logs |
-| `docker compose logs -f backend` | Backend logs only |
-| `docker compose down` | Stop |
-| `docker compose down -v` | Stop + remove volumes (fresh DB) |
+| Command                          | Description                      |
+| -------------------------------- | -------------------------------- |
+| `docker compose up -d --build`   | Start all services               |
+| `docker compose logs -f`         | Follow logs                      |
+| `docker compose logs -f backend` | Backend logs only                |
+| `docker compose down`            | Stop                             |
+| `docker compose down -v`         | Stop + remove volumes (fresh DB) |
 
 ---
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| `docker is not recognized` | Install Docker Desktop, wait for "Running" |
-| Port 3000/3001 in use | Set `FRONTEND_PORT` / `BACKEND_PORT` in `.env` |
-| Build fails, missing JWT_SECRET | Add `JWT_SECRET=...` (min 32 chars) to `.env` |
-| Backend can't connect to DB | Verify `DATABASE_URL` (Neon: check connection string) |
+| Issue                            | Solution                                                 |
+| -------------------------------- | -------------------------------------------------------- |
+| `docker is not recognized`       | Install Docker Desktop, wait for "Running"               |
+| Port 3000/3001 in use            | Set `FRONTEND_PORT` / `BACKEND_PORT` in `.env`           |
+| Build fails, missing JWT_SECRET  | Add `JWT_SECRET=...` (min 32 chars) to `.env`            |
+| Backend can't connect to DB      | Verify `DATABASE_URL` (Neon: check connection string)    |
 | P1002 advisory lock (migrations) | Use `DIRECT_URL` with non-pooler host for Prisma migrate |
 
 ---
