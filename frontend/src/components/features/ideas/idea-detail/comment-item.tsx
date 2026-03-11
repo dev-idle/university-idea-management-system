@@ -70,7 +70,6 @@ export interface CommentItemProps {
   comment: IdeaComment;
   ideaId: string;
   open: boolean;
-  isReply: boolean;
   depth: number;
   isFirstReply?: boolean;
   parentDisplayName?: string;
@@ -103,7 +102,6 @@ export function CommentItem({
   comment,
   ideaId,
   open,
-  isReply,
   depth,
   isFirstReply = true,
   parentDisplayName,
@@ -405,7 +403,6 @@ export function CommentItem({
                 comment={r}
                 ideaId={ideaId}
                 open={open}
-                isReply
                 depth={depth + 1}
                 isFirstReply={idx === 0}
                 parentDisplayName={getCommentDisplayInfo(comment).displayName}

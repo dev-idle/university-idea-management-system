@@ -127,7 +127,6 @@ export function IdeaDetailComments({
                 comment={c}
                 ideaId={ideaId}
                 open={open && !isReadOnly}
-                isReply={false}
                 depth={1}
                 isFirstReply={idx === 0}
                 targetedCommentId={targetedCommentId}
