@@ -55,6 +55,8 @@ export const envSchema = z
     MAILTRAP_INBOX_URL: z.string().url().optional(),
     /** Frontend base URL for notification links. */
     FRONTEND_URL: z.string().url().optional(),
+    /** Backend API base URL for signed links in emails (e.g. https://api.example.com). When unset, uses http://localhost:PORT. */
+    API_BASE_URL: z.string().url().optional(),
     /** Sentry DSN for error monitoring. When unset or empty, Sentry is disabled. */
     SENTRY_DSN: z
       .string()

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 import { type Job } from 'bullmq';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { AttachmentTokenService } from '../ideas/attachment-token.service';
 import {
   DEFAULT_FRONTEND_URL,
   MAIL_SUBJECTS,
@@ -29,6 +30,7 @@ export class NotificationProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly mailerService: MailerService,
     private readonly config: ConfigService,
+    private readonly attachmentToken: AttachmentTokenService,
   ) {
     super();
     this.isProduction = this.config.get<string>('NODE_ENV') === 'production';
@@ -86,6 +88,28 @@ export class NotificationProcessor extends WorkerHost {
 
     const ideaLink = this.buildIdeaLink(ideaId);
     const message = `A new idea "${ideaTitle}" from ${submitterDisplayName} needs your review.`;
+
+    const INLINE_MIME_PREFIXES = [
+      'application/pdf',
+      'image/',
+      'text/plain',
+      'text/html',
+      'text/csv',
+    ];
+    const attachmentLinksWithUrls = attachmentLinks.map((att) => {
+      const isInline =
+        att.mimeType &&
+        INLINE_MIME_PREFIXES.some((p) => att.mimeType!.startsWith(p));
+      const token = this.attachmentToken.sign({
+        sub: att.attachmentId,
+        disp: isInline ? 'inline' : 'attachment',
+      });
+      return {
+        fileName: att.fileName,
+        secureUrl: this.buildAttachmentSignedUrl(token),
+      };
+    });
+
     const context = {
       ideaTitle,
       submitterDisplayName,
@@ -94,7 +118,7 @@ export class NotificationProcessor extends WorkerHost {
       departmentName: departmentName ?? undefined,
       ideaLink,
       hasAttachments: attachmentLinks.length > 0,
-      attachmentLinks,
+      attachmentLinks: attachmentLinksWithUrls,
     };
 
     const results = await Promise.allSettled(
@@ -154,6 +178,15 @@ export class NotificationProcessor extends WorkerHost {
         { recipientId: recipient.id },
       );
     }
+  }
+
+  private buildAttachmentSignedUrl(token: string): string {
+    const apiBase =
+      this.config.get<string>('API_BASE_URL') ??
+      `http://localhost:${this.config.get<number>('PORT') ?? 3001}`;
+    const prefix = this.config.get<string>('API_PREFIX') ?? 'api';
+    const version = this.config.get<string>('API_VERSION') ?? '1';
+    return `${apiBase.replace(/\/$/, '')}/${prefix}/v${version}/ideas/attachments/signed/${token}`;
   }
 
   private buildIdeasHubLink(): string {

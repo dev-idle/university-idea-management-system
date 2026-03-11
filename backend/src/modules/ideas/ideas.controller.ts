@@ -157,8 +157,8 @@ export class IdeasController {
   }
 
   /**
-   * Proxy attachment for viewing in browser (inline). Streams from Cloudinary with
-   * Content-Disposition: inline and correct filename so the file opens with the right extension.
+   * Proxy attachment for viewing. PDF/images: inline (open in browser).
+   * .doc, .xlsx etc: attachment (download with correct filename).
    */
   @Get('attachments/:attachmentId/view')
   @Roles('STAFF', 'QA_COORDINATOR', 'QA_MANAGER')
@@ -177,7 +177,13 @@ export class IdeasController {
       );
     }
     const buffer = Buffer.from(await res.arrayBuffer());
-    const disposition = `inline; filename="${fileName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+    const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const viewable = ['application/pdf', 'image/', 'text/plain', 'text/html', 'text/csv'];
+    const useInline =
+      mimeType && viewable.some((p) => mimeType.startsWith(p));
+    const disposition = useInline
+      ? `inline; filename="${esc(fileName)}"`
+      : `attachment; filename="${esc(fileName)}"`;
     return new StreamableFile(buffer, {
       type: mimeType ?? 'application/octet-stream',
       disposition,

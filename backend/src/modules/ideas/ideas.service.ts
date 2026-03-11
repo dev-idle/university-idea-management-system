@@ -1304,8 +1304,10 @@ export class IdeasService {
         submitterEmail: isAnonymous ? undefined : submitter.email,
         isAnonymous,
         attachmentLinks: (idea.attachments ?? []).map((a) => ({
+          attachmentId: a.id,
           fileName: a.fileName,
           secureUrl: a.secureUrl,
+          mimeType: a.mimeType,
         })),
       });
     }

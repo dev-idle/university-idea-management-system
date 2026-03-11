@@ -2,6 +2,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from '../../core/prisma/prisma.module';
+import { IdeasModule } from '../ideas/ideas.module';
 import { MailModule } from '../mail/mail.module';
 import { NOTIFICATION_QUEUE } from './constants';
 import { NotificationService } from './notification.service';
@@ -62,7 +63,7 @@ export class NotificationModule {
 
     return {
       module: NotificationModule,
-      imports: [PrismaModule, MailModule, ...redisImports],
+      imports: [PrismaModule, IdeasModule, MailModule, ...redisImports],
       controllers: [NotificationController],
       providers: [
         NotificationService,

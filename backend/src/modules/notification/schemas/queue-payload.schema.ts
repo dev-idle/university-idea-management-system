@@ -5,8 +5,10 @@ import { z } from 'zod';
  */
 
 const attachmentLinkSchema = z.object({
+  attachmentId: z.string().uuid(),
   fileName: z.string().min(1).max(512),
   secureUrl: z.string().url(),
+  mimeType: z.string().max(128).nullable().optional(),
 });
 
 export const ideaCreatedPayloadSchema = z.object({
