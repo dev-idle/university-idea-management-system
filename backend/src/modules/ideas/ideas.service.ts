@@ -1493,7 +1493,9 @@ export class IdeasService {
         ideaTitle: idea.title.trim(),
         recipientUserId: idea.submittedBy.id,
         recipientEmail: idea.submittedBy.email,
-        recipientDisplayName: (idea.submittedBy.fullName ?? idea.submittedBy.email).trim(),
+        recipientDisplayName: (
+          idea.submittedBy.fullName ?? idea.submittedBy.email
+        ).trim(),
       });
     }
   }

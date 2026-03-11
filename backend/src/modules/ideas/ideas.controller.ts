@@ -106,9 +106,12 @@ export class IdeasController {
    * Proxy upload: receive file from frontend, upload to Cloudinary server-side.
    * Avoids CORS "Failed to fetch" when uploading directly from browser to Cloudinary.
    */
+  /** Multer limit: 10 MB (aligns with Cloudinary). Rejects oversized files before buffering. */
   @Post('upload')
   @Roles('STAFF')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }),
+  )
   @HttpCode(HttpStatus.CREATED)
   async uploadFile(
     @UploadedFile()
@@ -178,9 +181,14 @@ export class IdeasController {
     }
     const buffer = Buffer.from(await res.arrayBuffer());
     const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    const viewable = ['application/pdf', 'image/', 'text/plain', 'text/html', 'text/csv'];
-    const useInline =
-      mimeType && viewable.some((p) => mimeType.startsWith(p));
+    const viewable = [
+      'application/pdf',
+      'image/',
+      'text/plain',
+      'text/html',
+      'text/csv',
+    ];
+    const useInline = mimeType && viewable.some((p) => mimeType.startsWith(p));
     const disposition = useInline
       ? `inline; filename="${esc(fileName)}"`
       : `attachment; filename="${esc(fileName)}"`;

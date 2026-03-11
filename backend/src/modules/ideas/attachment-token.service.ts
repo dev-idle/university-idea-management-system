@@ -28,10 +28,9 @@ export class AttachmentTokenService {
 
   verify(token: string): AttachmentTokenPayload | null {
     try {
-      const decoded = this.jwt.verify<AttachmentTokenPayload & { purpose?: string }>(
-        token,
-        { secret: this.config.get<string>('JWT_SECRET') },
-      );
+      const decoded = this.jwt.verify<
+        AttachmentTokenPayload & { purpose?: string }
+      >(token, { secret: this.config.get<string>('JWT_SECRET') });
       if (decoded?.purpose !== 'attachment-access' || !decoded.sub) return null;
       return {
         sub: decoded.sub,

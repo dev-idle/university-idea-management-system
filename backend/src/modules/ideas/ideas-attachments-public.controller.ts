@@ -6,6 +6,7 @@ import {
   StreamableFile,
   Logger,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { IdeasService } from './ideas.service';
 import { AttachmentTokenService } from './attachment-token.service';
 
@@ -37,6 +38,7 @@ export class IdeasAttachmentsPublicController {
    * Uses Content-Disposition: inline for PDF/images (view in browser), attachment for others (.doc, .xlsx).
    * Ensures correct filename and extension on save.
    */
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @Get('attachments/signed/:token')
   async getAttachmentByToken(
     @Param('token') token: string,

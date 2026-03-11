@@ -93,7 +93,8 @@ export class ExportController {
         'Export file temporarily unavailable. Please try again shortly.',
       );
     }
-    const disposition = `attachment; filename="${fileName.replace(/"/g, '\\"')}"`;
+    const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const disposition = `attachment; filename="${esc(fileName)}"`;
     res.set({
       'Content-Type': 'application/zip',
       'Content-Disposition': disposition,

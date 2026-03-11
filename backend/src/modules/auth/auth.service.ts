@@ -322,7 +322,7 @@ export class AuthService {
         where: { id: record.userId },
         data: { passwordHash },
       });
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- Prisma tx client passwordResetToken type unresolved
+
       await tx.passwordResetToken.delete({ where: { id: record.id } });
       await tx.refreshToken.deleteMany({ where: { userId: record.userId } });
     });
