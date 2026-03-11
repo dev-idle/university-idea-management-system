@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import * as express from 'express';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -37,6 +38,8 @@ export class AuthController {
     );
   }
 
+  /** Stricter throttle: 5 attempts per minute to mitigate brute force. */
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
