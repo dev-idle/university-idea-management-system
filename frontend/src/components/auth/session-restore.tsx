@@ -32,7 +32,7 @@ export function SessionRestore({ children }: { children: ReactNode }) {
       if (pathname === "/" || pathname === "/login") {
         const entry = getEntryRouteForRoles(user.roles);
         if (entry !== ROUTES.LOGIN) {
-          setRestoring(false);
+          queueMicrotask(() => setRestoring(false));
           router.replace(entry);
           return;
         }

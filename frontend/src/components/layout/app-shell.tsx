@@ -670,6 +670,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* ── Content area: Sticky Navbar + scrollable Main ─────────────────── */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <a
+          href="#app-main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
         <NavbarHeader
           user={user}
           displayName={displayName}
@@ -677,24 +683,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           onLogout={handleLogout}
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
         />
-        <main
-          id="app-main"
+      <main
+        id="app-main"
+        tabIndex={-1}
+        className={cn(
+          "scrollbar-thin-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
+          MAIN_BG,
+          MAIN_PX,
+          MAIN_PY
+        )}
+      >
+        <div
           className={cn(
-            "scrollbar-thin-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
-            MAIN_BG,
-            MAIN_PX,
-            MAIN_PY
+            "mx-auto w-full transition-[max-width] duration-300 ease-in-out",
+            sidebarCollapsed ? MAIN_MAX_W_COLLAPSED : MAIN_MAX_W
           )}
         >
-          <div
-            className={cn(
-              "mx-auto w-full transition-[max-width] duration-300 ease-in-out",
-              sidebarCollapsed ? MAIN_MAX_W_COLLAPSED : MAIN_MAX_W
-            )}
-          >
-            <div>{children}</div>
-          </div>
-        </main>
+          <div>{children}</div>
+        </div>
+      </main>
       </div>
     </div>
   );
@@ -727,6 +734,12 @@ function StaffLayout({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
+      <a
+        href="#app-main"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
       <header
         className={NAVBAR_HEADER_CLASS}
       >
@@ -772,6 +785,7 @@ function StaffLayout({
       </header>
       <main
         id="app-main"
+        tabIndex={-1}
         className={cn(
           "scrollbar-thin-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
           MAIN_BG,

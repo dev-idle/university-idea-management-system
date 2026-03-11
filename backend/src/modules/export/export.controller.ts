@@ -6,6 +6,7 @@ import {
   Param,
   UseGuards,
   Res,
+  UnauthorizedException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Response } from 'express';
@@ -23,7 +24,7 @@ import {
 } from './dto/trigger-export.dto';
 
 const jobIdParamSchema = z.object({
-  id: z.string().min(1, 'Job ID is required'),
+  id: z.string().uuid('Job ID must be a valid UUID'),
 });
 
 @Controller('export')
@@ -52,7 +53,7 @@ export class ExportController {
   ) {
     const sub = user.sub;
     if (!sub) {
-      throw new Error('User ID missing');
+      throw new UnauthorizedException('User ID missing');
     }
     return this.exportService.triggerExport(sub, body.cycleId, body.type);
   }
@@ -67,7 +68,7 @@ export class ExportController {
   ) {
     const sub = user.sub;
     if (!sub) {
-      throw new Error('User ID missing');
+      throw new UnauthorizedException('User ID missing');
     }
     return this.exportService.getJobStatus(params.id, sub);
   }
@@ -83,7 +84,7 @@ export class ExportController {
   ): Promise<void> {
     const sub = user.sub;
     if (!sub) {
-      throw new Error('User ID missing');
+      throw new UnauthorizedException('User ID missing');
     }
     const { cloudinaryUrl, fileName } =
       await this.exportService.getExportResult(params.id, sub);

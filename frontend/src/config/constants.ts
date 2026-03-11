@@ -101,7 +101,7 @@ export function getEntryRouteForRoles(roles: string[] | undefined): string {
 /** Path prefixes/routes allowed per role (UX-only; backend enforces). Each user has one role. */
 const ROLE_ALLOWED_PATHS: Record<Role, string[]> = {
   ADMIN: ["/admin", "/profile"],
-  QA_MANAGER: ["/qa-manager", "/qa-manager/categories", "/qa-manager/proposal-cycles", "/qa-manager/export", "/qa-manager/department-members", "/qa-manager/ideas", "/profile", "/ideas"],
+  QA_MANAGER: ["/qa-manager", "/profile", "/ideas"],
   QA_COORDINATOR: ["/qa-coordinator", "/profile", "/ideas", "/department-members"],
   STAFF: ["/ideas", "/profile"],
 };

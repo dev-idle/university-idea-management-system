@@ -7,7 +7,7 @@ import {
   forgotPasswordBodySchema,
   resetPasswordBodySchema,
 } from "@/lib/schemas/auth.schema";
-import { env, API_SERVER_BASE } from "@/config/env";
+import { API_SERVER_BASE } from "@/config/env";
 import { AUTH } from "@/config/constants";
 
 /** Server Actions run on Next.js server; use API_SERVER_BASE (e.g. http://backend:3001 in Docker). */

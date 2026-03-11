@@ -7,17 +7,31 @@ import type { NextRequest } from "next/server";
  * Do NOT perform JWT verification or DB access here; use Server Layout Guards (RSC) for auth.
  */
 
-const STRICT_CSP = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js / React require unsafe-inline in dev; tighten in prod
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' http://localhost:* https://localhost:*",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join("; ");
+function buildCsp(): string {
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3001";
+  const appOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000";
+  const connectSrc = [
+    "'self'",
+    "http://localhost:*",
+    "https://localhost:*",
+    apiBase,
+    appOrigin,
+  ]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .join(" ");
+
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js / React require unsafe-inline in dev; tighten in prod
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    `connect-src ${connectSrc}`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Next.js middleware signature requires request
 export function proxy(request: NextRequest) {
@@ -28,7 +42,7 @@ export function proxy(request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set("Content-Security-Policy", STRICT_CSP);
+  response.headers.set("Content-Security-Policy", buildCsp());
   response.headers.set(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"

@@ -2,18 +2,18 @@
 
 import { BrandLogo } from "@/components/layout/brand-logo";
 import {
-  Book,
-  Buildings,
-  ChatCircle,
+  BookOpen,
+  Building2,
   Clock,
   Compass,
   FileText,
   Lightbulb,
-  PaperPlaneRight,
-  Share,
-  Sparkle,
+  MessageCircle,
+  Send,
+  Share2,
+  Sparkles,
   ThumbsUp,
-} from "@phosphor-icons/react";
+} from "lucide-react";
 
 export function LoginAcademicPanel() {
   return (
@@ -69,28 +69,28 @@ export function LoginAcademicPanel() {
             {/* Icons — portal features: Ideas, Submit, Share, Vote, Proposals, QA, Sparkle, Book */}
             <div className="pointer-events-none absolute inset-0 z-20 opacity-70" aria-hidden>
               <div className="pointer-events-auto absolute -left-2 top-[8%] flex h-8 w-8 cursor-default rotate-[-6deg] items-center justify-center rounded-lg bg-amber-500/8 text-amber-600/90 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-amber-500/12 dark:bg-amber-400/8 dark:text-amber-400/90 dark:hover:bg-amber-400/12">
-                <Lightbulb className="text-current" size={14} weight="duotone" />
+                <Lightbulb className="text-current" size={14} />
               </div>
               <div className="pointer-events-auto absolute left-[50%] top-[-8%] flex h-9 w-9 cursor-default rotate-[5deg] items-center justify-center rounded-xl bg-primary/8 text-primary/90 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-primary/12 dark:bg-primary/12 dark:text-primary/90 dark:hover:bg-primary/16">
-                <PaperPlaneRight className="text-current" size={16} weight="duotone" />
+                <Send className="text-current" size={16} />
               </div>
               <div className="pointer-events-auto absolute right-[2%] top-[20%] flex h-7 w-7 cursor-default rotate-[4deg] items-center justify-center rounded-md bg-sky-500/8 text-sky-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-sky-500/12 dark:bg-sky-400/8 dark:text-sky-400/80 dark:hover:bg-sky-400/12">
-                <Share className="text-current" size={14} weight="duotone" />
+                <Share2 className="text-current" size={14} />
               </div>
               <div className="pointer-events-auto absolute left-[58%] top-[12%] flex h-8 w-8 cursor-default rotate-[-8deg] items-center justify-center rounded-md bg-emerald-500/8 text-emerald-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-emerald-500/12 dark:bg-emerald-400/8 dark:text-emerald-400/80 dark:hover:bg-emerald-400/12">
-                <ThumbsUp className="text-current" size={14} weight="duotone" />
+                <ThumbsUp className="text-current" size={14} />
               </div>
               <div className="pointer-events-auto absolute left-[8%] bottom-[-6%] flex h-7 w-7 cursor-default rotate-[6deg] items-center justify-center rounded-lg bg-violet-500/8 text-violet-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-violet-500/12 dark:bg-violet-400/8 dark:text-violet-400/80 dark:hover:bg-violet-400/12">
-                <FileText className="text-current" size={14} weight="duotone" />
+                <FileText className="text-current" size={14} />
               </div>
               <div className="pointer-events-auto absolute right-[28%] bottom-[-5%] flex h-8 w-8 cursor-default rotate-[-4deg] items-center justify-center rounded-md bg-rose-500/8 text-rose-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-rose-500/12 dark:bg-rose-400/8 dark:text-rose-400/80 dark:hover:bg-rose-400/12">
-                <ChatCircle className="text-current" size={14} weight="duotone" />
+                <MessageCircle className="text-current" size={14} />
               </div>
               <div className="pointer-events-auto absolute left-[46%] top-[38%] flex h-8 w-8 cursor-default rotate-[3deg] items-center justify-center rounded-lg bg-indigo-500/8 text-indigo-600/80 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-indigo-500/12 dark:bg-indigo-400/8 dark:text-indigo-400/80 dark:hover:bg-indigo-400/12">
-                <Sparkle className="text-current" size={14} weight="duotone" />
+                <Sparkles className="text-current" size={14} />
               </div>
               <div className="pointer-events-auto absolute left-[28%] bottom-[2%] flex h-7 w-7 cursor-default rotate-[-5deg] items-center justify-center rounded-md bg-zinc-500/8 text-zinc-600/70 transition-all duration-300 ease-out hover:scale-[1.06] hover:bg-zinc-500/12 dark:bg-zinc-400/8 dark:text-zinc-400/70 dark:hover:bg-zinc-400/12">
-                <Book className="text-current" size={14} weight="duotone" />
+                <BookOpen className="text-current" size={14} />
               </div>
             </div>
 
@@ -133,7 +133,7 @@ export function LoginAcademicPanel() {
           <div className="grid grid-cols-1 items-stretch gap-1.5 sm:grid-cols-3">
             <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-300 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
               <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-all duration-300 ease-out group-hover:scale-[1.06] group-hover:bg-primary/16 dark:bg-primary/20 dark:group-hover:bg-primary/24">
-                <Clock className="text-current" size={12} weight="duotone" />
+                <Clock className="text-current" size={12} />
               </div>
               <div className="min-w-0">
                 <p className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -146,7 +146,7 @@ export function LoginAcademicPanel() {
             </div>
             <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-300 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
               <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-all duration-300 ease-out group-hover:scale-[1.06] group-hover:bg-primary/16 dark:bg-primary/20 dark:group-hover:bg-primary/24">
-                <Buildings className="text-current" size={12} weight="duotone" />
+                <Building2 className="text-current" size={12} />
               </div>
               <div className="min-w-0">
                 <p className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -159,7 +159,7 @@ export function LoginAcademicPanel() {
             </div>
             <div className="login-info-card group flex items-center gap-1.5 rounded-md border border-border/40 bg-card/80 p-2 transition-all duration-300 hover:border-primary/20 hover:bg-card/95 dark:border-border/35 dark:bg-card/35 dark:hover:border-primary/15 dark:hover:bg-card/50">
               <div className="flex size-6 shrink-0 items-center justify-center rounded bg-primary/10 text-primary transition-all duration-300 ease-out group-hover:scale-[1.06] group-hover:bg-primary/16 dark:bg-primary/20 dark:group-hover:bg-primary/24">
-                <Compass className="text-current" size={12} weight="duotone" />
+                <Compass className="text-current" size={12} />
               </div>
               <div className="min-w-0">
                 <p className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
