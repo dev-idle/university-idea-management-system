@@ -1,8 +1,4 @@
-/**
- * Department names excluded from participating/non-participating counts in cycle summary.
- * These are support/admin departments, not idea-submitting departments.
- */
-export const EXPORT_EXCLUDED_DEPARTMENT_NAMES = [
-  'IT Services / System Administration Department',
-  'Quality Assurance Office',
-] as const;
+import { EXCLUDED_DEPARTMENT_NAMES } from '../../common/constants/departments.constants';
+
+/** Re-export for export module; excludes support/admin departments from cycle summary counts. */
+export const EXPORT_EXCLUDED_DEPARTMENT_NAMES = EXCLUDED_DEPARTMENT_NAMES;

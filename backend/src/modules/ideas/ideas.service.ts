@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EXCLUDED_DEPARTMENT_NAMES_SET } from '../../common/constants/departments.constants';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { EVENTS } from '../notification/constants';
@@ -169,18 +170,31 @@ export class IdeasService {
       const nonEmptyCycleIds = new Set(
         cycleIdsWithIdeas.filter((g) => g._count.id > 0).map((g) => g.cycleId!),
       );
+      const allCycleCategories = await this.prisma.cycleCategory.findMany({
+        where: { cycleId: { in: Array.from(nonEmptyCycleIds) } },
+        select: {
+          cycleId: true,
+          category: { select: { id: true, name: true } },
+        },
+      });
+      const categoriesByCycleId = new Map<
+        string,
+        Array<{ id: string; name: string }>
+      >();
+      for (const cc of allCycleCategories) {
+        const list = categoriesByCycleId.get(cc.cycleId) ?? [];
+        list.push(cc.category);
+        categoriesByCycleId.set(cc.cycleId, list);
+      }
       for (const c of allCycles) {
         if (!nonEmptyCycleIds.has(c.id)) continue;
-        const cycleCategories = await this.prisma.cycleCategory.findMany({
-          where: { cycleId: c.id },
-          select: { category: { select: { id: true, name: true } } },
-        });
+        const categories = categoriesByCycleId.get(c.id) ?? [];
         closedCyclesForYear.push({
           id: c.id,
           name: c.name ?? 'Unnamed',
           ideaSubmissionClosesAt: c.ideaSubmissionClosesAt,
           interactionClosesAt: c.interactionClosesAt,
-          categories: cycleCategories.map((cc) => cc.category),
+          categories,
           departments: departmentsForFilter,
         });
       }
@@ -206,12 +220,6 @@ export class IdeasService {
     };
   }
 
-  /** Department names excluded from Ideas Hub filter (internal/admin departments). */
-  private static readonly EXCLUDED_DEPARTMENT_NAMES = new Set([
-    'IT Services / System Administration Department',
-    'Quality Assurance Office',
-  ]);
-
   /** All departments for Ideas Hub filter, excluding internal/admin. Includes departments with zero ideas. */
   private async getAllDepartmentsForFilter(): Promise<
     Array<{ id: string; name: string }>
@@ -220,9 +228,7 @@ export class IdeasService {
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     });
-    return all.filter(
-      (d) => !IdeasService.EXCLUDED_DEPARTMENT_NAMES.has(d.name.trim()),
-    );
+    return all.filter((d) => !EXCLUDED_DEPARTMENT_NAMES_SET.has(d.name.trim()));
   }
 
   /**

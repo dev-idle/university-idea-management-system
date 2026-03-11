@@ -5,16 +5,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
 import { PrismaService } from '../prisma/prisma.service';
+import { EXCLUDED_DEPARTMENT_NAMES } from '../../common/constants/departments.constants';
 import { hashPassword } from '../../common/crypto/password.util';
 import type { PrismaClient } from '@generated/prisma';
 
 const FIXED_ROLES = ['ADMIN', 'QA_MANAGER', 'QA_COORDINATOR', 'STAFF'] as const;
 const DEFAULT_ADMIN_EMAIL = 'admin@gre.ac.uk';
 const DEFAULT_ADMIN_PASSWORD = 'ChangeMeInProduction';
-const DEFAULT_DEPARTMENT_NAMES = [
-  'IT Services / System Administration Department',
-  'Quality Assurance Office',
-] as const;
 
 async function seedRoles(prisma: PrismaClient): Promise<Map<string, string>> {
   const roleIds = new Map<string, string>();
@@ -34,7 +31,7 @@ async function seedDefaultDepartments(
   prisma: PrismaClient,
 ): Promise<string | null> {
   let firstDepartmentId: string | null = null;
-  for (const name of DEFAULT_DEPARTMENT_NAMES) {
+  for (const name of EXCLUDED_DEPARTMENT_NAMES) {
     const existing = await prisma.department.findFirst({
       where: { name },
       select: { id: true },
@@ -102,7 +99,7 @@ export async function runSeed(): Promise<void> {
     const roleIds = await seedRoles(prisma);
     console.log('Seed: roles upserted:', [...roleIds.keys()]);
     const departmentId = await seedDefaultDepartments(prisma);
-    console.log('Seed: default departments:', [...DEFAULT_DEPARTMENT_NAMES]);
+    console.log('Seed: default departments:', [...EXCLUDED_DEPARTMENT_NAMES]);
     await seedAdminUser(prisma, roleIds, departmentId);
     const email = process.env.ADMIN_SEED_EMAIL?.trim() || DEFAULT_ADMIN_EMAIL;
     console.log('Seed: admin user upserted:', email);

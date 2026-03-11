@@ -9,7 +9,10 @@ import {
   verifyPassword,
   hashPassword,
 } from '../../common/crypto/password.util';
-import { EXPORT_EXCLUDED_DEPARTMENT_NAMES } from '../export/export.constants';
+import {
+  EXCLUDED_DEPARTMENT_NAMES,
+  EXCLUDED_DEPARTMENT_NAMES_SET,
+} from '../../common/constants/departments.constants';
 
 /** Safe profile shape: no password, no internal IDs beyond required. */
 export interface MeProfile {
@@ -188,7 +191,7 @@ export class MeService {
       } | null;
     }>
   > {
-    const excludedSet = new Set<string>(EXPORT_EXCLUDED_DEPARTMENT_NAMES);
+    const excludedSet = EXCLUDED_DEPARTMENT_NAMES_SET;
     const departments = await this.prisma.department.findMany({
       where: { name: { notIn: Array.from(excludedSet) } },
       select: { id: true, name: true },
@@ -294,7 +297,7 @@ export class MeService {
                 departmentId: { not: null },
                 department: {
                   name: {
-                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                    notIn: [...EXCLUDED_DEPARTMENT_NAMES],
                   },
                 },
               },
@@ -320,7 +323,7 @@ export class MeService {
               departmentId: { not: null },
               department: {
                 name: {
-                  notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                  notIn: [...EXCLUDED_DEPARTMENT_NAMES],
                 },
               },
             },
@@ -403,12 +406,6 @@ export class MeService {
       cyclesInYearCount: cyclesWithIdeasCount,
     };
   }
-
-  /** Department names excluded from QA Manager stats (internal/admin). */
-  private static readonly QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES = [
-    'IT Services / System Administration Department',
-    'Quality Assurance Office',
-  ] as const;
 
   private static normalizeToStartOfDay(d: Date): Date {
     const out = new Date(d);
@@ -515,7 +512,7 @@ export class MeService {
     if (!activeYear) {
       const totalDepartments = await this.prisma.department.count({
         where: {
-          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+          name: { notIn: [...EXCLUDED_DEPARTMENT_NAMES] },
         },
       });
       return {
@@ -549,7 +546,7 @@ export class MeService {
                 departmentId: { not: null },
                 department: {
                   name: {
-                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                    notIn: [...EXCLUDED_DEPARTMENT_NAMES],
                   },
                 },
               },
@@ -575,7 +572,7 @@ export class MeService {
               departmentId: { not: null },
               department: {
                 name: {
-                  notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                  notIn: [...EXCLUDED_DEPARTMENT_NAMES],
                 },
               },
             },
@@ -587,7 +584,7 @@ export class MeService {
     if (cycleIds.length === 0) {
       const totalDepartments = await this.prisma.department.count({
         where: {
-          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+          name: { notIn: [...EXCLUDED_DEPARTMENT_NAMES] },
         },
       });
       return {
@@ -607,7 +604,7 @@ export class MeService {
       submittedBy: {
         departmentId: { not: null },
         department: {
-          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+          name: { notIn: [...EXCLUDED_DEPARTMENT_NAMES] },
         },
       },
     };
@@ -635,7 +632,7 @@ export class MeService {
       }),
       this.prisma.department.count({
         where: {
-          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+          name: { notIn: [...EXCLUDED_DEPARTMENT_NAMES] },
         },
       }),
     ]);
@@ -703,7 +700,7 @@ export class MeService {
                 departmentId: { not: null },
                 department: {
                   name: {
-                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                    notIn: [...EXCLUDED_DEPARTMENT_NAMES],
                   },
                 },
               },
@@ -863,7 +860,7 @@ export class MeService {
                 departmentId: { not: null },
                 department: {
                   name: {
-                    notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES],
+                    notIn: [...EXCLUDED_DEPARTMENT_NAMES],
                   },
                 },
               },
@@ -897,7 +894,7 @@ export class MeService {
 
     const depts = await this.prisma.department.findMany({
       where: {
-        name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+        name: { notIn: [...EXCLUDED_DEPARTMENT_NAMES] },
       },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
@@ -910,7 +907,7 @@ export class MeService {
       submittedBy: {
         departmentId: { in: deptIds },
         department: {
-          name: { notIn: [...MeService.QA_MANAGER_EXCLUDED_DEPARTMENT_NAMES] },
+          name: { notIn: [...EXCLUDED_DEPARTMENT_NAMES] },
         },
       },
     };

@@ -4,16 +4,12 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../../core/prisma/prisma.service';
+import { EXCLUDED_DEPARTMENT_NAMES_SET } from '../../common/constants/departments.constants';
+import { isPrismaNotFound } from '../../common/utils/prisma-errors.util';
 import { hashPassword } from '../../common/crypto/password.util';
+import { PrismaService } from '../../core/prisma/prisma.service';
 import type { CreateUserBody } from './dto/create-user.dto';
 import type { UpdateUserBody, ListUsersQuery } from './dto/update-user.dto';
-
-/** Departments excluded from QC requirement (IT Services, QA Office). */
-const EXCLUDED_DEPARTMENT_NAMES = new Set([
-  'IT Services / System Administration Department',
-  'Quality Assurance Office',
-]);
 
 const userSelect = {
   id: true,
@@ -60,49 +56,12 @@ export class UsersService {
       throw new NotFoundException('Department not found');
     }
     if (body.role === 'QA_COORDINATOR') {
-      const qaCoordinatorRole = await this.prisma.role.findUnique({
-        where: { name: 'QA_COORDINATOR' },
-        select: { id: true },
-      });
-      if (qaCoordinatorRole) {
-        const existing = await this.prisma.user.count({
-          where: {
-            roleId: qaCoordinatorRole.id,
-            departmentId: body.departmentId,
-            isActive: true,
-          },
-        });
-        if (existing > 0) {
-          throw new ConflictException(
-            'This department already has a QA Coordinator. Each department can have only one.',
-          );
-        }
-      }
+      await this.assertQaCoordinatorUnique(body.departmentId);
     }
-    if (body.role === 'STAFF' && body.departmentId) {
-      const deptWithName = await this.prisma.department.findUnique({
-        where: { id: body.departmentId },
-        select: { name: true },
-      });
-      if (deptWithName && !EXCLUDED_DEPARTMENT_NAMES.has(deptWithName.name)) {
-        const qaCoordinatorRole = await this.prisma.role.findUnique({
-          where: { name: 'QA_COORDINATOR' },
-          select: { id: true },
-        });
-        if (qaCoordinatorRole) {
-          const qcCount = await this.prisma.user.count({
-            where: {
-              roleId: qaCoordinatorRole.id,
-              departmentId: body.departmentId,
-              isActive: true,
-            },
-          });
-          if (qcCount === 0) {
-            throw new BadRequestException('Department has no QA Coordinator.');
-          }
-        }
-      }
-    }
+    await this.assertDepartmentHasQaCoordinatorWhenStaff(
+      body.role,
+      body.departmentId ?? undefined,
+    );
     const passwordHash = await hashPassword(body.password);
     const user = await this.prisma.user.create({
       data: {
@@ -180,51 +139,13 @@ export class UsersService {
     const newRole = body.role ?? currentUser.role?.name;
     const newDeptId = body.departmentId ?? currentUser.departmentId;
     if (newRole === 'QA_COORDINATOR' && newDeptId) {
-      const qaCoordinatorRole = await this.prisma.role.findUnique({
-        where: { name: 'QA_COORDINATOR' },
-        select: { id: true },
-      });
-      if (qaCoordinatorRole) {
-        const existing = await this.prisma.user.count({
-          where: {
-            roleId: qaCoordinatorRole.id,
-            departmentId: newDeptId,
-            isActive: true,
-            id: { not: id },
-          },
-        });
-        if (existing > 0) {
-          throw new ConflictException(
-            'This department already has a QA Coordinator. Each department can have only one.',
-          );
-        }
-      }
+      await this.assertQaCoordinatorUnique(newDeptId, id);
     }
-    if (newRole === 'STAFF' && newDeptId) {
-      const deptWithName = await this.prisma.department.findUnique({
-        where: { id: newDeptId },
-        select: { name: true },
-      });
-      if (deptWithName && !EXCLUDED_DEPARTMENT_NAMES.has(deptWithName.name)) {
-        const qaCoordinatorRole = await this.prisma.role.findUnique({
-          where: { name: 'QA_COORDINATOR' },
-          select: { id: true },
-        });
-        if (qaCoordinatorRole) {
-          const qcCount = await this.prisma.user.count({
-            where: {
-              roleId: qaCoordinatorRole.id,
-              departmentId: newDeptId,
-              isActive: true,
-              id: { not: id },
-            },
-          });
-          if (qcCount === 0) {
-            throw new BadRequestException('Department has no QA Coordinator.');
-          }
-        }
-      }
-    }
+    await this.assertDepartmentHasQaCoordinatorWhenStaff(
+      newRole,
+      newDeptId ?? undefined,
+      id,
+    );
 
     if (Object.keys(data).length === 0) {
       const user = await this.prisma.user.findUnique({
@@ -258,11 +179,7 @@ export class UsersService {
         department: user.department,
       };
     } catch (e) {
-      if (
-        e != null &&
-        typeof e === 'object' &&
-        (e as { code?: string }).code === 'P2025'
-      ) {
+      if (isPrismaNotFound(e)) {
         throw new NotFoundException('User not found');
       }
       throw e;
@@ -317,5 +234,68 @@ export class UsersService {
     }));
 
     return { data, total, page, limit };
+  }
+
+  private async assertQaCoordinatorUnique(
+    departmentId: string,
+    excludeUserId?: string,
+  ): Promise<void> {
+    const qaCoordinatorRole = await this.prisma.role.findUnique({
+      where: { name: 'QA_COORDINATOR' },
+      select: { id: true },
+    });
+    if (!qaCoordinatorRole) return;
+    const where: {
+      roleId: string;
+      departmentId: string;
+      isActive: boolean;
+      id?: { not: string };
+    } = {
+      roleId: qaCoordinatorRole.id,
+      departmentId,
+      isActive: true,
+    };
+    if (excludeUserId) where.id = { not: excludeUserId };
+    const existing = await this.prisma.user.count({ where });
+    if (existing > 0) {
+      throw new ConflictException(
+        'This department already has a QA Coordinator. Each department can have only one.',
+      );
+    }
+  }
+
+  private async assertDepartmentHasQaCoordinatorWhenStaff(
+    role: string | undefined,
+    departmentId: string | null | undefined,
+    excludeUserId?: string,
+  ): Promise<void> {
+    if (role !== 'STAFF' || !departmentId) return;
+    const deptWithName = await this.prisma.department.findUnique({
+      where: { id: departmentId },
+      select: { name: true },
+    });
+    if (!deptWithName || EXCLUDED_DEPARTMENT_NAMES_SET.has(deptWithName.name)) {
+      return;
+    }
+    const qaCoordinatorRole = await this.prisma.role.findUnique({
+      where: { name: 'QA_COORDINATOR' },
+      select: { id: true },
+    });
+    if (!qaCoordinatorRole) return;
+    const where: {
+      roleId: string;
+      departmentId: string;
+      isActive: boolean;
+      id?: { not: string };
+    } = {
+      roleId: qaCoordinatorRole.id,
+      departmentId,
+      isActive: true,
+    };
+    if (excludeUserId) where.id = { not: excludeUserId };
+    const qcCount = await this.prisma.user.count({ where });
+    if (qcCount === 0) {
+      throw new BadRequestException('Department has no QA Coordinator.');
+    }
   }
 }

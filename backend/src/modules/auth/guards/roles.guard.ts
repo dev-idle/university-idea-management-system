@@ -10,7 +10,7 @@ import { ROLES_KEY } from '../decorators/roles.decorator';
 
 /**
  * RBAC guard: backend-only, untrusted. Checks JWT payload roles (set at login).
- * Use with @Roles('admin', 'user').
+ * Use with @Roles('STAFF', 'ADMIN', 'QA_MANAGER', 'QA_COORDINATOR').
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
