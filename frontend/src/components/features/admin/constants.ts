@@ -197,17 +197,6 @@ export const BREADCRUMB_CURRENT_CLASS = "text-primary";
 /** Breadcrumb separator: design scale muted-foreground/80. */
 export const BREADCRUMB_SEP_CLASS = "text-muted-foreground/80 mx-2";
 
-/** Main page title (refined, academic). */
-export const PAGE_TITLE_HIGH_END_CLASS =
-  "font-sans text-3xl font-semibold tracking-tight text-foreground";
-
-/** Subtitle below title (muted, relaxed). */
-export const PAGE_SUBTITLE_CLASS = TYPO_LEAD;
-
-/** Page header wrapper: flex layout, mb-8. */
-export const MANAGEMENT_PAGE_HEADER_CLASS =
-  "mb-8 flex justify-between items-end pl-6 pr-4 sm:pr-6";
-
 /** Loading / empty state cell (centered, padded). */
 export const TABLE_LOADING_CELL_CLASS =
   `flex items-center justify-center px-6 py-20 ${TYPO_BODY_SM}`;
