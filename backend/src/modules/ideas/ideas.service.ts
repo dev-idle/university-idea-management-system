@@ -1444,12 +1444,18 @@ export class IdeasService {
    * QA_MANAGER only. Blocked when cycle is not ACTIVE (closed/draft).
    * Removes idea from DB (cascade deletes IdeaAttachment) and deletes
    * attachment files from Cloudinary when configured.
+   * Emits IDEA_DELETED for Staff notification (email + in-app) when submitter exists.
    */
   async deleteIdea(ideaId: string): Promise<void> {
     const idea = await this.prisma.idea.findUnique({
       where: { id: ideaId },
       select: {
         id: true,
+        title: true,
+        submittedById: true,
+        submittedBy: {
+          select: { id: true, email: true, fullName: true },
+        },
         cycleId: true,
         cycle: { select: { status: true } },
         attachments: { select: { cloudinaryPublicId: true } },
@@ -1477,6 +1483,17 @@ export class IdeasService {
       });
       await tx.idea.delete({ where: { id: ideaId } });
     });
+
+    if (idea.submittedById && idea.submittedBy) {
+      this.eventEmitter.emit(EVENTS.IDEA_DELETED, {
+        type: 'idea.deleted',
+        ideaId,
+        ideaTitle: idea.title.trim(),
+        recipientUserId: idea.submittedBy.id,
+        recipientEmail: idea.submittedBy.email,
+        recipientDisplayName: (idea.submittedBy.fullName ?? idea.submittedBy.email).trim(),
+      });
+    }
   }
 
   /**

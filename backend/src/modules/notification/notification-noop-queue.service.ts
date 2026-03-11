@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type {
   IdeaCreatedPayload,
+  IdeaDeletedPayload,
   CommentCreatedPayload,
   CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
@@ -12,6 +13,11 @@ import type {
 @Injectable()
 export class NotificationNoopQueueService {
   addIdeaCreated(payload: IdeaCreatedPayload): Promise<void> {
+    void payload;
+    return Promise.resolve();
+  }
+
+  addIdeaDeleted(payload: IdeaDeletedPayload): Promise<void> {
     void payload;
     return Promise.resolve();
   }

@@ -6,18 +6,21 @@ export const NOTIFICATION_QUEUE = 'notifications';
 
 export const EVENTS = {
   IDEA_CREATED: 'idea.created',
+  IDEA_DELETED: 'idea.deleted',
   COMMENT_CREATED: 'comment.created',
   COMMENT_REPLIED: 'comment.replied',
 } as const;
 
 export const NOTIFICATION_TYPES = {
   IDEA_SUBMITTED: 'idea.submitted',
+  IDEA_DELETED: 'idea.deleted',
   COMMENT_ADDED: 'comment.added',
   COMMENT_REPLIED: 'comment.replied',
 } as const;
 
 export const MAIL_SUBJECTS = {
   IDEA_SUBMITTED: 'New idea – Review required',
+  IDEA_DELETED: 'Your proposal was removed',
   COMMENT_ADDED: 'New comment on your idea',
   COMMENT_REPLIED: 'Someone replied to your comment',
 } as const;

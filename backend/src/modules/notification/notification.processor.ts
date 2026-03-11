@@ -14,6 +14,7 @@ import {
 import {
   notificationJobPayloadSchema,
   type IdeaCreatedPayload,
+  type IdeaDeletedPayload,
   type CommentCreatedPayload,
   type CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
@@ -46,6 +47,8 @@ export class NotificationProcessor extends WorkerHost {
 
     if (payload.type === 'idea.created') {
       await this.handleIdeaCreated(payload);
+    } else if (payload.type === 'idea.deleted') {
+      await this.handleIdeaDeleted(payload);
     } else if (payload.type === 'comment.created') {
       await this.handleCommentCreated(payload);
     } else {
@@ -115,6 +118,48 @@ export class NotificationProcessor extends WorkerHost {
       qaCoordinators.map((c) => c.email),
       'idea',
     );
+  }
+
+  private async handleIdeaDeleted(payload: IdeaDeletedPayload): Promise<void> {
+    const { recipientUserId, ideaTitle } = payload;
+
+    const recipient = await this.prisma.user.findUnique({
+      where: { id: recipientUserId, isActive: true },
+      select: { id: true, email: true },
+    });
+
+    if (!recipient) return;
+
+    const ideasLink = this.buildIdeasHubLink();
+    const message = `Your proposal "${ideaTitle}" was removed by QA Manager.`;
+
+    try {
+      await this.sendEmailAndCreateNotification({
+        to: recipient.email,
+        userId: recipient.id,
+        subject: MAIL_SUBJECTS.IDEA_DELETED,
+        template: 'idea-deleted',
+        context: {
+          ideaTitle,
+          ideasLink,
+        },
+        message,
+        link: ideasLink,
+        type: NOTIFICATION_TYPES.IDEA_DELETED,
+        label: 'Idea deleted',
+      });
+    } catch (err) {
+      this.logger.error(
+        `Failed to send idea-deleted notification: ${err instanceof Error ? err.message : String(err)}`,
+        { recipientId: recipient.id },
+      );
+    }
+  }
+
+  private buildIdeasHubLink(): string {
+    const base =
+      this.config.get<string>('FRONTEND_URL') ?? DEFAULT_FRONTEND_URL;
+    return `${base.replace(/\/$/, '')}/ideas`;
   }
 
   private async handleCommentCreated(

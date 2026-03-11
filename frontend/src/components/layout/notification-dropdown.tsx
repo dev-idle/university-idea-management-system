@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, BellOff } from "lucide-react";
+import { Bell, BellOff, CircleX } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Popover,
@@ -55,7 +55,7 @@ function getAuthorInitial(type: string, message: string): string | null {
   return name === "Anonymous" ? "?" : name.charAt(0).toUpperCase();
 }
 
-/** Initial or Bell icon — minimal. */
+/** Initial, CircleX (removed), or Bell icon — minimal. */
 function NotificationTypeIcon({
   type,
   message,
@@ -65,6 +65,20 @@ function NotificationTypeIcon({
   message: string;
   isUnread?: boolean;
 }) {
+  if (type === "idea.deleted") {
+    return (
+      <span className="flex size-10 shrink-0 items-center justify-center">
+        <CircleX
+          className={cn(
+            "size-5",
+            isUnread ? "text-destructive" : "text-destructive/70"
+          )}
+          aria-hidden
+          strokeWidth={1.5}
+        />
+      </span>
+    );
+  }
   const initial = getAuthorInitial(type, message);
   if (initial) {
     return (

@@ -4,6 +4,7 @@ import { type Queue } from 'bullmq';
 import { EVENTS, NOTIFICATION_QUEUE, QUEUE_JOB_OPTIONS } from './constants';
 import type {
   IdeaCreatedPayload,
+  IdeaDeletedPayload,
   CommentCreatedPayload,
   CommentRepliedPayload,
 } from './schemas/queue-payload.schema';
@@ -14,6 +15,10 @@ export class NotificationQueueService {
 
   async addIdeaCreated(payload: IdeaCreatedPayload): Promise<void> {
     await this.queue.add(EVENTS.IDEA_CREATED, payload, QUEUE_JOB_OPTIONS);
+  }
+
+  async addIdeaDeleted(payload: IdeaDeletedPayload): Promise<void> {
+    await this.queue.add(EVENTS.IDEA_DELETED, payload, QUEUE_JOB_OPTIONS);
   }
 
   async addCommentCreated(payload: CommentCreatedPayload): Promise<void> {
