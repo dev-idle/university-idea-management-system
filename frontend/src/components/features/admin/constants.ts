@@ -12,6 +12,7 @@
  */
 import {
   CARD_CLASS,
+  POPUP_OVERLAY_BLUR,
   SECTION_LABEL_CLASS,
   SECTION_CARD_DESCRIPTION_CLASS,
   FORM_SUBMIT_BUTTON_CLASS,
@@ -105,9 +106,9 @@ export const TOOLBAR_FILTER_ROLE_WIDTH = "w-full min-w-0 sm:w-[10.5rem] sm:min-w
 /** Toolbar vertical divider — separates Search from filter selects. Hidden on mobile when stacked. */
 export const TOOLBAR_FILTER_DIVIDER = "hidden h-9 w-px shrink-0 self-center bg-border/40 sm:block";
 
-/** Sculpted modal overlay (matches TR_OVERLAY 240ms). */
+/** Sculpted modal overlay (matches Add/Edit/Delete/Deactivate). */
 export const DIALOG_OVERLAY_SCULPTED_CLASS =
-  "!bg-overlay-modal backdrop-blur-md duration-[240ms]";
+  `${POPUP_OVERLAY_BLUR} duration-[240ms]`;
 
 /** Sculpted modal panel (elegant, academic). */
 export const DIALOG_CONTENT_SCULPTED_CLASS =

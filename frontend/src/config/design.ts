@@ -172,6 +172,9 @@ export const POPUP_ROUNDED_SM = "rounded-lg";       /* Tooltip, small popovers *
 export const TOOLTIP_CONTENT_CLASS =
   `${TR_MENU} z-50 w-fit max-w-[min(calc(100vw-2rem),20rem)] origin-(--radix-tooltip-content-transform-origin) cursor-default break-words rounded-lg border border-border/45 bg-popover px-2.5 py-1.5 text-[11px] font-normal leading-relaxed text-foreground/90 shadow-[var(--shadow-card-hover)]`;
 
+/** Modal overlay with blur — shared by Dialog and AlertDialog for Add/Edit/Delete/Deactivate consistency. */
+export const POPUP_OVERLAY_BLUR = "!bg-overlay-modal backdrop-blur-md";
+
 /** Mobile: popups must not overflow viewport. Use for Dialog, Select, Dropdown, Popover. */
 export const POPUP_MOBILE_MAX_W = "max-w-[min(calc(100vw-2rem),100%)]";
 export const POPUP_MOBILE_MAX_H = "max-h-[min(85dvh,calc(100vh-2rem))]";

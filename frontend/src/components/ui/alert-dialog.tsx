@@ -4,7 +4,7 @@ import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
-import { TR_MODAL, TR_OVERLAY, POPUP_BORDER, POPUP_ROUNDED_MODAL, POPUP_SHADOW, POPUP_MOBILE_MAX_W, POPUP_MOBILE_MAX_H } from "@/config/design"
+import { TR_MODAL, TR_OVERLAY, POPUP_BORDER, POPUP_OVERLAY_BLUR, POPUP_ROUNDED_MODAL, POPUP_SHADOW, POPUP_MOBILE_MAX_W, POPUP_MOBILE_MAX_H } from "@/config/design"
 import { Button } from "@/components/ui/button"
 
 function AlertDialog({
@@ -36,7 +36,7 @@ function AlertDialogOverlay({
   return (
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
-      className={cn(TR_OVERLAY, "fixed inset-0 z-50 cursor-pointer bg-overlay", className)}
+      className={cn(TR_OVERLAY, POPUP_OVERLAY_BLUR, "fixed inset-0 z-50 cursor-pointer bg-overlay", className)}
       {...props}
     />
   )
