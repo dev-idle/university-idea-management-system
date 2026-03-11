@@ -68,6 +68,10 @@ function ChartContainer({
   )
 }
 
+/**
+ * Injects chart colors into a <style> tag. config must come from trusted constants
+ * (e.g. CHART_CONFIG_*)—never pass user input to prevent XSS via dangerouslySetInnerHTML.
+ */
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, c]) => c.theme || c.color

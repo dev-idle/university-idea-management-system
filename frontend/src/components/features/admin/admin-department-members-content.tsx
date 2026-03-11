@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { ChevronDown, Search } from "lucide-react";
 import { useAdminDashboardStats } from "@/hooks/use-admin-dashboard";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -50,15 +50,22 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 export function AdminDepartmentMembersContent() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchInput, setSearchInput] = useState(search);
   const [debouncedSearch, flushSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
-  const [deptId, setDeptId] = useState<string>("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [deptId, setDeptId] = useQueryState("department", parseAsString.withDefault(""));
+  const [roleFilter, setRoleFilter] = useQueryState("role", parseAsString.withDefault("all"));
 
   const { data: stats, isLoading } = useAdminDashboardStats();
 
-  const usersByDept = stats?.usersByDepartment ?? {};
-  const departments = stats?.departments ?? [];
+  const usersByDept = useMemo(
+    () => stats?.usersByDepartment ?? {},
+    [stats?.usersByDepartment]
+  );
+  const departments = useMemo(
+    () => stats?.departments ?? [],
+    [stats?.departments]
+  );
 
   const defaultDept = useMemo(() => {
     if (departments.length === 0) return null;
@@ -69,8 +76,12 @@ export function AdminDepartmentMembersContent() {
   }, [departments]);
 
   useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  useEffect(() => {
     if (defaultDept && !deptId) setDeptId(defaultDept.id);
-  }, [defaultDept, deptId]);
+  }, [defaultDept, deptId, setDeptId]);
 
   const selectedDeptId = deptId || (defaultDept?.id ?? "");
   const selectedDeptName = departments.find((d) => d.id === selectedDeptId)?.name ?? "";
@@ -97,7 +108,7 @@ export function AdminDepartmentMembersContent() {
     if (roleFilter !== "all" && selectedDeptId && !rolesInSelectedDept.includes(roleFilter)) {
       setRoleFilter("all");
     }
-  }, [selectedDeptId, roleFilter, rolesInSelectedDept]);
+  }, [selectedDeptId, roleFilter, rolesInSelectedDept, setRoleFilter]);
 
   const filteredUsers = useMemo(() => {
     if (!selectedDeptId) return [];
@@ -135,6 +146,12 @@ export function AdminDepartmentMembersContent() {
   }, [filteredUsers, safePage]);
   const showPagination =
     totalFiltered >= MANAGEMENT_PAGINATION_MIN_TOTAL && totalPages > 0;
+
+  useEffect(() => {
+    if (debouncedSearch !== search) {
+      setSearch(debouncedSearch);
+    }
+  }, [debouncedSearch, search, setSearch]);
 
   useEffect(() => {
     setPage(1);

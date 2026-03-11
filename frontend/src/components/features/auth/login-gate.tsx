@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth.store";
 import { ROUTES, getEntryRouteForRoles } from "@/config/constants";
+import { LoadingState } from "@/components/ui/loading-state";
 
 /**
  * When already authenticated, redirect to role entry route and show "Redirecting…".
@@ -21,7 +22,7 @@ export function LoginGate({ children }: { children: ReactNode }) {
   }, [user, router]);
 
   if (user) {
-    return null;
+    return <LoadingState fullScreen message="Redirecting…" />;
   }
 
   return <>{children}</>;

@@ -678,6 +678,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
         />
         <main
+          id="app-main"
           className={cn(
             "scrollbar-thin-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
             MAIN_BG,
@@ -770,6 +771,7 @@ function StaffLayout({
         </div>
       </header>
       <main
+        id="app-main"
         className={cn(
           "scrollbar-thin-stable min-h-0 min-w-0 flex-1 overflow-x-visible overflow-y-auto",
           MAIN_BG,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { UpdateUserBody } from "@/lib/schemas/users.schema";
 import { updateUserBodySchema } from "@/lib/schemas/users.schema";
@@ -59,7 +59,6 @@ export function EditUserForm({
   onCancel,
   isPending,
   mutateAsync,
-  error,
   variant = "default",
 }: EditUserFormProps) {
   const { data: departments, isError: departmentsError } = useDepartmentsQuery();
@@ -70,7 +69,6 @@ export function EditUserForm({
     control,
     handleSubmit,
     setError,
-    watch,
     formState: { errors },
   } = useForm<UpdateUserBody>({
     resolver: zodResolver(updateUserBodySchema),
@@ -80,6 +78,12 @@ export function EditUserForm({
       role: (user.roles?.[0] as Role) ?? "STAFF",
       departmentId: user.departmentId ?? "",
     },
+  });
+
+  const watchedRole = useWatch({
+    control,
+    name: "role",
+    defaultValue: (user.roles?.[0] as Role) ?? "STAFF",
   });
 
   async function onSubmit(data: UpdateUserBody) {
@@ -245,7 +249,7 @@ export function EditUserForm({
             name="departmentId"
             control={control}
             render={({ field }) => {
-              const roleIsQaCoordinator = watch("role") === "QA_COORDINATOR";
+              const roleIsQaCoordinator = watchedRole === "QA_COORDINATOR";
               const hintId = "edit-departmentId-qa-hint";
               const describedBy = errors.departmentId
                 ? "edit-departmentId-error"

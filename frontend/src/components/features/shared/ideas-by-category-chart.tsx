@@ -96,9 +96,9 @@ export function IdeasByCategoryChart({
                     animationDuration={500}
                     animationEasing="ease-out"
                   >
-                    {data.map((_, i) => (
+                    {data.map((d, i) => (
                       <Cell
-                        key={i}
+                        key={`${d.name}-${i}`}
                         fill={
                           INSIGHTS_DONUT_COLORS[
                             i % INSIGHTS_DONUT_COLORS.length

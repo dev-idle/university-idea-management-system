@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import type {
@@ -88,7 +88,6 @@ export function CreateCycleForm({
     setError,
     setValue,
     clearErrors,
-    watch,
     formState: { errors },
   } = useForm<CreateCycleFormValues>({
     resolver: zodResolver(createCycleFormSchema),
@@ -102,7 +101,11 @@ export function CreateCycleForm({
     },
   });
 
-  const ideaSubmissionClosesAt = watch("ideaSubmissionClosesAt");
+  const ideaSubmissionClosesAt = useWatch({
+    control,
+    name: "ideaSubmissionClosesAt",
+    defaultValue: "",
+  });
 
   function setInteractionDefault() {
     if (!ideaSubmissionClosesAt) return;

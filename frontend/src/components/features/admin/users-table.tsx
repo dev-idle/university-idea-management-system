@@ -78,7 +78,7 @@ interface UsersTableProps {
   departmentCompliance?: Array<{ id: string; hasQaCoordinator: boolean }>;
 }
 
-export function UsersTable({ users, isRefetching, hasActiveSearch = false, departmentCompliance }: UsersTableProps) {
+export function UsersTable({ users, hasActiveSearch = false, departmentCompliance }: UsersTableProps) {
   const updateMutation = useUpdateUserMutation();
   const [deactivateUser, setDeactivateUser] = useState<UserListItem | null>(null);
   const [editUser, setEditUser] = useState<UserListItem | null>(null);

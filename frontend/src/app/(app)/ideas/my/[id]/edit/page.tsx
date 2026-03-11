@@ -134,10 +134,6 @@ function AttachmentRow({
     <li className="flex flex-col gap-1 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]">
       <div className="flex min-w-0 items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <FileText
-            className="size-4 shrink-0 text-muted-foreground/65"
-            aria-hidden
-          />
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span className="min-w-0 truncate cursor-default text-[13px] text-foreground/80">
@@ -381,9 +377,6 @@ function EditIdeaForm({
             aria-invalid={!!errors.title}
             {...register("title")}
           />
-          <p className="text-xs leading-relaxed text-muted-foreground/80">
-            Titles must be unique within the proposal cycle.
-          </p>
           {errors.title && (
             <p className={FORM_FIELD_ERROR_CLASS} role="alert">
               {errors.title.message}
@@ -436,7 +429,7 @@ function EditIdeaForm({
             <div className="grid gap-0.5">
               <Label
                 htmlFor="edit-anonymous"
-                className="cursor-pointer text-[13px] font-medium text-foreground/92"
+                className="cursor-pointer text-[11px] font-medium uppercase tracking-wider text-foreground/92"
               >
                 Submit anonymously
               </Label>
@@ -453,9 +446,9 @@ function EditIdeaForm({
               <div className="min-w-0 flex-1 space-y-1">
                 <Label
                   htmlFor="edit-attachments-trigger"
-                  className="cursor-pointer text-[13px] font-medium text-foreground/92"
+                  className="cursor-pointer text-[11px] font-medium uppercase tracking-wider text-foreground/92"
                 >
-                  Supporting documents
+                  Attachments
                 </Label>
                 <p className="text-xs leading-relaxed text-muted-foreground/80">
                   PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.

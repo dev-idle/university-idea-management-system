@@ -6,7 +6,6 @@ import { queryKeys } from "@/lib/query/keys";
 import type {
   Idea,
   IdeasContext,
-  MyIdeasFilters,
   CreateIdeaBody,
   IdeasPaginatedResponse,
   IdeaComment,
@@ -117,7 +116,10 @@ function parseIdea(data: unknown): Idea {
 }
 
 /** Single idea by id (must belong to active academic year). STAFF only. */
-export function useIdeaQuery(id: string | null, options?: { enabled?: boolean }) {
+export function useIdeaQuery(
+  id: string | null,
+  options?: { enabled?: boolean; initialData?: Idea }
+) {
   return useQuery({
     queryKey: queryKeys.ideas.detail(id ?? ""),
     queryFn: async () => {
@@ -125,6 +127,7 @@ export function useIdeaQuery(id: string | null, options?: { enabled?: boolean })
       return parseIdea(data);
     },
     enabled: options?.enabled !== false && !!id,
+    initialData: options?.initialData,
   });
 }
 
@@ -203,7 +206,10 @@ function parseComments(data: unknown): IdeaCommentsResponse {
 }
 
 /** Comments for an idea. STAFF only. */
-export function useIdeaCommentsQuery(ideaId: string | null, options?: { enabled?: boolean }) {
+export function useIdeaCommentsQuery(
+  ideaId: string | null,
+  options?: { enabled?: boolean; initialData?: IdeaComment[] }
+) {
   return useQuery({
     queryKey: queryKeys.ideas.comments(ideaId ?? ""),
     queryFn: async () => {
@@ -211,6 +217,7 @@ export function useIdeaCommentsQuery(ideaId: string | null, options?: { enabled?
       return parseComments(data);
     },
     enabled: (options?.enabled !== false && !!ideaId) ?? !!ideaId,
+    initialData: options?.initialData,
   });
 }
 

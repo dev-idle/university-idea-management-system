@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+    ],
   },
   /** Redirect legacy /staff to /ideas (Staff Ideas Hub). */
   async redirects() {

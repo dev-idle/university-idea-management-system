@@ -9,9 +9,9 @@ import { ROLES } from "@/lib/rbac";
 export const createUserBodySchema = z.object({
   email: z
     .string()
-    .min(1, "Required.")
-    .email("Enter a valid email address.")
-    .max(255, "Max 255 characters."),
+    .min(1, { error: "Required." })
+    .max(255, { error: "Max 255 characters." })
+    .pipe(z.email({ error: "Enter a valid email address." })),
   fullName: z.string().max(255, "Max 255 characters.").optional().nullable(),
   password: z
     .string()
@@ -21,8 +21,8 @@ export const createUserBodySchema = z.object({
   role: z.enum(ROLES as unknown as [string, ...string[]]),
   departmentId: z
     .string()
-    .min(1, "Select a department.")
-    .uuid("Select a valid department."),
+    .min(1, { error: "Select a department." })
+    .pipe(z.uuid({ error: "Select a valid department." })),
 });
 
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
@@ -36,7 +36,7 @@ export const updateUserBodySchema = z.object({
     .refine((v) => !v || v.length >= 8, "At least 8 characters.")
     .refine((v) => !v || v.length <= 128, "Max 128 characters."),
   role: z.enum(ROLES as unknown as [string, ...string[]]).optional(),
-  departmentId: z.string().uuid("Select a valid department.").optional(),
+  departmentId: z.uuid({ error: "Select a valid department." }).optional(),
 });
 
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
@@ -51,15 +51,15 @@ export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 
 /** Single user in list/detail (API response shape). */
 export const userListItemSchema = z.object({
-  id: z.string().uuid(),
-  email: z.string().email(),
+  id: z.uuid(),
+  email: z.email(),
   fullName: z.string().nullable(),
   roles: z.array(z.string()),
   isActive: z.boolean(),
-  departmentId: z.string().uuid().nullable(),
+  departmentId: z.uuid().nullable(),
   department: z
     .object({
-      id: z.string().uuid(),
+      id: z.uuid(),
       name: z.string(),
     })
     .nullable(),

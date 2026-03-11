@@ -1,10 +1,22 @@
 import type { Metadata } from "next";
-import { IdeasHubContent } from "@/components/features/ideas/ideas-hub-content";
+import dynamic from "next/dynamic";
 import { IdeasHubRedirect } from "@/components/features/ideas/ideas-hub-redirect";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   PAGE_CONTAINER_CLASS,
   IDEAS_HUB_SPACING,
 } from "@/config/design";
+
+const IdeasHubContent = dynamic(
+  () => import("@/components/features/ideas/ideas-hub-content").then((m) => ({ default: m.IdeasHubContent })),
+  {
+    loading: () => (
+      <div className={PAGE_CONTAINER_CLASS}>
+        <LoadingState compact />
+      </div>
+    ),
+  },
+);
 
 export const metadata: Metadata = {
   title: "Ideas",

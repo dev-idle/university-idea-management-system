@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import {
   UNIFIED_CARD_CLASS,
   UNIFIED_CARD_TOOLBAR_CLASS,
@@ -31,13 +31,18 @@ import { cn, getAvatarInitial } from "@/lib/utils";
 const SEARCH_DEBOUNCE_MS = 350;
 
 export function QaManagerDepartmentMembersContent() {
-  const [searchInput, setSearchInput] = useState("");
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchInput, setSearchInput] = useState(search);
   const [debouncedSearch] = useDebouncedValue(
     searchInput,
     SEARCH_DEBOUNCE_MS,
   );
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -53,7 +58,7 @@ export function QaManagerDepartmentMembersContent() {
   }, []);
 
   const { data, isLoading, error } = useQaManagerDepartmentMembersQuery();
-  const rows = data ?? [];
+  const rows = useMemo(() => data ?? [], [data]);
   const filtered = useMemo(() => {
     const q = debouncedSearch.trim();
     if (!q) return rows;
@@ -84,8 +89,11 @@ export function QaManagerDepartmentMembersContent() {
   }, [page, totalPages, setPage]);
 
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, setPage]);
+    if (debouncedSearch !== search) {
+      setSearch(debouncedSearch);
+      setPage(1);
+    }
+  }, [debouncedSearch, search, setSearch, setPage]);
 
   if (error) {
     throw error;
@@ -158,8 +166,8 @@ export function QaManagerDepartmentMembersContent() {
                 </td>
               </tr>
             ) : (
-              paginatedRows.map((r) => (
-                <tr key={r.department.id} className={TABLE_ROW_CLASS}>
+              paginatedRows.map((r, idx) => (
+                <tr key={`${r.department.id}-${r.qaCoordinator?.id ?? "none"}-${idx}`} className={TABLE_ROW_CLASS}>
                   <td className={cn(TABLE_CELL_NAME_CLASS, "py-3.5")}>
                     {r.department.name}
                   </td>

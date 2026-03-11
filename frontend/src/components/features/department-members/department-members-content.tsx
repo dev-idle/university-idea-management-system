@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Search } from "lucide-react";
 import { useDepartmentMembersQuery } from "@/hooks/use-profile";
 import { LoadingState } from "@/components/ui/loading-state";
@@ -38,10 +38,14 @@ function getRoleLabel(role: string): string {
 export function DepartmentMembersContent() {
   const { data, isLoading, error } = useDepartmentMembersQuery();
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchInput, setSearchInput] = useState("");
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchInput, setSearchInput] = useState(search);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   useEffect(() => {
     if (debounceRef.current) {
@@ -50,12 +54,15 @@ export function DepartmentMembersContent() {
     }
     debounceRef.current = setTimeout(() => {
       debounceRef.current = null;
-      setSearch(searchInput);
+      if (searchInput !== search) {
+        setSearch(searchInput);
+        setPage(1);
+      }
     }, SEARCH_DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchInput]);
+  }, [searchInput, search, setSearch, setPage]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -75,13 +82,10 @@ export function DepartmentMembersContent() {
       debounceRef.current = null;
     }
     setSearch(searchInput);
-  }, [searchInput]);
-
-  useEffect(() => {
     setPage(1);
-  }, [search, setPage]);
+  }, [searchInput, setSearch, setPage]);
 
-  const members = data?.members ?? [];
+  const members = useMemo(() => data?.members ?? [], [data?.members]);
   const filteredMembers = useMemo(() => {
     if (!search.trim()) return members;
     const q = search.trim().toLowerCase();

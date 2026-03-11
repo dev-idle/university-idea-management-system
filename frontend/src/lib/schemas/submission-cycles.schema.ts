@@ -12,9 +12,9 @@ const DEFAULT_INTERACTION_DAYS = 14;
 
 export const createCycleBodySchema = z
   .object({
-    academicYearId: z.string().uuid(),
+    academicYearId: z.uuid(),
     name: z.string().min(1, "Name is required").max(255).transform((s) => s.trim()),
-    categoryIds: z.array(z.string().uuid()).min(1, "At least one category is required"),
+    categoryIds: z.array(z.uuid()).min(1, "At least one category is required"),
     ideaSubmissionClosesAt: z.coerce.date(),
     interactionClosesAt: z.coerce.date().optional(),
   })
@@ -59,9 +59,9 @@ function isWithinAcademicYear(
 /** Form schema: date fields as strings (datetime-local). Use for react-hook-form; convert to Date in submit. */
 function createCreateCycleFormSchemaBase() {
   return z.object({
-    academicYearId: z.string().uuid(),
+    academicYearId: z.uuid(),
     name: z.string().min(1, "Name is required").max(255),
-    categoryIds: z.array(z.string().uuid()).min(1, "At least one category is required"),
+    categoryIds: z.array(z.uuid()).min(1, "At least one category is required"),
     ideaSubmissionClosesAt: z.string().min(1, "Idea submission closure is required"),
     interactionClosesAt: z.string().min(1, "Comments and votes closure is required"),
   });
@@ -87,14 +87,14 @@ export function createCycleFormSchemaWithAcademicYears(
       const interactionClose = new Date(data.interactionClosesAt);
       if (!isWithinAcademicYear(ideaClose, start, end)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Idea closure date must be within the academic year",
           path: ["ideaSubmissionClosesAt"],
         });
       }
       if (!isWithinAcademicYear(interactionClose, start, end)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Comments & votes closure date must be within the academic year",
           path: ["interactionClosesAt"],
         });
@@ -115,7 +115,7 @@ export type CreateCycleFormValues = z.infer<typeof createCycleFormSchema>;
 export const updateCycleBodySchema = z
   .object({
     name: z.string().max(255).optional().transform((s) => (s != null && s.trim() !== "" ? s.trim() : undefined)),
-    categoryIds: z.array(z.string().uuid()).min(1).optional(),
+    categoryIds: z.array(z.uuid()).min(1).optional(),
     ideaSubmissionClosesAt: z.coerce.date().optional(),
     interactionClosesAt: z.coerce.date().optional(),
   })
@@ -137,7 +137,7 @@ type AcademicYearForUpdate = { startDate: Date | string; endDate: Date | string 
 function createUpdateCycleFormSchemaBase() {
   return z.object({
     name: z.string().min(1, "Name is required").max(255).transform((s) => s.trim()),
-    categoryIds: z.array(z.string().uuid()).min(1, "At least one category is required"),
+    categoryIds: z.array(z.uuid()).min(1, "At least one category is required"),
     ideaSubmissionClosesAt: z.string().min(1),
     interactionClosesAt: z.string().min(1),
   });
@@ -161,14 +161,14 @@ export function updateCycleFormSchemaWithAcademicYear(
       const interactionClose = new Date(data.interactionClosesAt);
       if (!isWithinAcademicYear(ideaClose, start, end)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Idea closure date must be within the academic year",
           path: ["ideaSubmissionClosesAt"],
         });
       }
       if (!isWithinAcademicYear(interactionClose, start, end)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Comments & votes closure date must be within the academic year",
           path: ["interactionClosesAt"],
         });
@@ -187,7 +187,7 @@ export const updateCycleFormSchema = createUpdateCycleFormSchemaBase().refine(
 export type UpdateCycleFormValues = z.infer<typeof updateCycleFormSchema>;
 
 const academicYearRefSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date().nullable(),
@@ -195,14 +195,14 @@ const academicYearRefSchema = z.object({
 });
 
 const categoryRefSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   name: z.string(),
   ideaCount: z.number().int().min(0).optional(),
 });
 
 export const submissionCycleSchema = z.object({
-  id: z.string().uuid(),
-  academicYearId: z.string().uuid(),
+  id: z.uuid(),
+  academicYearId: z.uuid(),
   name: z.string().nullable(),
   ideaSubmissionClosesAt: z.coerce.date(),
   interactionClosesAt: z.coerce.date(),

@@ -92,10 +92,6 @@ function AttachmentRow({
     <li className="flex flex-col gap-1 rounded-lg border border-border/40 bg-muted/[0.05] px-4 py-2.5 transition-colors duration-150 hover:bg-muted/[0.08]">
       <div className="flex min-w-0 items-center justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <FileText
-            className="size-4 shrink-0 text-muted-foreground/65"
-            aria-hidden
-          />
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span className="min-w-0 truncate cursor-default text-[13px] text-foreground/80">
@@ -392,10 +388,14 @@ export function SubmitIdeaForm({
               className="mt-0.5"
             />
             <div className="grid gap-0.5">
-              <Label id="idea-anonymous-desc" htmlFor="idea-anonymous" className={labelClass}>
+              <Label
+                id="idea-anonymous-desc"
+                htmlFor="idea-anonymous"
+                className={isFullPage ? "cursor-pointer text-[11px] font-medium uppercase tracking-wider text-foreground/92" : cn(labelClass, "uppercase tracking-wider")}
+              >
                 Submit anonymously
               </Label>
-              <p className={hintClass}>
+                <p className={isFullPage ? "text-xs leading-relaxed text-muted-foreground/80" : hintClass}>
                 Withheld from publication, retained for governance and compliance.
               </p>
             </div>
@@ -407,9 +407,9 @@ export function SubmitIdeaForm({
               <div className="min-w-0 flex-1 space-y-1">
                 <Label
                   htmlFor="idea-attachments-trigger"
-                  className="cursor-pointer text-[13px] font-medium text-foreground/92"
+                  className="cursor-pointer text-[11px] font-medium uppercase tracking-wider text-foreground/92"
                 >
-                  Supporting documents
+                  Attachments
                 </Label>
                 <p className="text-xs leading-relaxed text-muted-foreground/80">
                   PDF, Word, images. Max {MAX_ATTACHMENTS} files, {MAX_FILE_SIZE_MB} MB each.
@@ -460,7 +460,7 @@ export function SubmitIdeaForm({
               <ul className="mt-3 space-y-1.5">
                 {attachments.map((att, index) => (
                   <AttachmentRow
-                    key={`${att.cloudinaryPublicId}-${index}`}
+                    key={att.cloudinaryPublicId}
                     att={att}
                     onRemove={() => removeAttachment(index)}
                   />

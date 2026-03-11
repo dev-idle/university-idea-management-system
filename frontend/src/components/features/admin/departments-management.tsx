@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useRef, useEffect } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,12 +78,17 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 export function DepartmentsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchInput, setSearchInput] = useState(search);
   const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [showCreate, setShowCreate] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [departmentToDelete, setDepartmentToDelete] = useState<Department | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -97,7 +102,7 @@ export function DepartmentsManagement() {
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, []);
 
-  const { data: departments, status, error, isFetching } = useDepartmentsQuery();
+  const { data: departments, status, error } = useDepartmentsQuery();
 
   const filtered = useMemo(() => {
     if (!departments) return [];
@@ -121,8 +126,11 @@ export function DepartmentsManagement() {
   );
 
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, setPage]);
+    if (debouncedSearch !== search) {
+      setSearch(debouncedSearch);
+      setPage(1);
+    }
+  }, [debouncedSearch, search, setSearch, setPage]);
 
   const createMutation = useCreateDepartmentMutation();
   const updateMutation = useUpdateDepartmentMutation();

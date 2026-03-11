@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { Can } from "@/components/ui/can";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,12 +93,17 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 export function AcademicYearsManagement() {
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchInput, setSearchInput] = useState(search);
+  const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [showCreate, setShowCreate] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
   const [yearToDelete, setYearToDelete] = useState<AcademicYear | null>(null);
-  const [searchInput, setSearchInput] = useState("");
-  const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -112,7 +117,7 @@ export function AcademicYearsManagement() {
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, []);
 
-  const { data: listData, status, error, isFetching } = useAcademicYearsQuery();
+  const { data: listData, status, error } = useAcademicYearsQuery();
   const allYears = useMemo(
     () => listData?.list ?? [],
     [listData?.list]
@@ -145,8 +150,11 @@ export function AcademicYearsManagement() {
     [years, page]
   );
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, setPage]);
+    if (debouncedSearch !== search) {
+      setSearch(debouncedSearch);
+      setPage(1);
+    }
+  }, [debouncedSearch, search, setSearch, setPage]);
 
   const createMutation = useCreateAcademicYearMutation();
   const updateMutation = useUpdateAcademicYearMutation();

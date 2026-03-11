@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { parseAsInteger, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useAuthStore } from "@/stores/auth.store";
 import { hasRole } from "@/lib/rbac";
 import { Button } from "@/components/ui/button";
@@ -192,13 +192,18 @@ export function SubmissionCyclesManagement() {
   const isQaManager = hasRole(user?.roles, "QA_MANAGER");
 
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useQueryState("search", parseAsString.withDefault(""));
+  const [searchInput, setSearchInput] = useState(search);
   const [debouncedSearch] = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [showCreate, setShowCreate] = useState(false);
   const [editingCycle, setEditingCycle] = useState<SubmissionCycle | null>(null);
   const [cycleToDeactivate, setCycleToDeactivate] = useState<SubmissionCycle | null>(null);
   const [cycleToDelete, setCycleToDelete] = useState<SubmissionCycle | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -212,7 +217,7 @@ export function SubmissionCyclesManagement() {
     return () => window.removeEventListener("keydown", handler, { capture: true });
   }, []);
 
-  const { data: cycles, status, error, isFetching } = useSubmissionCyclesQuery();
+  const { data: cycles, status, error } = useSubmissionCyclesQuery();
 
   const filtered = useMemo(() => {
     if (!cycles) return [];
@@ -240,8 +245,11 @@ export function SubmissionCyclesManagement() {
   );
 
   useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, setPage]);
+    if (debouncedSearch !== search) {
+      setSearch(debouncedSearch);
+      setPage(1);
+    }
+  }, [debouncedSearch, search, setSearch, setPage]);
 
   const createMutation = useCreateSubmissionCycleMutation();
   const updateMutation = useUpdateSubmissionCycleMutation();

@@ -137,7 +137,7 @@ export function useDwellInView(
       headerRefParam && card
         ? new ResizeObserver(maybeSwitchObserved)
         : null;
-    if (resizeObserver) resizeObserver.observe(card);
+    if (resizeObserver && card) resizeObserver.observe(card);
 
     const onWindowResize = headerRefParam ? maybeSwitchObserved : undefined;
     if (onWindowResize) window.addEventListener("resize", onWindowResize);

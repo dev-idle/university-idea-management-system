@@ -77,6 +77,16 @@ export function UnifiedPagination({
   const prevDisabled = page <= 1;
   const nextDisabled = page >= totalPages;
 
+  const goToPage = (p: number) => {
+    setPage(p);
+    const main = document.getElementById("app-main");
+    if (main) {
+      main.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const alignClass =
     align === "center" ? "justify-center" : align === "start" ? "justify-start" : "justify-end";
 
@@ -92,7 +102,7 @@ export function UnifiedPagination({
               aria-disabled={prevDisabled}
               onClick={(e) => {
                 e.preventDefault();
-                if (!prevDisabled) setPage(page - 1);
+                if (!prevDisabled) goToPage(page - 1);
               }}
               className={cn(
                 PAGINATION_NAV_BTN_BASE,
@@ -114,7 +124,7 @@ export function UnifiedPagination({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setPage(p);
+                    goToPage(p);
                   }}
                   isActive={p === page}
                   className={cn(
@@ -135,7 +145,7 @@ export function UnifiedPagination({
               aria-disabled={nextDisabled}
               onClick={(e) => {
                 e.preventDefault();
-                if (!nextDisabled) setPage(page + 1);
+                if (!nextDisabled) goToPage(page + 1);
               }}
               className={cn(
                 PAGINATION_NAV_BTN_BASE,

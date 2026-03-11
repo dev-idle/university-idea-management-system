@@ -88,7 +88,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  FileText,
   Pencil,
   Trash2,
   ThumbsUp,
@@ -200,7 +199,6 @@ function IdeaRow({
                 <>
                   <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                   <span className="inline-flex items-center gap-1.5">
-                    <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
                     {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
                   </span>
                 </>
@@ -303,7 +301,7 @@ function IdeaRow({
         {/* Attachments: below description when expanded */}
         {isExpanded && idea.attachments.length > 0 && (
           <div className="mt-4">
-            <p className={IDEAS_HUB_ATTACHMENTS_LABEL}>Attached files</p>
+            <p className={IDEAS_HUB_ATTACHMENTS_LABEL}>Attachments</p>
             <div className={IDEAS_HUB_ATTACHMENTS_LIST}>
               {idea.attachments.map((att, i) => (
                 <div
@@ -313,7 +311,6 @@ function IdeaRow({
                     i > 0 && "border-t border-border/20",
                   )}
                 >
-                  <FileText className="size-3 shrink-0 text-muted-foreground/45" aria-hidden />
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <span className="min-w-0 truncate cursor-default">{att.fileName}</span>

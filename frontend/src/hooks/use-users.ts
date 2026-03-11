@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { fetchWithAuth } from "@/lib/api/client";
+import { useAuthStore } from "@/stores/auth.store";
 import { queryKeys } from "@/lib/query/keys";
 import type {
   UserListItem,
@@ -30,6 +31,7 @@ export function useUsersListQuery(params?: {
   limit: number;
   search?: string;
 }) {
+  const user = useAuthStore((s) => s.user);
   const page = params?.page ?? DEFAULT_PAGE;
   const limit = params?.limit ?? DEFAULT_LIMIT;
   const search = params?.search?.trim();
@@ -44,7 +46,7 @@ export function useUsersListQuery(params?: {
       );
       return parseUsersList(res);
     },
-    enabled: true,
+    enabled: !!user,
   });
 }
 

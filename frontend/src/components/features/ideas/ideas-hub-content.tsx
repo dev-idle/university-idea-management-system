@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import { parseAsInteger, parseAsString, parseAsStringLiteral, useQueryState } from "nuqs";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -75,7 +75,6 @@ import {
   Eye,
   Plus,
   Lightbulb,
-  FileText,
   Clock,
   Tag,
   Hourglass,
@@ -100,13 +99,6 @@ const SORT_PARSER = parseAsStringLiteral(VIEW_TABS.map((t) => t.value)).withDefa
 
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
-
-function fmtDate(d: Date | string): string {
-  return (typeof d === "string" ? new Date(d) : d).toLocaleDateString(
-    undefined,
-    { dateStyle: "medium" },
-  );
-}
 
 function fmtDateTime(d: Date | string): string {
   const date = typeof d === "string" ? new Date(d) : d;
@@ -145,7 +137,7 @@ function formatCountdown(ms: number): string {
 /** CTA deadline: always show deadline date/time; when ≤5 days add realtime countdown. */
 function useCtaDeadline(closesAt: string | Date | null) {
   const [now, setNow] = useState(() => new Date());
-  const end = closesAt ? new Date(closesAt) : null;
+  const end = useMemo(() => (closesAt ? new Date(closesAt) : null), [closesAt]);
 
   useEffect(() => {
     if (!end) return;
@@ -161,7 +153,8 @@ function useCtaDeadline(closesAt: string | Date | null) {
       setNow(t);
     }, 1000);
     return () => clearInterval(id);
-  }, [closesAt]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- omit 'now': including it would re-run every second when the interval updates now, unnecessarily restarting the interval
+  }, [end]);
 
   if (!end) return { deadline: "New ideas welcome", countdown: null };
   if (end <= now) return { deadline: "Submission closed", countdown: null };
@@ -295,7 +288,6 @@ function IdeaCard({
               <>
                 <span className={cn(BYLINE_META_SEP, "hidden sm:inline-flex")} aria-hidden />
                 <span className="inline-flex items-center gap-1.5">
-                  <FileText className="size-3 shrink-0 opacity-50" aria-hidden />
                   {idea.attachments.length} file{idea.attachments.length !== 1 ? "s" : ""}
                 </span>
               </>
@@ -350,7 +342,7 @@ function IdeaCard({
         {/* Attachments: below description when expanded */}
         {isExpanded && idea.attachments.length > 0 && (
           <div className="mt-4">
-            <p className={IDEAS_HUB_ATTACHMENTS_LABEL}>Attached files</p>
+            <p className={IDEAS_HUB_ATTACHMENTS_LABEL}>Attachments</p>
             <div className={IDEAS_HUB_ATTACHMENTS_LIST}>
               {idea.attachments.map((att, i) => (
                 <div
@@ -360,7 +352,6 @@ function IdeaCard({
                     i > 0 && "border-t border-border/20",
                   )}
                 >
-                  <FileText className="size-3 shrink-0 text-muted-foreground/45" aria-hidden />
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
                       <span className="min-w-0 truncate cursor-default">{att.fileName}</span>

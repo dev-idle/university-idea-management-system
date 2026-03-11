@@ -13,9 +13,9 @@ export function useDebouncedValue<T>(
   const [debounced, setDebounced] = useState(value);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const valueRef = useRef(value);
-  valueRef.current = value;
 
   useEffect(() => {
+    valueRef.current = value;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       timeoutRef.current = null;

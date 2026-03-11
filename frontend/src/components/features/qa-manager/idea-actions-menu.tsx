@@ -54,14 +54,15 @@ export function hasIdeaActions(idea: IdeaForMenu): boolean {
 }
 
 export function IdeaActionsMenu({ idea }: { idea: IdeaForMenu }) {
-  const canDelete = idea.cycleStatus === "ACTIVE";
-  if (!hasIdeaActions(idea)) return null;
   const router = useRouter();
   const deleteMutation = useDeleteIdeaMutation();
   const [revealOpen, setRevealOpen] = useState(false);
   const [revealData, setRevealData] = useState<{ fullName: string | null; email: string } | null>(null);
   const [revealError, setRevealError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const canDelete = idea.cycleStatus === "ACTIVE";
+  if (!hasIdeaActions(idea)) return null;
 
   const handleRevealAuthor = async () => {
     setRevealError(null);

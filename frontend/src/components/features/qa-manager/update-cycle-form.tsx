@@ -1,7 +1,7 @@
 "use client";
 
 import type { Resolver } from "react-hook-form";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import type { SubmissionCycle, UpdateCycleBody } from "@/lib/schemas/submission-cycles.schema";
@@ -75,7 +75,6 @@ export function UpdateCycleForm({
     setError,
     setValue,
     clearErrors,
-    watch,
     formState: { errors },
   } = useForm<UpdateCycleFormValues>({
     resolver: zodResolver(updateCycleFormSchema) as Resolver<UpdateCycleFormValues>,
@@ -88,7 +87,11 @@ export function UpdateCycleForm({
     },
   });
 
-  const ideaSubmissionClosesAt = watch("ideaSubmissionClosesAt");
+  const ideaSubmissionClosesAt = useWatch({
+    control,
+    name: "ideaSubmissionClosesAt",
+    defaultValue: dateToDatetimeLocal(cycle.ideaSubmissionClosesAt),
+  });
 
   const categoryIdeaCount = useMemo(() => {
     const map = new Map<string, number>();

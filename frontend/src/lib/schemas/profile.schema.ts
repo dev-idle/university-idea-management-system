@@ -3,7 +3,7 @@ import { z } from "zod";
 /** GET /me response — safe profile fields only. */
 export const profileSchema = z.object({
   id: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
   fullName: z.string().nullable(),
   phone: z.string().nullable(),
   address: z.string().nullable(),
@@ -72,7 +72,7 @@ export const departmentMembersSchema = z
       z.object({
         id: z.string(),
         fullName: z.string().nullable(),
-        email: z.string().email(),
+        email: z.email(),
         role: z.string(),
       })
     ),
@@ -106,7 +106,7 @@ export const departmentMembersQaManagerSchema = z.array(
       .object({
         id: z.string(),
         fullName: z.string().nullable(),
-        email: z.string().email(),
+        email: z.email(),
       })
       .nullable(),
   })

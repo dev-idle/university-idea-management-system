@@ -5,7 +5,11 @@ import { z } from "zod";
  */
 
 export const loginBodySchema = z.object({
-  email: z.string().min(1, "Email is required").email("Enter a valid email address").max(255),
+  email: z
+    .string()
+    .min(1, { error: "Email is required" })
+    .max(255)
+    .pipe(z.email({ error: "Enter a valid email address" })),
   password: z
     .string()
     .min(1, "Password is required")
@@ -17,7 +21,7 @@ export type LoginBody = z.infer<typeof loginBodySchema>;
 
 export const authUserSchema = z.object({
   id: z.string().min(1),
-  email: z.string().email(),
+  email: z.email(),
   roles: z.array(z.string()),
 });
 

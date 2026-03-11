@@ -44,14 +44,14 @@ export const createAcademicYearFormSchema = z
     const end = new Date(data.endDate);
     if (start.getFullYear() !== startYear) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Start date must be in ${startYear}.`,
         path: ["startDate"],
       });
     }
     if (end.getFullYear() !== endYear) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `End date must be in ${endYear}.`,
         path: ["endDate"],
       });
@@ -105,7 +105,7 @@ export const updateAcademicYearFormSchema = z
       const y = new Date(data.startDate).getFullYear();
       if (y !== startYear) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `Start date must be in ${startYear}.`,
           path: ["startDate"],
         });
@@ -115,7 +115,7 @@ export const updateAcademicYearFormSchema = z
       const y = new Date(data.endDate).getFullYear();
       if (y !== endYear) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `End date must be in ${endYear}.`,
           path: ["endDate"],
         });

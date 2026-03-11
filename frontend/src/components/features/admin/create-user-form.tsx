@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import type { CreateUserBody } from "@/lib/schemas/users.schema";
@@ -61,7 +61,6 @@ export function CreateUserForm({
   onCancel,
   isPending,
   mutateAsync,
-  error,
   variant = "default",
 }: CreateUserFormProps) {
   const { data: departments, isError: departmentsError } = useDepartmentsQuery();
@@ -72,7 +71,6 @@ export function CreateUserForm({
     control,
     handleSubmit,
     setError,
-    watch,
     formState: { errors },
   } = useForm<CreateUserBody>({
     resolver: zodResolver(createUserBodySchema),
@@ -84,6 +82,8 @@ export function CreateUserForm({
       departmentId: "",
     },
   });
+
+  const watchedRole = useWatch({ control, name: "role", defaultValue: "STAFF" });
 
   async function onSubmit(data: CreateUserBody) {
     if (data.role === "STAFF" && data.departmentId && stats?.departmentCompliance) {
@@ -267,7 +267,7 @@ export function CreateUserForm({
             control={control}
             render={({ field }) => {
               const selectedDepartment = departments?.find((d) => d.id === field.value);
-              const roleIsQaCoordinator = watch("role") === "QA_COORDINATOR";
+              const roleIsQaCoordinator = watchedRole === "QA_COORDINATOR";
               const hintId = "departmentId-qa-hint";
               const describedBy = errors.departmentId
                 ? "departmentId-error"
