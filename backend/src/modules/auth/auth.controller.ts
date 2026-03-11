@@ -46,7 +46,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body(new ZodValidationPipe(loginBodySchema))
-    body: { email: string; password: string },
+    body: {
+      email: string;
+      password: string;
+    },
     @Res({ passthrough: true }) res: express.Response,
   ): Promise<{ accessToken: string; user: AuthUser }> {
     const result = await this.authService.login(body.email, body.password);
@@ -60,7 +63,9 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async forgotPassword(
     @Body(new ZodValidationPipe(forgotPasswordBodySchema))
-    body: { email: string },
+    body: {
+      email: string;
+    },
   ): Promise<{ message: string }> {
     return this.authService.forgotPassword(body.email);
   }
@@ -71,7 +76,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(
     @Body(new ZodValidationPipe(resetPasswordBodySchema))
-    body: { token: string; newPassword: string },
+    body: {
+      token: string;
+      newPassword: string;
+    },
   ): Promise<{ message: string }> {
     return this.authService.resetPassword(body.token, body.newPassword);
   }

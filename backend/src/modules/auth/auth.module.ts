@@ -9,10 +9,7 @@ import { PermissionsGuard } from './guards/permissions.guard';
 import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    MailModule,
-  ],
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' }), MailModule],
   controllers: [AuthController],
   providers: [
     AuthService,

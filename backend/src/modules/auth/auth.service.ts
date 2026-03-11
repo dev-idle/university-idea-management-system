@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { MailerService } from '@nestjs-modules/mailer';
+import type { PrismaClient } from '@generated/prisma';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { verifyPassword } from '../../common/crypto/password.util';
 import {
@@ -19,8 +24,30 @@ import { DEFAULT_FRONTEND_URL } from '../notification/constants';
 
 const RESET_TOKEN_EXPIRY_MIN = 15;
 
+/** Typed delegate for passwordResetToken; Prisma generated types don't always resolve for ESLint. */
+interface PasswordResetTokenDelegate {
+  deleteMany(args: { where: { userId: string } }): Promise<unknown>;
+  create(args: {
+    data: { userId: string; tokenHash: string; expiresAt: Date };
+  }): Promise<unknown>;
+  findFirst(args: {
+    where: { tokenHash: string };
+    select: { id: true; userId: true; expiresAt: true };
+  }): Promise<{ id: string; userId: string; expiresAt: Date } | null>;
+  delete(args: { where: { id: string } }): Promise<unknown>;
+}
+
 @Injectable()
 export class AuthService {
+  private get db(): PrismaClient {
+    return this.prisma;
+  }
+
+  private get passwordResetTokens(): PasswordResetTokenDelegate {
+    return this.prisma
+      .passwordResetToken as unknown as PasswordResetTokenDelegate;
+  }
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
@@ -232,18 +259,18 @@ export class AuthService {
     });
 
     if (!user || !user.isActive) {
-      throw new BadRequestException('No account found with this email address.');
+      throw new BadRequestException(
+        'No account found with this email address.',
+      );
     }
 
-    await this.prisma.passwordResetToken.deleteMany({
+    await this.passwordResetTokens.deleteMany({
       where: { userId: user.id },
     });
     const rawToken = generateResetToken();
     const tokenHash = hashToken(rawToken);
-    const expiresAt = new Date(
-      Date.now() + RESET_TOKEN_EXPIRY_MIN * 60 * 1000,
-    );
-    await this.prisma.passwordResetToken.create({
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRY_MIN * 60 * 1000);
+    await this.passwordResetTokens.create({
       data: { userId: user.id, tokenHash, expiresAt },
     });
     const baseUrl =
@@ -260,10 +287,12 @@ export class AuthService {
         },
       });
     } catch {
-      await this.prisma.passwordResetToken.deleteMany({
+      await this.passwordResetTokens.deleteMany({
         where: { userId: user.id },
       });
-      throw new BadRequestException('Failed to send reset email. Please try again later.');
+      throw new BadRequestException(
+        'Failed to send reset email. Please try again later.',
+      );
     }
 
     return {
@@ -275,24 +304,28 @@ export class AuthService {
    * Reset password: validate token, update password, invalidate sessions.
    * OWASP: single-use token, no auto-login, secure storage.
    */
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     const tokenHash = hashToken(token.trim());
-    const record = await this.prisma.passwordResetToken.findFirst({
+    const record = (await this.passwordResetTokens.findFirst({
       where: { tokenHash },
       select: { id: true, userId: true, expiresAt: true },
-    });
+    })) as { id: string; userId: string; expiresAt: Date } | null;
     if (!record || record.expiresAt < new Date()) {
       throw new UnauthorizedException('Invalid or expired reset link');
     }
     const passwordHash = await hashPassword(newPassword);
-    await this.prisma.$transaction([
-      this.prisma.user.update({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
         where: { id: record.userId },
         data: { passwordHash },
-      }),
-      this.prisma.passwordResetToken.delete({ where: { id: record.id } }),
-      this.prisma.refreshToken.deleteMany({ where: { userId: record.userId } }),
-    ]);
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- Prisma tx client passwordResetToken type unresolved
+      await tx.passwordResetToken.delete({ where: { id: record.id } });
+      await tx.refreshToken.deleteMany({ where: { userId: record.userId } });
+    });
     return { message: 'Password reset successfully. Please sign in.' };
   }
 
