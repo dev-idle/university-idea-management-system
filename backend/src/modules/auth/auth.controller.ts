@@ -38,8 +38,8 @@ export class AuthController {
     );
   }
 
-  /** Stricter throttle: 5 attempts per minute to mitigate brute force. */
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  /** Throttle: 15 attempts per minute. */
+  @Throttle({ default: { limit: 15, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(

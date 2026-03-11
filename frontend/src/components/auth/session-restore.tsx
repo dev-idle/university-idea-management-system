@@ -52,10 +52,12 @@ export function SessionRestore({ children }: { children: ReactNode }) {
           setRestoring(false);
         } else {
           router.replace(ROUTES.LOGIN);
+          setRestoring(false);
         }
       })
       .catch(() => {
         router.replace(ROUTES.LOGIN);
+        setRestoring(false);
       });
   }, [accessToken, user, pathname, setAuth, router]);
 

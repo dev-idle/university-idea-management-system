@@ -2,10 +2,11 @@
 
 import { cookies } from "next/headers";
 import { loginBodySchema, loginResponseSchema } from "@/lib/schemas/auth.schema";
-import { env } from "@/config/env";
+import { env, API_SERVER_BASE } from "@/config/env";
 import { AUTH } from "@/config/constants";
 
-const API_BASE = env.NEXT_PUBLIC_API_BASE;
+/** Server Actions run on Next.js server; use API_SERVER_BASE (e.g. http://backend:3001 in Docker). */
+const API_BASE = API_SERVER_BASE;
 const AUTH_BASE = `${API_BASE}/${AUTH.API_PREFIX}/auth`;
 
 type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };

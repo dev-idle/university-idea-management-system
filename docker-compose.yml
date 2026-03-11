@@ -1,0 +1,123 @@
+# University Idea Management System - Docker Compose
+# Neon PostgreSQL | Redis 8 | NestJS 11 | Next.js 16
+# 2026 - Use DATABASE_URL from .env (Neon) or --profile local-db for PostgreSQL container
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 18 (optional: use --profile local-db when not using Neon)
+  # ---------------------------------------------------------------------------
+  postgres:
+    profiles: ["local-db"]
+    image: postgres:18-alpine
+    container_name: uims-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-uims}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-uims_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-uims}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-uims} -d ${POSTGRES_DB:-uims}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Redis 8 (BullMQ queues)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:8-alpine
+    container_name: uims-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Backend (NestJS)
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: uims-backend
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      # Neon: DATABASE_URL + DIRECT_URL from .env. Local DB: --profile local-db + POSTGRES_*
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-uims}:${POSTGRES_PASSWORD:-uims_secret}@postgres:5432/${POSTGRES_DB:-uims}}
+      DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL:-postgresql://${POSTGRES_USER:-uims}:${POSTGRES_PASSWORD:-uims_secret}@postgres:5432/${POSTGRES_DB:-uims}}}
+      REDIS_URL: redis://redis:6379
+      REDIS_ENABLED: "true"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://frontend:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      # Optional: Cloudinary, SMTP, Sentry (pass via .env)
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/v1/', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Frontend (Next.js)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:3001}
+        NEXT_PUBLIC_APP_ORIGIN: ${NEXT_PUBLIC_APP_ORIGIN:-http://localhost:3000}
+        NEXT_PUBLIC_API_VERSION: ${NEXT_PUBLIC_API_VERSION:-1}
+    container_name: uims-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Server Actions call backend from container; use Docker service name
+      API_SERVER_BASE: http://backend:3001
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  postgres_data:
+  redis_data:

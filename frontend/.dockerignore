@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+.pnpm-store
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+.next
+out
+coverage
+*.tsbuildinfo
+
+# IDE & OS
+.idea
+.vscode
+*.swp
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Tests
+**/__tests__
+**/*.spec.*
+**/*.test.*
+vitest.config.*
+.eslintrc*
+
+# Misc
+README.md
+*.md

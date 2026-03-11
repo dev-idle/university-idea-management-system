@@ -2,6 +2,8 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  /** Standalone output for Docker: minimal production bundle. */
+  output: "standalone",
   reactCompiler: true,
   /** Next.js 16: PPR + use cache enabled via cacheComponents. */
   cacheComponents: true,

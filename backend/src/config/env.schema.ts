@@ -55,8 +55,12 @@ export const envSchema = z
     MAILTRAP_INBOX_URL: z.string().url().optional(),
     /** Frontend base URL for notification links. */
     FRONTEND_URL: z.string().url().optional(),
-    /** Sentry DSN for error monitoring. When unset, Sentry is disabled. */
-    SENTRY_DSN: z.string().url().optional(),
+    /** Sentry DSN for error monitoring. When unset or empty, Sentry is disabled. */
+    SENTRY_DSN: z
+      .string()
+      .optional()
+      .transform((v) => (v && v.trim() ? v : undefined))
+      .pipe(z.string().url().optional()),
     /** Sentry traces sample rate (0–1). Optional. */
     SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).optional(),
     /** Sentry environment name. When unset, uses NODE_ENV. */
