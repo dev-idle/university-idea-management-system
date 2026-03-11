@@ -17,6 +17,8 @@ import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { loginBodySchema } from './dto/login.dto';
+import { forgotPasswordBodySchema } from './dto/forgot-password.dto';
+import { resetPasswordBodySchema } from './dto/reset-password.dto';
 import type { AccessTokenPayload, AuthUser } from './auth.types';
 import { getAuthCookiePath } from '../../config';
 
@@ -50,6 +52,28 @@ export class AuthController {
     const result = await this.authService.login(body.email, body.password);
     this.setRefreshCookie(res, result.refreshToken);
     return { accessToken: result.accessToken, user: result.user };
+  }
+
+  /** OWASP: rate limit 20/15min to prevent flooding user inbox. */
+  @Throttle({ default: { limit: 20, ttl: 15 * 60_000 } })
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(
+    @Body(new ZodValidationPipe(forgotPasswordBodySchema))
+    body: { email: string },
+  ): Promise<{ message: string }> {
+    return this.authService.forgotPassword(body.email);
+  }
+
+  /** OWASP: rate limit to prevent token brute-force. */
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Body(new ZodValidationPipe(resetPasswordBodySchema))
+    body: { token: string; newPassword: string },
+  ): Promise<{ message: string }> {
+    return this.authService.resetPassword(body.token, body.newPassword);
   }
 
   @Post('refresh')

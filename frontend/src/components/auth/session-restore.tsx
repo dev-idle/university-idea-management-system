@@ -7,10 +7,13 @@ import { useAuthStore } from "@/stores/auth.store";
 import { refreshAction } from "@/actions/auth.actions";
 import { ROUTES, getEntryRouteForRoles } from "@/config/constants";
 
+/** Pages that allow unauthenticated access — never redirect to /login. */
+const PUBLIC_AUTH_PAGES = [ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD];
+
 /**
  * On app load: no /auth/me. Try POST /auth/refresh when there is no access token.
  * If refresh succeeds: store token + user in Zustand; if on / or /login, redirect by role.
- * If refresh fails: redirect to /login (login page never flashes for authenticated users).
+ * If refresh fails: redirect to /login — except on forgot/reset-password (user may have clicked email link).
  * Starts with restoring=true to avoid flash of content before we know auth state.
  */
 export function SessionRestore({ children }: { children: ReactNode }) {
@@ -22,11 +25,14 @@ export function SessionRestore({ children }: { children: ReactNode }) {
   const [restoring, setRestoring] = useState(true);
   const triedRestore = useRef(false);
 
+  const isPublicAuthPage = PUBLIC_AUTH_PAGES.some((p) => pathname === p);
+
   useEffect(() => {
     if (accessToken && user) {
       if (pathname === "/" || pathname === "/login") {
         const entry = getEntryRouteForRoles(user.roles);
         if (entry !== ROUTES.LOGIN) {
+          setRestoring(false);
           router.replace(entry);
           return;
         }
@@ -45,21 +51,22 @@ export function SessionRestore({ children }: { children: ReactNode }) {
           if (pathname === "/" || pathname === "/login") {
             const entry = getEntryRouteForRoles(result.data.user.roles);
             if (entry !== ROUTES.LOGIN) {
+              setRestoring(false);
               router.replace(entry);
               return;
             }
           }
           setRestoring(false);
         } else {
-          router.replace(ROUTES.LOGIN);
+          if (!isPublicAuthPage) router.replace(ROUTES.LOGIN);
           setRestoring(false);
         }
       })
       .catch(() => {
-        router.replace(ROUTES.LOGIN);
+        if (!isPublicAuthPage) router.replace(ROUTES.LOGIN);
         setRestoring(false);
       });
-  }, [accessToken, user, pathname, setAuth, router]);
+  }, [accessToken, user, pathname, setAuth, router, isPublicAuthPage]);
 
   if (restoring) {
     return <LoadingState fullScreen />;

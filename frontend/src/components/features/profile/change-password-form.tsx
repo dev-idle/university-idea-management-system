@@ -54,7 +54,7 @@ function PasswordInputWithToggle({
   ...inputProps
 }: ComponentProps<typeof Input> & { show?: boolean; onToggle?: () => void }) {
   return (
-    <div className="group/field relative">
+    <div className="group/field relative" data-password-toggle>
       <Input id={id} {...inputProps} />
       <Button
         type="button"

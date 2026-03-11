@@ -61,9 +61,19 @@ function LoadingStateInner({
       ) : (
         <div className={LOADING_INNER_CARD_CLASS}>
           <div className={cn(LOADING_STATE_CONTENT_CLASS, "text-center")}>
-            <div className={LOADING_SPINNER_CLASS} aria-hidden />
+            <div
+              className={cn(LOADING_SPINNER_CLASS, fullScreen && "size-6")}
+              aria-hidden
+            />
             {showMessage && (
-              <span className={LOADING_STATE_TEXT_CLASS}>{message}</span>
+              <span
+                className={cn(
+                  LOADING_STATE_TEXT_CLASS,
+                  fullScreen && "text-xs text-muted-foreground/70",
+                )}
+              >
+                {message}
+              </span>
             )}
           </div>
         </div>

@@ -6,9 +6,13 @@ import { JwtAccessStrategy } from './strategies/jwt-access.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports: [PassportModule.register({ defaultStrategy: 'jwt' })],
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    MailModule,
+  ],
   controllers: [AuthController],
   providers: [
     AuthService,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -115,7 +116,7 @@ export function LoginForm() {
           <Label htmlFor="login-password" className="sr-only">
             Password
           </Label>
-          <div className="group/field relative">
+          <div className="group/field relative" data-password-toggle>
             <Input
               id="login-password"
               type={showPassword ? "text" : "password"}
@@ -161,7 +162,17 @@ export function LoginForm() {
         </div>
       )}
 
-      <SubmitButton pending={isSubmitting} ariaDescribedBy={errors.root ? "login-root-error" : undefined} />
+      <div className="-mt-3 flex flex-col gap-4">
+        <div className="flex justify-end">
+          <Link
+            href={ROUTES.FORGOT_PASSWORD}
+            className="text-sm text-muted-foreground hover:text-primary hover:underline transition-colors"
+          >
+            Forgot password?
+          </Link>
+        </div>
+        <SubmitButton pending={isSubmitting} ariaDescribedBy={errors.root ? "login-root-error" : undefined} />
+      </div>
     </form>
   );
 }

@@ -145,6 +145,10 @@ export const TR_MENU_OPEN_CLOSED =
 /** Initial page fade — login, 404, loading spinner, error. NOT for in-app nav. */
 export const TR_PAGE_FADE = "animate-in fade-in-0 duration-[360ms]";
 
+/** Auth form panel content — smooth entrance when switching between login/forgot/reset. */
+export const TR_AUTH_FORM_ENTRANCE =
+  "animate-in fade-in-0 duration-[280ms] ease-out";
+
 /** Route loading frame (skeleton/spinner) — 200ms, snappy for in-app nav. */
 export const TR_LOADING_FRAME = "animate-in fade-in-0 duration-[200ms]";
 
@@ -304,7 +308,7 @@ export const SECTION_CARD_DESCRIPTION_CLASS = TYPO_LEAD;
 
 /** Back / secondary link (muted until hover). */
 export const BACK_LINK_CLASS =
-  "inline-flex items-center gap-2 rounded-lg px-2 py-1.5 " + TYPO_NAV + " text-muted-foreground transition-colors duration-200 hover:bg-muted/[0.06] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+  "inline-flex items-center gap-2 rounded-lg px-2 py-1.5 " + TYPO_NAV + " text-muted-foreground transition-colors duration-200 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 /** Primary action button (height + rounding). */
 export const BUTTON_PRIMARY_CLASS = "h-9 gap-2 rounded-lg px-4";
@@ -321,9 +325,9 @@ export const LOADING_SPINNER_ON_PRIMARY_CLASS =
 export const LOADING_SPINNER_ON_PRIMARY_SM_CLASS =
   "loading-spinner size-3 shrink-0 rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground";
 
-/** Root/full-screen loading wrapper (layout fallback, app/loading.tsx). */
+/** Root/full-screen loading wrapper — fixed viewport, always centered. */
 export const ROOT_LOADING_FULLSCREEN_CLASS =
-  "grid min-h-screen place-items-center bg-background";
+  "fixed inset-0 z-50 grid min-h-screen min-h-[100dvh] place-items-center bg-background";
 
 /** Loading state block — centered, airy. */
 export const LOADING_STATE_WRAPPER_CLASS =
@@ -1168,6 +1172,10 @@ export const ICON_BOX_PRIMARY_CLASS =
 /** Warning/closure alert. Use for submission closed, deadlines. */
 export const ALERT_WARNING_CLASS =
   "rounded-xl border border-warning/15 bg-warning/[0.06] text-warning/90";
+
+/** Success/status inline block — form success, completion messages. */
+export const FORM_SUCCESS_BLOCK_CLASS =
+  "rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary";
 
 /** Inline error block — subtle, minimalist. */
 export const DESTRUCTIVE_INLINE_CLASS =

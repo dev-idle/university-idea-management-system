@@ -619,7 +619,7 @@
 
 /* Login form divider — subtle line, gradient fade at ends */
 .login-form-divider {
-  padding-top: 1.5rem;
+  padding-top: 1.25rem;
   position: relative;
 }
 
@@ -773,4 +773,10 @@
 }
 .scrollbar-thin-stable::-webkit-scrollbar-thumb:hover {
   background-color: oklch(from var(--border) calc(l - 0.05) c h);
+}
+
+/* Hide browser's native password reveal (Edge ::-ms-reveal) to avoid duplicate icons
+   when we provide our own Eye/EyeOff toggle. Apply to wrappers with data-password-toggle. */
+[data-password-toggle] input[type="password"]::-ms-reveal {
+  display: none;
 }

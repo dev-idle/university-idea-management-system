@@ -1,7 +1,12 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { loginBodySchema, loginResponseSchema } from "@/lib/schemas/auth.schema";
+import {
+  loginBodySchema,
+  loginResponseSchema,
+  forgotPasswordBodySchema,
+  resetPasswordBodySchema,
+} from "@/lib/schemas/auth.schema";
 import { env, API_SERVER_BASE } from "@/config/env";
 import { AUTH } from "@/config/constants";
 
@@ -98,6 +103,75 @@ export async function refreshAction(): Promise<
     return { ok: true, data: data.data };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Network error" };
+  }
+}
+
+/**
+ * Forgot password: request reset email. OWASP: generic success message.
+ */
+export async function forgotPasswordAction(raw: unknown): Promise<ActionResult<{ message: string }>> {
+  const parsed = forgotPasswordBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.flatten().formErrors.join(", ") || "Invalid input",
+    };
+  }
+  try {
+    const res = await fetch(`${AUTH_BASE}/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: parsed.data.email }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      if (res.status === 429) {
+        return { ok: false, error: "Too many requests. Please wait a few minutes and try again." };
+      }
+      const raw = (body as { message?: string | string[] }).message;
+      const msg = Array.isArray(raw) ? raw[0] : raw ?? "Request failed";
+      const msgStr = typeof msg === "string" ? msg : String(msg);
+      if (/throttl|too many request/i.test(msgStr)) {
+        return { ok: false, error: "Too many requests. Please wait a few minutes and try again." };
+      }
+      return { ok: false, error: msgStr };
+    }
+    const msg = (body as { message?: string }).message ?? "Check your email for instructions.";
+    return { ok: true, data: { message: msg } };
+  } catch {
+    return { ok: false, error: "Network error. Please try again." };
+  }
+}
+
+/**
+ * Reset password: validate token and set new password. OWASP: no auto-login.
+ */
+export async function resetPasswordAction(raw: unknown): Promise<ActionResult<{ message: string }>> {
+  const parsed = resetPasswordBodySchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: parsed.error.flatten().formErrors.join(", ") || "Invalid input",
+    };
+  }
+  try {
+    const res = await fetch(`${AUTH_BASE}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: parsed.data.token,
+        newPassword: parsed.data.newPassword,
+      }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+      const msg = (body as { message?: string }).message ?? "Invalid or expired reset link";
+      return { ok: false, error: msg };
+    }
+    const msg = (body as { message?: string }).message ?? "Password reset successfully.";
+    return { ok: true, data: { message: msg } };
+  } catch {
+    return { ok: false, error: "Network error. Please try again." };
   }
 }
 

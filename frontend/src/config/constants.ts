@@ -7,6 +7,9 @@ import { isRole, type Role } from "@/lib/rbac";
 /** Site name — used in document titles and branding. */
 export const SITE_NAME = "Greenwich University";
 
+/** Auth pages footer note (login, forgot-password, reset-password). */
+export const AUTH_INTERNAL_NOTE = "Access for authorised University members only.";
+
 /** Default document title when no page-specific title applies. Kept short for tab display. */
 export const DEFAULT_PAGE_TITLE = `Ideas | ${SITE_NAME}`;
 
@@ -37,6 +40,8 @@ export const AUTH = {
 /** Role entry routes: one dashboard per role, no shared dashboards. */
 export const ROUTES = {
   LOGIN: "/login",
+  FORGOT_PASSWORD: "/forgot-password",
+  RESET_PASSWORD: "/reset-password",
   /** Admin → /admin/dashboard (only entry for ADMIN). */
   ADMIN_DASHBOARD: "/admin/dashboard",
   /** University QA Manager → /qa-manager/dashboard. */

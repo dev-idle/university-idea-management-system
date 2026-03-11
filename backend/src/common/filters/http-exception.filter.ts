@@ -39,10 +39,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
+    let message =
       exception instanceof HttpException
         ? getMessage(exception)
         : 'Internal server error';
+    if (status === 429) {
+      message = 'Too many requests. Please wait a few minutes and try again.';
+    }
 
     const body: Record<string, unknown> = {
       statusCode: status,
