@@ -38,7 +38,7 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
         </span>
       </>
     ) : (
-      <BrandLogo className="h-[30px] sm:h-9" align="left" />
+      <BrandLogo className="h-8" align="left" />
     );
 
     if (linkToEntry) {
@@ -55,13 +55,13 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
     return logo;
   }
 
-  /* ── Sidebar: collapsed = icon, expanded = logo — clean, no fill ── */
+  /* ── Sidebar: collapsed = icon, expanded = logo. Mobile drawer: 30px for consistency ── */
   const content = collapsed ? (
     <span className={`flex ${SIDEBAR_COLLAPSED_HIT} shrink-0 items-center justify-center`}>
       <BrandIcon className="size-full object-contain" />
     </span>
   ) : (
-    <BrandLogo className="h-9" align="left" />
+    <BrandLogo className="h-8" align="left" />
   );
 
   const wrapperClassName = collapsed
