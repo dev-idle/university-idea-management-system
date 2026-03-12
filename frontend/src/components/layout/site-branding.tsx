@@ -38,7 +38,7 @@ export function SiteBranding({ variant = "sidebar", linkToEntry = true, collapse
         </span>
       </>
     ) : (
-      <BrandLogo className="h-9" align="left" />
+      <BrandLogo className="h-[30px] sm:h-9" align="left" />
     );
 
     if (linkToEntry) {

@@ -750,7 +750,7 @@ function StaffLayout({
       >
         <div className={cn(NAVBAR_LEFT_BASE, STAFF_NAVBAR_LEFT_GAP, "overflow-hidden")}>
           <span className="flex shrink-0 items-center">
-            <SiteBranding variant="header" linkToEntry compactOnMobile />
+            <SiteBranding variant="header" linkToEntry />
           </span>
           {/* Cycle name: visible on desktop only, hidden on mobile */}
           <div className={cn(NAVBAR_DIVIDER_LEFT, "shrink-0 max-md:hidden")} aria-hidden />
