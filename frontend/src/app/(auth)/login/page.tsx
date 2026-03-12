@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { LoginForm } from "@/components/features/auth/login-form";
 import { ResetSuccessBanner } from "@/components/features/auth/reset-success-banner";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { AUTH_INTERNAL_NOTE, SITE_NAME } from "@/config/constants";
+import { AUTH_INTERNAL_NOTE, SITE_NAME, SYSTEM_NAME_SHORT } from "@/config/constants";
 import { TR_AUTH_FORM_ENTRANCE } from "@/config/design";
 import { cn } from "@/lib/utils";
 
@@ -13,8 +13,7 @@ export const metadata: Metadata = {
 };
 
 const PORTAL_TITLE = "Sign in";
-const SYSTEM_NAME = `${SITE_NAME} — Internal Idea Collection System`;
-const SYSTEM_NAME_SHORT = "Internal Idea Collection System";
+const SYSTEM_NAME = `${SITE_NAME} — ${SYSTEM_NAME_SHORT}`;
 
 export default function LoginPage() {
   return (

@@ -16,14 +16,14 @@ export default function ForgotPasswordPage() {
   return (
     <div className="flex w-full max-w-[28rem] min-w-0 flex-col items-start gap-0 sm:gap-6">
       {/* Mobile: fixed top-left. Desktop: static, aligned left with form */}
-        <Link
-          href={ROUTES.LOGIN}
-          className={cn(
-            BACK_LINK_CLASS,
-            "auth-back-link-mobile fixed top-4 left-4 z-50 pl-0 min-h-[2.75rem] items-center sm:static sm:top-auto sm:left-auto sm:z-auto sm:mt-2 md:mt-4 md:-ml-2"
-          )}
-          aria-label="Return to sign in page"
-        >
+      <Link
+        href={ROUTES.LOGIN}
+        className={cn(
+          BACK_LINK_CLASS,
+          "auth-back-link-mobile fixed top-4 left-4 z-50 pl-0 min-h-[2.75rem] items-center sm:static sm:top-auto sm:left-auto sm:z-auto sm:mt-2 md:mt-4 md:-ml-2"
+        )}
+        aria-label="Return to sign in page"
+      >
         <ArrowLeft className="size-4 shrink-0" aria-hidden />
         Back to sign in
       </Link>
