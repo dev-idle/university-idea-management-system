@@ -24,7 +24,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfileQuery } from "@/hooks/use-profile";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
-import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole } from "@/config/constants";
+import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole, SYSTEM_NAME_SHORT } from "@/config/constants";
 import { formatAcademicYearDisplay } from "@/lib/utils";
 
 /** True when user has only STAFF (no management roles). Staff get minimal top bar, no sidebar. */
@@ -743,17 +743,25 @@ function StaffLayout({
       <header
         className={NAVBAR_HEADER_CLASS}
       >
-        <div className={cn(NAVBAR_LEFT_BASE, STAFF_NAVBAR_LEFT_GAP)}>
-          <span className="flex items-center">
+        <div className={cn(NAVBAR_LEFT_BASE, STAFF_NAVBAR_LEFT_GAP, "overflow-hidden")}>
+          <span className="flex shrink-0 items-center">
             <SiteBranding variant="header" linkToEntry compactOnMobile />
           </span>
-          <div className={cn(NAVBAR_DIVIDER_LEFT, "hidden sm:block")} aria-hidden />
-          <span
-            className={cn("truncate hidden sm:inline", STAFF_CONTEXT_LABEL_CLASS)}
-            title={contextLabel}
-          >
-            {contextLabel}
-          </span>
+          <div className={cn(NAVBAR_DIVIDER_LEFT, "shrink-0")} aria-hidden />
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <span
+              className={cn("block truncate sm:hidden", STAFF_CONTEXT_LABEL_CLASS)}
+              title={SYSTEM_NAME_SHORT}
+            >
+              {SYSTEM_NAME_SHORT}
+            </span>
+            <span
+              className={cn("hidden truncate sm:block", STAFF_CONTEXT_LABEL_CLASS)}
+              title={contextLabel}
+            >
+              {contextLabel}
+            </span>
+          </div>
         </div>
         <div className={cn(NAVBAR_RIGHT_BASE, NAVBAR_RIGHT_GAP)}>
           <div className={STAFF_PILL_GROUP_CLASS}>

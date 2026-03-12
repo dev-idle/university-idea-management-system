@@ -7,6 +7,9 @@ import { isRole, type Role } from "@/lib/rbac";
 /** Site name — used in document titles and branding. */
 export const SITE_NAME = "Greenwich University";
 
+/** Short system name for mobile/compact contexts (matches login page). */
+export const SYSTEM_NAME_SHORT = "Internal Idea Collection System";
+
 /** Auth pages footer note (login, forgot-password, reset-password). */
 export const AUTH_INTERNAL_NOTE = "Access for authorised University members only.";
 

@@ -320,6 +320,16 @@
   }
 }
 
+/* Auth "Back to sign in" — critical fixed positioning on mobile to prevent layout shift (CLS) on load/F5 */
+@media (max-width: 639px) {
+  .auth-back-link-mobile {
+    position: fixed !important;
+    top: 1rem !important;
+    left: 1rem !important;
+    z-index: 50 !important;
+  }
+}
+
 /* =============================================================================
    BRAND LOGO — Mask-based (uses --primary from design system)
    Apply .brand-logo or .brand-icon + bg-primary for Greenwich brand color.

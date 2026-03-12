@@ -1,16 +1,17 @@
 import { type ReactNode } from "react";
 import { LoginAcademicPanel } from "@/components/features/auth/login-academic-panel";
 import { AuthFormWrapper } from "@/components/features/auth/auth-form-wrapper";
-import { TR_PAGE_FADE } from "@/config/design";
 
 /**
  * Shared auth layout: left panel stays mounted, only right form changes.
  * Eliminates flicker when navigating between login, forgot-password, reset-password.
+ * Note: TR_PAGE_FADE removed from main to avoid layout shift on mobile — its transform
+ * breaks position:fixed for "Back to sign in" (fixed elements need no transform ancestor).
  */
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <main
-      className={`login-page-split overflow-x-hidden overflow-y-auto sm:overflow-hidden sm:flex ${TR_PAGE_FADE}`}
+      className="login-page-split overflow-x-hidden overflow-y-auto sm:overflow-hidden sm:flex"
       role="main"
     >
       <LoginAcademicPanel />
