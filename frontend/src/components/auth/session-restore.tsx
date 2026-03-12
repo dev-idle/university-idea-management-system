@@ -10,11 +10,27 @@ import { ROUTES, getEntryRouteForRoles } from "@/config/constants";
 /** Pages that allow unauthenticated access — never redirect to /login. */
 const PUBLIC_AUTH_PAGES = [ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD];
 
+const AUTH_ENTRY_PAGES = ["/", ROUTES.LOGIN] as const;
+
+function isPublicAuthPage(pathname: string): boolean {
+  return PUBLIC_AUTH_PAGES.some((p) => pathname === p);
+}
+
+/** True when we should redirect authenticated user from auth entry page to role dashboard. */
+function shouldRedirectFromAuthEntry(pathname: string, entry: string): boolean {
+  return AUTH_ENTRY_PAGES.includes(pathname as (typeof AUTH_ENTRY_PAGES)[number]) && entry !== ROUTES.LOGIN;
+}
+
 /**
  * On app load: no /auth/me. Try POST /auth/refresh when there is no access token.
  * If refresh succeeds: store token + user in Zustand; if on / or /login, redirect by role.
  * If refresh fails: redirect to /login — except on forgot/reset-password (user may have clicked email link).
  * Starts with restoring=true to avoid flash of content before we know auth state.
+ *
+ * Sign-out cycle fix: triedRestore persists across re-renders. When user signs out
+ * (accessToken/user → null), effect re-runs. If we returned early without setRestoring(false),
+ * restoring would stay true forever → infinite loading. We must call setRestoring(false)
+ * when no auth and already tried restore (either refresh failed or user signed out).
  */
 export function SessionRestore({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -25,51 +41,63 @@ export function SessionRestore({ children }: { children: ReactNode }) {
   const [restoring, setRestoring] = useState(true);
   const triedRestore = useRef(false);
 
-  const isPublicAuthPage = PUBLIC_AUTH_PAGES.some((p) => pathname === p);
-
   useEffect(() => {
+    const publicPage = isPublicAuthPage(pathname);
+
+    // Already authenticated: stop loading, optionally redirect
     if (accessToken && user) {
-      if (pathname === "/" || pathname === "/login") {
-        const entry = getEntryRouteForRoles(user.roles);
-        if (entry !== ROUTES.LOGIN) {
-          queueMicrotask(() => setRestoring(false));
-          router.replace(entry);
-          return;
-        }
+      const entry = getEntryRouteForRoles(user.roles);
+      if (shouldRedirectFromAuthEntry(pathname, entry)) {
+        router.replace(entry);
+        return;
       }
       queueMicrotask(() => setRestoring(false));
       return;
     }
 
-    if (triedRestore.current) return;
+    // No auth: either first load (try refresh) or post sign-out (already tried once)
+    if (triedRestore.current) {
+      queueMicrotask(() => setRestoring(false));
+      return;
+    }
     triedRestore.current = true;
+
+    let cancelled = false;
 
     refreshAction()
       .then((result) => {
+        if (cancelled) return;
         if (result.ok) {
           setAuth(result.data.accessToken, result.data.user);
-          if (pathname === "/" || pathname === "/login") {
-            const entry = getEntryRouteForRoles(result.data.user.roles);
-            if (entry !== ROUTES.LOGIN) {
-              setRestoring(false);
-              router.replace(entry);
-              return;
-            }
+          const entry = getEntryRouteForRoles(result.data.user.roles);
+          if (shouldRedirectFromAuthEntry(pathname, entry)) {
+            router.replace(entry);
+            return;
           }
           setRestoring(false);
         } else {
-          if (!isPublicAuthPage) router.replace(ROUTES.LOGIN);
+          if (!publicPage) router.replace(ROUTES.LOGIN);
           setRestoring(false);
         }
       })
       .catch(() => {
-        if (!isPublicAuthPage) router.replace(ROUTES.LOGIN);
+        if (cancelled) return;
+        if (!publicPage) router.replace(ROUTES.LOGIN);
         setRestoring(false);
       });
-  }, [accessToken, user, pathname, setAuth, router, isPublicAuthPage]);
 
-  if (restoring) {
-    return <LoadingState fullScreen />;
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, user, pathname, setAuth, router]);
+
+  // Show loading when restoring OR when we have auth and are about to redirect.
+  // The latter avoids a render where we'd show LoginGate "Redirecting…" before effect runs
+  // (effect runs after render, so we'd briefly show LoginGate → then SessionRestore loading = double).
+  const isRedirectingAuth =
+    !!(accessToken && user && shouldRedirectFromAuthEntry(pathname, getEntryRouteForRoles(user.roles)));
+  if (restoring || isRedirectingAuth) {
+    return <LoadingState fullScreen instant={isRedirectingAuth} />;
   }
 
   return <>{children}</>;

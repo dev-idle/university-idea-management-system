@@ -22,10 +22,10 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
-import { useProfileQuery } from "@/hooks/use-profile";
 import { useIdeasContextQuery } from "@/hooks/use-ideas";
-import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole, SYSTEM_NAME_SHORT } from "@/config/constants";
-import { formatAcademicYearDisplay } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth.store";
+import { useProfileQuery } from "@/hooks/use-profile";
+import { ROUTES, getEntryRouteForRoles, getPrimaryRole, isPathAllowedForRole } from "@/config/constants";
 
 /** True when user has only STAFF (no management roles). Staff get minimal top bar, no sidebar. */
 function isStaffOnly(roles: string[] | undefined): boolean {
@@ -50,7 +50,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LoadingState } from "@/components/ui/loading-state";
-import { cn, getAvatarInitial } from "@/lib/utils";
+import { cn, formatAcademicYearDisplay, getAvatarInitial } from "@/lib/utils";
 import {
   MAIN_BG,
   MAIN_MAX_W,
@@ -64,9 +64,9 @@ import {
   NAVBAR_RIGHT_BASE,
   NAVBAR_RIGHT_GAP,
   STAFF_PILL_GROUP_CLASS,
+  STAFF_CONTEXT_LABEL_CLASS,
   STAFF_MAIN_MAX_W,
   STAFF_NAVBAR_LEFT_GAP,
-  STAFF_CONTEXT_LABEL_CLASS,
   SIDEBAR_LABELS_EXPAND_DELAY_MS,
   SIDEBAR_BORDER,
   SIDEBAR_BORDER_INNER,
@@ -550,10 +550,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, user?.roles, pathname, router]);
 
-  async function handleLogout() {
-    await logout();
+  const loggingOutRef = useRef(false);
+  function handleLogout(): Promise<void> {
+    if (loggingOutRef.current) return Promise.resolve();
+    loggingOutRef.current = true;
+    useAuthStore.getState().clearAuth();
     queryClient.clear();
+    // Use soft navigation to avoid double loading (AppShell loading → full reload → SessionRestore loading).
     router.replace(ROUTES.LOGIN);
+    return logout().catch(() => {}).then(() => undefined);
   }
 
   if (!isAuthenticated || !user) {
@@ -707,7 +712,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-/** Staff-only: compact top bar (branding, context, quick nav, user). No sidebar. */
+/** Staff-only: compact top bar (branding, quick nav, user). No sidebar. Context label only on auth pages (login, forgot/reset password). */
 function StaffLayout({
   user,
   displayName,
@@ -747,18 +752,10 @@ function StaffLayout({
           <span className="flex shrink-0 items-center">
             <SiteBranding variant="header" linkToEntry compactOnMobile />
           </span>
-          <div className={cn(NAVBAR_DIVIDER_LEFT, "shrink-0")} aria-hidden />
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <span
-              className={cn("block truncate sm:hidden", STAFF_CONTEXT_LABEL_CLASS)}
-              title={SYSTEM_NAME_SHORT}
-            >
-              {SYSTEM_NAME_SHORT}
-            </span>
-            <span
-              className={cn("hidden truncate sm:block", STAFF_CONTEXT_LABEL_CLASS)}
-              title={contextLabel}
-            >
+          {/* Cycle name: visible on desktop only, hidden on mobile */}
+          <div className={cn(NAVBAR_DIVIDER_LEFT, "shrink-0 max-md:hidden")} aria-hidden />
+          <div className="min-w-0 flex-1 overflow-hidden max-md:hidden">
+            <span className={cn("truncate", STAFF_CONTEXT_LABEL_CLASS)} title={contextLabel}>
               {contextLabel}
             </span>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -55,6 +55,7 @@ function SubmitButton({ pending, ariaDescribedBy }: { pending: boolean; ariaDesc
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { login } = useAuth();
   const {
@@ -67,20 +68,32 @@ export function LoginForm() {
     defaultValues: { email: "", password: "" },
   });
 
-  async function onSubmit(data: LoginBody) {
-    const result = await login(data.email, data.password);
-    if (result.ok) {
-      const user = useAuthStore.getState().user;
-      const roles = user?.roles ?? [];
-      const entry = getEntryRouteForRoles(roles);
-      if (entry === ROUTES.LOGIN) {
+  const submittingRef = useRef(false);
+
+  function onSubmit(data: LoginBody) {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    startTransition(async () => {
+      try {
+        const result = await login(data.email, data.password);
+        if (result.ok) {
+          const user = useAuthStore.getState().user;
+          const roles = user?.roles ?? [];
+          const entry = getEntryRouteForRoles(roles);
+          if (entry === ROUTES.LOGIN) {
+            setError("root", { message: ERROR_FALLBACK_FORM.loginInvalid });
+            return;
+          }
+          router.replace(entry);
+          return;
+        }
+        setError("root", { message: result.error ?? ERROR_FALLBACK_FORM.loginInvalid });
+      } catch {
         setError("root", { message: ERROR_FALLBACK_FORM.loginInvalid });
-        return;
+      } finally {
+        submittingRef.current = false;
       }
-      router.replace(entry);
-      return;
-    }
-    setError("root", { message: ERROR_FALLBACK_FORM.loginInvalid });
+    });
   }
 
   return (
@@ -171,7 +184,7 @@ export function LoginForm() {
             Forgot password?
           </Link>
         </div>
-        <SubmitButton pending={isSubmitting} ariaDescribedBy={errors.root ? "login-root-error" : undefined} />
+        <SubmitButton pending={isPending || isSubmitting} ariaDescribedBy={errors.root ? "login-root-error" : undefined} />
       </div>
     </form>
   );

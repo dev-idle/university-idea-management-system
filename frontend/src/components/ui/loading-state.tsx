@@ -23,6 +23,8 @@ export interface LoadingStateProps {
   fullScreen?: boolean;
   /** Inline: no card, minimal. For data fetch inside card — avoids double loading. */
   compact?: boolean;
+  /** Skip entrance animation — use for redirect overlay to prevent layout jump visibility. */
+  instant?: boolean;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ function LoadingStateInner({
   message = DEFAULT_LOADING_LABEL,
   fullScreen = false,
   compact = false,
+  instant = false,
   className,
 }: LoadingStateProps) {
   const wrapperClass = fullScreen
@@ -45,7 +48,7 @@ function LoadingStateInner({
     <div
       className={cn(
         wrapperClass,
-        TR_PAGE_FADE,
+        !instant && TR_PAGE_FADE,
         className
       )}
       aria-live="polite"
