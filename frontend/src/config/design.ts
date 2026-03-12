@@ -225,14 +225,14 @@ export const CHART_TOOLTIP_VALUE_CLASS =
 /** Main scrollable area — clean bg. */
 export const MAIN_BG = "bg-background";
 
-/** Main horizontal padding — Management (sidebar layout). Responsive: 1.25rem → 1.5rem (sm) → 2rem (md) → 2.5rem (lg). */
-export const MAIN_PX = "px-5 sm:px-6 md:px-8 lg:px-10";
+/** Main horizontal padding — Management (sidebar layout). Mobile-first: 1rem → 1.25rem (sm) → 1.5rem (md) → 2rem (lg) → 2.5rem (xl). */
+export const MAIN_PX = "px-4 sm:px-5 md:px-6 lg:px-8 xl:px-10";
 
 /** Mobile: safe-area-inset for notched devices. Use with pb for bottom nav clearance. */
 export const MOBILE_SAFE_BOTTOM = "pb-[env(safe-area-inset-bottom)]";
 
-/** Main vertical padding. */
-export const MAIN_PY = "py-8 md:py-10 lg:py-12";
+/** Main vertical padding. Mobile-first: less on small screens to maximize content. */
+export const MAIN_PY = "py-6 sm:py-8 md:py-10 lg:py-12";
 
 /** Main max-width — Management (sidebar expanded/collapsed). */
 export const MAIN_MAX_W = "max-w-[90rem]";
@@ -268,8 +268,8 @@ export const CARD_ACCENT_CLASS =
 export const CARD_ACCENT_BAR_CLASS =
   "w-1 shrink-0 self-stretch rounded-l-xl bg-primary/20";
 
-/** Page/section header block: card with primary left border. */
-export const PAGE_HEADER_CARD_CLASS = `${CARD_CLASS} px-6 py-8`;
+/** Page/section header block: card with primary left border. Mobile: compact padding. */
+export const PAGE_HEADER_CARD_CLASS = `${CARD_CLASS} px-4 py-6 sm:px-6 sm:py-8`;
 
 /** Header left accent (title + description block). */
 export const PAGE_HEADER_ACCENT_CLASS = "border-l-4 border-primary/40 pl-5";
@@ -299,9 +299,9 @@ export const DASHBOARD_SECTION_HEADING_CLASS =
 export const CARD_STAT_LABEL_CLASS =
   "text-xs font-medium uppercase tracking-wider text-muted-foreground/90";
 
-/** Section card header (icon + title + description). Design: border/40. */
+/** Section card header (icon + title + description). Design: border/40. Mobile: compact padding. */
 export const SECTION_CARD_HEADER_CLASS =
-  "border-b border-border/40 px-6 pt-5 pb-2";
+  "border-b border-border/40 px-4 pt-4 pb-2 sm:px-6 sm:pt-5";
 
 /** Section card title (h2/h3). */
 export const SECTION_CARD_TITLE_CLASS = TYPO_HEADING_SM;
@@ -732,9 +732,9 @@ export const IDEAS_HUB_FEED_GAP = "space-y-6";
 /** Ideas Hub count label (proposals). */
 export const IDEAS_HUB_COUNT = "text-[11px] text-muted-foreground/45";
 
-/** Ideas Hub toolbar — refined bar. Design: border/30, subtle. Count aligned right. */
+/** Ideas Hub toolbar — refined bar. Design: border/30, subtle. Mobile: tighter gap. */
 export const IDEAS_HUB_TOOLBAR =
-  "flex flex-wrap items-center justify-between gap-3 pb-5 border-b border-border/30";
+  "flex flex-wrap items-center justify-between gap-2 pb-4 sm:gap-3 sm:pb-5 border-b border-border/30";
 
 /** Ideas Hub filter/select trigger — fixed size, subtle colors, text-independent.
  *  Height/icon/padding fixed; text truncates. Colors: muted bg, soft border. */
@@ -820,16 +820,16 @@ export const NAVBAR_DIVIDER = "bg-border/40";
 /** Navbar background — clean, light. */
 export const NAVBAR_BG = "bg-background/98 backdrop-blur-sm";
 
-/** Navbar horizontal padding — more space from edges. */
-export const NAVBAR_PX = "px-6 md:px-8";
+/** Navbar horizontal padding — mobile-first: compact on phones, more on tablet+. */
+export const NAVBAR_PX = "px-4 sm:px-5 md:px-6 lg:px-8";
 
 /** Navbar header base — shared by Staff & Role Manager for consistent layout. */
 export const NAVBAR_HEADER_BASE =
   "sticky top-0 z-50 flex shrink-0 items-center justify-between gap-4 border-b";
 
-/** Navbar header full — combined tokens for header element (Staff & Role Manager). */
+/** Navbar header full — combined tokens for header element (Staff & Role Manager). Mobile-optimized padding. */
 export const NAVBAR_HEADER_CLASS =
-  "sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border/45 px-6 md:px-8 bg-background/98 backdrop-blur-sm";
+  "sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between gap-3 sm:gap-4 border-b border-border/45 px-4 sm:px-5 md:px-6 lg:px-8 bg-background/98 backdrop-blur-sm";
 
 /** Navbar left section base — flex-1, min-w-0 for truncation. */
 export const NAVBAR_LEFT_BASE = "flex min-w-0 flex-1 items-center";
@@ -860,8 +860,8 @@ export const NAVBAR_DIVIDER_VERTICAL =
 
 // ─── Notification dropdown — minimal ─────────────────────────────────────────
 
-/** Notification popover width. */
-export const NOTIFICATION_POPOVER_W = "w-[320px]";
+/** Notification popover width. Mobile: fits viewport; desktop: fixed. */
+export const NOTIFICATION_POPOVER_W = "w-[min(100vw-2rem,320px)] sm:w-[320px]";
 
 /** Notification header — thin border, compact. */
 export const NOTIFICATION_HEADER_CLASS =
@@ -950,8 +950,8 @@ export const MANAGEMENT_PAGE_SPACING = "space-y-10";
 /** Role Manager page: spacing + container. Use for Admin, QA Manager, QA Coordinator pages. */
 export const MANAGEMENT_PAGE_CLASS = `${MANAGEMENT_PAGE_SPACING} ${PAGE_CONTAINER_CLASS}`;
 
-/** Dashboard stat grid — 1 col mobile, 2 md, 4 xl. Collapses sooner when shrinking. */
-export const MANAGEMENT_STAT_GRID_CLASS = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5";
+/** Dashboard stat grid — 1 col mobile, 2 md, 4 xl. Mobile: tighter gap. */
+export const MANAGEMENT_STAT_GRID_CLASS = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5";
 
 // ─── Focus & interaction ───────────────────────────────────────────────────
 

@@ -744,12 +744,12 @@ function StaffLayout({
         className={NAVBAR_HEADER_CLASS}
       >
         <div className={cn(NAVBAR_LEFT_BASE, STAFF_NAVBAR_LEFT_GAP)}>
-          <span className="hidden sm:flex sm:items-center">
-            <SiteBranding variant="header" linkToEntry />
+          <span className="flex items-center">
+            <SiteBranding variant="header" linkToEntry compactOnMobile />
           </span>
           <div className={cn(NAVBAR_DIVIDER_LEFT, "hidden sm:block")} aria-hidden />
           <span
-            className={cn("truncate", STAFF_CONTEXT_LABEL_CLASS)}
+            className={cn("truncate hidden sm:inline", STAFF_CONTEXT_LABEL_CLASS)}
             title={contextLabel}
           >
             {contextLabel}

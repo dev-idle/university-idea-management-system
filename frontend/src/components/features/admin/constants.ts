@@ -154,13 +154,13 @@ export const DIALOG_DESCRIPTION_CLASS = `text-muted-foreground ${TYPO_LEAD}`;
 /** Sculpted dialog description. */
 export const DIALOG_DESCRIPTION_SCULPTED_CLASS = TYPO_BODY_SM;
 
-/** Table header cell (data columns). Design: foreground/78 header. */
+/** Table header cell (data columns). Design: foreground/78 header. Mobile: compact padding. */
 export const TABLE_HEAD_CELL_CLASS =
-  "px-6 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-foreground/78";
+  "px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-foreground/78 sm:px-6 sm:py-3.5";
 
 /** Table header cell for Actions column (right-aligned). */
 export const TABLE_HEAD_CELL_ACTIONS_CLASS =
-  "min-w-[5.5rem] px-6 py-3.5 text-right text-xs font-medium uppercase tracking-wider text-foreground/78";
+  "min-w-[5.5rem] px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-foreground/78 sm:px-6 sm:py-3.5";
 
 /** Min-width for Actions column (2 icon buttons, e.g. Edit + Delete). */
 export const TABLE_ACTIONS_MIN_W_2 = "min-w-[5.5rem]";
@@ -171,15 +171,15 @@ export const TABLE_ACTIONS_MIN_W_3 = "min-w-[6rem]";
 /** Min-width for Actions column (4 icon buttons, e.g. Edit + Activate + Lock + Delete). */
 export const TABLE_ACTIONS_MIN_W_4 = "min-w-[7.5rem]";
 
-/** Actions column cell (padding + right align). */
-export const TABLE_ACTIONS_CELL_CLASS = "px-6 py-4 text-right";
+/** Actions column cell (padding + right align). Mobile: compact padding. */
+export const TABLE_ACTIONS_CELL_CLASS = "px-4 py-3 text-right sm:px-6 sm:py-4";
 
 /** Pagination footer (minimal, aligned with table). */
 export const PAGINATION_FOOTER_CLASS =
   `flex items-center justify-end border-t px-4 py-3 sm:px-6 ${MGMT_BORDER_DIVIDER} ${MGMT_BG_TOOLBAR}`;
 
-/** Table scroll wrapper — horizontal scroll on mobile when table overflows. */
-export const MANAGEMENT_TABLE_OVERFLOW_CLASS = "overflow-x-auto";
+/** Table scroll wrapper — horizontal scroll on mobile when table overflows. Touch-friendly on iOS. */
+export const MANAGEMENT_TABLE_OVERFLOW_CLASS = "overflow-x-auto [-webkit-overflow-scrolling:touch]";
 
 /** "Showing X–Y of Z" badge inside search input. Design: muted-foreground/80. */
 export const SHOWING_RANGE_BADGE_CLASS =
@@ -487,16 +487,16 @@ export const TABLE_HEAD_ROW_CLASS =
 export const TABLE_ROW_CLASS =
   `border-b bg-background transition-colors duration-200 last:border-b-0 ${MGMT_BORDER_ROW} ${MGMT_BG_ROW_HOVER}`;
 
-/** Table data cell (secondary column). Design: /85 secondary. */
+/** Table data cell (secondary column). Design: /85 secondary. Mobile: compact padding. */
 export const TABLE_CELL_CLASS =
-  "px-6 py-4 text-sm text-foreground/88 sm:px-6";
+  "px-4 py-3 text-sm text-foreground/88 sm:px-6 sm:py-4";
 
-/** Table data cell (name / primary column). Design: /95 primary. */
+/** Table data cell (name / primary column). Design: /95 primary. Mobile: compact padding. */
 export const TABLE_CELL_NAME_CLASS =
-  "px-6 py-4 font-sans text-sm font-medium text-foreground/92";
+  "px-4 py-3 font-sans text-sm font-medium text-foreground/92 sm:px-6 sm:py-4";
 
-/** Table data cell (status column — padding only, badge has its own styling). */
-export const TABLE_CELL_STATUS_CLASS = "px-6 py-4";
+/** Table data cell (status column — padding only, badge has its own styling). Mobile: compact padding. */
+export const TABLE_CELL_STATUS_CLASS = "px-4 py-3 sm:px-6 sm:py-4";
 
 // ─── Action buttons ──────────────────────────────────────────────────────────
 

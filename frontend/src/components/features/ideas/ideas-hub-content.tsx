@@ -565,7 +565,7 @@ export function IdeasHubContent() {
 
       {/* ── Toolbar: filters + sort + count ───────────────────────────── */}
       <div className={IDEAS_HUB_TOOLBAR}>
-        <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+        <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 md:flex md:flex-wrap md:items-center">
           {(isQaCoordinator || isQaManager) && departments.length > 0 && (
             <Select
               value={departmentId || "all"}

@@ -234,7 +234,7 @@ export function UserMenu({
       <DropdownMenuContent
         align="end"
         sideOffset={4}
-        className="w-64 overflow-hidden p-0"
+        className="w-[min(calc(100vw-2rem),16rem)] sm:w-64 overflow-hidden p-0"
       >
         <div className="border-b border-border/40 px-4 py-3.5">
           <div className="flex items-center gap-3">
