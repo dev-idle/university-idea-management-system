@@ -175,7 +175,3 @@ university-idea-management-system/
 | P1002 advisory lock (migrations) | Use `DIRECT_URL` with non-pooler host for Prisma migrate |
 
 ---
-
-## Documentation
-
-- **[DOCKER.md](./DOCKER.md)** — Step-by-step Docker setup (Windows), troubleshooting, production notes
