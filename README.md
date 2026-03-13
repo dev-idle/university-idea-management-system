@@ -143,8 +143,6 @@ university-idea-management-system/
 ├── backend/                 # NestJS API
 │   ├── prisma/              # Schema, migrations, seed
 │   └── src/modules/         # Auth, Ideas, Users, Export, etc.
-├── docs/
-│   └── DATABASE_DESIGN.md   # Database design report (security, roles, validation, etc.)
 ├── frontend/                # Next.js 16 (App Router)
 ├── docker-compose.yml
 ├── .env.docker.example
