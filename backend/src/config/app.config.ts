@@ -8,7 +8,7 @@ import compression from 'compression';
 export const API_PREFIX = 'api';
 
 /** Default HTTP port when PORT env is not set. */
-export const DEFAULT_PORT = 3001;
+export const DEFAULT_PORT = 8001;
 
 /** Build auth cookie path from prefix and version. Must match route prefix for refresh. */
 export function getAuthCookiePath(

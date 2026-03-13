@@ -50,4 +50,4 @@ export const WORKER_OPTIONS_UPSTASH = {
   concurrency: 1,
 } as const;
 
-export const DEFAULT_FRONTEND_URL = 'http://localhost:3000';
+export const DEFAULT_FRONTEND_URL = 'http://localhost:8000';

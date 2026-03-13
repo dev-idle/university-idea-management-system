@@ -51,11 +51,11 @@ COPY --from=builder --chown=nestjs:nodejs /app/src/generated ./src/generated
 
 USER nestjs
 
-EXPOSE 3001
+EXPOSE 8001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/api/v1/', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 1
+  CMD node -e "require('http').get('http://localhost:8001/api/v1/', (r) => process.exit(r.statusCode === 200 ? 0 : 1))" || exit 1
 
 # Migrate DB on startup, optionally seed, then run app
 ENTRYPOINT ["dumb-init", "--", "sh", "-c", "npx prisma migrate deploy && ([ \"$RUN_SEED\" = \"1\" ] || [ \"$RUN_SEED\" = \"true\" ]) && npm run seed:run || true; exec node dist/main.js"]
