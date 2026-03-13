@@ -59,7 +59,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      PORT: 8001
+      PORT: 3001
       # Neon: DATABASE_URL + DIRECT_URL from .env. Local DB: --profile local-db + POSTGRES_*
       DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-uims}:${POSTGRES_PASSWORD:-uims_secret}@postgres:5432/${POSTGRES_DB:-uims}}
       DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL:-postgresql://${POSTGRES_USER:-uims}:${POSTGRES_PASSWORD:-uims_secret}@postgres:5432/${POSTGRES_DB:-uims}}}
@@ -80,9 +80,9 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
       SENTRY_DSN: ${SENTRY_DSN:-}
     ports:
-      - "${BACKEND_PORT:-8001}:8001"
+      - "${BACKEND_PORT:-3001}:3001"
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8001/api/v1/', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/v1/', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -96,7 +96,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8001}
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:3001}
         NEXT_PUBLIC_APP_ORIGIN: ${NEXT_PUBLIC_APP_ORIGIN:-http://localhost:8000}
         NEXT_PUBLIC_API_VERSION: ${NEXT_PUBLIC_API_VERSION:-1}
     container_name: uims-frontend
@@ -108,7 +108,7 @@ services:
       NODE_ENV: production
       PORT: 8000
       # Server Actions call backend from container; use Docker service name
-      API_SERVER_BASE: http://backend:8001
+      API_SERVER_BASE: http://backend:3001
     ports:
       - "${FRONTEND_PORT:-8000}:8000"
     healthcheck:

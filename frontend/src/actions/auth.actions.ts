@@ -11,7 +11,7 @@ import { API_SERVER_BASE } from "@/config/env";
 import { AUTH } from "@/config/constants";
 import { setCookieFromBackendResponse } from "@/lib/api/auth-cookies";
 
-/** Server Actions run on Next.js server; use API_SERVER_BASE (e.g. http://backend:8001 in Docker). */
+/** Server Actions run on Next.js server; use API_SERVER_BASE (e.g. http://backend:3001 in Docker). */
 const API_BASE = API_SERVER_BASE;
 const AUTH_BASE = `${API_BASE}/${AUTH.API_PREFIX}/auth`;
 

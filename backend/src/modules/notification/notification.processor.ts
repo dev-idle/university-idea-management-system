@@ -183,7 +183,7 @@ export class NotificationProcessor extends WorkerHost {
   private buildAttachmentSignedUrl(token: string): string {
     const apiBase =
       this.config.get<string>('API_BASE_URL') ??
-      `http://localhost:${this.config.get<number>('PORT') ?? 8001}`;
+      `http://localhost:${this.config.get<number>('PORT') ?? 3001}`;
     const prefix = this.config.get<string>('API_PREFIX') ?? 'api';
     const version = this.config.get<string>('API_VERSION') ?? '1';
     return `${apiBase.replace(/\/$/, '')}/${prefix}/v${version}/ideas/attachments/signed/${token}`;

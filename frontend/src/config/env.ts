@@ -6,14 +6,14 @@
 const getEnv = (key: string): string | undefined =>
   typeof process.env[key] !== "undefined" ? process.env[key] : undefined;
 
-/** API base for server-side calls (e.g. Server Actions). In Docker, use http://backend:8001. */
+/** API base for server-side calls (e.g. Server Actions). In Docker, use http://backend:3001. */
 export const API_SERVER_BASE =
-  getEnv("API_SERVER_BASE") ?? getEnv("NEXT_PUBLIC_API_BASE") ?? "http://localhost:8001";
+  getEnv("API_SERVER_BASE") ?? getEnv("NEXT_PUBLIC_API_BASE") ?? "http://localhost:3001";
 
 export const env = {
   /** Backend API base URL for client (browser). */
   NEXT_PUBLIC_API_BASE:
-    getEnv("NEXT_PUBLIC_API_BASE") ?? "http://localhost:8001",
+    getEnv("NEXT_PUBLIC_API_BASE") ?? "http://localhost:3001",
   /** App origin for CSP and redirects. */
   NEXT_PUBLIC_APP_ORIGIN:
     getEnv("NEXT_PUBLIC_APP_ORIGIN") ?? "http://localhost:8000",

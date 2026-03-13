@@ -9,7 +9,7 @@ export const envSchema = z
     NODE_ENV: z
       .enum(['development', 'production', 'test'])
       .default('development'),
-    PORT: z.coerce.number().int().positive().default(8001),
+    PORT: z.coerce.number().int().positive().default(3001),
     DATABASE_URL: z.string().url(),
     API_PREFIX: z.string().min(1).default('api'),
     /** API version segment (e.g. "1" → /api/v1/). Used for versioning and cookie path. */

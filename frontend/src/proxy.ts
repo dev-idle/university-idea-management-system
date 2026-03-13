@@ -8,7 +8,7 @@ import type { NextRequest } from "next/server";
  */
 
 function buildCsp(): string {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8001";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:3001";
   const appOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:8000";
   const connectSrc = [
     "'self'",

@@ -54,7 +54,7 @@
 ├──────────────────┬──────────────────┬──────────────────┬──────────────────────┤
 │     Frontend     │     Backend      │     Redis        │     PostgreSQL       │
 │    Next.js 16    │    NestJS 11     │     BullMQ       │    Neon / local      │
-│      :8000       │      :8001       │     :6379        │       :5432          │
+│      :8000       │      :3001       │     :6379        │       :5432          │
 └──────────────────┴──────────────────┴──────────────────┴──────────────────────┘
 ```
 
@@ -108,7 +108,7 @@ First run: **5–10 minutes** (images + build).
 | Service | URL                   |
 | ------- | --------------------- |
 | **App** | http://localhost:8000 |
-| **API** | http://localhost:8001 |
+| **API** | http://localhost:3001 |
 
 ---
 
@@ -169,7 +169,7 @@ university-idea-management-system/
 | Issue                            | Solution                                                 |
 | -------------------------------- | -------------------------------------------------------- |
 | `docker is not recognized`       | Install Docker Desktop, wait for "Running"               |
-| Port 8000/8001 in use            | Set `FRONTEND_PORT` / `BACKEND_PORT` in `.env`           |
+| Port 8000/3001 in use            | Set `FRONTEND_PORT` / `BACKEND_PORT` in `.env`           |
 | Build fails, missing JWT_SECRET  | Add `JWT_SECRET=...` (min 32 chars) to `.env`            |
 | Backend can't connect to DB      | Verify `DATABASE_URL` (Neon: check connection string)    |
 | P1002 advisory lock (migrations) | Use `DIRECT_URL` with non-pooler host for Prisma migrate |
